@@ -646,18 +646,6 @@ public class EDDTableCopy extends EDDTable {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return true;
-  } // because this gets info from cached local files
-
-  /**
    * This is used by the constructor to make localEDD. This version makes an EDDTableFromNcFiles,
    * but subclasses use it to make subsclasses of EDDTableFromFiles, e.g., EDDTableFromPostNcFiles.
    *

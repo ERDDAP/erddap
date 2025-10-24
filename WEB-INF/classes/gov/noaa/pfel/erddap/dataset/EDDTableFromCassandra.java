@@ -814,18 +814,6 @@ public class EDDTableFromCassandra extends EDDTable {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return false;
-  } // because this gets info from Cassandra
-
-  /**
    * Expand partitionKeyCSV. This uses class variables: partitionKeyCSV and rvToResultsEDV.
    *
    * @return the expanded primaryKey table

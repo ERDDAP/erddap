@@ -12613,7 +12613,6 @@ class EDDGridFromNcFilesTests {
             + "    Byte valid_min 0;\n"
             + "  }\n"
             + "  l2p_flags {\n"
-            + "    Int16 _FillValue 32767;\n"
             + "    Float64 colorBarMaximum 300.0;\n"
             + "    Float64 colorBarMinimum 0.0;\n"
             + "    String comment \"Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1.\";\n"

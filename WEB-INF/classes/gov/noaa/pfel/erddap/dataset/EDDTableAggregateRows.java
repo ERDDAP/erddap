@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PAOne;
+import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
@@ -26,6 +27,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * This class creates an EDDTable by aggregating a list of EDDTables that have the same variables.
@@ -45,7 +49,6 @@ public class EDDTableAggregateRows extends EDDTable {
   // erddap.tableDatasetHashMap.get(localChildrenID).
   private Erddap erddap;
   private String localChildrenID[]; // [c] is null if NOT local fromErddap
-  private boolean knowsActualRange;
 
   /**
    * This constructs an EDDTableAggregateRows based on the information in an .xml file.
@@ -207,7 +210,6 @@ public class EDDTableAggregateRows extends EDDTable {
     localChildrenID = new String[nChildren]; // the instance datasetIDs if   local fromErddap
     EDDTable tChildren[] = new EDDTable[nChildren]; // stable local instance
     int ndv = -1;
-    knowsActualRange = true; // only true if true for all children
     for (int c = 0; c < nChildren; c++) {
       if (oChildren[c] == null)
         throw new RuntimeException(errorInMethod + "The child dataset[" + c + "] is null.");
@@ -254,14 +256,12 @@ public class EDDTableAggregateRows extends EDDTable {
                 + c
                 + "] datasetID="
                 + datasetID
-                + " has a diffent number of variables ("
+                + " has a different number of variables ("
                 + cndv
                 + ") than the first child ("
                 + ndv
                 + ").");
       }
-
-      if (!tChildren[c].knowsActualRange()) knowsActualRange = false;
     }
     // for rest of constructor, use temporary, stable tChildren reference.
 
@@ -314,13 +314,6 @@ public class EDDTableAggregateRows extends EDDTable {
       String tUnits = childVar.units();
       double tMV = childVar.destinationMissingValue();
       double tFV = childVar.destinationFillValue();
-      PAOne tMin = childVar.destinationMin();
-      PAOne tMax = childVar.destinationMax();
-
-      if (!knowsActualRange) {
-        tMin = new PAOne(tMin.paType(), ""); // same type, but value=NaN
-        tMax = new PAOne(tMax.paType(), "");
-      }
 
       // ensure all tChildren are consistent
       for (int c = 1; c < nChildren; c++) {
@@ -369,21 +362,18 @@ public class EDDTableAggregateRows extends EDDTable {
         if (!Test.equal(tFV, cFV)) // 9 digits
         throw new RuntimeException(
               hasADifferent + "_FillValue=" + cFV + than + "_FillValue=" + tFV + ".");
-
-        // and get the minimum min and maximum max
-        if (knowsActualRange) { // only gather if all children knowActualRange
-          tMin = tMin.min(cEdv.destinationMin());
-          tMax = tMax.max(cEdv.destinationMax());
-        }
       }
 
-      /// override actual_range with min/max calculated on all chidren
-      if (!tMin.isMissingValue() && !tMax.isMissingValue()) {
-        PrimitiveArray pa = PrimitiveArray.factory(childVar.destinationDataPAType(), 2, false);
-        pa.addPAOne(tMin);
-        pa.addPAOne(tMax);
-        tSourceAtts.set("actual_range", pa);
-      }
+      Pair<PAOne, PAOne> actualRange =
+          accumulateActualRange(List.of(tChildren), dv, childVar.destinationDataPAType());
+
+      PAOne tMin = actualRange.getLeft();
+      PAOne tMax = actualRange.getRight();
+
+      PrimitiveArray pa = PrimitiveArray.factory(childVar.destinationDataPAType(), 2, false);
+      pa.addPAOne(tMin);
+      pa.addPAOne(tMax);
+      tSourceAtts.set("actual_range", pa);
 
       // make the variable
       EDV newVar = null;
@@ -449,17 +439,23 @@ public class EDDTableAggregateRows extends EDDTable {
               + "\n");
   }
 
-  /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return knowsActualRange;
-  } // depends on the children
+  private Pair<PAOne, PAOne> accumulateActualRange(
+      List<EDDTable> tChildren, int dv, PAType paType) {
+    Optional<Pair<PAOne, PAOne>> optionalRange =
+        tChildren.stream()
+            .map(c -> c.dataVariables[dv])
+            .map(cEdv -> Pair.of(cEdv.destinationMin(), cEdv.destinationMax()))
+            .filter(
+                range -> !(range.getLeft().isMissingValue() && range.getRight().isMissingValue()))
+            .reduce(
+                (a, b) -> Pair.of(a.getLeft().min(b.getLeft()), a.getRight().max(b.getRight())));
+
+    return optionalRange.orElseGet(
+        () -> {
+          PAOne defaultPAOne = new PAOne(paType, "");
+          return Pair.of(defaultPAOne, defaultPAOne);
+        });
+  }
 
   /**
    * This does the actual incremental update of this dataset (i.e., for real time datasets).
@@ -491,23 +487,18 @@ public class EDDTableAggregateRows extends EDDTable {
     PAOne tMax[] = new PAOne[ndv];
     EDDTable tChild = getChild(language, 0);
     for (int dvi = 0; dvi < ndv; dvi++) {
-      EDV cEdv = tChild.dataVariables[dvi];
-      tMin[dvi] = new PAOne(cEdv.destinationMin().paType(), ""); // NaN, but of correct type
-      tMax[dvi] = new PAOne(cEdv.destinationMax().paType(), "");
+
+      Pair<PAOne, PAOne> actualRange =
+          accumulateActualRange(
+              List.of(children), dvi, tChild.dataVariables[dvi].destinationDataPAType());
+
+      tMin[dvi] = actualRange.getLeft();
+      tMax[dvi] = actualRange.getRight();
     }
 
     for (int c = 0; c < nChildren; c++) {
       tChild = getChild(language, c);
       if (tChild.lowUpdate(language, msg, startUpdateMillis)) anyChange = true;
-
-      if (knowsActualRange) {
-        // update all dataVariable's destinationMin/Max
-        for (int dvi = 0; dvi < ndv; dvi++) {
-          EDV cEdv = tChild.dataVariables[dvi];
-          tMin[dvi] = tMin[dvi].min(cEdv.destinationMin());
-          tMax[dvi] = tMax[dvi].max(cEdv.destinationMax());
-        }
-      }
     }
     for (int dvi = 0; dvi < ndv; dvi++) {
       dataVariables[dvi].setDestinationMinMax(tMin[dvi], tMax[dvi]);
