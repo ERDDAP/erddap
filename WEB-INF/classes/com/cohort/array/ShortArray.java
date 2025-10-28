@@ -306,16 +306,16 @@ public class ShortArray extends PrimitiveArray {
   @Override
   public PAType needPAType(final PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same
+      // if tPAType is smaller or same
       case BYTE, UBYTE, SHORT -> PAType.SHORT;
 
-        // if sideways
+      // if sideways
       case CHAR -> PAType.STRING;
       case USHORT -> PAType.INT;
       case UINT -> PAType.LONG;
       case ULONG -> PAType.STRING;
 
-        // if tPAType is bigger. INT, LONG, FLOAT, DOUBLE, STRING
+      // if tPAType is bigger. INT, LONG, FLOAT, DOUBLE, STRING
       default -> tPAType;
     };
   }

@@ -6190,7 +6190,7 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.html");
     assertTrue(
         results.contains(
-            """
+"""
 <option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
 <option>.croissant - Download the dataset croissant schema.
 <option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
@@ -6245,7 +6245,7 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/testGriddedNcFiles.html");
     assertTrue(
         results.contains(
-            """
+"""
 <option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
 <option>.croissant - Download the dataset croissant schema.
 <option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
@@ -17994,7 +17994,7 @@ class JettyTests {
         tedd.makeNewFileForDapQuery(language, null, null, "", dir, tedd.className() + "1", ".das");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        """
+"""
 Attributes {
  s {
   longitude {
@@ -18206,7 +18206,7 @@ Attributes {
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     expected =
-        """
+"""
     String id "AVHRR_Pathfinder-NCEI-L3C-v5.3";
     String infoUrl "https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3";
     String institution "NCEI";

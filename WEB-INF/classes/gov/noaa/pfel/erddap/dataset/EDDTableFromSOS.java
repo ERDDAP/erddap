@@ -2498,7 +2498,7 @@ public class EDDTableFromSOS extends EDDTable {
 
             switch (endOfTag) {
               case "<om:featureOfInterest><swe:GeoReferenceableFeature>"
-                  + "<gml:location><gml:Point></gml:coordinates>" -> {
+                      + "<gml:location><gml:Point></gml:coordinates>" -> {
                 // lat lon alt    if present, has precedence over station table
                 // VAST has this; others don't
                 String lla[] = String2.split(content, ' ');
@@ -2509,7 +2509,7 @@ public class EDDTableFromSOS extends EDDTable {
                 }
               }
               case "<om:result><swe:DataArray>"
-                  + "<swe:elementType><swe:DataRecord><swe:field>" -> {
+                      + "<swe:elementType><swe:DataRecord><swe:field>" -> {
                 // endOfTag.equals("<om:resultDefinition><swe:DataBlockDefinition>" +
                 //         "<swe:components><swe:DataRecord><swe:field>") ||  //old?
 
@@ -2522,7 +2522,7 @@ public class EDDTableFromSOS extends EDDTable {
                   String2.log("*** field name found: col=" + col + " fieldName=" + fieldName);
               }
               case "<om:result><swe:DataArray>"
-                  + "<swe:elementType><swe:DataRecord><swe:field><swe:Quantity>" -> {
+                      + "<swe:elementType><swe:DataRecord><swe:field><swe:Quantity>" -> {
                 // definition   use this if field name was "observedProperty"i
                 int nFields = fieldToCol.size();
                 if (nFields > 0 && fieldToCol.get(nFields - 1) < 0) {

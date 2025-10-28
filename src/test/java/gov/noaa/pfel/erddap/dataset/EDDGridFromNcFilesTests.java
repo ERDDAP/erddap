@@ -2478,8 +2478,8 @@ class EDDGridFromNcFilesTests {
             "            <att name=\"Grib2_Generating_Process_Type\">Forecast</att>\n"
             + "            <att name=\"Grib2_Level_Desc\">Ordered Sequence of Data</att>\n"
             + //// changed in
-            //// netcdf-java
-            //// 4.6.4
+              //// netcdf-java
+              //// 4.6.4
             "            <att name=\"Grib2_Level_Type\" type=\"int\">241</att>\n"
             + // changed in
             // netcdf-java 4.6.4

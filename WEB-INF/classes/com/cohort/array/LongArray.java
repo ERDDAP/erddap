@@ -263,10 +263,10 @@ public class LongArray extends PrimitiveArray {
   @Override
   public PAType needPAType(PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case BYTE, UBYTE, SHORT, USHORT, INT, UINT, LONG -> PAType.LONG;
 
-        // if sideways.   ULONG, FLOAT, DOUBLE, CHAR, STRING
+      // if sideways.   ULONG, FLOAT, DOUBLE, CHAR, STRING
       default -> PAType.STRING;
     };
   }

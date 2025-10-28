@@ -125,15 +125,15 @@ public abstract class EDDTableFromAsciiService extends EDDTable {
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
         case "</sourceUrl>" -> tLocalSourceUrl = content;
         case "</beforeData1>",
-                "</beforeData2>",
-                "</beforeData3>",
-                "</beforeData4>",
-                "</beforeData5>",
-                "</beforeData6>",
-                "</beforeData7>",
-                "</beforeData8>",
-                "</beforeData9>",
-                "</beforeData10>" ->
+            "</beforeData2>",
+            "</beforeData3>",
+            "</beforeData4>",
+            "</beforeData5>",
+            "</beforeData6>",
+            "</beforeData7>",
+            "</beforeData8>",
+            "</beforeData9>",
+            "</beforeData10>" ->
             tBeforeData[String2.parseInt(localTags.substring(12, localTags.length() - 1))] =
                 content;
         case "</afterData>" -> tAfterData = content;

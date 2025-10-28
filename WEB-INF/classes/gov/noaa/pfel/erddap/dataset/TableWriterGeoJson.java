@@ -181,7 +181,8 @@ public class TableWriterGeoJson extends TableWriter {
             writer.write(String2.toJson(units));
           }
         }
-        writer.write("""
+        writer.write(
+            """
                 ],
                   "features": [
                 """);

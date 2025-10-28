@@ -476,7 +476,8 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("""
+    sb.append(
+        """
             </dataset>
 
             """);

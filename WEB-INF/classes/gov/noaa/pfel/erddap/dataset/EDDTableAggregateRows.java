@@ -131,7 +131,7 @@ public class EDDTableAggregateRows extends EDDTable {
             "<updateEveryNMillis>",
             "<reloadEveryNMinutes>",
             "<graphsAccessibleTo>" -> {}
-          // accessibleTo overwrites any child accessibleTo
+        // accessibleTo overwrites any child accessibleTo
         case "</accessibleTo>" -> tAccessibleTo = content;
         case "</graphsAccessibleTo>" -> tGraphsAccessibleTo = content;
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);

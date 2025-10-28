@@ -67,15 +67,15 @@ public class EDDTableFromAsciiServiceHandler extends BaseTableHandler {
     switch (localName) {
       case "sourceUrl" -> tLocalSourceUrl = contentStr;
       case "beforeData1",
-              "beforeData2",
-              "beforeData3",
-              "beforeData4",
-              "beforeData5",
-              "beforeData6",
-              "beforeData7",
-              "beforeData8",
-              "beforeData9",
-              "beforeData10" ->
+          "beforeData2",
+          "beforeData3",
+          "beforeData4",
+          "beforeData5",
+          "beforeData6",
+          "beforeData7",
+          "beforeData8",
+          "beforeData9",
+          "beforeData10" ->
           tBeforeData[String2.parseInt(localName.substring(10, localName.length()))] = contentStr;
       case "afterData" -> tAfterData = contentStr;
       case "noData" -> tNoData = contentStr;

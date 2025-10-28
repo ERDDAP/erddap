@@ -34206,7 +34206,8 @@ public class EDDTestDataset {
             <fileDir>
             """
         + Path.of(EDDTestDataset.class.getResource("/data/grib/").toURI()).toString()
-        + """
+        +
+"""
             </fileDir>
             <fileNameRegex>ecmwf-temp.*\\.grib2</fileNameRegex>
             <recursive>true</recursive>

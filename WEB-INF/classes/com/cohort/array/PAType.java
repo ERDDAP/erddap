@@ -212,7 +212,7 @@ public enum PAType {
       case USHORT, CHAR -> "U16";
       case BYTE -> "S8";
       case UBYTE -> "U8";
-        //    case STRING ->   ...
+      //    case STRING ->   ...
       default -> "UNKNOWN";
     };
   }

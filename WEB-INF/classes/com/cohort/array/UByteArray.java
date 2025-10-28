@@ -436,14 +436,14 @@ public class UByteArray extends PrimitiveArray {
   @Override
   public PAType needPAType(final PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case UBYTE -> PAType.UBYTE;
 
-        // if sideways
+      // if sideways
       case CHAR -> PAType.STRING;
       case BYTE -> PAType.SHORT;
 
-        // if tPAType is bigger. SHORT, USHORT, INT, UINT, LONG, ULONG, FLOAT, DOUBLE, STRING
+      // if tPAType is bigger. SHORT, USHORT, INT, UINT, LONG, ULONG, FLOAT, DOUBLE, STRING
       default -> tPAType;
     };
   }

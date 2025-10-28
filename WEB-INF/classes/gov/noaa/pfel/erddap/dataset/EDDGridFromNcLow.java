@@ -972,7 +972,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
               axisSourceTable, axisAddTable, "axisVariable", false, false));
       sb.append(
           writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-      sb.append("""
+      sb.append(
+          """
                   </dataset>
 
                   """);
