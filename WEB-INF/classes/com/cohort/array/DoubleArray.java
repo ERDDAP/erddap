@@ -273,10 +273,10 @@ public class DoubleArray extends PrimitiveArray {
   @Override
   public PAType needPAType(PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case BYTE, UBYTE, SHORT, USHORT, INT, UINT, FLOAT, DOUBLE -> PAType.DOUBLE;
 
-        // if sideways           //LONG, ULONG, CHAR, STRING
+      // if sideways           //LONG, ULONG, CHAR, STRING
       default -> PAType.STRING;
     };
   }

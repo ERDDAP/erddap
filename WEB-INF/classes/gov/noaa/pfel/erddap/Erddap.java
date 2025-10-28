@@ -1428,7 +1428,8 @@ public class Erddap extends HttpServlet {
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      writer.write("""
+      writer.write(
+          """
               </table>
               &nbsp;
 
@@ -1470,7 +1471,8 @@ public class Erddap extends HttpServlet {
               + "\n");
 
       // end of search/protocol options list
-      writer.write("""
+      writer.write(
+          """
 
               </ul>
               <p>&nbsp;<hr>
@@ -4389,7 +4391,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "</att>\n"
                   + "        </addAttributes>\n"
                   + "    </dataVariable>\n");
-        content.append("""
+        content.append(
+            """
                 </dataset>
 
                 """);
@@ -6741,7 +6744,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 Message.EDD_FILES,
                 EDStatic.messages.get(Message.DOCUMENTATION, language)));
         writer.write(EDStatic.messages.filesDocumentation(language, tErddapUrl));
-        writer.write("""
+        writer.write(
+            """
 
                 </div>
                 """);
@@ -6749,7 +6753,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Exception e) {
         EDStatic.rethrowClientAbortException(e); // first thing in catch{}
         writer.write(EDStatic.htmlForException(language, e));
-        writer.write("""
+        writer.write(
+            """
 
                 </div>
                 """);
@@ -8667,7 +8672,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         return;
       }
 
-        // these 3 are demos.  Remove them (and links to them)?  add update(language)?
+      // these 3 are demos.  Remove them (and links to them)?  add update(language)?
       case "demo110.html" -> {
         doWmsDemo(
             language,
@@ -11324,7 +11329,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\n");
       }
 
-      scripts.append("""
+      scripts.append(
+          """
                 }
 
                 var overlays = {
@@ -13337,7 +13343,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           return;
         }
       }
-        // end of /exportImage[/fileName]
+      // end of /exportImage[/fileName]
 
       case "query" -> {
         // ...
@@ -14529,7 +14535,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "        setHidden(); "
                   + dFormName
                   + ".submit();}\">\n\n");
-        writer.write("""
+        writer.write(
+            """
                   </td>
                 </tr>
 
@@ -14703,7 +14710,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ".scrollY.value=dd.getScrollY(); "
               + "\n} catch (ex) {if (typeof(console) != 'undefined') console.log(ex.toString());}\n"
               + "}\n");
-      writer.write("""
+      writer.write(
+          """
               //-->
               </script>\s
               """);
@@ -18213,7 +18221,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n");
     }
 
-    writer.write("""
+    writer.write(
+        """
               ]
             }
             </script>
@@ -18280,8 +18289,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       case "uint" -> "cr:UInt32";
       case "ushort" -> "cr:UInt16";
       case "ubyte" -> "cr:UInt8";
-        // Default to return "text", it hopefully should be the least likely to break with an
-        // unknown type.
+      // Default to return "text", it hopefully should be the least likely to break with an
+      // unknown type.
       default -> "sc:Text";
     };
   }

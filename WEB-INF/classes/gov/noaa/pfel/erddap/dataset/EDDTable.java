@@ -8224,7 +8224,8 @@ public abstract class EDDTable extends EDD {
           writer.write(new StringArray(distinctOptions[sv]).toJsonCsvString());
           writer.write("]" + (sv == subsetVariables.length - 1 ? "" : ",") + "\n");
         }
-        writer.write("""
+        writer.write(
+            """
                 ];
                 </script>
                 """);
@@ -8469,7 +8470,8 @@ public abstract class EDDTable extends EDD {
                 "",
                 false,
                 "mySubmit(true);")); // was ""));
-        writer.write("""
+        writer.write(
+            """
                   </td>
                 </tr>
                 """);
@@ -9639,7 +9641,8 @@ public abstract class EDDTable extends EDD {
               + ")\n");
 
       if (debugMode) String2.log("respondToGraphQuery 8");
-      writer.write("""
+      writer.write(
+          """
               </td></tr>
               </table>
 
@@ -10316,7 +10319,8 @@ public abstract class EDDTable extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("""
+      writer.write(
+          """
               <br>&nbsp;
               <hr>
               """);
@@ -11050,7 +11054,8 @@ public abstract class EDDTable extends EDD {
                 + "</tr>\n");
       }
 
-      writer.write("""
+      writer.write(
+          """
               </table>
 
               """);
@@ -16435,7 +16440,8 @@ public abstract class EDDTable extends EDD {
               + maxLon.getString()
               + "</gml:upperCorner>\n"
               + "    </gml:Envelope>\n");
-    writer.write("""
+    writer.write(
+        """
               </gml:location>
               <om:time>
             """);
@@ -17222,7 +17228,8 @@ public abstract class EDDTable extends EDD {
               + XML.encodeAsHTML(sosDataResponseFormats.get(f))
               + "</a>");
     writer.write(".\n");
-    writer.write("""
+    writer.write(
+        """
             <br>The image file formats are:
             <ul>
             """);
@@ -17991,7 +17998,8 @@ public abstract class EDDTable extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("""
+    writer.write(
+        """
                   </citeinfo>
                 </citation>
             """);
@@ -18401,7 +18409,8 @@ public abstract class EDDTable extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("""
+    writer.write(
+        """
                 </lineage>
               </dataqual>
             """);

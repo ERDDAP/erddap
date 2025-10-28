@@ -150,7 +150,7 @@ public class LineCartesianRenderer extends CartesianRenderer {
           break;
         case LineAttribute.MARK_LINE:
           drawMark(g, xout, yout, lsize, attr);
-          // fall through
+        // fall through
         case LineAttribute.SOLID:
         default:
           g.drawPolyline(xout, yout, lsize);

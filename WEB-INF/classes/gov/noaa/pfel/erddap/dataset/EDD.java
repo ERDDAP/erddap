@@ -744,13 +744,13 @@ public abstract class EDD {
           case "EDDTableCopy" -> {
             return EDDTableCopy.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
-            // xmlReader); //inactive
+          // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
+          // xmlReader); //inactive
           case "EDDTableFromAsciiServiceNOS" -> {
             return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
-            // xmlReader); //inactive
+          // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
+          // xmlReader); //inactive
           case "EDDTableFromCassandra" -> {
             return EDDTableFromCassandra.fromXml(erddap, xmlReader);
           }
@@ -769,8 +769,8 @@ public abstract class EDD {
           case "EDDTableFromFileNames" -> {
             return EDDTableFromFileNames.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
-            // xmlReader); //inactive as of 2009-01-14
+          // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
+          // xmlReader); //inactive as of 2009-01-14
           case "EDDTableFromAsciiFiles" -> {
             return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
           }
@@ -810,19 +810,19 @@ public abstract class EDD {
           case "EDDTableFromNccsvFiles" -> {
             return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
-            // xmlReader); //inactive 2010-09-08
-            // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
-            // xmlReader); //inactive 2011-12-16
+          // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
+          // xmlReader); //inactive 2010-09-08
+          // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
+          // xmlReader); //inactive 2011-12-16
           case "EDDTableFromOBIS" -> {
             return EDDTableFromOBIS.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromPostDatabase"))return
-            // EDDTableFromPostDatabase.fromXml(erddap,
-            // xmlReader);
-            // if (type.equals("EDDTableFromPostNcFiles")) return
-            // EDDTableFromPostNcFiles.fromXml(erddap,
-            // xmlReader);
+          // if (type.equals("EDDTableFromPostDatabase"))return
+          // EDDTableFromPostDatabase.fromXml(erddap,
+          // xmlReader);
+          // if (type.equals("EDDTableFromPostNcFiles")) return
+          // EDDTableFromPostNcFiles.fromXml(erddap,
+          // xmlReader);
           case "EDDTableFromSOS" -> {
             return EDDTableFromSOS.fromXml(erddap, xmlReader);
           }
@@ -2160,8 +2160,8 @@ public abstract class EDD {
         case "/dataType" -> tDataType = content;
         case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
 
-          // PrimitiveArray taa= tAttributes.get("_FillValue");
-          // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
+        // PrimitiveArray taa= tAttributes.get("_FillValue");
+        // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
         default -> xmlReader.unexpectedTagException();
       }
     }
@@ -9191,7 +9191,7 @@ public abstract class EDD {
                 ""; // perhaps sea_water_temperature, perhaps air or land
             case "mask1", "mask2", "not defined", "num", "qual" -> "";
 
-              // and other common incorrect names
+            // and other common incorrect names
             case "best_sea_surface_temperature" -> "sea_surface_temperature";
             case "eastward_sea_water_velocit" ->
                 // missing y

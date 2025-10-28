@@ -362,7 +362,7 @@ public class NcoJsonFiles extends TableWriterFileType {
                     writeStringsAsStrings ? "string" : "char";
                 case "long" -> "int64"; // see
 
-                  // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                // https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
                 case "ulong" -> "uint64";
                 default -> tType;
               };

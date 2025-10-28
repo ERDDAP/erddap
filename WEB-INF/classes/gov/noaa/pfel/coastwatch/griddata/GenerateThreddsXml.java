@@ -817,7 +817,8 @@ public class GenerateThreddsXml {
         catalog.append("      </dataset>\n");
       }
     }
-    catalog.append("""
+    catalog.append(
+        """
                 </dataset>
 
             """);

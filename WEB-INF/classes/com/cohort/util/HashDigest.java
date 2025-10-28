@@ -56,10 +56,10 @@ public class HashDigest {
     switch (length - index) {
       case 3:
         k1 ^= (data[index + 2] & 0xff) << 16;
-        // fall through
+      // fall through
       case 2:
         k1 ^= (data[index + 1] & 0xff) << 8;
-        // fall through
+      // fall through
       case 1:
         k1 ^= (data[index] & 0xff);
 

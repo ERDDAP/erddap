@@ -658,7 +658,7 @@ class EDDGridLonPM180Tests {
         eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, eddGrid.className(), ".dds");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        """
+"""
 Dataset {
   Float64 time[time = 1];
   Float32 pressure[pressure = 13];
@@ -700,7 +700,7 @@ Dataset {
     results = File2.directReadFrom88591File(dir + tName);
     String2.log(results);
     expected =
-        """
+"""
   longitude {
     String _CoordinateAxisType "Lon";
     Float32 actual_range -180.0, 179.75;
@@ -716,7 +716,7 @@ Dataset {
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
     expected =
-        """
+"""
     Float64 geospatial_lon_max 179.75;
     Float64 geospatial_lon_min -180.0;
     Float64 geospatial_lon_resolution 0.25;

@@ -518,7 +518,8 @@ public class TableWriterHtmlTable extends TableWriter {
     writer.write(postTableHtml);
     if (writeHeadAndBodyTags)
       if (xhtmlMode)
-        writer.write("""
+        writer.write(
+            """
               </body>
               </html>
               """);

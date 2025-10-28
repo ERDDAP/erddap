@@ -702,24 +702,24 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
           case "/soapenv:Envelope":
             break label;
 
-            /*
-            ...
-            <station ID="cb0102" name="Cape Henry LB 2CH">
-              <metadata><
-                project>Chesapeake Bay South PORTS</project>
-                <deploymentHistory>
-                  <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
-                  <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
-                  <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
-                  ...
-                  <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
-                  <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
-                  <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
-                </deploymentHistory>
-              </metadata>
-            </station>
-            <station ID="cb0301" name="Thimble Shoal LB 18">
-            */
+          /*
+          ...
+          <station ID="cb0102" name="Cape Henry LB 2CH">
+            <metadata><
+              project>Chesapeake Bay South PORTS</project>
+              <deploymentHistory>
+                <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
+                <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
+                <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
+                ...
+                <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
+                <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
+                <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
+              </deploymentHistory>
+            </metadata>
+          </station>
+          <station ID="cb0301" name="Thimble Shoal LB 18">
+          */
           case "station":
             tStationID = xmlReader.attributeValue("ID");
             tStationName = xmlReader.attributeValue("name");

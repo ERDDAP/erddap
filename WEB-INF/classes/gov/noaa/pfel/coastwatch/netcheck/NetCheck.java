@@ -247,11 +247,11 @@ public class NetCheck {
               // this reads all the tags until </pauseTest>
               netCheckTests.add(new PauseTest(xmlReader));
 
-            // 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
-            // } else if (tags.equals("<netCheck><sftpTest>")) {
-            //        //create a new sftpTest
-            //        //this reads all the tags until </sftpTest>
-            //        netCheckTests.add(new SftpTest(xmlReader));
+          // 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
+          // } else if (tags.equals("<netCheck><sftpTest>")) {
+          //        //create a new sftpTest
+          //        //this reads all the tags until </sftpTest>
+          //        netCheckTests.add(new SftpTest(xmlReader));
 
           default -> throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
         }

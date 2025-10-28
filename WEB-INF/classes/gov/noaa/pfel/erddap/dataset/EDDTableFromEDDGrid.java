@@ -142,10 +142,10 @@ public class EDDTableFromEDDGrid extends EDDTable {
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
-          // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
-          //            else if (localTags.equals( "<updateEveryNMillis>")) {}
-          //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
-          // String2.parseInt(content);
+        // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
+        //            else if (localTags.equals( "<updateEveryNMillis>")) {}
+        //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
+        // String2.parseInt(content);
         case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
         case "</fgdcFile>" -> tFgdcFile = content;

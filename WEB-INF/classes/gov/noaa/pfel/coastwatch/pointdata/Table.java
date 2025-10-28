@@ -4780,7 +4780,8 @@ public class Table {
 
     // close the document
     writer.write(postTableHtml);
-    writer.write("""
+    writer.write(
+        """
             </body>
             </html>
             """);
@@ -15801,10 +15802,10 @@ public class Table {
                   // viewer = HtmlWidgets.htmlAudioControl(encodedFileName);
                   HtmlWidgets.cssTooltipAudio(questionMarkImageUrl, "?", imgStyle, fileName);
 
-                // } else if (iconAlt.equals("IMG") && localDir != null) {
-                //    //this system has to open the local file to get the image's size
-                //    viewer = HtmlWidgets.imageInTooltip(localDir + fileName,
-                //        encodedFileName, questionMarkImageUrl);
+              // } else if (iconAlt.equals("IMG") && localDir != null) {
+              //    //this system has to open the local file to get the image's size
+              //    viewer = HtmlWidgets.imageInTooltip(localDir + fileName,
+              //        encodedFileName, questionMarkImageUrl);
 
               case "IMG" ->
                   // this system doesn't need to know the size ahead of time

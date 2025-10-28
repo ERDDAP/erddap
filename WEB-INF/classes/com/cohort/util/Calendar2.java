@@ -5447,7 +5447,7 @@ public class Calendar2 {
       case Calendar.MINUTE -> ChronoField.MINUTE_OF_HOUR;
       case Calendar.SECOND -> ChronoField.SECOND_OF_MINUTE;
       case Calendar.MILLISECOND -> ChronoField.MILLI_OF_SECOND;
-        // Calendar.ZONE_OFFSET and Calendar.DST_OFFSET not currently supported.
+      // Calendar.ZONE_OFFSET and Calendar.DST_OFFSET not currently supported.
 
       default ->
           throw new IllegalArgumentException("No support for calendar field: " + calendarField);
