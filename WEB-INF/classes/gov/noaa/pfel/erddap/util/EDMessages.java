@@ -2232,7 +2232,7 @@ public class EDMessages {
     extensionsNoRangeRequests =
         StringArray.arrayFromCSV(
             messagesAr[0].getNotNothingString("extensionsNoRangeRequests", errorInMethod),
-            ",",
+            ',',
             true,
             false); // trim, keepNothing
 

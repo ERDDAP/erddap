@@ -1016,16 +1016,13 @@ class EDDTableFromFileNamesTests {
     String2.log("\n EDDTableFromFileNames.testAwsS3 finished successfully");
   }
 
-  @org.junit.jupiter.api.Test
-  @TagSlowTests
-  void testgoes17all() throws Throwable {
-    testAccessibleViaFilesFileTable(false, true);
-  }
-
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   @TagSlowTests
   void testgoes17partial(boolean deleteCachedInfo) throws Throwable {
+    // formerly had also had an "testgoes17all that called:
+    // testAccessibleViaFilesFileTable(false, true);
+    // That was extremely slow and didn't really test anything that this call doesn't.
     testAccessibleViaFilesFileTable(deleteCachedInfo, false);
   }
 
@@ -1401,8 +1398,7 @@ class EDDTableFromFileNamesTests {
     String results, expected, tName;
 
     // sleep before these timing tests
-    Math2.gc("EDDTableFromFileNames (between tests)", 5000);
-    Math2.gc("EDDTableFromFileNames (between tests)", 5000);
+    Math2.gc("EDDTableFromFileNames (between tests)", 3000);
 
     if (true) {
       // root dir

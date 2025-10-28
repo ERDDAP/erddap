@@ -11744,7 +11744,7 @@ class EDDTableFromNcFilesTests {
     String2.log("\n****************** EDDTableCopyFiles make DATA FILES\n");
 
     // .csv
-    Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
+    Math2.gc("EDDTableFromNcFiles (between tests)", 3000);
     resultsSB.setLength(0);
     for (int thread = 1; thread <= 1; thread++) { // or -3 to 3
       if (thread == 0) continue;
@@ -11774,8 +11774,7 @@ class EDDTableFromNcFilesTests {
               + " time="
               + (System.currentTimeMillis() - time)
               + " ms\n");
-      Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
-      Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
+      Math2.gc("EDDTableFromNcFiles (between tests)", 3000);
     }
     // String2.log(resultsSB.toString());
     // With AV software on, Progressively slower! 110 -> 330 s !
@@ -12988,7 +12987,7 @@ class EDDTableFromNcFilesTests {
         // display?
         if (false) { // String2.indexOf(EDDTable.imageFileTypeNames, dotExt) >= 0
           // TestUtil.displayInBrowser("file://" + outName);
-          Math2.gc("EDDTableFromNcFiles (between tests)", 5000); // in a test, pause for
+          Math2.gc("EDDTableFromNcFiles (between tests)", 3000); // in a test, pause for
           // image display
         }
 

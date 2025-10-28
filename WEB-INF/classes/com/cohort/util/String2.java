@@ -833,6 +833,13 @@ public class String2 {
     return c <= 'f';
   }
 
+  /** Returns true if all of the characters in specified range of s are hex digits. */
+  public static final boolean isHexString(final String s, final int start, final int end) {
+    if (s == null) return false;
+    for (int i = start; i < end; i++) if (!isHexDigit(s.charAt(i))) return false;
+    return true;
+  }
+
   /** Returns true if all of the characters in s are hex digits. A 0-length string returns false. */
   public static final boolean isHexString(final String s) {
     if (s == null) return false;

@@ -626,7 +626,7 @@ class DigirHelperTests {
           "THIS STOPPED WORKING ~JAN 2009: "
               + MustBe.throwableToString(e)
               + "\nI think Digir is dead.");
-      Math2.gc("DigirHelper (between tests)", 5000); // in a test, after displaying a message
+      Math2.gc("DigirHelper (between tests)", 3000); // in a test, after displaying a message
     }
   }
 

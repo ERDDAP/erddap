@@ -1099,7 +1099,7 @@ class EDDTableFromAsciiFilesTests {
     for (int i = 5; i >= -5; i--) {
       if (i == 0) continue;
       eddTable.nThreads = Math.abs(i);
-      Math2.gc("EDDTableFromAsciiFiles (between tests)", 5000);
+      Math2.gc("EDDTableFromAsciiFiles (between tests)", 3000);
 
       long startTime = System.currentTimeMillis();
       tName =

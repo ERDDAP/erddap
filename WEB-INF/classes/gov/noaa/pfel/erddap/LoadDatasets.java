@@ -1349,7 +1349,7 @@ public class LoadDatasets extends Thread {
             String tRoles[] =
                 StringArray.arrayFromCSV(
                     (ttRoles == null ? "" : ttRoles + ",") + EDStatic.anyoneLoggedIn,
-                    ",",
+                    ',',
                     true,
                     false); // splitChars, trim, keepNothing. Result may be String[0].
 

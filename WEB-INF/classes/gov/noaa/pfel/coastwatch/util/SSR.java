@@ -597,7 +597,7 @@ public class SSR {
 
     // Gather the 'to' addresses
     String tAddresses[] =
-        StringArray.arrayFromCSV(toAddresses, ",", true, false); // trim, keepNothing
+        StringArray.arrayFromCSV(toAddresses, ',', true, false); // trim, keepNothing
     int nAddresses = tAddresses.length;
     if (nAddresses == 0) return;
     InternetAddress internetAddresses[] = new InternetAddress[nAddresses];

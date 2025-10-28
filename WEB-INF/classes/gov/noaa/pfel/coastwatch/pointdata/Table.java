@@ -2697,6 +2697,7 @@ public class Table {
       boolean missingItemNoted = false;
       StringBuilder warnings = new StringBuilder();
       ArrayList<String> items = new ArrayList<>(16);
+      StringBuilder separatedWord = new StringBuilder();
       while (true) {
         oneLine = null;
         if (nextLinesCache < linesCacheSize) {
@@ -2723,7 +2724,11 @@ public class Table {
           // break the lines into items
           if (colSeparator == ',') {
             StringArray.arrayListFromCSV(
-                oneLine, ",", true, true,
+                separatedWord,
+                oneLine,
+                ',',
+                true,
+                true,
                 items); // trim=true keep=true   //does handle "'d phrases, but leaves them quoted
           } else if (colSeparator == ' ') {
             StringArray.wordsAndQuotedPhrases(oneLine, items); // items are trim'd
@@ -14456,7 +14461,7 @@ public class Table {
     ArrayList<String> cUnits = null;
     PrimitiveArray pas[] = null;
     boolean endFound = false;
-
+    StringBuilder separatedWord = new StringBuilder();
     // {
     //  "table": {
     //    "columnNames": ["longitude", "latitude", "time", "sea_surface_temperature"],
@@ -14488,7 +14493,12 @@ public class Table {
                 errorInMethod + "columnNames line should have ended with '],'.\nline=" + line);
           cNames = new ArrayList<>();
           StringArray.arrayListFromCSV(
-              line.substring(16, line.length() - 2), ",", true, true, cNames); // trim, keepNothing
+              separatedWord,
+              line.substring(16, line.length() - 2),
+              ',',
+              true,
+              true,
+              cNames); // trim, keepNothing
 
         } else if (line.startsWith("\"columnTypes\": [")) {
           if (!line.endsWith("],"))
@@ -14496,7 +14506,12 @@ public class Table {
                 errorInMethod + "columnTypes line should have ended with '],'.\nline=" + line);
           cTypes = new ArrayList<>();
           StringArray.arrayListFromCSV(
-              line.substring(16, line.length() - 2), ",", true, true, cTypes); // trim, keepNothing
+              separatedWord,
+              line.substring(16, line.length() - 2),
+              ',',
+              true,
+              true,
+              cTypes); // trim, keepNothing
 
         } else if (line.startsWith("\"columnUnits\": [")) {
           if (!line.endsWith("],"))
@@ -14504,7 +14519,12 @@ public class Table {
                 errorInMethod + "columnUnits line should have ended with '],'.\nline=" + line);
           cUnits = new ArrayList<>();
           StringArray.arrayListFromCSV(
-              line.substring(16, line.length() - 2), ",", true, true, cUnits); // trim, keepNothing
+              separatedWord,
+              line.substring(16, line.length() - 2),
+              ',',
+              true,
+              true,
+              cUnits); // trim, keepNothing
           for (int i = 0; i < cUnits.size(); i++)
             if ("null".equals(cUnits.get(i))) cUnits.set(i, null);
 
@@ -14579,7 +14599,12 @@ public class Table {
             }
 
             StringArray.arrayListFromCSV(
-                line, ",", true, true, sal); // trim, keepNothing    This accepts json CSV strings.
+                separatedWord,
+                line,
+                ',',
+                true,
+                true,
+                sal); // trim, keepNothing    This accepts json CSV strings.
             if (sal.size() != nCol)
               throw new IOException(
                   errorInMethod

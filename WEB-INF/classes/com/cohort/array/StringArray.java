@@ -2064,11 +2064,15 @@ public class StringArray extends PrimitiveArray {
    *     trim'd.
    */
   public static StringArray fromCSV(final String searchFor) {
-    return new StringArray(arrayFromCSV(searchFor, ","));
+    return new StringArray(arrayFromCSV(searchFor, ','));
+  }
+
+  public static StringArray fromCSV(final String searchFor, final char separatorChars) {
+    return new StringArray(arrayFromCSV(searchFor, separatorChars));
   }
 
   public static StringArray fromCSV(final String searchFor, final String separatorChars) {
-    return new StringArray(arrayFromCSV(searchFor, separatorChars));
+    return new StringArray(arrayFromCSV(searchFor, separatorChars, true, true));
   }
 
   /**
@@ -2105,7 +2109,7 @@ public class StringArray extends PrimitiveArray {
    *     An element may be nothing.
    */
   public static String[] arrayFromCSV(final String searchFor) {
-    return arrayFromCSV(searchFor, ",", true, true); // trim, keepNothing
+    return arrayFromCSV(searchFor, ',', true, true); // trim, keepNothing
   }
 
   /**
@@ -2117,12 +2121,20 @@ public class StringArray extends PrimitiveArray {
   }
 
   /**
+   * This variant of arrayFromCSV lets you specify the separator chars (e.g., "," or ",;" and which
+   * trims each result string.
+   */
+  public static String[] arrayFromCSV(final String searchFor, final char separatorChars) {
+    return arrayFromCSV(searchFor, separatorChars, true, true); // trim, keepNothing
+  }
+
+  /**
    * This variant of arrayFromCSV lets you specify the separator chars (e.g., "," or ",;").
    *
    * @param trim If true, each results string is trimmed.
    */
   public static String[] arrayFromCSV(
-      final String searchFor, final String separatorChars, final boolean trim) {
+      final String searchFor, final char separatorChars, final boolean trim) {
     return arrayFromCSV(searchFor, separatorChars, trim, true); // keepNothing?
   }
 
@@ -2146,7 +2158,31 @@ public class StringArray extends PrimitiveArray {
     if (searchFor == null || searchFor.length() == 0) return new String[0];
 
     ArrayList<String> al = new ArrayList<>(16);
-    arrayListFromCSV(searchFor, separatorChars, trim, keepNothing, al);
+    arrayListFromCSV(new StringBuilder(), searchFor, separatorChars, trim, keepNothing, al);
+    return al.toArray(new String[0]);
+  }
+
+  /**
+   * This variant of arrayFromCSV lets you specify the separator chars (e.g., "," or ",;") and
+   * whether to trim the strings, and whether to keep "" elements.
+   *
+   * <p>The double-quoted phrases can have internal double quotes encoded as "" or \". <br>
+   * null becomes sa.length() == 0. <br>
+   * "" becomes sa.length() == 0. <br>
+   * " " becomes sa.length() == 1.
+   *
+   * @param trim If true, each results string is trimmed.
+   */
+  public static String[] arrayFromCSV(
+      final String searchFor,
+      final char separatorChars,
+      final boolean trim,
+      final boolean keepNothing) {
+
+    if (searchFor == null || searchFor.length() == 0) return new String[0];
+
+    ArrayList<String> al = new ArrayList<>(16);
+    arrayListFromCSV(new StringBuilder(), searchFor, separatorChars, trim, keepNothing, al);
     return al.toArray(new String[0]);
   }
 
@@ -2164,17 +2200,17 @@ public class StringArray extends PrimitiveArray {
    * @return al for convenience
    */
   public static List<String> arrayListFromCSV(
+      final StringBuilder word,
       final String searchFor,
       final String separatorChars,
       final boolean trim,
       final boolean keepNothing,
       final List<String> al) {
-
+    word.setLength(0);
     al.clear();
     if (searchFor == null || searchFor.length() == 0) return al;
     // String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
     int po = 0; // next char to be looked at
-    final StringBuilder word = new StringBuilder();
     int n = searchFor.length();
     boolean isQuoted = false; // is this item quoted?
     while (po <= n) { // ==n closes things out
@@ -2200,27 +2236,55 @@ public class StringArray extends PrimitiveArray {
 
               // backslashed character
             } else if (ch == '\\' && po < n) {
-              word.append(searchFor, start, po - 1);
-              ch = searchFor.charAt(po++);
-              // don't support \\b, it's trouble
-              if (ch == 'f') word.append('\f');
-              else if (ch == 't') word.append('\t');
-              else if (ch == 'n') word.append('\n');
-              else if (ch == 'r') word.append('\r');
-              else if (ch == '\'') word.append('\'');
-              else if (ch == '\"') word.append('\"');
-              else if (ch == '\\') word.append('\\');
-              else if (ch == 'u'
-                  && po <= n - 4
-                  && // \\uxxxx
-                  String2.isHexString(searchFor.substring(po, po + 4))) {
-                word.append((char) Integer.parseInt(searchFor.substring(po, po + 4), 16));
-                po += 4;
+              word.append(searchFor, start, po - 1); // Append chunk before the '\'
+              ch = searchFor.charAt(po++); // Get the character *after* the '\'
+
+              switch (ch) {
+                // don't support \\b, it's trouble
+                case 'f':
+                  word.append('\f');
+                  break;
+                case 't':
+                  word.append('\t');
+                  break;
+                case 'n':
+                  word.append('\n');
+                  break;
+                case 'r':
+                  word.append('\r');
+                  break;
+                case '\'':
+                  word.append('\'');
+                  break;
+                case '\"':
+                  word.append('\"');
+                  break;
+                case '\\':
+                  word.append('\\');
+                  break;
+                case 'u':
+                  if (po <= n - 4) {
+                    try {
+                      word.append((char) Integer.parseInt(searchFor, po, po + 4, 16));
+                      po += 4;
+                    } catch (NumberFormatException nfe) {
+                      // Invalid \\u sequence, append literally per original logic
+                      word.append("\\u");
+                      break;
+                    }
+                  } else {
+                    // Invalid \\u sequence, append literally per original logic
+                    word.append("\\u");
+                  }
+                  break;
+                default:
+                  // Preserve original logic for unknown escapes like \z
+                  word.append("\\" + ch);
+                  break;
               }
-              // else if (ch == '') word.append('');
-              else word.append("\\" + ch); // or just ch?
-              start = po; // next char will be the first appended later
-              if (po == n) break;
+
+              start = po; // Reset start for the next chunk
+              if (po == n) break; // End of string after an escape
 
               // the end of the quoted string?
             } else if (ch == '"') {
@@ -2241,6 +2305,142 @@ public class StringArray extends PrimitiveArray {
 
         // end of word?
       } else if (po == n + 1 || separatorChars.indexOf(ch) >= 0) { // e.g., comma or semicolon
+        String s = word.toString();
+        if (trim && !isQuoted)
+          s = s.trim(); // trim gets rid of all whitespace, including \n and \\u0000
+        if (s.length() > 0 || keepNothing || isQuoted) al.add(s);
+        word.setLength(0);
+        isQuoted = false;
+        if (po == n + 1) break;
+
+        // a character
+      } else if (!isQuoted) {
+        word.append(ch);
+      }
+    }
+    return al;
+  }
+
+  /**
+   * This variant of arrayFromCSV lets you specify the separator chars (e.g., "," or ",;") and
+   * whether to trim the strings, and whether to keep "" elements.
+   *
+   * <p>The double-quoted phrases can have internal double quotes encoded as "" or \". <br>
+   * null becomes sa.length() == 0. <br>
+   * "" becomes sa.length() == 0. <br>
+   * " " becomes sa.length() == 1.
+   *
+   * @param trim If true, each results string is trimmed.
+   * @param al the ArrayList into which the results are put. It is initially clear()'d.
+   * @return al for convenience
+   */
+  public static List<String> arrayListFromCSV(
+      final StringBuilder word,
+      final String searchFor,
+      final char separatorChars,
+      final boolean trim,
+      final boolean keepNothing,
+      final List<String> al) {
+    word.setLength(0);
+    al.clear();
+    if (searchFor == null || searchFor.length() == 0) return al;
+    // String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
+    int po = 0; // next char to be looked at
+    int n = searchFor.length();
+    boolean isQuoted = false; // is this item quoted?
+    while (po <= n) { // ==n closes things out
+      // String2.log(">> arrayFrom po=" + po + " al.size=" + al.size() + " word=" + word);
+      char ch =
+          po == n ? '\uffff' : searchFor.charAt(po); // n char doesn't matter as long as it isn't "
+      po++;
+
+      if (ch == '"') {
+        // it is a quoted string
+        isQuoted = true;
+        word.setLength(0); // throw out any previous char (hopefully just whitespace)
+
+        int start = po;
+        if (po < n) {
+          while (true) {
+            ch = searchFor.charAt(po++);
+            // String2.log(">> quoteloop ch=" + ch);
+            // "" internal quote
+            if (ch == '"' && po < n && searchFor.charAt(po) == '"') {
+              word.append(searchFor, start, po - 1);
+              start = po++; // the 2nd char " will be the first appended later
+
+              // backslashed character
+            } else if (ch == '\\' && po < n) {
+              word.append(searchFor, start, po - 1); // Append chunk before the '\'
+              ch = searchFor.charAt(po++); // Get the character *after* the '\'
+
+              switch (ch) {
+                // don't support \\b, it's trouble
+                case 'f':
+                  word.append('\f');
+                  break;
+                case 't':
+                  word.append('\t');
+                  break;
+                case 'n':
+                  word.append('\n');
+                  break;
+                case 'r':
+                  word.append('\r');
+                  break;
+                case '\'':
+                  word.append('\'');
+                  break;
+                case '\"':
+                  word.append('\"');
+                  break;
+                case '\\':
+                  word.append('\\');
+                  break;
+                case 'u':
+                  if (po <= n - 4) {
+                    try {
+                      word.append((char) Integer.parseInt(searchFor, po, po + 4, 16));
+                      po += 4;
+                    } catch (NumberFormatException nfe) {
+                      // Invalid \\u sequence, append literally per original logic
+                      word.append("\\u");
+                      break;
+                    }
+                  } else {
+                    // Invalid \\u sequence, append literally per original logic
+                    word.append("\\u");
+                  }
+                  break;
+                default:
+                  // Preserve original logic for unknown escapes like \z
+                  word.append("\\" + ch);
+                  break;
+              }
+
+              start = po; // Reset start for the next chunk
+              if (po == n) break; // End of string after an escape
+
+              // the end of the quoted string?
+            } else if (ch == '"') {
+              word.append(searchFor, start, po - 1);
+              break;
+
+              // the end of searchFor?
+            } else if (po == n) {
+              word.append(searchFor, start, po);
+              break;
+
+              // a letter in the quoted string
+              // } else {
+              //    word.append(ch);
+            }
+          }
+        }
+
+        // end of word?
+        // separatorChars.indexOf(ch) >= 0
+      } else if (po == n + 1 || ch == separatorChars) { // e.g., comma or semicolon
         String s = word.toString();
         if (trim && !isQuoted)
           s = s.trim(); // trim gets rid of all whitespace, including \n and \\u0000

@@ -16376,7 +16376,7 @@ class JettyTests {
     int firstTest = 0;
     int lastTest = 1000;
     // gc and sleep to give computer time to catch up from previous tests
-    for (int i = 0; i < 4; i++) Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
+    for (int i = 0; i < 4; i++) Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 3000);
     // boolean oReallyVerbose = reallyVerbose;
     // reallyVerbose = false;
     String outName;

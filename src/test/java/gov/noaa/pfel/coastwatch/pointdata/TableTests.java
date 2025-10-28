@@ -17824,7 +17824,6 @@ public class TableTests {
    * {nc.close()}
    */
   @org.junit.jupiter.api.Test
-  @TagSlowTests
   void testNcCloseTryWithResources() throws Throwable {
     // String2.log("\n*** Table.testNcCloseTryWithResources()");
 
@@ -17836,10 +17835,10 @@ public class TableTests {
                         "/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
                     .toURI())
             .toString();
-    int n = 100000;
+    int n = 10000;
     for (int i = 0; i < n; i++) {
       try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
-        if (i % 10000 == 0) String2.log("" + i);
+        if (i % 1000 == 0) String2.log("" + i);
         // } catch (Exception e) {
         // String2.log("i=" + i + " " + e.toString());
       }

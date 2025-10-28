@@ -13765,7 +13765,6 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(ints = {3})
-  @TagSlowTests
   void testNThreads(int maxNThreads) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testNThreads()
     // *****************\n");
@@ -13780,7 +13779,7 @@ class EDDGridFromNcFilesTests {
       if (nt == 0) continue;
       // delete all files in .gz cache dir
       File2.deleteAllFiles(eddGrid.decompressedDirectory());
-      Math2.gc("EDDGridFromNcFiles (between tests)", 30000); // let system settle
+      Math2.gc("EDDGridFromNcFiles (between tests)", 3000); // let system settle
 
       long tTime = System.currentTimeMillis();
       eddGrid.nThreads = Math.abs(nt);

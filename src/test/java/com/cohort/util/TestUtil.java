@@ -2589,7 +2589,6 @@ public class TestUtil {
     long speedResults[] = new long[2];
     for (int test = 0; test < 2; test++) {
       Math2.gc("TestUtil (between tests)", 2000);
-      Math2.gc("TestUtil (between tests)", 2000);
       long testSum = 0;
       time = System.currentTimeMillis();
       for (i = 0; i < n; i++) {
@@ -2610,7 +2609,6 @@ public class TestUtil {
     // Test.ensureTrue(speedResults[1] < speedResults[0] * 2,
     //        "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0]
     //                + " (Java 17 typical: 1900ms vs 1300ms");
-    Math2.gc("TestUtil (between tests)", 2000);
     Math2.gc("TestUtil (between tests)", 2000);
 
     // parseFloat
@@ -7613,7 +7611,6 @@ public class TestUtil {
 
     // test boolean touch(String dirName) and getLastModified
     String2.log("test touch and getLastModified");
-    Math2.gc("TestUtil (between tests)", 1000);
     Math2.gc("TestUtil (between tests)", 1000);
     File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
     Math2.sleep(20); // make the file a little older

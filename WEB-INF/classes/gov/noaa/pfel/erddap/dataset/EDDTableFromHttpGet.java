@@ -1179,7 +1179,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           StringArray sa =
               new StringArray(
                   StringArray.arrayFromCSV(
-                      tValue.substring(1, tValue.length() - 1), ",", false)); // trim?
+                      tValue.substring(1, tValue.length() - 1), ',', false)); // trim?
           columnValues[whichCol] =
               PrimitiveArray.factory(
                   columnPATypes[whichCol], sa); // does nothing if desired class is String
@@ -1209,7 +1209,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           StringArray sa =
               new StringArray(
                   // do it this way to deal with quotes, special chars, etc.
-                  StringArray.arrayFromCSV(tValue, ",", false)); // trim?
+                  StringArray.arrayFromCSV(tValue, ',', false)); // trim?
           if (sa.size() > 1)
             throw new SimpleException(
                 EDStatic.bilingual(
