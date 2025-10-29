@@ -675,6 +675,26 @@
                 <version>4.32.0</version>
             </dependency>
 
+            <!-- updating indirect dependencies from hivemq -->
+            <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>1.9.25</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>1.82</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.5.20</version>
+            </dependency>
+
             <!--
             The below are here to force updated dependencies of the hadoop libraries.
             The default selections have security vulnerabilities. Ideally we wouldn't be including
