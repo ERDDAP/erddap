@@ -28,7 +28,7 @@ RUN if [ "$BUILD_FROM_GIT" = "1" ] && [ -n "$ERDDAP_GIT_URL" ] && [ -n "$ERDDAP_
 
 ARG SKIP_TESTS=false
 RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository \
-    mvn --batch-mode -DskipTests=${SKIP_TESTS} -Dgcf.skipInstallHooks=true \
+    MAVEN_OPTS="-XX:+UseCompactObjectHeaders" mvn --batch-mode -DskipTests=${SKIP_TESTS} -Dgcf.skipInstallHooks=true \
     -Ddownload.unpack=true -Ddownload.unpackWhenChanged=false \
     -Dmaven.test.redirectTestOutputToFile=true package \
     && find target -maxdepth 1 -type d -name 'ERDDAP-*' -exec mv {} target/ERDDAP \;
