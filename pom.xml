@@ -599,9 +599,6 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2Log.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogFactory.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogOutputStream.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolder.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparator.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparatorIgnoreCase.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Test.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Units2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/XML.java</file>

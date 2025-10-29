@@ -1803,32 +1803,6 @@ public class TestUtil {
     // Test.ensureTrue(time <= 70,
     //        "Too slow!  Time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
 
-    // compareTo times
-    time = System.currentTimeMillis();
-    StringHolder sha = new StringHolder("aaaaabc");
-    StringHolder shb = new StringHolder("aaaaaa");
-    sum = 0;
-    for (i = 0; i < 1000000; i++) {
-      sum += shb.compareTo(sha);
-    }
-    Test.ensureEqual(sum, -1000000, "");
-    time = System.currentTimeMillis() - time;
-    // TODO handle time based performance tests better
-    // Test.ensureTrue(time <= 80,
-    //        "time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
-
-    // compareTo times
-    time = System.currentTimeMillis();
-    sum = 0;
-    for (i = 0; i < 1000000; i++) {
-      sum += shb.toString().compareTo(sha.toString());
-    }
-    Test.ensureEqual(sum, -1000000, "");
-    time = System.currentTimeMillis() - time;
-    // TODO handle time based performance tests better
-    // Test.ensureTrue(time <= 200,
-    //        "time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
-
     // indexOfIgnoreCase(s)
     String2.log("test indexOfIgnoreCase(s)");
     s = "ABCDEFGHIJK";
@@ -8056,8 +8030,6 @@ public class TestUtil {
         // initial sizes
         oMemoryInUse = memoryInUse;
         canSize = canonicalSize(); // added strings should be gc'd after each iteration
-        canSHSize =
-            canonicalStringHolderSize(); // added strings should be gc'd after each iteration
       } else {
         // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
         // too inaccurate to be useful
@@ -8069,8 +8041,6 @@ public class TestUtil {
         //     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
       }
       Test.ensureEqual(canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
-      Test.ensureEqual(
-          canonicalStringHolderSize(), canSHSize, "Unexpected String2.canonicalStringHolderSize!");
     }
     // for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
     // TODO Memory use checks can fail in GitHub runners
@@ -8084,101 +8054,6 @@ public class TestUtil {
     // of
     // translated
     // messages.xml
-  }
-
-  /** This tests String2.canonicalStringHolder(). */
-  @org.junit.jupiter.api.Test
-  @TagSlowTests
-  void testString2canonicalStringHolder() throws Exception {
-    String2.log("\n*** TestUtil.testString2canonicalStringHolder()");
-    // find a way to make != strings (for tests below)
-    byte[] a = String2.stringToUtf8Bytes("" + 1);
-    int i = 1;
-    byte[] b = String2.stringToUtf8Bytes("" + i);
-    Test.ensureTrue(a != b, "");
-
-    String filler100 =
-        "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-    int n = 1000;
-    StringHolder sa[] = new StringHolder[95 * 95];
-    long oMemoryInUse = -1;
-    Math2.gcAndWait("TestUtil (between tests)");
-    Math2.gcAndWait("TestUtil (between tests)"); // aggressive preparation //in a test
-    String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + String2.canonicalStatistics());
-    int canSize = -1;
-    int canSHSize = -1;
-
-    // for each outer loop, create a different group of 95*95 canonical strings
-    for (int outer = 0; outer < 10; outer++) {
-
-      // create 1000000 strings, but only 1000 different strings per outer loop
-      // With each outer loop, sa values are overwritten.
-      // So previous values should be garbage collected.
-      // If not, memory use and count of nStrings in canonical system
-      // (tested below) will increase with each outer loop.
-      long time = System.currentTimeMillis();
-      for (int inner = 0; inner < n; inner++) {
-        for (int inner2 = 0; inner2 < n; inner2++) {
-          int j = (inner % 95) * 95 + (inner2 % 95);
-          sa[j] =
-              String2.canonicalStringHolder(
-                  new StringHolder(
-                      // makes 95*95 different strings, dispersed to different canonical maps
-                      ((char) (32 + (inner % 95)))
-                          + ""
-                          + // "" keeps char+char->int
-                          ((char) (32 + (inner2 % 95)))
-                          + ""
-                          +
-                          // make this string unique to this outer loop iteration
-                          ((char) (65 + outer))
-                          + ""
-                          +
-                          // make it a long string
-                          filler100));
-          // String2.log(">[" + j + "]=" + sa[j]);
-        }
-      }
-
-      // ensure that memory use and nStrings in maps don't grow unexpectedly
-      time = System.currentTimeMillis() - time;
-      Math2.gcAndWait("TestUtil (between tests)");
-      Math2.gcAndWait("TestUtil (between tests)"); // aggressive //in a test
-      long memoryInUse = Math2.getMemoryInUse();
-      // TODO get a better system for time based performance tests
-      //     int shouldBe = outer == 0 ? 415 : 260; // ms
-      //     String2.log(String2.canonicalStatistics() +
-      //             "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe +
-      //             "ms [1st pass is slower]) " +
-      //             Math2.memoryString());
-      //     Test.ensureTrue(time < shouldBe * 3, "Unexpected time");
-      if (oMemoryInUse == -1) {
-        oMemoryInUse = memoryInUse;
-        canSize = canonicalSize(); // added strings should be gc'd after each iteration
-        canSHSize =
-            canonicalStringHolderSize(); // added strings should be gc'd after each iteration
-      } else {
-        // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
-        // too inaccurate to be useful
-        Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-        // Disable this total memory usage check because with new test approach there is no
-        // guarantee
-        // about what else might be running. If we need this check, make an isolated test to do
-        // this.
-        // Test.ensureTrue(memoryInUse < 50L * Math2.BytesPerMB,
-        //         "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
-      }
-      Test.ensureEqual(canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
-      Test.ensureEqual(
-          canonicalStringHolderSize(), canSHSize, "Unexpected String2.canonicalStringHolderSize!");
-    }
-    // for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
-    // TODO Memory use checks can fail in GitHub runners
-    // Test.ensureTrue(
-    //     Math2.getMemoryInUse() / Math2.BytesPerMB <= 90,
-    //     "Unexpected memoryInUse="
-    //         + (Math2.getMemoryInUse() / Math2.BytesPerMB)
-    //         + "MB (usually 73MB)");
   }
 
   /**
@@ -8270,14 +8145,6 @@ public class TestUtil {
     int sum = 0;
     for (Map<String, WeakReference<String>> stringWeakReferenceMap : String2.canonicalMap)
       sum += stringWeakReferenceMap.size();
-    return sum;
-  }
-
-  /** This is only used to test canonicalStringHolder. */
-  private static int canonicalStringHolderSize() {
-    int sum = 0;
-    for (Map<StringHolder, WeakReference<StringHolder>> stringHolderWeakReferenceMap :
-        String2.canonicalStringHolderMap) sum += stringHolderWeakReferenceMap.size();
     return sum;
   }
 

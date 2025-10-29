@@ -78,8 +78,6 @@ public class String2 {
   public static final String EMPTY_STRING = "";
   public static final byte[] BAR_ZERO = new byte[0];
   public static final char[] CAR_ZERO = new char[0];
-  public static final StringHolder STRING_HOLDER_NULL = new StringHolder((String) null);
-  public static final StringHolder STRING_HOLDER_ZERO = new StringHolder("");
 
   /** Returns true if the current Operating System is Windows. */
   public static final String OSName = System.getProperty("os.name");
@@ -197,18 +195,15 @@ public class String2 {
   private static final DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
   private static final DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
-  // splitting canonicalMap and canonicalStringHolderMap into 127 maps allows each
+  // splitting canonicalMap into 127 maps allows each
   // to be bigger and makes synchronized contention less common.
   // 127 seems better than 128. See stats at end of Table.testBigAscii();
   private static final int nCanonicalMaps = 127;
   static final Map<String, WeakReference<String>>[] canonicalMap = new Map[nCanonicalMaps];
-  static final Map<StringHolder, WeakReference<StringHolder>>[] canonicalStringHolderMap =
-      new Map[nCanonicalMaps];
 
   static {
     for (int i = 0; i < nCanonicalMaps; i++) {
       canonicalMap[i] = new WeakHashMap<>();
-      canonicalStringHolderMap[i] = new WeakHashMap<>();
     }
   }
 
@@ -5705,49 +5700,6 @@ public class String2 {
   }
 
   /**
-   * This is like String.intern(), but uses a WeakHashMap so the canonical StringHolder can be
-   * garbage collected. <br>
-   * This is thread safe. <br>
-   * It is fast: ~0.002ms per call. <br>
-   * See TestUtil.testString2canonicalStringHolder().
-   *
-   * <p>Using this increases memory use by ~6 bytes per canonical byte[] (4 for pointer * ~.5
-   * hashMap load factor). <br>
-   * So it only saves memory if many strings would otherwise be duplicated. <br>
-   * But if lots of strings are originally duplicates, it saves *lots* of memory.
-   *
-   * @param sh byte[] doesn't implement hashCode or equals, so need to store byte[] in
-   *     canonicalStringHolderMap as StringHolder. sh can't be null.
-   * @return a canonical StringHolder with the same characters as sh.
-   */
-  public static StringHolder canonicalStringHolder(StringHolder sh) {
-    char[] car = sh.charArray();
-    if (car == null) return STRING_HOLDER_NULL;
-    if (car.length == 0) return STRING_HOLDER_ZERO;
-    Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap =
-        canonicalStringHolderMap[
-            Math.abs(sh.hashCode() ^ sh.length())
-                % nCanonicalMaps]; // ^length makes it different, so not lots of collisions within
-    // tCanonicalStringHolderMap[i]
-    // see stats at end of Table.testBigAscii();
-
-    // faster and logically better to use synchronized(canonicalStringHolderMap) once
-    //  (and use a few times in consistent state)
-    // than to synchronize canonicalStringHolderMap and lock/unlock twice
-    synchronized (tCanonicalStringHolderMap) {
-      WeakReference<StringHolder> wr = tCanonicalStringHolderMap.get(sh);
-      // wr won't be garbage collected, but reference might (making wr.get() return null)
-      StringHolder canonical = wr == null ? null : wr.get();
-      if (canonical == null) {
-        canonical = sh; // use this object
-        tCanonicalStringHolderMap.put(canonical, new WeakReference<>(canonical));
-        // log("new canonical string: " + canonical);
-      }
-      return canonical;
-    }
-  }
-
-  /**
    * This returns a canonical ReentrantLock for the specified object. It uses a WeakHashMap so the
    * canonical locks can be garbage collected. <br>
    * This is thread safe. <br>
@@ -5785,14 +5737,7 @@ public class String2 {
       sum += tSize;
       sb.append((i == 0 ? "" : " + ") + (i % 16 == 0 ? "\n" : "") + tSize);
     }
-    sb.append(" = " + sum + "\ncanonicalStringHolder map sizes: ");
-    sum = 0;
-    for (int i = 0; i < canonicalStringHolderMap.length; i++) {
-      int tSize = canonicalStringHolderMap[i].size();
-      sum += tSize;
-      sb.append((i == 0 ? "" : " + ") + (i % 16 == 0 ? "\n" : "") + tSize);
-    }
-    sb.append(" = " + sum);
+    sb.append(" = " + sum + "\n");
     return sb.toString();
   }
 

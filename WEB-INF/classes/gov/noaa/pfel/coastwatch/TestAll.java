@@ -952,9 +952,6 @@ public class TestAll {
     String2LogFactory s2lf;
     StringArray sa;
     StringComparatorIgnoreCase scic;
-    StringHolder sh;
-    StringHolderComparator shc;
-    StringHolderComparatorIgnoreCase shcic;
     Table myTable;
     TableXmlHandler txh;
     Tally tally;

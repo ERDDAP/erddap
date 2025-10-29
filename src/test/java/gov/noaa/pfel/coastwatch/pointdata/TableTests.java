@@ -1701,7 +1701,7 @@ public class TableTests {
               + " Done.\n"
               + "cells/ms="
               + (table.nColumns() * ((long) table.nRows()) / time)
-              + " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)"
+              + " (With String, was 2711 Java 1.7M4700, was 648)"
               + "\ntime="
               + time
               + "ms (good=106ms, but slower when computer is busy.\n"

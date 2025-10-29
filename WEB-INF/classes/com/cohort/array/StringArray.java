@@ -8,9 +8,6 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
-import com.cohort.util.StringHolder;
-import com.cohort.util.StringHolderComparator;
-import com.cohort.util.StringHolderComparatorIgnoreCase;
 import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,8 +36,8 @@ import ucar.ma2.StructureData;
 /**
  * StringArray is a thin shell over a String[] with methods like ArrayList's methods; it extends
  * PrimitiveArray. All of the methods which add strings to StringArray (e.g., add()), use
- * String2.canonicalStringHolder(), to ensure that canonical Strings are stored (to save memory if
- * there are duplicates).
+ * String2.canonical(), to ensure that canonical Strings are stored (to save memory if there are
+ * duplicates).
  *
  * <p>This class uses "" to represent a missing value (NaN).
  *
@@ -48,9 +45,8 @@ import ucar.ma2.StructureData;
  */
 public class StringArray extends PrimitiveArray {
 
-  static final StringHolderComparator stringHolderComparator = new StringHolderComparator();
-  static final StringHolderComparatorIgnoreCase stringHolderComparatorIgnoreCase =
-      new StringHolderComparatorIgnoreCase();
+  static final StringComparatorIgnoreCase stringComparatorIgnoreCase =
+      new StringComparatorIgnoreCase();
 
   /**
    * This returns the number of bytes per element for this PrimitiveArray. The value for "String"
@@ -91,10 +87,9 @@ public class StringArray extends PrimitiveArray {
               + ") >= size ("
               + size
               + ").");
-    StringHolder sh = array[index];
+    String sh = array[index];
     if (sh == null) return true;
-    char car[] = sh.charArray();
-    return car == null || car.length == 0;
+    return sh.length() == 0;
   }
 
   /**
@@ -115,11 +110,11 @@ public class StringArray extends PrimitiveArray {
    * is increased, the PrimitiveArray will use a different array for storage. Active elements won't
    * be null, but string in an element may be null (but that's not fully supported/tested).
    */
-  protected StringHolder[] array;
+  protected String[] array;
 
   /** A constructor for a capacity of 8 elements. The initial 'size' will be 0. */
   public StringArray() {
-    array = new StringHolder[8];
+    array = new String[8];
   }
 
   /**
@@ -130,7 +125,7 @@ public class StringArray extends PrimitiveArray {
    */
   public StringArray(final PrimitiveArray primitiveArray) {
     Math2.ensureMemoryAvailable(16L * primitiveArray.size(), "StringArray");
-    array = new StringHolder[primitiveArray.size()]; // exact size
+    array = new String[primitiveArray.size()]; // exact size
     append(primitiveArray);
   }
 
@@ -144,10 +139,10 @@ public class StringArray extends PrimitiveArray {
   public StringArray(final int capacity, final boolean active) {
     Math2.ensureMemoryAvailable(
         16L * capacity, "StringArray"); // 16 is lame estimate of space needed per String
-    array = new StringHolder[capacity];
+    array = new String[capacity];
     if (active) {
       size = capacity;
-      for (int i = 0; i < size; i++) array[i] = String2.STRING_HOLDER_ZERO;
+      for (int i = 0; i < size; i++) array[i] = "";
     }
   }
 
@@ -160,7 +155,7 @@ public class StringArray extends PrimitiveArray {
    */
   public StringArray(final String[] anArray) {
     int al = anArray.length;
-    array = new StringHolder[al];
+    array = new String[al];
     size = 0;
     for (String s : anArray) add(s);
   }
@@ -172,7 +167,7 @@ public class StringArray extends PrimitiveArray {
    */
   public StringArray(final ImmutableList<String> immutableList) {
     int al = immutableList.size();
-    array = new StringHolder[al];
+    array = new String[al];
     size = 0;
     for (int i = 0; i < al; i++) add(immutableList.get(i));
   }
@@ -184,7 +179,7 @@ public class StringArray extends PrimitiveArray {
    */
   public StringArray(final Object[] anArray) {
     final int al = anArray.length;
-    array = new StringHolder[al];
+    array = new String[al];
     size = 0;
     for (Object o : anArray) add(o == null ? String2.EMPTY_STRING : o.toString());
   }
@@ -196,7 +191,7 @@ public class StringArray extends PrimitiveArray {
    *     another thread (e.g., use ConcurrentHashMap instead of HashMap).
    */
   public StringArray(final Iterator<?> iterator) {
-    array = new StringHolder[8];
+    array = new String[8];
     while (iterator.hasNext()) {
       add(iterator.next().toString());
     }
@@ -209,7 +204,7 @@ public class StringArray extends PrimitiveArray {
    *     another thread (e.g., use ConcurrentHashMap instead of HashMap).
    */
   public StringArray(final Enumeration<?> enumeration) {
-    array = new StringHolder[8];
+    array = new String[8];
     while (enumeration.hasMoreElements()) {
       add(enumeration.nextElement().toString());
     }
@@ -495,7 +490,7 @@ public class StringArray extends PrimitiveArray {
       sa.ensureCapacity(willFind);
       sa.size = willFind;
     }
-    StringHolder tar[] = sa.array;
+    String[] tar = sa.array;
     if (stride == 1) {
       System.arraycopy(array, startIndex, tar, 0, willFind);
     } else {
@@ -537,11 +532,9 @@ public class StringArray extends PrimitiveArray {
     ensureCapacity(size + 1L);
     array[size++] =
         value == null
-            ? String2.STRING_HOLDER_NULL
+            ? null
             : // quick, saves time
-            value.length() == 0
-                ? String2.STRING_HOLDER_ZERO
-                : String2.canonicalStringHolder(new StringHolder(value));
+            value.length() == 0 ? "" : String2.canonical(value);
   }
 
   /**
@@ -565,30 +558,31 @@ public class StringArray extends PrimitiveArray {
     add(sd.getScalarString(memberName));
   }
 
-  /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is currently implemented.
-   * This adds an item to the array (increasing 'size' by 1).
-   *
-   * @param value the value to be added to the array
-   * /
-  public void add(StringHolder value) {
-      if (size == array.length) //if we're at capacity
-          ensureCapacity(size + 1L);
-      array[size++] = value == null? String2.STRING_HOLDER_NULL : //quick, saves time
-                      String2.canonicalStringHolder(value);
-  }
+  /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is
+  currently implemented.
+     * This adds an item to the array (increasing 'size' by 1).
+     *
+     * @param value the value to be added to the array
+     * /
+    public void add(StringHolder value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        array[size++] = value == null? String2.STRING_HOLDER_NULL : //quick, saves time
+                        String2.canonical(value);
+    }
 
-  / **
-   * Use this for temporary arrays to add an item to the array (increasing 'size' by 1)
-   * without using String2.canonical.
-   *
-   * @param value the value to be added to the array
-   * /
-  public void addNotCanonical(StringHolder value) {
-      if (size == array.length) //if we're at capacity
-          ensureCapacity(size + 1L);
-      //still do most common canonicallization
-      array[size++] = value == null? String2.STRING_HOLDER_NULL : value;
-  } */
+    / **
+     * Use this for temporary arrays to add an item to the array (increasing 'size' by 1)
+     * without using String2.canonical.
+     *
+     * @param value the value to be added to the array
+     * /
+    public void addNotCanonical(StringHolder value) {
+        if (size == array.length) //if we're at capacity
+            ensureCapacity(size + 1L);
+        //still do most common canonicallization
+        array[size++] = value == null? String2.STRING_HOLDER_NULL : value;
+    } */
 
   /**
    * Use this for temporary arrays to add an item to the array (increasing 'size' by 1) without
@@ -600,10 +594,7 @@ public class StringArray extends PrimitiveArray {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
     // still do most common canonicallization
-    array[size++] =
-        value == null
-            ? String2.STRING_HOLDER_NULL
-            : value.length() == 0 ? String2.STRING_HOLDER_ZERO : new StringHolder(value);
+    array[size++] = value == null ? null : value.length() == 0 ? "" : value;
   }
 
   /** This trims each of the strings. */
@@ -626,7 +617,7 @@ public class StringArray extends PrimitiveArray {
 
   /** This makes sure all of the values are the canonical values. */
   public void makeCanonical() {
-    for (int i = 0; i < size; i++) array[i] = String2.canonicalStringHolder(array[i]);
+    for (int i = 0; i < size; i++) array[i] = String2.canonical(array[i]);
   }
 
   /**
@@ -679,7 +670,7 @@ public class StringArray extends PrimitiveArray {
     if (n < 0)
       throw new IllegalArgumentException(
           MessageFormat.format(ArrayAddN, getClass().getSimpleName(), "" + n));
-    StringHolder sh = String2.canonicalStringHolder(new StringHolder(value));
+    String sh = String2.canonical(value);
     ensureCapacity(size + (long) n);
     Arrays.fill(array, size, size + n, sh);
     size += n;
@@ -874,8 +865,7 @@ public class StringArray extends PrimitiveArray {
   public int removeEmptyAtEnd() {
     int last = size;
     while (last > 0) {
-      char[] car = array[last - 1].charArray();
-      if (car == null || car.length == 0) last--;
+      if (array[last - 1] == null || array[last - 1].length() == 0) last--;
       else break;
     }
     removeRange(last, size);
@@ -890,8 +880,7 @@ public class StringArray extends PrimitiveArray {
   public int removeIfNothing() {
     int nGood = 0;
     for (int po = 0; po < size; po++) {
-      char[] car = array[po].charArray();
-      if (car != null && car.length > 0) {
+      if (array[po] != null && array[po].length() > 0) {
         if (po > nGood) array[nGood] = array[po];
         nGood++;
       }
@@ -941,7 +930,7 @@ public class StringArray extends PrimitiveArray {
 
     // store the range to be moved
     final int nToMove = last - first;
-    final StringHolder[] temp = new StringHolder[nToMove];
+    final String[] temp = new String[nToMove];
     System.arraycopy(array, first, temp, 0, nToMove);
 
     // if moving to left...    (draw diagram to visualize this)
@@ -992,7 +981,7 @@ public class StringArray extends PrimitiveArray {
       int newCapacity = (int) Math.min(Integer.MAX_VALUE - 1, array.length + (long) array.length);
       if (newCapacity < minCapacity) newCapacity = (int) minCapacity; // safe since checked above
       Math2.ensureMemoryAvailable(8L * newCapacity, "StringArray"); // 8L is guess
-      StringHolder[] newArray = new StringHolder[newCapacity];
+      String[] newArray = new String[newCapacity];
       System.arraycopy(array, 0, newArray, 0, size);
       array = newArray; // do last to minimize concurrency problems
     }
@@ -1007,7 +996,7 @@ public class StringArray extends PrimitiveArray {
   public String[] toArray() {
     Math2.ensureMemoryAvailable(8L * size, "StringArray.toArray"); // 8L is guess
     String[] tArray = new String[size];
-    for (int i = 0; i < size; i++) tArray[i] = array[i].string();
+    for (int i = 0; i < size; i++) tArray[i] = array[i];
     return tArray;
   }
 
@@ -1056,24 +1045,6 @@ public class StringArray extends PrimitiveArray {
     if (index >= size)
       throw new IllegalArgumentException(
           String2.ERROR + " in StringArray.get: index (" + index + ") >= size (" + size + ").");
-    return array[index].string();
-  }
-
-  /**
-   * This gets a specified element.
-   *
-   * @param index 0 ... size-1
-   * @return the specified element
-   */
-  public StringHolder getStringHolder(final int index) {
-    if (index >= size)
-      throw new IllegalArgumentException(
-          String2.ERROR
-              + " in StringArray.getStringHolder: index ("
-              + index
-              + ") >= size ("
-              + size
-              + ").");
     return array[index];
   }
 
@@ -1087,7 +1058,7 @@ public class StringArray extends PrimitiveArray {
     if (index >= size)
       throw new IllegalArgumentException(
           String2.ERROR + " in StringArray.set: index (" + index + ") >= size (" + size + ").");
-    array[index] = String2.canonicalStringHolder(new StringHolder(value));
+    array[index] = String2.canonical(value);
   }
 
   /**
@@ -1310,12 +1281,7 @@ public class StringArray extends PrimitiveArray {
   @Override
   public int indexOf(final String lookFor, final int startIndex) {
     if (lookFor == null || startIndex >= size) return -1;
-    final char[] lookForc = lookFor.toCharArray();
-    for (int i = startIndex; i < size; i++)
-      if (Arrays.equals(
-          array[i].charArray(),
-          lookForc)) // could use == if assume canonical; it's okay if either/both c[] are null
-      return i;
+    for (int i = startIndex; i < size; i++) if (lookFor.equals(array[i])) return i;
     return -1;
   }
 
@@ -1362,11 +1328,9 @@ public class StringArray extends PrimitiveArray {
               + ") >= size ("
               + size
               + ").");
-    final char[] lookForc = lookFor.toCharArray();
     for (int i = startIndex; i >= 0; i--)
-      if (Arrays.equals(
-          array[i].charArray(),
-          lookForc)) // could use == if assume canonical. it's okay if either/both b[] are null
+      if (lookFor.equals(
+          array[i])) // could use == if assume canonical. it's okay if either/both b[] are null
       return i;
     return -1;
   }
@@ -1416,7 +1380,7 @@ public class StringArray extends PrimitiveArray {
   @Override
   public void trimToSize() {
     if (size == array.length) return;
-    final StringHolder[] newArray = new StringHolder[size];
+    final String[] newArray = new String[size];
     System.arraycopy(array, 0, newArray, 0, size);
     array = newArray;
   }
@@ -1519,8 +1483,8 @@ public class StringArray extends PrimitiveArray {
   public void sort() {
     // see switchover point and speed comparison in
     //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
-    if (size < 8192) Arrays.sort(array, 0, size, stringHolderComparator);
-    else Arrays.parallelSort(array, 0, size, stringHolderComparator);
+    if (size < 8192) Arrays.sort(array, 0, size);
+    else Arrays.parallelSort(array, 0, size);
   }
 
   /**
@@ -1533,8 +1497,8 @@ public class StringArray extends PrimitiveArray {
   public void sortIgnoreCase() {
     // see switchover point and speed comparison in
     //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
-    if (size < 8192) Arrays.sort(array, 0, size, stringHolderComparatorIgnoreCase);
-    else Arrays.parallelSort(array, 0, size, stringHolderComparatorIgnoreCase);
+    if (size < 8192) Arrays.sort(array, 0, size, stringComparatorIgnoreCase);
+    else Arrays.parallelSort(array, 0, size, stringComparatorIgnoreCase);
   }
 
   /**
@@ -1552,12 +1516,7 @@ public class StringArray extends PrimitiveArray {
    */
   @Override
   public int compare(final int index1, final PrimitiveArray otherPA, final int index2) {
-    StringHolder otherSH =
-        otherPA.elementType() == PAType.STRING
-            ? ((StringArray) otherPA).getStringHolder(index2)
-            : new StringHolder(otherPA.getString(index2));
-
-    return stringHolderComparator.compare(getStringHolder(index1), otherSH);
+    return getString(index1).compareTo(otherPA.getString(index2));
   }
 
   /**
@@ -1571,12 +1530,7 @@ public class StringArray extends PrimitiveArray {
    */
   @Override
   public int compareIgnoreCase(final int index1, final PrimitiveArray otherPA, final int index2) {
-    StringHolder sh2 =
-        otherPA.elementType() == PAType.STRING
-            ? ((StringArray) otherPA).getStringHolder(index2)
-            : new StringHolder(otherPA.getString(index2));
-
-    return array[index1].compareToIgnoreCase(sh2);
+    return stringComparatorIgnoreCase.compare(array[index1], otherPA.getString(index2));
   }
 
   /**
@@ -1603,7 +1557,7 @@ public class StringArray extends PrimitiveArray {
     final int n = rank.length;
     // new length could be n, but I'll keep it the same array.length as before
     Math2.ensureMemoryAvailable(16L * array.length, "StringArray");
-    StringHolder[] newArray = new StringHolder[array.length];
+    String[] newArray = new String[array.length];
     for (int i = 0; i < n; i++) newArray[i] = array[rank[i]];
     array = newArray;
   }
@@ -1833,7 +1787,7 @@ public class StringArray extends PrimitiveArray {
       // } else if (pa instanceof CharArray ca) { //for Argo
       //    for (int i = 0; i < otherSize; i++) {
       //        char ch = ca.get(i);
-      //        array[size + i] = String2.canonicalStringHolder(ch == Character.MAX_VALUE? "" : ch +
+      //        array[size + i] = String2.canonical(ch == Character.MAX_VALUE? "" : ch +
       // "");
       //    }
     } else {
@@ -1867,8 +1821,8 @@ public class StringArray extends PrimitiveArray {
   public int maxStringLength() {
     int max = 0;
     for (int i = 0; i < size; i++) {
-      StringHolder sh = getStringHolder(i);
-      int length = (sh == null || sh.charArray() == null) ? 0 : sh.charArray().length;
+      String sh = getString(i);
+      int length = sh == null ? 0 : sh.length();
       max = Math.max(max, length);
     }
     return max;
@@ -1971,12 +1925,10 @@ public class StringArray extends PrimitiveArray {
   @Override
   public int switchFromTo(final String from, final String to) {
     if (from.equals(to)) return 0;
-    final char[] fromc = from.toCharArray();
-    final StringHolder tosh = String2.canonicalStringHolder(new StringHolder(to));
+    final String tosh = String2.canonical(to);
     int count = 0;
     for (int i = 0; i < size; i++) {
-      if (Arrays.equals(
-          array[i].charArray(), fromc)) { // could be == if assume all elements are canonical
+      if ((from == null && array[i] == null) || (from != null && from.equals(array[i]))) {
         array[i] = tosh;
         count++;
       }
@@ -2732,8 +2684,10 @@ public class StringArray extends PrimitiveArray {
   @Override
   public int firstTie() {
     for (int i = 1; i < size; i++) {
-      if (Arrays.equals(
-          array[i - 1].charArray(), array[i].charArray())) { // either or both can be null
+      if (array[i - 1] == null && array[i] == null) { // either or both can be null
+        return i - 1;
+      } else if (array[i - 1] != null
+          && array[i - 1].equals(array[i])) { // either or both can be null
         return i - 1;
       }
     }
@@ -2894,9 +2848,8 @@ public class StringArray extends PrimitiveArray {
   public int convertIsSomething2() {
     int count = 0;
     for (int i = 0; i < size; i++) {
-      final char[] car = array[i].charArray();
-      if (car == null || (car.length > 0 && !String2.isSomething2(get(i)))) {
-        array[i] = String2.STRING_HOLDER_ZERO;
+      if (array[i] == null || (array[i].length() > 0 && !String2.isSomething2(get(i)))) {
+        array[i] = "";
         count++;
       }
     }
