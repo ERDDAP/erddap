@@ -7014,17 +7014,20 @@ class EDDTableFromNcFilesTests {
     EDDTable eddTable;
 
     // lon shouldn't appear
-    eddTable = (EDDTable) EDDTestDataset.getfsuNoaaShipWTEPnrt();
-    start =
-        "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
-            + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
-    queries = new String[] {"2022-03-01T00:00:00Z", "2022-03", "1646092800"};
-    for (int i = 0; i < queries.length; i++) {
-      baseName = "EDDTableFromNcFiles_testLegendA" + i;
-      tName =
-          eddTable.makeNewFileForDapQuery(
-              language, null, null, start + queries[i], dir, baseName, ".png");
-      Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
+    // TODO fsu thredds server is down, disabled until its back up
+    if (false) {
+      eddTable = (EDDTable) EDDTestDataset.getfsuNoaaShipWTEPnrt();
+      start =
+          "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
+              + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
+      queries = new String[] {"2022-03-01T00:00:00Z", "2022-03", "1646092800"};
+      for (int i = 0; i < queries.length; i++) {
+        baseName = "EDDTableFromNcFiles_testLegendA" + i;
+        tName =
+            eddTable.makeNewFileForDapQuery(
+                language, null, null, start + queries[i], dir, baseName, ".png");
+        Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
+      }
     }
 
     // time_precision

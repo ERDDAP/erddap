@@ -28,11 +28,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -371,7 +372,7 @@ public class MetadataBuilder {
 
     // identification info
     List<CitationDate> dates = new ArrayList<>();
-    dates.add(new DefaultCitationDate(new Date(creationDate), DateType.CREATION));
+    dates.add(new DefaultCitationDate(Instant.ofEpochMilli(creationDate), DateType.CREATION));
     String dateIssued = Calendar2.tryToIsoString(attributes.getString(language, "date_issued"));
     if (String2.isSomething(dateIssued)) {
       try {
@@ -866,26 +867,23 @@ public class MetadataBuilder {
           DateTimeFormatter.ISO_INSTANT,
           DateTimeFormatter.RFC_1123_DATE_TIME);
 
-  private static Date parseDate(String dateInput) throws ParseException {
-    Date parsedDate = null;
+  private static Temporal parseDate(String dateInput) throws ParseException {
+    ZonedDateTime parsedDate = null;
     try {
-      parsedDate = Date.from(Instant.parse(dateInput));
+      parsedDate = Instant.parse(dateInput).atZone(ZoneOffset.UTC);
     } catch (DateTimeParseException e) {
       // Do nothing, we are going to attempt a different parsing
     }
     for (DateTimeFormatter formatter : formatters) {
       try {
-        parsedDate = Date.from(LocalDateTime.parse(dateInput, formatter).toInstant(ZoneOffset.UTC));
+        parsedDate = LocalDateTime.parse(dateInput, formatter).atZone(ZoneOffset.UTC);
       } catch (DateTimeParseException e) {
         // Ignore and try the next format
       }
     }
     try {
       parsedDate =
-          Date.from(
-              LocalDate.parse(dateInput, DateTimeFormatter.ISO_DATE)
-                  .atStartOfDay()
-                  .toInstant(ZoneOffset.UTC));
+          LocalDate.parse(dateInput, DateTimeFormatter.ISO_DATE).atStartOfDay(ZoneOffset.UTC);
     } catch (DateTimeParseException e) {
       // Ignore and try the next format
     }
