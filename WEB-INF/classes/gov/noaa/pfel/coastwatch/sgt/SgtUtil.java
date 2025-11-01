@@ -24,8 +24,9 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import org.openpdf.text.Document;
 import org.openpdf.text.PageSize;
@@ -459,7 +460,8 @@ public class SgtUtil {
 
     // create fileOutputStream
     try (BufferedOutputStream bos =
-        new BufferedOutputStream(new FileOutputStream(fullPngName + randomInt + ".png"))) {
+        new BufferedOutputStream(
+            Files.newOutputStream(Paths.get(fullPngName + randomInt + ".png")))) {
       // save the image
       saveAsTransparentPng(bi, transparent, bos);
     }
@@ -512,7 +514,10 @@ public class SgtUtil {
   public static Object[] createPdf(PDFPageSize size, int bbWidth, int bbHeight, String fullFileName)
       throws Exception {
     return createPdf(
-        size, bbWidth, bbHeight, new BufferedOutputStream(new FileOutputStream(fullFileName)));
+        size,
+        bbWidth,
+        bbHeight,
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName))));
   }
 
   /**

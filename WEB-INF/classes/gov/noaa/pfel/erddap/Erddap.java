@@ -84,12 +84,13 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -13189,7 +13190,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             } else {
               OutputStream out =
                   new BufferedOutputStream(
-                      new FileOutputStream(actualDir + virtualFileName + fileExtension));
+                      Files.newOutputStream(
+                          Paths.get(actualDir + virtualFileName + fileExtension)));
               OutputStreamSource oss = new OutputStreamSourceSimple(out);
 
               try { // most exceptions written to image.  some throw throwable.

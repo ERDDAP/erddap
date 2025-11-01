@@ -879,7 +879,7 @@ class EDDTableFromEDDGridTests {
         results,
         // wanted: "com.cohort.util.SimpleException: Your query produced no matching
         // results. (nRows = 0)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?longitude&longitude%3C120\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -907,7 +907,7 @@ class EDDTableFromEDDGridTests {
         // +
         // "(longitude<-119.99 is outside of the variable's actual_range: 120.0 to
         // 320.0)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?longitude&longitude%3C-119.99\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -949,7 +949,7 @@ class EDDTableFromEDDGridTests {
         results,
         // "Caught: com.cohort.util.SimpleException: Your query produced no matching
         // results. (nRows = 0)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?longitude&longitude%3E320\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -977,7 +977,7 @@ class EDDTableFromEDDGridTests {
         // results. " +
         // "(longitude>320.1 is outside of the variable's actual_range: 120.0 to
         // 320.0)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?longitude&longitude%3E320.1\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -1021,7 +1021,7 @@ class EDDTableFromEDDGridTests {
         results,
         // "Caught: com.cohort.util.SimpleException: Your query produced no matching
         // results. (nRows = 0)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?time&time%3C2008-02-15T12:00:00Z\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -1049,7 +1049,7 @@ class EDDTableFromEDDGridTests {
         // results. " +
         // "(time<=2008-02-14T12:00:00Z is outside of the variable's actual_range:
         // 2008-02-15T12:00:00Z to 2008-03-16T12:00:00Z)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?time&time%3C=2008-02-14T12\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -1075,7 +1075,7 @@ class EDDTableFromEDDGridTests {
         results,
         // "Caught: com.cohort.util.SimpleException: Your query produced no matching
         // results. (nRows = 0)",
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?time&time%3E2008-03-16T12\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -1101,7 +1101,7 @@ class EDDTableFromEDDGridTests {
     }
     expected = // "Caught: com.cohort.util.SimpleException: Your query produced no matching
         // results. (longitude=201.04 will never be true.)";
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?latitude&latitude%3E20&latitude%3C=20.5&longitude=201.04\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -1129,7 +1129,7 @@ class EDDTableFromEDDGridTests {
         // "Caught: com.cohort.util.SimpleException: Your query produced no matching
         // results. " +
         // "(longitude=119 is outside of the variable's actual_range: 120.0 to 320.0)";
-        "Caught: java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+        "Caught: java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
             + "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?latitude&latitude%3E20&latitude%3C=20.5&longitude=119\n"
             + "(Error {\n"
             + "    code=404;\n"
@@ -1484,7 +1484,7 @@ class EDDTableFromEDDGridTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/gibberish/\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
@@ -1500,7 +1500,7 @@ class EDDTableFromEDDGridTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish/\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish/\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
@@ -1516,7 +1516,7 @@ class EDDTableFromEDDGridTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish.csv\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdMBsstdmday_AsATable/gibberish.csv\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: File not found: gibberish.csv .\";\n"

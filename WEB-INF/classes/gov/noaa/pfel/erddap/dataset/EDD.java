@@ -65,12 +65,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -3768,7 +3770,7 @@ public abstract class EDD {
 
     OutputStreamSource outputStreamSource =
         new OutputStreamSourceSimple(
-            new BufferedOutputStream(new FileOutputStream(fullName + randomInt)));
+            new BufferedOutputStream(Files.newOutputStream(Paths.get(fullName + randomInt))));
 
     try {
 
@@ -14380,7 +14382,7 @@ public abstract class EDD {
       }
 
       // save changed dxLines
-      dxLines.toFile(datasetsXmlFileName + "temp", File2.UTF_8, null);
+      dxLines.toFile(datasetsXmlFileName + "temp", StandardCharsets.UTF_8, null);
 
       // save errors to file and write to console
       String errorLogName =

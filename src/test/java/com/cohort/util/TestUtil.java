@@ -1253,7 +1253,7 @@ public class TestUtil {
     // String2.pressEnterToContinue();
 
     // digestFile
-    s = TestUtil.class.getResource("/data/simpleTest.nc").getPath();
+    s = Path.of(TestUtil.class.getResource("/data/simpleTest.nc").toURI()).toString();
     // md5 was verified by command line
     Test.ensureEqual(
         String2.fileDigest("MD5", s),

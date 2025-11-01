@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cohort.util.File2;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.nio.file.Path;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,11 @@ public class LoadDatasetsTests {
   void failedToLoadDatasetsTest() throws Throwable {
     String pathToDatasetsXml =
         Objects.requireNonNull(
-                LoadDatasets.class.getResource("/datasets/failedToLoadDatasetsTest.xml"))
-            .getPath();
+            Path.of(
+                    LoadDatasets.class
+                        .getResource("/datasets/failedToLoadDatasetsTest.xml")
+                        .toURI())
+                .toString());
     loadDatasets =
         new LoadDatasets(
             new Erddap(),
@@ -42,8 +46,9 @@ public class LoadDatasetsTests {
   void duplicateDatasetsTest() throws Throwable {
     String pathToDatasetsXml =
         Objects.requireNonNull(
-                LoadDatasets.class.getResource("/datasets/duplicateDatasetsTest.xml"))
-            .getPath();
+                Path.of(
+                    LoadDatasets.class.getResource("/datasets/duplicateDatasetsTest.xml").toURI()))
+            .toString();
     loadDatasets =
         new LoadDatasets(
             new Erddap(),

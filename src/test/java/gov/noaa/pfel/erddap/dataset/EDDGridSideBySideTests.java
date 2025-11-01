@@ -688,7 +688,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/gibberish/\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
@@ -704,7 +704,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish/\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish/\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
@@ -720,7 +720,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish.csv\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish.csv\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
@@ -736,7 +736,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/subdir/gibberish.csv\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/subdir/gibberish.csv\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: File not found: gibberish.csv .\";\n"

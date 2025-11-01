@@ -12,7 +12,6 @@ import java.awt.datatransfer.StringSelection;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
@@ -21,6 +20,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -3392,7 +3394,12 @@ public class String2 {
     // always synchronize on logFileLock
     synchronized (logFileLock) {
       try {
-        logFile = File2.getBufferedWriterUtf8(new FileOutputStream(fullFileName, append));
+        logFile =
+            File2.getBufferedWriterUtf8(
+                Files.newOutputStream(
+                    Paths.get(fullFileName),
+                    StandardOpenOption.CREATE,
+                    append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING));
         logFileSize = Math2.narrowToInt(new File(fullFileName).length());
         logFileName = fullFileName; // log file created, so assign logFileName
       } catch (Throwable t) {

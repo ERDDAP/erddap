@@ -640,7 +640,7 @@ class EDDTableFromErddapTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/gibberish/\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
@@ -656,7 +656,7 @@ class EDDTableFromErddapTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish/\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish/\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
@@ -673,7 +673,7 @@ class EDDTableFromErddapTests {
       }
       expected =
           "java.io.IOException: ERROR from url=http://localhost:8080/cwexperimental/files/testTableFromErddap/gibberish.csv : "
-              + "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+              + "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
               + "http://localhost:8080/cwexperimental/files/testTableAscii/gibberish.csv\n"
               + "(Error {\n"
               + "    code=404;\n"
@@ -691,7 +691,7 @@ class EDDTableFromErddapTests {
       }
       expected =
           "java.io.IOException: ERROR from url=http://localhost:8080/cwexperimental/files/testTableFromErddap/subdir/gibberish.csv : "
-              + "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: "
+              + "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: "
               + "http://localhost:8080/cwexperimental/files/testTableAscii/subdir/gibberish.csv\n"
               + "(Error {\n"
               + "    code=404;\n"

@@ -62,10 +62,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -73,6 +70,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -3311,8 +3311,7 @@ public class Table {
         String2.isRemote(fullName)
             ? SSR.getBufferedUrlReader(fullName)
             : // handles AWS S3.  It assumes UTF-8.
-            new BufferedReader(
-                new InputStreamReader(new FileInputStream(fullName), StandardCharsets.UTF_8))) {
+            Files.newBufferedReader(Paths.get(fullName), StandardCharsets.UTF_8)) {
       lowReadNccsv(fullName, readData, bufferedReader);
     }
   }
@@ -4671,7 +4670,7 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     BufferedOutputStream bos =
-        new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt));
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + randomInt)));
 
     try {
       // saveAsHtml(outputStream, ...)
@@ -9613,7 +9612,8 @@ public class Table {
     //  very low level:
     // https://stackoverflow.com/questions/5810164/how-can-i-write-a-wav-file-from-byte-array-in-java
     DataOutputStream dos =
-        new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullInName)));
+        new DataOutputStream(
+            new BufferedOutputStream(Files.newOutputStream(Paths.get(fullInName))));
     try {
       for (int row = 0; row < nRow; row++)
         for (int col = 0; col < nCol; col++) pa[col].writeDos(dos, row);
@@ -12546,7 +12546,8 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // write to dataOutputStream
-    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(fullName + randomInt));
+    BufferedOutputStream bos =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullName + randomInt)));
 
     try {
       saveAsMatlab(bos, varName); // it calls modifyToBeVariableNameSafe
@@ -14101,7 +14102,8 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // open the file (before 'try'); if it fails, no temp file to delete
-    OutputStream os = new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt));
+    OutputStream os =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + randomInt)));
 
     try {
       saveAsTabbedASCII(os, charset);
@@ -14160,7 +14162,8 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // open the file (before 'try'); if it fails, no temp file to delete
-    OutputStream os = new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt));
+    OutputStream os =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + randomInt)));
 
     try {
       saveAsCsvASCII(os);
@@ -14289,7 +14292,7 @@ public class Table {
    * @throws Exception (no error if there is no data)
    */
   public void saveAsJson(String fileName, int timeColumn, boolean writeUnits) throws Exception {
-    try (OutputStream fos = new BufferedOutputStream(new FileOutputStream(fileName))) {
+    try (OutputStream fos = new BufferedOutputStream(Files.newOutputStream(Paths.get(fileName)))) {
       saveAsJson(fos, timeColumn, writeUnits);
     }
   }
@@ -14909,7 +14912,10 @@ public class Table {
     try {
       bw =
           File2.getBufferedWriterUtf8(
-              new FileOutputStream(fullFileName + (append ? "" : randomInt), append));
+              Files.newOutputStream(
+                  Paths.get(fullFileName + (append ? "" : randomInt)),
+                  StandardOpenOption.CREATE,
+                  append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING));
 
       // write the col names
       int nc = nColumns();

@@ -16,7 +16,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * TableWriterAll provides a way to write a table to a series of DataOutputStreams (one per column)
@@ -155,7 +156,8 @@ public class TableWriterAll extends TableWriter {
       for (int col = 0; col < nColumns; col++) {
         String tFileName = columnFileName(col);
         columnStreams[col] =
-            new DataOutputStream(new BufferedOutputStream(new FileOutputStream(tFileName)));
+            new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(Paths.get(tFileName))));
         if (col == 0 && reallyVerbose)
           String2.log(
               "TableWriterAll nColumns="

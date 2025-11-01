@@ -27,6 +27,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -956,7 +957,8 @@ public class TableTests {
       Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
 
     // another hard test
-    fullName = TableTests.class.getResource("/data/jsonl/sampleCSV.jsonl").getPath();
+    fullName =
+        Path.of(TableTests.class.getResource("/data/jsonl/sampleCSV.jsonl").toURI()).toString();
     table.readJsonlCSV(fullName, null, null, true); // simpify
     results = table.dataToString();
     Test.ensureEqual(
@@ -1669,7 +1671,11 @@ public class TableTests {
   void testReadASCIISpeed() throws Exception {
 
     String fileName =
-        TableTests.class.getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
+        Path.of(
+                TableTests.class
+                    .getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt")
+                    .toURI())
+            .toString();
     long time = 0;
 
     for (int attempt = 0; attempt < 4; attempt++) {
@@ -1720,7 +1726,8 @@ public class TableTests {
   void testReadJsonSpeed() throws Exception {
 
     // warmup
-    String fileName = TableTests.class.getResource("/data/cPostDet3.files.json.gz").getPath();
+    String fileName =
+        Path.of(TableTests.class.getResource("/data/cPostDet3.files.json.gz").toURI()).toString();
     long time = 0;
     String msg = "";
     String expected =
@@ -1888,7 +1895,11 @@ public class TableTests {
     // warmup
     // String2.log("\n*** Table.testSaveAsSpeed\n");
     String sourceName =
-        TableTests.class.getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
+        Path.of(
+                TableTests.class
+                    .getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt")
+                    .toURI())
+            .toString();
     String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
     Table table = new Table();
     table.readASCII(sourceName);
@@ -3656,7 +3667,8 @@ public class TableTests {
     // String2.log("\nTable.testReadAsciiCsvASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fileName = TableTests.class.getResource("/data/csvAscii.txt").getPath();
+    String fileName =
+        Path.of(TableTests.class.getResource("/data/csvAscii.txt").toURI()).toString();
     String skipHeaderToRegex = "\\*\\*\\* END OF HEADER.*";
     String skipLinesRegex = "#.*";
 
@@ -3776,7 +3788,8 @@ public class TableTests {
     // String2.log("\nTable.testReadAsciiSsvASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fileName = TableTests.class.getResource("/data/ssvAscii.txt").getPath();
+    String fileName =
+        Path.of(TableTests.class.getResource("/data/ssvAscii.txt").toURI()).toString();
     Table table;
 
     // public void readASCII(String fullFileName, int columnNamesLine, int
@@ -3874,7 +3887,8 @@ public class TableTests {
     String results, expected;
     StringArray sa = new StringArray();
     String fullFileName =
-        TableTests.class.getResource("/data/columnarAsciiWithComments.txt").getPath();
+        Path.of(TableTests.class.getResource("/data/columnarAsciiWithComments.txt").toURI())
+            .toString();
     String skipHeaderToRegex = "END OF HEADER.*";
     String skipLinesRegex = "%.*";
     String colNames[] = {
@@ -4371,7 +4385,11 @@ public class TableTests {
     // String2.log("\nTable.testReadAwsXmlFile");
     Table table = new Table();
     table.readAwsXmlFile(
-        TableTests.class.getResource("/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml").getPath());
+        Path.of(
+                TableTests.class
+                    .getResource("/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml")
+                    .toURI())
+            .toString());
     String results = table.toString();
     String expected =
         "{\n"
@@ -17735,7 +17753,11 @@ public class TableTests {
     Table table = new Table();
     long time = System.currentTimeMillis();
     table.readASCII(
-        TableTests.class.getResource("/largeFiles/biddle/3937_v1_CTD_Profiles.tsv.gz").getPath());
+        Path.of(
+                TableTests.class
+                    .getResource("/largeFiles/biddle/3937_v1_CTD_Profiles.tsv.gz")
+                    .toURI())
+            .toString());
     time = System.currentTimeMillis() - time;
     Math2.gcAndWait("Table (between tests)");
     Math2.gcAndWait("Table (between tests)"); // in a test
@@ -18672,7 +18694,8 @@ public class TableTests {
   @org.junit.jupiter.api.Test
   void testNccsvInteractive() throws Exception {
 
-    String dir = TableTests.class.getResource("/data/nccsv/").getPath();
+    String dir =
+        Path.of(TableTests.class.getResource("/data/nccsv/").toURI()).toString() + File.separator;
     boolean haveExcel = false; // as of ~2020, I no longer have excel
 
     // *** test 1.1 file

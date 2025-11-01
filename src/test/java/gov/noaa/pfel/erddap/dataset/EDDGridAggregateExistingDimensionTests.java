@@ -489,7 +489,7 @@ class EDDGridAggregateExistingDimensionTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/gibberish/\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
@@ -505,7 +505,7 @@ class EDDGridAggregateExistingDimensionTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish/\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish/\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
@@ -521,7 +521,7 @@ class EDDGridAggregateExistingDimensionTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish.csv\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/gibberish.csv\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
@@ -537,7 +537,7 @@ class EDDGridAggregateExistingDimensionTests {
         results = e.toString();
       }
       expected =
-          "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/subdir/gibberish.csv\n"
+          "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/nceiOisst2Agg/subdir/gibberish.csv\n"
               + "(Error {\n"
               + "    code=404;\n"
               + "    message=\"Not Found: File not found: gibberish.csv .\";\n"

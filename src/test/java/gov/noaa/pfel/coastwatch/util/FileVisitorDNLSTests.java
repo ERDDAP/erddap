@@ -74,7 +74,7 @@ class FileVisitorDNLSTests {
             lastModified,
             fSize);
     String expected = // fails very slowly!
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/testInvalidUrl/catalog.html\n";
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/testInvalidUrl/catalog.html\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // test addToThreddsUrlList
@@ -928,7 +928,7 @@ class FileVisitorDNLSTests {
             lastModified,
             size);
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/testInvalidUrl/contents.html\n";
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/testInvalidUrl/contents.html\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // test addToHyraxUrlList

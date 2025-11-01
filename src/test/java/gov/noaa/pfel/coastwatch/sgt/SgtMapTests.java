@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeAll;
@@ -1014,7 +1015,9 @@ class SgtMapTests {
 
     // describe grid vectors
     ArrayList<GraphDataLayer> pointDataList = new ArrayList<>();
-    String griddataDir = SgtMapTests.class.getResource("/data/gridTests/").getPath();
+    String griddataDir =
+        Path.of(SgtMapTests.class.getResource("/data/gridTests/").toURI()).toString()
+            + File.separatorChar;
     /*
      * String fullResultCpt = griddataDir + "TestMakeMap.cpt";
      * File2.delete(fullResultCpt);

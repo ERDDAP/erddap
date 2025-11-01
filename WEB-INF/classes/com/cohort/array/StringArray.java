@@ -13,13 +13,16 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -364,7 +367,8 @@ public class StringArray extends PrimitiveArray {
    * @throws Exception if trouble (e.g., file can't be created). If trouble, this will delete any
    *     partial file.
    */
-  public void toFile(final String fileName, String charset, String lineSeparator) throws Exception {
+  public void toFile(final String fileName, Charset charset, String lineSeparator)
+      throws Exception {
 
     if (lineSeparator == null || lineSeparator.length() == 0) lineSeparator = String2.lineSeparator;
     final boolean append = false;
@@ -375,8 +379,14 @@ public class StringArray extends PrimitiveArray {
     BufferedWriter bufferedWriter = null;
     try {
       // open the file
-      if (charset == null || charset.length() == 0) charset = File2.ISO_8859_1;
-      bufferedWriter = File2.getBufferedWriter(new FileOutputStream(fileName, append), charset);
+      if (charset == null) charset = StandardCharsets.ISO_8859_1;
+      bufferedWriter =
+          File2.getBufferedWriter(
+              Files.newOutputStream(
+                  Paths.get(fileName),
+                  StandardOpenOption.CREATE,
+                  append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING),
+              charset);
 
       // write the text to the file
       for (int i = 0; i < size; i++) {

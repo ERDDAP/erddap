@@ -12955,7 +12955,7 @@ class EDDGridFromNcFilesTests {
     }
     Test.ensureEqual(
         results,
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/griddap/erdBAssta5dayzztop.html\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/griddap/erdBAssta5dayzztop.html\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Currently unknown datasetID=erdBAssta5dayzztop\";\n"
@@ -12972,7 +12972,7 @@ class EDDGridFromNcFilesTests {
     }
     Test.ensureEqual(
         results,
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.csv?time%5B(2000-01-01):(2000-01-01)%5D\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.csv?time%5B(2000-01-01):(2000-01-01)%5D\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Your query produced no matching results. Query error: For variable=time axis#0=time Constraint=\\\"[(2000-01-01):(2000-01-01)]\\\": Start=\\\"2000-01-01\\\" is less than the axis minimum=2002-07-06T12:00:00Z (and even 2002-07-05T22:49:16Z).\";\n"
@@ -15898,7 +15898,7 @@ class EDDGridFromNcFilesTests {
       }
       expected =
           "There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)\n"
-              + "(Cause: java.io.FileNotFoundException: "
+              + "(Cause: java.nio.file.NoSuchFileException: "
               + File2.forwardSlashDir(dataDir)
               + "erdQSwind1day_20080101_03.nc.gz";
       results = File2.forwardSlashDir(results);

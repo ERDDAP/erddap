@@ -1,11 +1,14 @@
 package com.cohort.util;
 
+import java.nio.file.Path;
+
 class HashDigestTests {
   @org.junit.jupiter.api.Test
   /** This tests this class. */
   void basicTest() throws Throwable {
     System.out.println("*** HashDigest.basicTest");
-    String tName = HashDigestTests.class.getResource("/data/LICENSE.txt").getPath();
+    String tName =
+        Path.of(HashDigestTests.class.getResource("/data/LICENSE.txt").toURI()).toString();
     Test.ensureEqual(
         HashDigest.doIt(new String[] {"type:MD5"}),
         "Neither password or filename was specified.\n" + HashDigest.usage,

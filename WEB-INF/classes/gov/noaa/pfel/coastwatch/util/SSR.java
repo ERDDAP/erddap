@@ -23,7 +23,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,6 +36,7 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
@@ -235,7 +235,8 @@ public class SSR {
           // open an output file
           if (ignoreZipDirectories) name = File2.getNameAndExtension(name); // remove dir info
           File2.makeDirectory(File2.getDirectory(baseDir + name)); // name may incude subdir names
-          try (OutputStream out = new BufferedOutputStream(new FileOutputStream(baseDir + name))) {
+          try (OutputStream out =
+              new BufferedOutputStream(Files.newOutputStream(Paths.get(baseDir + name)))) {
 
             // transfer bytes from the .zip file to the output file
             // in.read reads from current zipEntry
@@ -439,7 +440,8 @@ public class SSR {
     if (verbose) String2.log("Using Java's zip to make " + zipDirName);
     // create the ZIP file
     try (ZipOutputStream out =
-        new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipDirName)))) {
+        new ZipOutputStream(
+            new BufferedOutputStream(Files.newOutputStream(Paths.get(zipDirName))))) {
 
       // create a buffer for reading the files
       byte[] buf = new byte[4096];
@@ -1072,26 +1074,19 @@ public class SSR {
     }
 
     // download from regular URL
-    InputStream in = null;
-    OutputStream out = null;
     try {
-      in =
+
+      try (InputStream in =
           tryToUseCompression
               ? getUrlBufferedInputStream(urlString)
-              : getUncompressedUrlBufferedInputStream(urlString);
-      try {
-        out = new BufferedOutputStream(new FileOutputStream(fullFileName + random));
-        try {
+              : getUncompressedUrlBufferedInputStream(urlString)) {
+
+        try (OutputStream out =
+            new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + random)))) {
           byte buffer[] = new byte[8192]; // best if smaller than java buffered..stream sizes
           int nBytes;
           while ((nBytes = in.read(buffer)) > 0) out.write(buffer, 0, nBytes);
-        } finally {
-          out.close();
-          out = null;
         }
-      } finally {
-        in.close();
-        in = null;
       }
       File2.rename(fullFileName + random, fullFileName); // exception if trouble
       if (verbose)
@@ -1106,14 +1101,7 @@ public class SSR {
                 + fullFileName);
 
     } catch (Exception e) {
-      try {
-        if (in != null) in.close();
-      } catch (Exception e2) {
-      }
-      try {
-        if (out != null) out.close();
-      } catch (Exception e2) {
-      }
+
       File2.delete(fullFileName + random);
       String2.log(
           String2.ERROR
