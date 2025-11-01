@@ -2232,23 +2232,75 @@ public class String2 {
    * @return the decoded string
    */
   public static String fromNccsvString(String s) {
-    // Avoid the effort if no " or \ in the string.
-    // If s starts with ", this will quickly (and correctly) go to full effort.
-    // This is significant time savings for Table.readASCII().
+    if (s == null) {
+      return null;
+    }
     final int sLength = s.length();
-    if (sLength >= 2 && s.charAt(0) == '\"' && s.charAt(sLength - 1) == '\"') {
-      s = s.substring(1, sLength - 1); // remove surrounding "
-      s = replaceAll(s, "\"\"", "\""); // then convert "" to \"
-      return fromJson(s);
+    if (sLength == 0) {
+      return EMPTY_STRING;
     }
 
-    s = replaceAll(s, "\"\"", "\""); // convert "" to \"
+    final boolean quoted = sLength >= 2 && s.charAt(0) == '\"' && s.charAt(sLength - 1) == '\"';
+    final int start;
+    final int end;
 
-    // there may be a \ escaped char
-    if (s.indexOf('\\') >= 0) return fromJson(s);
-    return s;
+    if (quoted) {
+      start = 1;
+      end = sLength - 1;
+    } else {
+      start = 0;
+      end = sLength;
+    }
 
-    // return replaceAll(fromJson(s), "\"\"", "\"");
+    // Fast path: Scan for any escapes ("" or \)
+    int quoteIndex = -1;
+    int slashIndex = -1;
+    for (int i = start; i < end; i++) {
+      char ch = s.charAt(i);
+      if (ch == '\"' && i < end - 1 && s.charAt(i + 1) == '\"') {
+        quoteIndex = i; // Found first ""
+        if (slashIndex != -1) break; // Found both, no need to scan further
+      } else if (ch == '\\') {
+        slashIndex = i; // Found first \
+        if (quoteIndex != -1) break; // Found both, no need to scan further
+      }
+    }
+
+    // If no escapes found, just return the content (after unquoting if needed)
+    if (quoteIndex == -1 && slashIndex == -1) {
+      return quoted ? s.substring(start, end) : s;
+    }
+
+    // Escapes exist. We need to unescape.
+    String toUnescape;
+
+    // 1. Handle "" escapes
+    if (quoteIndex != -1) {
+      // "" exists, do a single-pass replacement
+      StringBuilder sb = new StringBuilder(end - start);
+      int copyStart = start;
+      for (int po = start; po < end; po++) {
+        char ch = s.charAt(po);
+        if (ch == '\"' && po < end - 1 && s.charAt(po + 1) == '\"') {
+          sb.append(s, copyStart, po); // Append chunk before ""
+          sb.append('\"'); // Append single "
+          po++; // Skip next "
+          copyStart = po + 1; // Set new copy start
+        }
+      }
+      sb.append(s, copyStart, end); // Append final chunk
+      toUnescape = sb.toString();
+    } else {
+      // no "" escapes, just unquote if needed
+      toUnescape = quoted ? s.substring(start, end) : s;
+    }
+
+    // 2. Handle \ escapes (only if we know they exist)
+    if (slashIndex != -1) {
+      return fromJson(toUnescape); // fromJson handles \ escapes
+    } else {
+      return toUnescape; // No \ escapes, return as-is
+    }
   }
 
   /**
@@ -5691,9 +5743,8 @@ public class String2 {
       if (canonical == null) {
         // For proof that new String(s.substring(,)) is just storing relevant chars,
         // not a reference to the parent string, see TestUtil.testString2canonical2()
-        canonical = s; // in case s is from s2.substring, copy to be just the characters
+        canonical = s;
         tCanonicalMap.put(canonical, new WeakReference<>(canonical));
-        // log("new canonical string: " + canonical);
       }
       return canonical;
     }
