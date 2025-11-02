@@ -77,22 +77,6 @@ public class TestUtil {
     Double Dar1[] = {Double.valueOf(1.1), Double.valueOf(2.2)};
     Double Dar2[] = {Double.valueOf(1.1), Double.valueOf(2.2)};
     Test.ensureEqual(Dar1, Dar2, "j");
-
-    /*
-     * //test: if exception in catch clause, is finally still done?
-     * String s = null;
-     * try {
-     * System.out.println("Test.testTest in try block");
-     * s = s.substring(0);
-     * } catch (Exception e) {
-     * System.out.println("Test.testTest in catch block");
-     * s = s.substring(0); //2) but this exception then stops the program
-     * } finally {
-     * System.out.println("Test.testTest finally!"); //1) this is done
-     * }
-     * Math2.sleep(5000);
-     */
-
   }
 
   /** Test the methods in Math2. */
@@ -1156,7 +1140,6 @@ public class TestUtil {
 
   @org.junit.jupiter.api.Test
   void timeString2Log() {
-    Math2.sleep(1000); // take a cleansing breath
     long time1 = System.currentTimeMillis();
     for (int i = 0; i < 1000; i++) String2.log("1234567" + i);
     String results =
@@ -1910,7 +1893,6 @@ public class TestUtil {
     // String2.log("time=" + (System.currentTimeMillis() - tTime));
     // sb2 = null;
     // s9 = null;
-    // Math2.sleep(5000);
 
     // test isLetter
     String2.log("test isLetter");
@@ -2562,7 +2544,7 @@ public class TestUtil {
     n = 10000000;
     long speedResults[] = new long[2];
     for (int test = 0; test < 2; test++) {
-      Math2.gc("TestUtil (between tests)", 2000);
+      Math2.gcAndWait("TestUtil (between tests)");
       long testSum = 0;
       time = System.currentTimeMillis();
       for (i = 0; i < n; i++) {
@@ -2583,7 +2565,7 @@ public class TestUtil {
     // Test.ensureTrue(speedResults[1] < speedResults[0] * 2,
     //        "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0]
     //                + " (Java 17 typical: 1900ms vs 1300ms");
-    Math2.gc("TestUtil (between tests)", 2000);
+    Math2.gcAndWait("TestUtil (between tests)");
 
     // parseFloat
     String2.log("test parseFloat");
@@ -7585,7 +7567,7 @@ public class TestUtil {
 
     // test boolean touch(String dirName) and getLastModified
     String2.log("test touch and getLastModified");
-    Math2.gc("TestUtil (between tests)", 1000);
+    Math2.gcAndWait("TestUtil (between tests)");
     File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
     Math2.sleep(20); // make the file a little older
     long fileTime = File2.getLastModified(utilDir + "temp.txt");
@@ -7621,13 +7603,6 @@ public class TestUtil {
     // this only works on Bob's computer
     String2.log("File2.getSystemTempDirectory()=" + File2.getSystemTempDirectory());
     String tempDir = File2.getSystemTempDirectory();
-    // if (!tempDir.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
-    // !tempDir.equals("C:/Users/Robert/AppData/Local/Temp/")) {
-    // String2.log(
-    // "getSystemTempDirectory =" + tempDir);
-    // //+ "\n" + String2.Press_CtrlC_or_Enter);
-    // Math2.gc(5000); //pause in test to display info
-    // }
 
     // test int deleteIfOld(String dir, long time) {
     // make dir in tempDir
@@ -8271,8 +8246,5 @@ public class TestUtil {
             + (msg.endsWith("\n") ? "" : "\n")
             + "*** KNOWN PROBLEM: "
             + title); // + "\n" +
-    // "Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
-    // Math2.sleep(10000);
-    // String2.pressEnterToContinue();
   }
 }

@@ -7213,7 +7213,7 @@ class EDDTableFromNcFilesTests {
           // Google Earth and Acrobat take long time to start up and penalize subsequent
           // tests,
           // so give them time
-          Math2.gc("EDDTableFromNcFiles (between tests)", test == kmli ? 60000 : 20000);
+          Math2.gcAndWait("EDDTableFromNcFiles (between tests)");
         }
       }
       if (resultLength < 0.9 * bytes[test]
@@ -9793,7 +9793,7 @@ class EDDTableFromNcFilesTests {
         && File2.isFile(dataDir + "NDBC_41025_met.nc2")) {
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
       for (int i = 0; i < 3; i++) { // Windows is slow, give it a few tries
-        Math2.sleep(1000);
+        Math2.sleep(10);
         String2.log(
             "a) after rename .nc2 to .nc, call update() i=" + i + ": " + eddTable.update(language));
       }
@@ -9881,7 +9881,7 @@ class EDDTableFromNcFilesTests {
       String2.log("\n*** rename a data file so it doesn't match regex\n");
       File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
       for (int i = 0; i < 5; i++) { // Windows is slow, give it a few tries
-        Math2.sleep(1000);
+        Math2.sleep(10);
         String2.log(
             "b) after rename .nc to .nc2, call update() i=" + i + ": " + eddTable.update(language));
       }
@@ -9963,7 +9963,7 @@ class EDDTableFromNcFilesTests {
       String2.log("\n*** rename it back to original\n");
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
       for (int i = 0; i < 5; i++) { // Windows is slow, give it a few tries
-        Math2.sleep(1000);
+        Math2.sleep(10);
         String2.log(
             "c) after rename .nc2 to .nc, call update() i=" + i + ": " + eddTable.update(language));
       }
@@ -10080,7 +10080,7 @@ class EDDTableFromNcFilesTests {
       // rename it back to original
       String2.log("\n*** rename it back to original\n");
       File2.rename(dataDir, "NDBC_image_met.nc", "image.png");
-      Math2.sleep(1000);
+      Math2.sleep(10);
       String2.log("e) after rename .nc to .notnc, call update():\n" + eddTable.update(language));
     }
 
@@ -10148,7 +10148,7 @@ class EDDTableFromNcFilesTests {
     if (!File2.isFile(dataDir + "NDBC_41025_met.nc")
         && File2.isFile(dataDir + "NDBC_41025_met.nc2")) {
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
-      Math2.sleep(500);
+      Math2.sleep(50);
       SharedWatchService.processEvents();
     }
     Map<String, String> originalSnapshot = eddTable.snapshot();
@@ -10159,7 +10159,7 @@ class EDDTableFromNcFilesTests {
     // *** rename a data file so it doesn't match regex
     try {
       File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
-      Math2.sleep(500);
+      Math2.sleep(50);
       SharedWatchService.processEvents();
       snapshotDiff = eddTable.snapshot();
       expected =
@@ -10204,7 +10204,7 @@ class EDDTableFromNcFilesTests {
     } finally {
       // rename it back to original
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
-      Math2.sleep(500);
+      Math2.sleep(50);
       SharedWatchService.processEvents();
     }
     Map<String, String> snapshot2 = eddTable.snapshot();
@@ -10685,7 +10685,7 @@ class EDDTableFromNcFilesTests {
     try {
       String2.log("\n*** rename a data file so it doesn't match regex\n");
       File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
-      Math2.sleep(1000);
+      Math2.sleep(100);
       EDDTableFromFiles.testQuickRestart = true;
       eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
       timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -11744,7 +11744,7 @@ class EDDTableFromNcFilesTests {
     String2.log("\n****************** EDDTableCopyFiles make DATA FILES\n");
 
     // .csv
-    Math2.gc("EDDTableFromNcFiles (between tests)", 3000);
+    Math2.gcAndWait("EDDTableFromNcFiles (between tests)");
     resultsSB.setLength(0);
     for (int thread = 1; thread <= 1; thread++) { // or -3 to 3
       if (thread == 0) continue;
@@ -11774,7 +11774,7 @@ class EDDTableFromNcFilesTests {
               + " time="
               + (System.currentTimeMillis() - time)
               + " ms\n");
-      Math2.gc("EDDTableFromNcFiles (between tests)", 3000);
+      Math2.gcAndWait("EDDTableFromNcFiles (between tests)");
     }
     // String2.log(resultsSB.toString());
     // With AV software on, Progressively slower! 110 -> 330 s !
@@ -12982,13 +12982,6 @@ class EDDTableFromNcFilesTests {
           } else {
             break;
           }
-        }
-
-        // display?
-        if (false) { // String2.indexOf(EDDTable.imageFileTypeNames, dotExt) >= 0
-          // TestUtil.displayInBrowser("file://" + outName);
-          Math2.gc("EDDTableFromNcFiles (between tests)", 3000); // in a test, pause for
-          // image display
         }
 
         // size test
@@ -18205,10 +18198,6 @@ class EDDTableFromNcFilesTests {
               // sourceFileName);
 
               if (nSourceFileNames % 10000 == 0) {
-                // if (sfi > 0) //2012-12-13 commented out. Let Java
-                // handle it.
-                // Math2.gc(3 * 1000); //gtspp: give OS time to settle
-                // high water mark is ~160 MB, so memory not a problem
                 String2.log("file #" + nSourceFileNames + " " + Math2.memoryString());
               }
 

@@ -304,8 +304,6 @@ class EDDTableFromHttpGetTests {
             + ",bsimons,0\n";
     Test.ensureEqual(results, expected, "results=" + results);
 
-    Math2.sleep(1000);
-
     // *** add 2 rows via array
     String2.log("\n>> insertOrDelete #2: insert 2 rows via array");
     results =

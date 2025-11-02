@@ -11310,8 +11310,7 @@ class JettyTests {
             tLocalDir),
         5,
         "nFilesToDownload");
-    Math2.sleep(10000);
-    // String2.pressEnterToContinue("Hopefully the first download tasks finished.");
+    Math2.sleep(1000);
 
     // Use ".*" for the path regex to make the test compatible with windows systems.
     // The issue is that Windows sometimes uses / and sometimes uses \ as a path separator.
@@ -11354,8 +11353,7 @@ class JettyTests {
             tLocalDir),
         2,
         "nFilesToDownload");
-    Math2.sleep(3000);
-    // String2.pressEnterToContinue("Hopefully the download tasks finished.");
+    Math2.sleep(1000);
 
     results =
         FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
@@ -11676,9 +11674,7 @@ class JettyTests {
         // Nothing wront here, it's common for this to thow an error and then kick off the file
         // copies.
       }
-      Math2.sleep(5000);
-      // String2.pressEnterToContinue(
-      // "\n*** When the tasks are finished, press Enter.");
+
       edd = EDDTableFromNcFiles.oneFromXmlFragment(null, results);
 
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -14580,7 +14576,6 @@ class JettyTests {
       // "Restart the local erddap with quickRestart=true and with datasetID=" +
       // datasetID + " .\n" +
       // "Wait until all datasets are loaded.");
-      Math2.sleep(30000); // allow tasks to finish
 
       // change the file's timestamp
       File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
@@ -16376,7 +16371,7 @@ class JettyTests {
     int firstTest = 0;
     int lastTest = 1000;
     // gc and sleep to give computer time to catch up from previous tests
-    for (int i = 0; i < 4; i++) Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 3000);
+    for (int i = 0; i < 4; i++) Math2.gcAndWait("EDDGridFromNcFiles.testSpeed (between tests)");
     // boolean oReallyVerbose = reallyVerbose;
     // reallyVerbose = false;
     String outName;
@@ -16512,8 +16507,6 @@ class JettyTests {
 
     lastTest = Math.min(lastTest, extensions.length - 1);
     for (int ext = firstTest; ext <= lastTest; ext++) {
-      // String2.pressEnterToContinue("");
-      // Math2.sleep(3000);
       String dotExt = extensions[ext];
       // try {
       String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext + ": " + dotExt + " speed\n");
@@ -16546,7 +16539,6 @@ class JettyTests {
               + "ms (expected="
               + expectedMs[ext]
               + ")\n");
-      // Math2.sleep(3000);
 
       // if not too slow or too fast, break
       // if (time > 1.5 * Math.max(50, expectedMs[ext]) ||
@@ -17966,9 +17958,6 @@ class JettyTests {
 
       // request status.html
       SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
-      Math2.sleep(1000);
-      //   TestUtil.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
-      // "logs/log.txt");
 
       //   String2.pressEnterToContinue(
       //       "Look at log.txt to see if update was run and successfully "

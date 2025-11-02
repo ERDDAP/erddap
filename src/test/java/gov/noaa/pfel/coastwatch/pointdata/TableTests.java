@@ -1452,11 +1452,9 @@ public class TableTests {
     Test.ensureEqual(table2.columnAttributes(9).getString("units"), "Strings", "");
 
     // ** finally
-    Math2.gc(
-        "Table (between tests)",
-        10000); // in a test. Do something useful while browser gets going to display
-    // the
-    // file.
+    Math2.gcAndWait(
+        "Table (between tests)"); // in a test. Do something useful while browser gets going to
+    // display the file.
     File2.delete(fileName);
   }
 
@@ -1681,7 +1679,6 @@ public class TableTests {
     for (int attempt = 0; attempt < 4; attempt++) {
       // String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
       Math2.gcAndWait("Table (between tests)"); // in a test
-      Math2.sleep(5000);
       // time it
       long fileLength = File2.length(fileName); // was 1335204
       Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength);

@@ -9628,11 +9628,6 @@ class EDDGridFromNcFilesTests {
     // switch to testImagesIdentical
     // String tDir = EDStatic.config.fullTestCacheDirectory;
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
-
-    // TestUtil.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
-    // "See SgtGraph \"yIsTimeAxis = false;\".");
-    // Math2.sleep(10000);
-
   }
 
   /**
@@ -13779,7 +13774,7 @@ class EDDGridFromNcFilesTests {
       if (nt == 0) continue;
       // delete all files in .gz cache dir
       File2.deleteAllFiles(eddGrid.decompressedDirectory());
-      Math2.gc("EDDGridFromNcFiles (between tests)", 3000); // let system settle
+      Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); // let system settle
 
       long tTime = System.currentTimeMillis();
       eddGrid.nThreads = Math.abs(nt);
@@ -13814,9 +13809,6 @@ class EDDGridFromNcFilesTests {
       String2.log(msg);
       bigResults.append(msg);
     }
-    // String2.log(bigResults.toString());
-    String2.log("  (Lenovo: 2 cores: nThreads/s 3/4,2/3,1/3,1/4,2/3,3/3");
-    // Math2.gc("EDDGridFromNcFiles (between tests)", 10000);
   }
 
   /**
@@ -15053,7 +15045,6 @@ class EDDGridFromNcFilesTests {
    *
    * @throws Throwable if trouble
    */
-  @TagSlowTests
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testUpdate(boolean allowRssUpdates) throws Throwable {
@@ -15146,7 +15137,7 @@ class EDDGridFromNcFilesTests {
       for (int i = 0; i < 10; i++) {
         String2.log(
             "after rename .nc.gz to .nc.gz2, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
 
       tName =
@@ -15244,7 +15235,7 @@ class EDDGridFromNcFilesTests {
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc2 to .nc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
     }
 
@@ -15331,7 +15322,7 @@ class EDDGridFromNcFilesTests {
       }
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
 
       tName =
@@ -15386,7 +15377,7 @@ class EDDGridFromNcFilesTests {
 
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
     }
 
@@ -15472,7 +15463,7 @@ class EDDGridFromNcFilesTests {
     // *** rename a data file so it doesn't match regex
     try {
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz", "erdQSwind1day_20080101_03.nc.gz2");
-      Math2.sleep(500);
+      Math2.sleep(100);
       SharedWatchService.processEvents();
 
       snapshotDiff = eddGrid.snapshot();
@@ -15531,7 +15522,7 @@ class EDDGridFromNcFilesTests {
     } finally {
       // rename it back to original
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
-      Math2.sleep(500);
+      Math2.sleep(100);
       SharedWatchService.processEvents();
     }
 
@@ -15845,7 +15836,7 @@ class EDDGridFromNcFilesTests {
       // if trouble
       File2.deleteAllFiles(
           EDDGridFromNcFiles.decompressedDirectory(tDatasetID)); // ensure cache is empty
-      Math2.sleep(1000);
+      Math2.sleep(100);
       EDDGridFromFiles.testQuickRestart = true;
       eddGrid = (EDDGridFromNcFiles) EDDTestDataset.gettestGriddedNcFiles();
 

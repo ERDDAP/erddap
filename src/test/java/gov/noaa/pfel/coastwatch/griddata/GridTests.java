@@ -76,7 +76,7 @@ public class GridTests {
     String2.log("Memory used change after MemoryLeak test: " + increase);
     if (increase > 50000)
       throw new Exception("Memory usage increased: " + increase + " memory leak suspected.");
-    else Math2.gc("Grid (between tests)", 3000); // in a test, a pause after message displayed
+    else Math2.gcAndWait("Grid (between tests)"); // in a test, a pause after message displayed
   }
 
   /**

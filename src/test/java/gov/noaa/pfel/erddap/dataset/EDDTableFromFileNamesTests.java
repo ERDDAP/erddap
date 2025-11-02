@@ -1398,7 +1398,7 @@ class EDDTableFromFileNamesTests {
     String results, expected, tName;
 
     // sleep before these timing tests
-    Math2.gc("EDDTableFromFileNames (between tests)", 3000);
+    Math2.gcAndWait("EDDTableFromFileNames (between tests)");
 
     if (true) {
       // root dir

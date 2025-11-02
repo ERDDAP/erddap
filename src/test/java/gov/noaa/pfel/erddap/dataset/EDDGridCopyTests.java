@@ -47,7 +47,7 @@ class EDDGridCopyTests {
     if (checkSourceData) {
       while (EDStatic.nUnfinishedTasks() > 0) {
         String2.log("nUnfinishedTasks=" + EDStatic.nUnfinishedTasks());
-        Math2.sleep(10000);
+        Math2.sleep(1000);
       }
       // recreate edd to see new copied data files
       eddGrid = (EDDGridCopy) EDDTestDataset.gettestGridCopy();
@@ -372,7 +372,7 @@ class EDDGridCopyTests {
     String2.log("Errors above are fine and to be expected.\n" + "Downloading data...");
     while (EDStatic.nUnfinishedTasks() > 0) {
       String2.log("nUnfinishedTasks=" + EDStatic.nUnfinishedTasks());
-      Math2.sleep(5000);
+      Math2.sleep(1000);
     }
     // recreate edd to see new copied data files
     eddGrid = (EDDGridCopy) EDDTestDataset.gettestOnlySince();

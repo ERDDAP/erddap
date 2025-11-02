@@ -56,7 +56,7 @@ class SharedWatchServiceTests {
     String file1 = "/columnarAsciiWithComments.txt";
     String file2 = "/csvAscii.txt";
     String results;
-    int sleep = 2000;
+    int sleep = 200;
 
     // delete all files in watchDir and subdir
     try {
