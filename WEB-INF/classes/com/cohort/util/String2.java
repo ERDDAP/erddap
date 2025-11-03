@@ -1664,33 +1664,64 @@ public class String2 {
    */
   public static int replaceAll(
       final StringBuilder sb, final String oldS, final String newS, final boolean ignoreCase) {
-    final int sbL = sb.length();
     final int oldSL = oldS.length();
-    if (oldSL == 0) return 0;
-    StringBuilder testSB = sb;
-    String testOldS = oldS;
-    if (ignoreCase) {
-      testSB = new StringBuilder(sbL);
-      for (int i = 0; i < sbL; i++) testSB.append(Character.toLowerCase(sb.charAt(i)));
-      testOldS = oldS.toLowerCase();
+    if (oldSL == 0) {
+      return 0;
     }
-    int po = testSB.indexOf(testOldS);
-    // System.out.println("testSB=" + testSB.toString() + " testOldS=" + testOldS + " po=" + po);
-    // //not String2.log
-    if (po < 0) return 0;
-    final StringBuilder sb2 = new StringBuilder(sbL / 5 * 6); // a little bigger
-    int base = 0;
+    final int newSL = newS.length();
+    final int sbL = sb.length();
     int n = 0;
-    while (po >= 0) {
-      n++;
-      sb2.append(sb, base, po);
-      sb2.append(newS);
-      base = po + oldSL;
-      po = testSB.indexOf(testOldS, base);
-      // System.out.println("testSB=" + testSB.toString() + " testOldS=" + testOldS + " po=" + po +
-      //    " sb2=" + sb2.toString()); //not String2.log
+    int base = 0;
+    StringBuilder sb2 = null;
+    if (!ignoreCase) {
+      int po = sb.indexOf(oldS, base);
+      if (po < 0) {
+        return 0;
+      }
+      sb2 = new StringBuilder(sbL + Math.max(0, (newSL - oldSL) * 16));
+      while (po >= 0) {
+        n++;
+        sb2.append(sb, base, po);
+        sb2.append(newS);
+        base = po + oldSL;
+        po = sb.indexOf(oldS, base);
+      }
+      sb2.append(sb, base, sbL);
+    } else {
+      // --- Case-Insensitive Path ---
+      // Use a manual, single-pass search to avoid new StringBuilders
+      final int maxPo = sbL - oldSL;
+      final String oldS_lc = oldS.toLowerCase();
+      for (int po = base; po <= maxPo; po++) {
+        // Fast-check: find the first character case-insensitively
+        if (Character.toLowerCase(sb.charAt(po)) != oldS_lc.charAt(0)) {
+          continue;
+        }
+        // First char matched, now check the rest of the string
+        boolean match = true;
+        for (int j = 1; j < oldSL; j++) {
+          if (Character.toLowerCase(sb.charAt(po + j)) != Character.toLowerCase(oldS.charAt(j))) {
+            match = false;
+            break;
+          }
+        }
+        if (match) {
+          // We found a full match
+          if (sb2 == null) {
+            sb2 = new StringBuilder(sbL + Math.max(0, (newSL - oldSL) * 16));
+          }
+          n++;
+          sb2.append(sb, base, po);
+          sb2.append(newS);
+          base = po + oldSL;
+          po = base - 1;
+        }
+      }
+      if (sb2 == null) {
+        return 0; // No matches found at all
+      }
+      sb2.append(sb, base, sbL); // Append final remaining part
     }
-    sb2.append(sb.substring(base));
     sb.setLength(0);
     sb.append(sb2);
     return n;
@@ -1792,7 +1823,7 @@ public class String2 {
    */
   public static void whitespacesToSpace(final StringBuilder sb) {
     if (sb == null) return;
-    final String s = sb.toString().trim(); // this removes whitespace, not just ' '
+    final String s = trimAndToString(sb); // this removes whitespace, not just ' '
     final int sLength = s.length();
     sb.setLength(0);
     if (sLength == 0) return;
@@ -1827,12 +1858,18 @@ public class String2 {
     int po = s.indexOf(oldCh);
     if (po < 0) return s;
 
-    final StringBuilder buffer = new StringBuilder(s);
+    int sLength = s.length();
+    StringBuilder sb = new StringBuilder(sLength);
+    int start = 0;
     while (po >= 0) {
-      buffer.setCharAt(po, newCh);
-      po = s.indexOf(oldCh, po + 1);
+      sb.append(s, start, po);
+      sb.append(newCh);
+      start = po + 1;
+      po = s.indexOf(oldCh, start);
     }
-    return buffer.toString();
+
+    sb.append(s, start, sLength);
+    return sb.toString();
   }
 
   /**
@@ -3620,17 +3657,21 @@ public class String2 {
     // log("split line=" + annotatedString(s));
     for (int index = 0; index < sLength; index++) {
       if (s.charAt(index) == separator) {
-        String ts = s.substring(start, index);
-        if (trim) ts = ts.trim();
-        al.add(ts);
+        if (trim) {
+          al.add(trimSubString(s, start, index));
+        } else {
+          al.add(s.substring(start, index));
+        }
         start = index + 1;
       }
     }
 
     // add the final substring
-    String ts = s.substring(start, sLength); // start == sLength? "" : s.substring(start, sLength);
-    if (trim) ts = ts.trim();
-    al.add(ts);
+    if (trim) {
+      al.add(trimSubString(s, start, sLength));
+    } else {
+      al.add(s.substring(start, sLength));
+    }
     // log("al.size=" + al.size() + "\n");
     return al;
   }
@@ -4814,6 +4855,65 @@ public class String2 {
     while (po > 0 && isWhite(sb.charAt(po - 1))) po--;
     sb.delete(po, sb.length());
     return sb;
+  }
+
+  /**
+   * This trims the StringBuilder and then does toString(), minimizing allocations.
+   *
+   * @param sb a StringBuilder
+   * @return the trimmed string
+   */
+  public static String trimAndToString(StringBuilder sb) {
+    // Manually trim the StringBuilder *before* toString()
+    // This avoids the toString().trim() double allocation.
+    int start = 0;
+    int end = sb.length();
+
+    String s;
+    while (start < end && sb.charAt(start) <= ' ') {
+      start++;
+    }
+    while (end > start && sb.charAt(end - 1) <= ' ') {
+      end--;
+    }
+
+    if (start >= end) {
+      s = ""; // String was all whitespace
+    } else {
+      // Create one string from the trimmed indices
+      s = sb.substring(start, end);
+    }
+    return s;
+  }
+
+  /**
+   * This trims the substring line[start:end] and returns it as a new String. This is used to
+   * minimize allocations when parsing substrings.
+   *
+   * @param line the original String
+   * @param start the start index of the substring (inclusive)
+   * @param end the end index of the substring (exclusive)
+   * @return the trimmed substring as a new String
+   */
+  public static String trimSubString(String line, int start, int end) {
+    // Manually trim: find the new 'start' index (skip leading whitespace)
+    while (start < end && line.charAt(start) <= ' ') {
+      start++;
+    }
+    // Manually trim: find the new 'end' index (skip trailing whitespace)
+    // Note: 'end' is exclusive, so we check the char at end-1
+    while (end > start && line.charAt(end - 1) <= ' ') {
+      end--;
+    }
+
+    // After trimming, the token might be empty.
+    // We add the string slice from the (potentially new) start to the (potentially new) end.
+    // String.substring() handles the (start == end) case and returns ""
+    if (start > end) {
+      return "";
+    } else {
+      return line.substring(start, end); // <-- THE ONLY ALLOCATION
+    }
   }
 
   /**

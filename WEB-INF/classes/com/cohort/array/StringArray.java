@@ -2267,10 +2267,14 @@ public class StringArray extends PrimitiveArray {
 
         // end of word?
       } else if (po == n + 1 || separatorChars.indexOf(ch) >= 0) { // e.g., comma or semicolon
-        String s = word.toString();
-        if (trim && !isQuoted)
-          s = s.trim(); // trim gets rid of all whitespace, including \n and \\u0000
-        if (s.length() > 0 || keepNothing || isQuoted) al.add(s);
+        if (trim && !isQuoted) {
+          String s = String2.trimAndToString(word);
+          if (s.length() > 0 || keepNothing || isQuoted) {
+            al.add(s);
+          }
+        } else if (word.length() > 0 || keepNothing || isQuoted) {
+          al.add(word.toString());
+        }
         word.setLength(0);
         isQuoted = false;
         if (po == n + 1) break;
@@ -2403,10 +2407,14 @@ public class StringArray extends PrimitiveArray {
         // end of word?
         // separatorChars.indexOf(ch) >= 0
       } else if (po == n + 1 || ch == separatorChars) { // e.g., comma or semicolon
-        String s = word.toString();
-        if (trim && !isQuoted)
-          s = s.trim(); // trim gets rid of all whitespace, including \n and \\u0000
-        if (s.length() > 0 || keepNothing || isQuoted) al.add(s);
+        if (trim && !isQuoted) {
+          String s = String2.trimAndToString(word);
+          if (s.length() > 0 || keepNothing || isQuoted) {
+            al.add(s);
+          }
+        } else if (word.length() > 0 || keepNothing || isQuoted) {
+          al.add(word.toString());
+        }
         word.setLength(0);
         isQuoted = false;
         if (po == n + 1) break;

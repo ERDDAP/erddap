@@ -25,8 +25,10 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -760,71 +762,42 @@ public class File2 {
   }
 
   /**
-   * This renames the specified file. If the fullNewName file already exists, it will be deleted
-   * before the renaming. The files must be in the same directory.
+   * This renames the specified file. If the fullNewName file already exists, it will be atomically
+   * replaced. The files must be in the same directory.
    *
    * @param fullOldName the complete old name of the file
    * @param fullNewName the complete new name of the file
-   * @throws RuntimeException if trouble
+   * @throws RuntimeException if the rename operation fails
    */
   public static void rename(String fullOldName, String fullNewName) throws RuntimeException {
-    File oldFile = new File(fullOldName);
-    if (!oldFile.isFile())
-      throw new RuntimeException(
-          "Unable to rename\n"
-              + fullOldName
-              + " to\n"
-              + fullNewName
-              + "\nbecause source file doesn't exist.");
+    Path sourcePath = Paths.get(fullOldName);
+    Path targetPath = Paths.get(fullNewName);
 
-    // delete any existing file with destination name
-    File newFile = new File(fullNewName);
-    if (newFile.isFile()) {
-      // It may try a few times.
-      // Since we know file exists, !delete really means it couldn't be deleted; take result at its
-      // word.
-      if (!delete(fullNewName))
-        throw new RuntimeException(
-            "Unable to rename\n"
-                + fullOldName
-                + " to\n"
-                + fullNewName
-                + "\nbecause "
-                + UNABLE_TO_DELETE
-                + " an existing file with destinationName.");
-
-      // In Windows, file may be isFile() for a short time. Give it time to delete.
-      if (String2.OSIsWindows)
-        Math2.sleep(Math2.shortSleep); // if Windows: encourage successful file deletion
-    }
-    // rename
-    if (oldFile.renameTo(newFile)) return;
-
-    // failed? give it a second try. This fixed a problem in a test on Windows.
-    // The problem might be that something needs to be gc'd.
-    Math2.gcAndWait("File2.rename (before retry)");
-    if (oldFile.renameTo(newFile)) return;
-
-    // This is a bad idea, but its better than datasets failing to load.
     try {
-      Thread.sleep(5000);
-    } catch (InterruptedException e) {
-      String2.log("Was sleeping to allow file handles time to free, but got interrupted.");
-    }
-    Math2.gcAndWait("File2.rename (before retry)");
+      // This single command replaces the entire original function.
+      // It automatically handles deleting the target file if it exists.
+      Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-    if (oldFile.renameTo(newFile)) return;
-
-    if (!oldFile.canWrite()) {
+    } catch (NoSuchFileException e) {
+      // Handle the case where the source file doesn't exist
       throw new RuntimeException(
           "Unable to rename\n"
               + fullOldName
               + " to\n"
               + fullNewName
-              + "\nbecause the source file is not writable.");
+              + "\nbecause source file doesn't exist.",
+          e);
+    } catch (IOException e) {
+      // Handle all other errors (e.g., permissions, file locks)
+      throw new RuntimeException(
+          "Unable to rename\n"
+              + fullOldName
+              + " to\n"
+              + fullNewName
+              + "\nReason: "
+              + e.getMessage(),
+          e);
     }
-
-    throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
   }
 
   /**
