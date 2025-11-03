@@ -9,7 +9,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.Initialization;
 
 class EDDTableFromCassandraTests {
@@ -26,7 +26,7 @@ class EDDTableFromCassandraTests {
    */
   @ParameterizedTest
   @ValueSource(ints = {2, 3})
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateDatasetsXml(int version) throws Throwable {
     // String2.log("\n*** EDDTableFromCassandra.testGenerateDatasetsXml");
     // testVerboseOn();
@@ -622,7 +622,7 @@ class EDDTableFromCassandraTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBasic() throws Throwable {
     // String2.log("\n*** EDDTableFromCassandra.testBasic");
     // testVerboseOn();
@@ -1200,7 +1200,7 @@ class EDDTableFromCassandraTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testMaxRequestFraction() throws Throwable {
     // String2.log("\n*** EDDTableFromCassandra.testMaxRequestFraction");
     // testVerboseOn();
@@ -1303,7 +1303,7 @@ class EDDTableFromCassandraTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testCass1Device() throws Throwable {
     // String2.log("\n*** EDDTableFromCassandra.testCass1Device");
     // testVerboseOn();
@@ -1709,7 +1709,7 @@ class EDDTableFromCassandraTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testStatic() throws Throwable {
     // String2.log("\n*** EDDTableFromCassandra.testStatic");
     // testVerboseOn();

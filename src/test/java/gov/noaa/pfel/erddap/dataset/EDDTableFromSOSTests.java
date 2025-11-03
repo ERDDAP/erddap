@@ -12,8 +12,8 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagExternalOther;
-import tags.TagLocalERDDAP;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -37,7 +37,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosATemp() throws Throwable {
     // testVerboseOn();
 
@@ -222,7 +222,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosATempAllStations() throws Throwable {
     // testVerboseOn();
 
@@ -278,7 +278,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosATempStationList() throws Throwable {
     // testVerboseOn();
 
@@ -322,7 +322,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosBPres() throws Throwable {
     // testVerboseOn();
 
@@ -515,7 +515,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosCond() throws Throwable {
     // testVerboseOn();
 
@@ -706,7 +706,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosCurrents() throws Throwable {
     // testVerboseOn();
 
@@ -1085,7 +1085,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosSalinity() throws Throwable {
     // testVerboseOn();
 
@@ -1371,7 +1371,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosWind() throws Throwable {
     // testVerboseOn();
 
@@ -1528,7 +1528,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosWLevel() throws Throwable {
     // testVerboseOn();
 
@@ -1766,7 +1766,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNosSosWTemp() throws Throwable {
     // testVerboseOn();
 
@@ -2131,7 +2131,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosCurrents() throws Throwable {
     // String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents");
     int language = 0;
@@ -2693,7 +2693,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosSalinity() throws Throwable {
     // testVerboseOn();
 
@@ -2900,7 +2900,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosLongTime() throws Throwable {
     // testVerboseOn();
 
@@ -2988,7 +2988,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosWLevel() throws Throwable {
     // testVerboseOn();
 
@@ -3159,7 +3159,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosWTemp() throws Throwable {
     // testVerboseOn();
 
@@ -3330,7 +3330,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosBig() throws Throwable {
     // no, I want it to run fast: testVerboseOn();
     // reallyVerbose = false;
@@ -3373,7 +3373,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosWaves() throws Throwable {
 
     // testVerboseOn();
@@ -3791,7 +3791,7 @@ class EDDTableFromSOSTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosWindQuickRestart() throws Throwable {
 
     String qrName =
@@ -3812,7 +3812,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNdbcSosWind() throws Throwable {
 
     // testVerboseOn();
@@ -4007,7 +4007,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testOostethys() throws Throwable {
 
     /*
@@ -4483,7 +4483,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testNeracoos() throws Throwable {
 
     // String2.log("\n*** EDDTableFromSOS.testNeracoos");
@@ -4736,7 +4736,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testTamu() throws Throwable {
     // String2.log("\n*** EDDTableFromSOS.testTamu");
     // testVerboseOn();
@@ -4779,7 +4779,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void test2DVSameSource() throws Throwable {
 
     // String2.log("\n*** EDDTableFromSOS.test2DVSameSource()\n");
@@ -4806,7 +4806,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void test2DVSameDestination() throws Throwable {
     // String2.log("\n*** EDDTableFromSOS.test2DVSameDestination()\n");
 
@@ -4832,7 +4832,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testGcoos52N() throws Throwable {
     boolean useCachedInfo = true;
 
@@ -5224,7 +5224,7 @@ class EDDTableFromSOSTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testGenerateDatasetsXml() throws Throwable {
     boolean useCachedInfo = true;
 
@@ -5450,7 +5450,7 @@ class EDDTableFromSOSTests {
    * &eventtime=2008-08-01T00:00Z/2008-08-02T00:00Z
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testGenerateDatasetsXmlFromOneIOOS() throws Throwable {
     boolean useCachedInfo = true;
 
@@ -5488,7 +5488,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testGenerateDatasetsXmlFromIOOS() throws Throwable {
     boolean useCachedInfo = true;
 
@@ -5639,7 +5639,7 @@ class EDDTableFromSOSTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testErddapSos() throws Throwable {
     // String2.log("\n*** EDDTableFromSOS.testErddapSos()\n");
     // testVerboseOn();

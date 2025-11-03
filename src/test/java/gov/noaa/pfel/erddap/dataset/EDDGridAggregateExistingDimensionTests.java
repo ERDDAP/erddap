@@ -10,9 +10,9 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
-import tags.TagThredds;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -28,7 +28,7 @@ class EDDGridAggregateExistingDimensionTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testBasic() throws Throwable {
     String tName, results, expected;
     int language = 0;
@@ -413,7 +413,7 @@ class EDDGridAggregateExistingDimensionTests {
    * UPDATED; datasets are removed after ~1 month
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testRtofs() throws Throwable {
     String2.log(
         "\n****************** EDDGridAggregateExistingDimension.testRtofs() *****************\n");
@@ -438,7 +438,7 @@ class EDDGridAggregateExistingDimensionTests {
 
   /** This tests the /files/ "files" system. This requires nceiOisst2Agg in the localhost ERDDAP. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testFiles() throws Throwable {
     String results, expected;
 
@@ -552,7 +552,7 @@ class EDDGridAggregateExistingDimensionTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXml() throws Throwable {
     String2.log("\n*** EDDGridAggregateExistingDimension.testGenerateDatasetsXml()\n");
     String results, expected;
@@ -992,7 +992,7 @@ class EDDGridAggregateExistingDimensionTests {
 
   /** This tests getDodsIndexUrls. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGetDodsIndexUrls() throws Exception {
     String2.log("\nEDDGridAggregateExistingDimension.testGetDodsIndexUrls");
 

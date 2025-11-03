@@ -2,13 +2,13 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import tags.TagExternalERDDAP;
+import tags.TagDisabledExternalERDDAP;
 import testDataset.EDDTestDataset;
 
 class EDDGridFromErddapTests {
 
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testDataVarOrder() throws Throwable {
     String2.log("\n*** EDDGridFromErddap.testDataVarOrder()");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.gettestDataVarOrder();

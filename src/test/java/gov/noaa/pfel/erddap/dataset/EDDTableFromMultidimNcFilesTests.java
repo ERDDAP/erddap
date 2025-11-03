@@ -16,8 +16,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
-import tags.TagMissingDataset;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledMissingDataset;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -3483,7 +3483,7 @@ class EDDTableFromMultidimNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // nc4 support not complete
+  @TagDisabledIncompleteTest // nc4 support not complete
   void testLongAndNetcdf4() throws Throwable {
     // String2.log("\n******************
     // EDDTableFromMultidimNcFiles.testLongAndNetcdf4() *****************\n");
@@ -3990,7 +3990,7 @@ class EDDTableFromMultidimNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset // Errors loading dataset files, nothing valid?
+  @TagDisabledMissingDataset // Errors loading dataset files, nothing valid?
   void testW1M3A(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromMultidimNcFiles.testW1M3A()
     // *****************\n");

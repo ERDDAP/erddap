@@ -35,13 +35,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagExternalERDDAP;
-import tags.TagExternalOther;
+import tags.TagDisabledExternalERDDAP;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledThredds;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
-import tags.TagMissingDataset;
 import tags.TagSlowTests;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -58,7 +58,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testForCarleton() throws Throwable {
     // test for Charles Carleton .nc request failed; others ok
     // testVerboseOn();
@@ -96,7 +96,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testForDave() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -159,7 +159,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testBasic1() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testBasic1\n");
     // testVerboseOn();
@@ -647,7 +647,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testBasic2() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testBasic2\n");
     // testVerboseOn();
@@ -1580,7 +1580,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testBasic3() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testBasic3\n");
     // testVerboseOn();
@@ -3307,7 +3307,7 @@ class EDDGridFromDapTests {
    * because it has a good mix of NRT and delayed datasets.
    */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday";
@@ -3532,7 +3532,7 @@ class EDDGridFromDapTests {
 
   /** This tests that generateDatasetsXml tests that the axes are sorted. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXml3() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml3()");
     // from uaf. Not sorted and never will be.
@@ -3556,7 +3556,7 @@ class EDDGridFromDapTests {
 
   /** Test scale_factor and add_offset. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testScaleAddOffset() throws Throwable {
     // tests of scale_factor/scaleFactor and add_offset/addOffset
     // and tests of _FillValue with no missing_value
@@ -3673,7 +3673,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOneTime() throws Throwable {
     int language = 0;
 
@@ -3799,7 +3799,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testPmelOscar() throws Throwable {
     boolean doGraphicsTests = false;
     // String2.log("\n*** EDDGridFromDap.test for pmelOscar");
@@ -4327,7 +4327,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   @TagImageComparison
   void testDescendingLat() throws Throwable {
     boolean doGraphicsTests = true;
@@ -4726,7 +4726,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testForEllyn() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testForEllyn");
     // testVerboseOn();
@@ -5419,7 +5419,7 @@ class EDDGridFromDapTests {
 
   /** This tests sliderCsvValues. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testSliderCsv() throws Throwable {
     String results, expected;
     EDDGridFromDap gridDataset;
@@ -5971,7 +5971,7 @@ class EDDGridFromDapTests {
 
   /** This tests non-nc-"Grid" data variable (dimensions don't have axis/coordinate variable). */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testNoAxisVariable() throws Throwable {
 
     // testVerboseOn();
@@ -6144,7 +6144,7 @@ class EDDGridFromDapTests {
 
   /** This tests a climatology time problem. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testClimatologyTime() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testClimatologyTime");
     // testVerboseOn();
@@ -6187,7 +6187,7 @@ class EDDGridFromDapTests {
 
   /** This tests accessibleTo. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testAccessibleTo() throws Throwable {
     // testVerboseOn();
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdBAssta5day();
@@ -6236,7 +6236,7 @@ class EDDGridFromDapTests {
    */
   @ParameterizedTest
   @ValueSource(ints = {2, 4, 6, 96})
-  @TagThredds
+  @TagDisabledThredds
   void testBigRequest(int nTimePoints) throws Throwable {
     // testVerboseOn();
     String2.log(
@@ -6317,7 +6317,7 @@ class EDDGridFromDapTests {
    * partialRequestMaxBytes=10^8 stays well under that.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testBigRequestSpeed(int nTimePoints, String fileType, int expectedMs) throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -6371,7 +6371,7 @@ class EDDGridFromDapTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testSpeedDAF() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
@@ -6400,7 +6400,7 @@ class EDDGridFromDapTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testSpeedMAG() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
@@ -6442,7 +6442,7 @@ class EDDGridFromDapTests {
 
   /** Test quick restart */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testQuickRestart() throws Throwable {
     // String2.log("\nEDDGridFromDap.testQuickRestart");
     String tDatasetID = "erdBAssta5day";
@@ -6486,7 +6486,7 @@ class EDDGridFromDapTests {
    * profiler: -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   // was an interactive test, likely needs additional changes
   void testDescendingAxisGeotif() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testDescendingAxisGeotif");
@@ -6597,7 +6597,7 @@ class EDDGridFromDapTests {
 
   /** This tests saveAsNcml. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testNcml() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -6771,7 +6771,7 @@ class EDDGridFromDapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testNetcdfJava() throws Throwable {
     // open as a NetcdfDataset, not a NetcdfFile as above
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
@@ -6999,7 +6999,7 @@ class EDDGridFromDapTests {
 
   /** This tests making maps where lon is 74 to 434 */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   // was an interactive test, likely needs additional changes
   void testMap74to434() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testMap74to434\n");
@@ -7084,7 +7084,7 @@ class EDDGridFromDapTests {
 
   /** This tests fixing an unhelpful error message. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testTimeErrorMessage() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testTimeErrorMessage\n");
     // testVerboseOn();
@@ -7171,7 +7171,7 @@ class EDDGridFromDapTests {
 
   /** This tests creation of surface graphs (e.g., x,y axes, not lon,lat axes). */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   @TagImageComparison
   void testSurfaceGraph() throws Throwable {
     // testVerboseOn();
@@ -7392,7 +7392,7 @@ class EDDGridFromDapTests {
    * degree_C.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXml4() throws Throwable {
     String url =
         "https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc";
@@ -8310,7 +8310,7 @@ class EDDGridFromDapTests {
    * This tests many things in generateDatasetsXml, notably, reloadEveryNMinutes and testOutOfDate.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXml5() throws Throwable {
     String2.log("*** EDDGridFromDap.testGenerateDatasetsXml5");
     String results =
@@ -8665,7 +8665,7 @@ class EDDGridFromDapTests {
 
   /** This tests a UInt16 variable in generateDatasetsXml. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXmlUInt16() throws Throwable {
     // String2.log("*** EDDGridFromDap.testGenerateDatasetsXmlUInt16");
     int language = 0;
@@ -9277,7 +9277,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testUInt16Dap() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testUInt16");
     int language = 0;
@@ -9984,7 +9984,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testScale1Offset0() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testScale1Offset0");
     int language = 0;
@@ -10084,7 +10084,7 @@ class EDDGridFromDapTests {
    * uses attributes.fromNccsv().
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testFromNccsv() throws Throwable {
     // don't test local dataset because of dns/numericIP problems
     // this dataset is good test because it has several dimension combos
@@ -10226,7 +10226,7 @@ class EDDGridFromDapTests {
 
   /** This tests crawlThreddsCatalog. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testCrawlThreddsCatalog() throws Throwable {
     String2.log("\n*** testCrawlThreddsCatalog()");
     StringWriter writer;
@@ -10907,7 +10907,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds // external server is failing to respond, so disable the test for now
+  @TagDisabledThredds // external server is failing to respond, so disable the test for now
   void testActualRange() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testActualRange");
     int language = 0;
@@ -11240,7 +11240,7 @@ class EDDGridFromDapTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds // external server is failing to respond, so disable the test for now
+  @TagDisabledThredds // external server is failing to respond, so disable the test for now
   void testActualRange2() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testActualRange2");
     int language = 0;
@@ -11347,7 +11347,7 @@ class EDDGridFromDapTests {
 
   /** This tests generateDatasetsXmlFromThreddsCatalog. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXmlFromThreddsCatalog() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXmlFromThreddsCatalog()");
 
@@ -11356,7 +11356,7 @@ class EDDGridFromDapTests {
 
   /** This tests generateDatasetsXmlFromThreddsCatalog. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXmlFromThreddsCatalog2() throws Throwable {
     String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXmlFromThreddsCatalog()");
 
@@ -11397,7 +11397,7 @@ class EDDGridFromDapTests {
 
   /** This tests getUrlsFromThreddsCatalog. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGetUrlsFromThreddsCatalog() throws Throwable {
     String2.log("\n* testGetUrlsFromThreddsCatalog()");
     String results, expected;

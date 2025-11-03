@@ -39,12 +39,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagExternalERDDAP;
-import tags.TagExternalOther;
-import tags.TagIncompleteTest;
-import tags.TagLargeFiles;
-import tags.TagMissingFile;
-import tags.TagPassword;
+import tags.TagDisabledExternalERDDAP;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledMissingFile;
+import tags.TagDisabledPassword;
 import tags.TagSlowTests;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -1023,7 +1023,7 @@ public class TableTests {
 
   /** Test convert. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testConvert() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -1464,7 +1464,7 @@ public class TableTests {
    * @throws Exception of trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testFlatNc() throws Exception {
 
     // ********** test reading all data
@@ -1768,7 +1768,7 @@ public class TableTests {
 
   /** Test the speed of readNDNc */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testReadNDNcSpeed() throws Exception {
 
     String fileName =
@@ -1819,7 +1819,7 @@ public class TableTests {
 
   /** Test the speed of readOpendapSequence */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testReadOpendapSequenceSpeed() throws Exception {
 
     String url =
@@ -1983,7 +1983,7 @@ public class TableTests {
    * @throws Exception of trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testOpendap() throws Exception {
     // *************
     // String2.log("\n*** Table.testOpendap");
@@ -3991,7 +3991,7 @@ public class TableTests {
 
   /** This tests readNccsv(), readNccsvMetadata(), */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testNccsv() throws Exception {
     // String2.log("\n**** Table.testNccsv()\n");
     String dir = TableTests.class.getResource("/data/nccsv/").getPath();
@@ -4529,7 +4529,7 @@ public class TableTests {
 
   /** This tests readNDNC. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testReadNDNc() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -5426,7 +5426,7 @@ public class TableTests {
 
   /** This tests readVlenNc. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // illegal heap address when reading file
+  @TagDisabledIncompleteTest // illegal heap address when reading file
   void testReadVlenNc() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -5690,7 +5690,7 @@ public class TableTests {
    */
 
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testReadInvalidCRA() throws Exception {
     Table table = new Table();
     Table.debugMode = true;
@@ -9561,7 +9561,7 @@ public class TableTests {
 
   /** This tests readNcCF nLevels=1. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Invalid contiguous ragged file
+  @TagDisabledIncompleteTest // Invalid contiguous ragged file
   void testReadNcCF1Kevin() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -17899,7 +17899,7 @@ public class TableTests {
 
   /** This tests readXml. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testXml() throws Exception {
     // String2.log("\n*** Table.testXml()");
     // Table.verbose = true;
@@ -18129,7 +18129,7 @@ public class TableTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagDisabledPassword
   void testSql() throws Exception {
     // String2.log("\n*** Table.testSql");
     // Table.verbose = true;
@@ -18344,7 +18344,7 @@ public class TableTests {
 
   /** This tests readIObis. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testIobis() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -19441,7 +19441,7 @@ public class TableTests {
    * sun.jdbc.odbc.JdbcOdbc.createSQLException(Unknown Source) ...
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // wasn't run before, also: ClassNotFound sun.jdbc.odbc.JdbcOdbcDriver
+  @TagDisabledIncompleteTest // wasn't run before, also: ClassNotFound sun.jdbc.odbc.JdbcOdbcDriver
   void testMdb() throws Exception {
     String fileName =
         TableTests.class

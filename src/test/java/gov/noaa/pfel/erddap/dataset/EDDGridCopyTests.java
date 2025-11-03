@@ -10,7 +10,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -350,8 +350,8 @@ class EDDGridCopyTests {
 
   /** The tests onlySince. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // need to do an assert instead of the manual verification requested at the
-  // enter to contiue
+  @TagDisabledIncompleteTest // need to do an assert instead of the manual verification requested at
+  // the enter to contiue
   void testOnlySince() throws Throwable {
     // String2.log("\n******* EDDGridCopy.testOnlySince *******\n");
     // testVerboseOn();

@@ -12,18 +12,18 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.nio.file.Path;
-import tags.TagAWS;
-import tags.TagExternalOther;
-import tags.TagLargeFiles;
-import tags.TagMissingDataset;
-import tags.TagMissingFile;
+import tags.TagDisabledAWS;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledMissingFile;
+import tags.TagDisabledThredds;
 import tags.TagSlowTests;
-import tags.TagThredds;
 
 class FileVisitorDNLSTests {
   /** This tests THREDDS-related methods. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testThredds() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testThredds");
     // boolean oReallyVerbose = reallyVerbose;
@@ -350,7 +350,7 @@ class FileVisitorDNLSTests {
    * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testAWSS3");
 
@@ -520,7 +520,7 @@ class FileVisitorDNLSTests {
 
   /** This tests this class with Amazon AWS S3 file system using the */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAWSS3WithS3URI() throws Throwable {
     // set region property
     System.setProperty("aws.region", "us-west-2");
@@ -686,7 +686,7 @@ class FileVisitorDNLSTests {
    * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testBigAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testBigAWSS3");
 
@@ -755,7 +755,7 @@ class FileVisitorDNLSTests {
    * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-file-format
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testPrivateAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testPrivateAWSS3");
 
@@ -888,7 +888,7 @@ class FileVisitorDNLSTests {
 
   /** This tests Hyrax-related methods. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testHyrax() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testHyrax()\n");
     // reallyVerbose = true;
@@ -1089,7 +1089,7 @@ class FileVisitorDNLSTests {
 
   /** This tests Hyrax-related methods with the JPL MUR dataset. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testHyraxMUR() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testHyraxMUR()\n");
     // reallyVerbose = true;
@@ -1126,7 +1126,7 @@ class FileVisitorDNLSTests {
   /** This tests GPCP. */
   @org.junit.jupiter.api.Test
   @TagSlowTests
-  @TagMissingDataset // Data temporarily unavailable at NCEI due to Hurricane Helene impacts
+  @TagDisabledMissingDataset // Data temporarily unavailable at NCEI due to Hurricane Helene impacts
   void testGpcp() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testGpcp()\n");
 
@@ -1188,7 +1188,7 @@ class FileVisitorDNLSTests {
 
   /** This tests the ERSST directory. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testErsst() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testErsst()\n");
     Table table = FileVisitorDNLS.makeEmptyTable();
@@ -1326,7 +1326,7 @@ class FileVisitorDNLSTests {
    * ./FileVisitorDNLS.sh /u00/satellite/MUR41/anom/1day/ ....0401.\*
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testSymbolicLinks() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testSymbolicLinks()");
     // boolean oDebugMode = debugMode;
@@ -1446,7 +1446,7 @@ class FileVisitorDNLSTests {
 
   /** This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files" directory. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile // DNS Failure 503 (might come back)
+  @TagDisabledMissingFile // DNS Failure 503 (might come back)
   void testInteractiveErddapFilesWAF() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testInteractiveErddapFilesWAF()\n");
     // test with trailing /

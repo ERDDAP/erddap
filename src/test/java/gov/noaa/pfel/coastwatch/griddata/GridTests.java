@@ -11,7 +11,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagMissingFile;
+import tags.TagDisabledMissingFile;
 
 public class GridTests {
   public static String testDir;
@@ -58,7 +58,7 @@ public class GridTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testForMemoryLeak() throws Exception {
     Grid grid = new Grid();
     String dir;

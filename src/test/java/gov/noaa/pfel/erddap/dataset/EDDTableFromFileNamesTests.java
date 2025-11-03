@@ -16,8 +16,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagAWS;
-import tags.TagLocalERDDAP;
+import tags.TagDisabledAWS;
+import tags.TagDisabledLocalERDDAP;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -226,7 +226,7 @@ class EDDTableFromFileNamesTests {
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3()");
     // testVerboseOn();
@@ -862,7 +862,7 @@ class EDDTableFromFileNamesTests {
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
     // testVerboseOn();
@@ -1139,7 +1139,7 @@ class EDDTableFromFileNamesTests {
 
   /** testGenerateDatasetsXmlFromOnTheFly */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testGenerateDatasetsXmlFromOnTheFly() throws Throwable {
     // String2.log("\n***
     // EDDTableFromFileNames.testGenerateDatasetsXmlFromOnTheFly()");
@@ -1322,7 +1322,7 @@ class EDDTableFromFileNamesTests {
 
   /** Test an AWS S3 dataset in localhost ERDDAP. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testAwsS3local() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3b");
     String results, expected;
@@ -1379,7 +1379,7 @@ class EDDTableFromFileNamesTests {
 
   /** Test a ***fromOnTheFile dataset */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testOnTheFly() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
     int language = 0;

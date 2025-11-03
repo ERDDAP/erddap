@@ -10,7 +10,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.Initialization;
 
 class EDDTableFromDatabaseTests {
@@ -32,7 +32,7 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateDatasetsXml() throws Throwable {
 
     // String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
@@ -305,7 +305,7 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @ParameterizedTest
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   @ValueSource(strings = {"testMyDatabaseNo", "testMyDatabasePartial", "testMyDatabaseYes"})
   void testBasic(String tDatasetID) throws Throwable {
     // String2.log("\n*** EDDTableFromDatabase.testBasic() tDatasetID=" +
@@ -851,7 +851,7 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testNonExistentVariable() throws Throwable {
     String2.log("\n*** EDDTableFromDatabase.testNonExistentVariable()");
     String dir = EDStatic.config.fullTestCacheDirectory;
@@ -883,7 +883,7 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testNonExistentTable() throws Throwable {
     String2.log("\n*** EDDTableFromDatabase.testNonExistentTable()");
     String dir = EDStatic.config.fullTestCacheDirectory;

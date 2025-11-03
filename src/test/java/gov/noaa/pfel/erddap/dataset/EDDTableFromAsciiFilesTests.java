@@ -15,8 +15,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagAWS;
-import tags.TagExternalERDDAP;
+import tags.TagDisabledAWS;
+import tags.TagDisabledExternalERDDAP;
 import tags.TagImageComparison;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
@@ -859,7 +859,7 @@ class EDDTableFromAsciiFilesTests {
    * AWS URL of the directory.
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAwsS3StandardizeWhat() throws Throwable {
     String2.log(
         "\n*** EDDTableFromAsciiFiles.testAwsS3StandardizeWhat\n"
@@ -4681,7 +4681,7 @@ class EDDTableFromAsciiFilesTests {
 
   /** testGenerateDatasetsXml2 - notably to test reloadEveryNMinutes and testOutOfDate. */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
     int language = EDMessages.DEFAULT_LANGUAGE;

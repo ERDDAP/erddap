@@ -13,10 +13,10 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagExternalERDDAP;
+import tags.TagDisabledExternalERDDAP;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
 import tags.TagImageComparison;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -29,7 +29,7 @@ class EDDTableFromErddapTests {
   /** The basic tests of this class (erdGlobecBottle). */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   @TagImageComparison
   void testBasic(boolean tRedirect) throws Throwable {
     // String2.log("\n****************** EDDTableFromErddap.testBasic(" +
@@ -309,7 +309,7 @@ class EDDTableFromErddapTests {
 
   /** This tests making a fromErddap from a fromErddap on coastwatch. */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testFromErddapFromErddap() throws Throwable {
     String2.log("\n*** EDDTableFromErddap.testFromErddapFromErddap");
     EDDTable edd = (EDDTableFromErddap) EDDTestDataset.gettestFromErddapFromErddap();
@@ -317,7 +317,7 @@ class EDDTableFromErddapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testDegreesSignAttribute() throws Throwable {
     String2.log("\n*** EDDTableFromErddap.testDegreesSignAttribute");
     String url =
@@ -338,7 +338,7 @@ class EDDTableFromErddapTests {
 
   /** This tests dealing with remote not having ioos_category, but local requiring it. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testTableNoIoosCat() throws Throwable {
     String2.log("\n*** EDDTableFromErddap.testTableNoIoosCat");
 
@@ -409,7 +409,7 @@ class EDDTableFromErddapTests {
    * 2016-10-03 to deal with this problem.
    */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testChukchiSea() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -557,7 +557,7 @@ class EDDTableFromErddapTests {
    * the localhost ERDDAP.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testFiles() throws Throwable {
     String results, expected;
 

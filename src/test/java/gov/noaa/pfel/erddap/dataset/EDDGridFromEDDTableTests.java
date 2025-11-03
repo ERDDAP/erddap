@@ -7,8 +7,8 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -210,7 +210,7 @@ class EDDGridFromEDDTableTests {
 
   /** testBasic */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // missing nmspWcosAdcpD/BAY
+  @TagDisabledMissingDataset // missing nmspWcosAdcpD/BAY
   void testBasic() throws Throwable {
     // String2.log("\n*** EDDGridFromEDDTable.testBasic\n");
     // testVerboseOn();
@@ -727,7 +727,7 @@ class EDDGridFromEDDTableTests {
    * This tests the /files/ "files" system. This requires testGridFromTable in the localhost ERDDAP.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testFiles() throws Throwable {
     String results, expected;
 

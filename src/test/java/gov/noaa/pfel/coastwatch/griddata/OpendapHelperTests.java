@@ -11,8 +11,8 @@ import dods.dap.DConnect;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
-import tags.TagIncompleteTest;
-import tags.TagThredds;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledThredds;
 import testDataset.Initialization;
 
 class OpendapHelperTests {
@@ -26,7 +26,7 @@ class OpendapHelperTests {
 
   /** This tests getting attibutes, notably the DODS_strlen attribute. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGetAttributes() throws Throwable {
     String url =
         "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
@@ -73,7 +73,7 @@ class OpendapHelperTests {
   @org.junit.jupiter.api.Test
   // TODO- look into out of memory. It happens within dods.dap, it's unclear what version is here.
   //   Maybe get a new version.
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testDapToNcDArray() throws Throwable {
     String fileName, expected, results;
 
@@ -511,7 +511,7 @@ class OpendapHelperTests {
    * @param whichTests -1 for all, or 0.. for specific ones
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testAllDapToNc() throws Throwable {
     // tests from nodc template examples https://www.ncei.noaa.gov/netcdf-templates
     String2.log("\n*** OpendapHelper.testAllDapToNc()");

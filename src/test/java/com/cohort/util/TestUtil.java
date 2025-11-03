@@ -29,8 +29,8 @@ import java.util.concurrent.locks.Lock;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
-import tags.TagFlaky;
-import tags.TagIncompleteTest;
+import tags.TagDisabledFlaky;
+import tags.TagDisabledIncompleteTest;
 import tags.TagSlowTests;
 
 /** This is a Java program to test all of the methods in com.cohort.util. */
@@ -1187,7 +1187,7 @@ public class TestUtil {
 
   /** This runs the interactive tests of the methods in String2. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void interactiveTestString2() throws Exception {
     String2.log("\n*** TestUtil.interactiveTestString2");
     // getPasswordFromConsole
@@ -7395,7 +7395,7 @@ public class TestUtil {
   }
 
   @org.junit.jupiter.api.Test
-  @TagFlaky
+  @TagDisabledFlaky
   void testCalendar2Now_flaky() {
     // nowStringToEpochSeconds(String nowString)
     Test.ensureEqual(Calendar2.nowStringToEpochSeconds("now"), nextEpochSecond(), "");
@@ -8036,8 +8036,8 @@ public class TestUtil {
    * larger string) grab just the chars in question (good) or a reference to a substring (bad).
    */
   @RepeatedTest(value = 5, failureThreshold = 4)
-  @TagIncompleteTest // repeated test is marking as a fail if any fail, not a pass, need a better
-  // approach
+  @TagDisabledIncompleteTest // repeated test is marking as a fail if any fail, not a pass, need a
+  // better approach
   void testString2canonical2() throws Exception {
     String2.log("\n*** TestUtil.testString2canonical2()");
     String sar[] = new String[127];

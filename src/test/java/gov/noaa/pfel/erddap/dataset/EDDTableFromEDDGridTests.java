@@ -8,7 +8,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagLocalERDDAP;
+import tags.TagDisabledLocalERDDAP;
 import testDataset.Initialization;
 
 class EDDTableFromEDDGridTests {
@@ -19,7 +19,7 @@ class EDDTableFromEDDGridTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP // "erdMBsstdmday_AsATable" needs local erddap
+  @TagDisabledLocalERDDAP // "erdMBsstdmday_AsATable" needs local erddap
   void testBasic() throws Throwable {
     // String2.log("\nEDDTableFromEDDGrid.testBasic()");
     // testVerboseOn();
@@ -657,7 +657,7 @@ class EDDTableFromEDDGridTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testInErddap() throws Throwable {
     // String2.log("\nEDDTableFromEDDGrid.testInErddap()");
     // testVerboseOn();
@@ -1360,7 +1360,7 @@ class EDDTableFromEDDGridTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testGenerateDatasetsXml() throws Throwable {
 
     // String2.log("\n*** EDDTableFromEDDGrid.testGenerateDatasetsXml() ***\n");
@@ -1437,7 +1437,7 @@ class EDDTableFromEDDGridTests {
    * in the localhost ERDDAP.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testFiles() throws Throwable {
     String results, expected;
 

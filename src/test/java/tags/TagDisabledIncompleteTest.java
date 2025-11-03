@@ -11,5 +11,5 @@ import org.junit.jupiter.api.Tag;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Tag("Password")
-public @interface TagPassword {}
+@Tag("IncompleteTest")
+public @interface TagDisabledIncompleteTest {}

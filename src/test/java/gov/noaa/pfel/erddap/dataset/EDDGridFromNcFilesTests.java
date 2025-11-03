@@ -28,14 +28,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagAWS;
+import tags.TagDisabledAWS;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledThredds;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
-import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
 import tags.TagSlowTests;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.ma2.Array;
@@ -124,7 +124,7 @@ class EDDGridFromNcFilesTests {
 
   /** test reading an .ncml file */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
+  @TagDisabledIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
     // 2022-02-07 These were the simplest test I could create to demonstrate
@@ -1191,8 +1191,8 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
-  @TagLargeFiles
+  @TagDisabledAWS
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
     int language = 0;
@@ -1468,7 +1468,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
+  @TagDisabledAWS
   void testPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testPrivateAwsS3(" +
     // deleteCachedFiles + ") *****************\n");
@@ -3051,7 +3051,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testGenerateDatasetsXml4() throws Throwable {
     // takes a long time and no longer useful
     // String2.pressEnterToContinue(
@@ -4010,8 +4010,8 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
-  @TagLargeFiles
+  @TagDisabledAWS
+  @TagDisabledLargeFiles
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -4276,7 +4276,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
+  @TagDisabledAWS
   void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -8391,7 +8391,7 @@ class EDDGridFromNcFilesTests {
    * @param whichChunk -1 (all) or 0 - 4.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   @TagImageComparison
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
@@ -9894,7 +9894,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXmlWithRemoteThreddsFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles()\n");
@@ -10109,7 +10109,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagThredds
+  @TagDisabledThredds
   void testRemoteThreddsFiles(boolean deleteCachedInfo) throws Throwable {
     String tName, results, tResults, expected, userDapQuery;
     String today =
@@ -12867,7 +12867,7 @@ class EDDGridFromNcFilesTests {
 
   /** Test DAP errors. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testDapErrors() throws Throwable {
     String baseRequest = "http://localhost:8080/cwexperimental/griddap/";
     String results;
@@ -15971,7 +15971,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateDatasetsXmlWithRemoteHyraxFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles()\n");
@@ -16195,7 +16195,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testIgor()\n");
     // testVerboseOn();
@@ -16537,7 +16537,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGroups() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testGroups()\n");
     // testVerboseOn();
@@ -16646,7 +16646,7 @@ class EDDGridFromNcFilesTests {
   /** This tests makeCopyFileTasks. */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset // source seems to not have data
+  @TagDisabledMissingDataset // source seems to not have data
   void testMakeCopyFileTasks(boolean deleteAllLocalFiles) throws Exception {
     boolean tRecursive = true;
     boolean tDirectoriesToo = false;
@@ -16746,7 +16746,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testGenerateDatasetsXmlCopy() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String tSourceUrl =
@@ -17032,7 +17032,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCopyFiles(boolean deleteDataFiles) throws Throwable {
     int language = 0;
 
@@ -17273,7 +17273,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCacheFiles(boolean deleteDataFiles) throws Throwable {
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
@@ -23865,7 +23865,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testBufrTemp() throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testBufrTemp()
     // *****************\n");

@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.Initialization;
 import ucar.units.Unit;
 
@@ -2374,7 +2374,7 @@ class Units2Tests {
 
   /** This is used by Bob as a one time test. No one else will need to use this. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // doesn't pass, need to investigate mismatches for problems
+  @TagDisabledIncompleteTest // doesn't pass, need to investigate mismatches for problems
   void testRoundTripConversions() throws Exception {
     // uc -> ud -> uc is more likely to work cleanly because it starts with acronym
     String2.log("\n*** Units2.testRoundTripConversions");

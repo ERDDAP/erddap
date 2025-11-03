@@ -10,7 +10,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -25,7 +25,7 @@ class EDDTableFromHyraxFilesTests {
    * doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // Source 404
+  @TagDisabledMissingDataset // Source 404
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
 
@@ -279,7 +279,7 @@ class EDDTableFromHyraxFilesTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // Source 404
+  @TagDisabledMissingDataset // Source 404
   void testGenerateDatasetsXml2() throws Throwable {
     // testVerboseOn();
     String results =
@@ -352,7 +352,7 @@ class EDDTableFromHyraxFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset // The dataset this tries to download is no longer available
+  @TagDisabledMissingDataset // The dataset this tries to download is no longer available
   void testJpl(boolean deleteCachedInfoAndOneFile) throws Throwable {
     // String2.log("\n******
     // EDDTableFromHyraxFiles.testJpl(deleteCachedInfoAndOneFile=" +

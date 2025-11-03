@@ -85,11 +85,12 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.semver4j.Semver;
-import tags.TagFlaky;
+import tags.TagDisabledFlaky;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledThredds;
+import tags.TagExternal;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
 import tags.TagJetty;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -6463,7 +6464,7 @@ class JettyTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagJetty
+  @TagExternal
   void testForBrokenLinks() throws Exception {
     this.testForBrokenLinks(
         "http://localhost:" + PORT + "/erddap/convert/oceanicAtmosphericAcronyms.html");
@@ -12742,7 +12743,7 @@ class JettyTests {
   /** This tests saveAsKml. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagThredds // external server is failing to respond, so disable the test for now
+  @TagDisabledThredds // external server is failing to respond, so disable the test for now
   void testKml() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -16273,7 +16274,7 @@ class JettyTests {
   /** This tests hardFlag. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testHardFlag() throws Throwable {
     // String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
     // "This test requires hawaii_d90f_20ee_c4cb and
@@ -17134,7 +17135,7 @@ class JettyTests {
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  @TagDisabledFlaky // It seems if data is not cached to frequently fail for one of the sides
   // in erdQSwindmday
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
@@ -17565,7 +17566,7 @@ class JettyTests {
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  @TagDisabledFlaky // It seems if data is not cached to frequently fail for one of the sides
   // in erdQSwindmday
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
@@ -17614,7 +17615,7 @@ class JettyTests {
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagThredds
+  @TagDisabledThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
