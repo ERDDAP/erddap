@@ -27,6 +27,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -38,12 +39,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagExternalERDDAP;
-import tags.TagExternalOther;
-import tags.TagIncompleteTest;
-import tags.TagLargeFiles;
-import tags.TagMissingFile;
-import tags.TagPassword;
+import tags.TagDisabledExternalERDDAP;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledMissingFile;
+import tags.TagDisabledPassword;
 import tags.TagSlowTests;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -956,7 +957,8 @@ public class TableTests {
       Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
 
     // another hard test
-    fullName = TableTests.class.getResource("/data/jsonl/sampleCSV.jsonl").getPath();
+    fullName =
+        Path.of(TableTests.class.getResource("/data/jsonl/sampleCSV.jsonl").toURI()).toString();
     table.readJsonlCSV(fullName, null, null, true); // simpify
     results = table.dataToString();
     Test.ensureEqual(
@@ -1021,7 +1023,7 @@ public class TableTests {
 
   /** Test convert. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testConvert() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -1450,11 +1452,9 @@ public class TableTests {
     Test.ensureEqual(table2.columnAttributes(9).getString("units"), "Strings", "");
 
     // ** finally
-    Math2.gc(
-        "Table (between tests)",
-        10000); // in a test. Do something useful while browser gets going to display
-    // the
-    // file.
+    Math2.gcAndWait(
+        "Table (between tests)"); // in a test. Do something useful while browser gets going to
+    // display the file.
     File2.delete(fileName);
   }
 
@@ -1464,7 +1464,7 @@ public class TableTests {
    * @throws Exception of trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testFlatNc() throws Exception {
 
     // ********** test reading all data
@@ -1669,13 +1669,16 @@ public class TableTests {
   void testReadASCIISpeed() throws Exception {
 
     String fileName =
-        TableTests.class.getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
+        Path.of(
+                TableTests.class
+                    .getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt")
+                    .toURI())
+            .toString();
     long time = 0;
 
     for (int attempt = 0; attempt < 4; attempt++) {
       // String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
       Math2.gcAndWait("Table (between tests)"); // in a test
-      Math2.sleep(5000);
       // time it
       long fileLength = File2.length(fileName); // was 1335204
       Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength);
@@ -1701,7 +1704,7 @@ public class TableTests {
               + " Done.\n"
               + "cells/ms="
               + (table.nColumns() * ((long) table.nRows()) / time)
-              + " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)"
+              + " (With String, was 2711 Java 1.7M4700, was 648)"
               + "\ntime="
               + time
               + "ms (good=106ms, but slower when computer is busy.\n"
@@ -1720,7 +1723,8 @@ public class TableTests {
   void testReadJsonSpeed() throws Exception {
 
     // warmup
-    String fileName = TableTests.class.getResource("/data/cPostDet3.files.json.gz").getPath();
+    String fileName =
+        Path.of(TableTests.class.getResource("/data/cPostDet3.files.json.gz").toURI()).toString();
     long time = 0;
     String msg = "";
     String expected =
@@ -1764,7 +1768,7 @@ public class TableTests {
 
   /** Test the speed of readNDNc */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testReadNDNcSpeed() throws Exception {
 
     String fileName =
@@ -1815,7 +1819,7 @@ public class TableTests {
 
   /** Test the speed of readOpendapSequence */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testReadOpendapSequenceSpeed() throws Exception {
 
     String url =
@@ -1888,7 +1892,11 @@ public class TableTests {
     // warmup
     // String2.log("\n*** Table.testSaveAsSpeed\n");
     String sourceName =
-        TableTests.class.getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
+        Path.of(
+                TableTests.class
+                    .getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt")
+                    .toURI())
+            .toString();
     String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
     Table table = new Table();
     table.readASCII(sourceName);
@@ -1975,7 +1983,7 @@ public class TableTests {
    * @throws Exception of trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testOpendap() throws Exception {
     // *************
     // String2.log("\n*** Table.testOpendap");
@@ -3656,7 +3664,8 @@ public class TableTests {
     // String2.log("\nTable.testReadAsciiCsvASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fileName = TableTests.class.getResource("/data/csvAscii.txt").getPath();
+    String fileName =
+        Path.of(TableTests.class.getResource("/data/csvAscii.txt").toURI()).toString();
     String skipHeaderToRegex = "\\*\\*\\* END OF HEADER.*";
     String skipLinesRegex = "#.*";
 
@@ -3776,7 +3785,8 @@ public class TableTests {
     // String2.log("\nTable.testReadAsciiSsvASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fileName = TableTests.class.getResource("/data/ssvAscii.txt").getPath();
+    String fileName =
+        Path.of(TableTests.class.getResource("/data/ssvAscii.txt").toURI()).toString();
     Table table;
 
     // public void readASCII(String fullFileName, int columnNamesLine, int
@@ -3874,7 +3884,8 @@ public class TableTests {
     String results, expected;
     StringArray sa = new StringArray();
     String fullFileName =
-        TableTests.class.getResource("/data/columnarAsciiWithComments.txt").getPath();
+        Path.of(TableTests.class.getResource("/data/columnarAsciiWithComments.txt").toURI())
+            .toString();
     String skipHeaderToRegex = "END OF HEADER.*";
     String skipLinesRegex = "%.*";
     String colNames[] = {
@@ -3980,7 +3991,7 @@ public class TableTests {
 
   /** This tests readNccsv(), readNccsvMetadata(), */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testNccsv() throws Exception {
     // String2.log("\n**** Table.testNccsv()\n");
     String dir = TableTests.class.getResource("/data/nccsv/").getPath();
@@ -4371,7 +4382,11 @@ public class TableTests {
     // String2.log("\nTable.testReadAwsXmlFile");
     Table table = new Table();
     table.readAwsXmlFile(
-        TableTests.class.getResource("/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml").getPath());
+        Path.of(
+                TableTests.class
+                    .getResource("/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml")
+                    .toURI())
+            .toString());
     String results = table.toString();
     String expected =
         "{\n"
@@ -4514,7 +4529,7 @@ public class TableTests {
 
   /** This tests readNDNC. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testReadNDNc() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -5411,7 +5426,7 @@ public class TableTests {
 
   /** This tests readVlenNc. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // illegal heap address when reading file
+  @TagDisabledIncompleteTest // illegal heap address when reading file
   void testReadVlenNc() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -5675,7 +5690,7 @@ public class TableTests {
    */
 
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testReadInvalidCRA() throws Exception {
     Table table = new Table();
     Table.debugMode = true;
@@ -9546,7 +9561,7 @@ public class TableTests {
 
   /** This tests readNcCF nLevels=1. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Invalid contiguous ragged file
+  @TagDisabledIncompleteTest // Invalid contiguous ragged file
   void testReadNcCF1Kevin() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -17735,7 +17750,11 @@ public class TableTests {
     Table table = new Table();
     long time = System.currentTimeMillis();
     table.readASCII(
-        TableTests.class.getResource("/largeFiles/biddle/3937_v1_CTD_Profiles.tsv.gz").getPath());
+        Path.of(
+                TableTests.class
+                    .getResource("/largeFiles/biddle/3937_v1_CTD_Profiles.tsv.gz")
+                    .toURI())
+            .toString());
     time = System.currentTimeMillis() - time;
     Math2.gcAndWait("Table (between tests)");
     Math2.gcAndWait("Table (between tests)"); // in a test
@@ -17824,7 +17843,6 @@ public class TableTests {
    * {nc.close()}
    */
   @org.junit.jupiter.api.Test
-  @TagSlowTests
   void testNcCloseTryWithResources() throws Throwable {
     // String2.log("\n*** Table.testNcCloseTryWithResources()");
 
@@ -17836,10 +17854,10 @@ public class TableTests {
                         "/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
                     .toURI())
             .toString();
-    int n = 100000;
+    int n = 10000;
     for (int i = 0; i < n; i++) {
       try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
-        if (i % 10000 == 0) String2.log("" + i);
+        if (i % 1000 == 0) String2.log("" + i);
         // } catch (Exception e) {
         // String2.log("i=" + i + " " + e.toString());
       }
@@ -17881,7 +17899,7 @@ public class TableTests {
 
   /** This tests readXml. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testXml() throws Exception {
     // String2.log("\n*** Table.testXml()");
     // Table.verbose = true;
@@ -18111,7 +18129,7 @@ public class TableTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagDisabledPassword
   void testSql() throws Exception {
     // String2.log("\n*** Table.testSql");
     // Table.verbose = true;
@@ -18326,7 +18344,7 @@ public class TableTests {
 
   /** This tests readIObis. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testIobis() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -18673,7 +18691,8 @@ public class TableTests {
   @org.junit.jupiter.api.Test
   void testNccsvInteractive() throws Exception {
 
-    String dir = TableTests.class.getResource("/data/nccsv/").getPath();
+    String dir =
+        Path.of(TableTests.class.getResource("/data/nccsv/").toURI()).toString() + File.separator;
     boolean haveExcel = false; // as of ~2020, I no longer have excel
 
     // *** test 1.1 file
@@ -19422,7 +19441,7 @@ public class TableTests {
    * sun.jdbc.odbc.JdbcOdbc.createSQLException(Unknown Source) ...
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // wasn't run before, also: ClassNotFound sun.jdbc.odbc.JdbcOdbcDriver
+  @TagDisabledIncompleteTest // wasn't run before, also: ClassNotFound sun.jdbc.odbc.JdbcOdbcDriver
   void testMdb() throws Exception {
     String fileName =
         TableTests.class

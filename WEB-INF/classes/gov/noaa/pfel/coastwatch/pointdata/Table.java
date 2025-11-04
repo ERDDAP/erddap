@@ -62,10 +62,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -73,6 +70,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -2697,6 +2697,7 @@ public class Table {
       boolean missingItemNoted = false;
       StringBuilder warnings = new StringBuilder();
       ArrayList<String> items = new ArrayList<>(16);
+      StringBuilder separatedWord = new StringBuilder();
       while (true) {
         oneLine = null;
         if (nextLinesCache < linesCacheSize) {
@@ -2723,7 +2724,11 @@ public class Table {
           // break the lines into items
           if (colSeparator == ',') {
             StringArray.arrayListFromCSV(
-                oneLine, ",", true, true,
+                separatedWord,
+                oneLine,
+                ',',
+                true,
+                true,
                 items); // trim=true keep=true   //does handle "'d phrases, but leaves them quoted
           } else if (colSeparator == ' ') {
             StringArray.wordsAndQuotedPhrases(oneLine, items); // items are trim'd
@@ -3306,8 +3311,7 @@ public class Table {
         String2.isRemote(fullName)
             ? SSR.getBufferedUrlReader(fullName)
             : // handles AWS S3.  It assumes UTF-8.
-            new BufferedReader(
-                new InputStreamReader(new FileInputStream(fullName), StandardCharsets.UTF_8))) {
+            Files.newBufferedReader(Paths.get(fullName), StandardCharsets.UTF_8)) {
       lowReadNccsv(fullName, readData, bufferedReader);
     }
   }
@@ -4666,7 +4670,7 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     BufferedOutputStream bos =
-        new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt));
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + randomInt)));
 
     try {
       // saveAsHtml(outputStream, ...)
@@ -9608,7 +9612,8 @@ public class Table {
     //  very low level:
     // https://stackoverflow.com/questions/5810164/how-can-i-write-a-wav-file-from-byte-array-in-java
     DataOutputStream dos =
-        new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullInName)));
+        new DataOutputStream(
+            new BufferedOutputStream(Files.newOutputStream(Paths.get(fullInName))));
     try {
       for (int row = 0; row < nRow; row++)
         for (int col = 0; col < nCol; col++) pa[col].writeDos(dos, row);
@@ -12541,7 +12546,8 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // write to dataOutputStream
-    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(fullName + randomInt));
+    BufferedOutputStream bos =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullName + randomInt)));
 
     try {
       saveAsMatlab(bos, varName); // it calls modifyToBeVariableNameSafe
@@ -14096,7 +14102,8 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // open the file (before 'try'); if it fails, no temp file to delete
-    OutputStream os = new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt));
+    OutputStream os =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + randomInt)));
 
     try {
       saveAsTabbedASCII(os, charset);
@@ -14155,7 +14162,8 @@ public class Table {
     int randomInt = Math2.random(Integer.MAX_VALUE);
 
     // open the file (before 'try'); if it fails, no temp file to delete
-    OutputStream os = new BufferedOutputStream(new FileOutputStream(fullFileName + randomInt));
+    OutputStream os =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName + randomInt)));
 
     try {
       saveAsCsvASCII(os);
@@ -14284,7 +14292,7 @@ public class Table {
    * @throws Exception (no error if there is no data)
    */
   public void saveAsJson(String fileName, int timeColumn, boolean writeUnits) throws Exception {
-    try (OutputStream fos = new BufferedOutputStream(new FileOutputStream(fileName))) {
+    try (OutputStream fos = new BufferedOutputStream(Files.newOutputStream(Paths.get(fileName)))) {
       saveAsJson(fos, timeColumn, writeUnits);
     }
   }
@@ -14456,7 +14464,7 @@ public class Table {
     ArrayList<String> cUnits = null;
     PrimitiveArray pas[] = null;
     boolean endFound = false;
-
+    StringBuilder separatedWord = new StringBuilder();
     // {
     //  "table": {
     //    "columnNames": ["longitude", "latitude", "time", "sea_surface_temperature"],
@@ -14488,7 +14496,12 @@ public class Table {
                 errorInMethod + "columnNames line should have ended with '],'.\nline=" + line);
           cNames = new ArrayList<>();
           StringArray.arrayListFromCSV(
-              line.substring(16, line.length() - 2), ",", true, true, cNames); // trim, keepNothing
+              separatedWord,
+              line.substring(16, line.length() - 2),
+              ',',
+              true,
+              true,
+              cNames); // trim, keepNothing
 
         } else if (line.startsWith("\"columnTypes\": [")) {
           if (!line.endsWith("],"))
@@ -14496,7 +14509,12 @@ public class Table {
                 errorInMethod + "columnTypes line should have ended with '],'.\nline=" + line);
           cTypes = new ArrayList<>();
           StringArray.arrayListFromCSV(
-              line.substring(16, line.length() - 2), ",", true, true, cTypes); // trim, keepNothing
+              separatedWord,
+              line.substring(16, line.length() - 2),
+              ',',
+              true,
+              true,
+              cTypes); // trim, keepNothing
 
         } else if (line.startsWith("\"columnUnits\": [")) {
           if (!line.endsWith("],"))
@@ -14504,7 +14522,12 @@ public class Table {
                 errorInMethod + "columnUnits line should have ended with '],'.\nline=" + line);
           cUnits = new ArrayList<>();
           StringArray.arrayListFromCSV(
-              line.substring(16, line.length() - 2), ",", true, true, cUnits); // trim, keepNothing
+              separatedWord,
+              line.substring(16, line.length() - 2),
+              ',',
+              true,
+              true,
+              cUnits); // trim, keepNothing
           for (int i = 0; i < cUnits.size(); i++)
             if ("null".equals(cUnits.get(i))) cUnits.set(i, null);
 
@@ -14579,7 +14602,12 @@ public class Table {
             }
 
             StringArray.arrayListFromCSV(
-                line, ",", true, true, sal); // trim, keepNothing    This accepts json CSV strings.
+                separatedWord,
+                line,
+                ',',
+                true,
+                true,
+                sal); // trim, keepNothing    This accepts json CSV strings.
             if (sal.size() != nCol)
               throw new IOException(
                   errorInMethod
@@ -14884,7 +14912,10 @@ public class Table {
     try {
       bw =
           File2.getBufferedWriterUtf8(
-              new FileOutputStream(fullFileName + (append ? "" : randomInt), append));
+              Files.newOutputStream(
+                  Paths.get(fullFileName + (append ? "" : randomInt)),
+                  StandardOpenOption.CREATE,
+                  append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING));
 
       // write the col names
       int nc = nColumns();

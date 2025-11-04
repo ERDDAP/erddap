@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -469,7 +469,7 @@ class ErddapTests {
    * project to get this to work.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testAwsS3MediaFiles() {
     // String2.pressEnterToContinue("\n*** Erddap.testAwsS3MediaFiles()\n" +
     // "Try to view (and restart in the middle) the small.mp4 and other video,

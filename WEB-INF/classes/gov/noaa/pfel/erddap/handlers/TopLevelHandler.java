@@ -58,7 +58,7 @@ public class TopLevelHandler extends State {
         String ttRoles = attributes.getValue("roles");
         String[] tRoles =
             StringArray.arrayFromCSV(
-                (ttRoles == null ? "" : ttRoles + ",") + EDStatic.anyoneLoggedIn, ",", true, false);
+                (ttRoles == null ? "" : ttRoles + ",") + EDStatic.anyoneLoggedIn, ',', true, false);
 
         // is username nothing?
         if (!String2.isSomething(tUsername)) {

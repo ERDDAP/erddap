@@ -28,10 +28,12 @@ import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.BitSet;
@@ -1179,7 +1181,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           StringArray sa =
               new StringArray(
                   StringArray.arrayFromCSV(
-                      tValue.substring(1, tValue.length() - 1), ",", false)); // trim?
+                      tValue.substring(1, tValue.length() - 1), ',', false)); // trim?
           columnValues[whichCol] =
               PrimitiveArray.factory(
                   columnPATypes[whichCol], sa); // does nothing if desired class is String
@@ -1209,7 +1211,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
           StringArray sa =
               new StringArray(
                   // do it this way to deal with quotes, special chars, etc.
-                  StringArray.arrayFromCSV(tValue, ",", false)); // trim?
+                  StringArray.arrayFromCSV(tValue, ',', false)); // trim?
           if (sa.size() > 1)
             throw new SimpleException(
                 EDStatic.bilingual(
@@ -1391,25 +1393,18 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
           throw new TimeoutException(
               "Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
-        try {
-          BufferedOutputStream fos =
-              new BufferedOutputStream(new FileOutputStream(fullFileName, !fileIsNew)); // append?
-          try {
-            fos.write(bar, 0, bar.length); // entire write in 1 low level command
-            fos.close(); // explicitly now, not by finalize() at some time in future
-          } catch (Exception e) {
-            try {
-              fos.close();
-            } catch (Exception e2) {
-            }
-            String2.log(
-                String2.ERROR
-                    + " in EDDTableFromHttpGet while writing to "
-                    + fullFileName
-                    + ":\n"
-                    + MustBe.throwableToString(e));
-            throw e;
-          }
+        try (OutputStream os =
+            Files.newOutputStream(
+                Paths.get(fullFileName), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+          os.write(bar, 0, bar.length); // entire write in 1 low level command
+        } catch (Exception e) {
+          String2.log(
+              String2.ERROR
+                  + " in EDDTableFromHttpGet while writing to "
+                  + fullFileName
+                  + ":\n"
+                  + MustBe.throwableToString(e));
+          throw e;
         } finally {
           lock.unlock();
         }

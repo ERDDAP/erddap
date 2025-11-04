@@ -360,7 +360,7 @@ public class XML {
     for (int i = 0; i < size; i++) {
       int chi = plainText.charAt(i); // note: int
       if (chi <= 255) output.append(HTML_ENTITIES.get(chi));
-      else output.append("&#x" + Integer.toHexString(chi) + ";");
+      else output.append("&#x").append(Integer.toHexString(chi)).append(";");
     }
 
     return output.toString();
@@ -396,7 +396,7 @@ public class XML {
     for (int i = 0; i < size; i++) {
       int chi = plainText.charAt(i); // note: int
       if (String2.isDigitLetter(chi)) output.append((char) chi);
-      else output.append("&#x" + Integer.toHexString(chi) + ";");
+      else output.append("&#x").append(Integer.toHexString(chi)).append(";");
     }
 
     return output.toString();
@@ -440,7 +440,8 @@ public class XML {
         // it prevents attacker from closing href="..." quotes
         // [No. That's in a parameter. It shouldn't be needed for ordinary XML content.]
         output.append(HTML_ENTITIES.get(chi));
-      else if (encodeHighChar && chi > 255) output.append("&#x" + Integer.toHexString(chi) + ";");
+      else if (encodeHighChar && chi > 255)
+        output.append("&#x").append(Integer.toHexString(chi)).append(";");
       else output.append((char) chi);
     }
 

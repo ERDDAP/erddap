@@ -12,4 +12,4 @@ import org.junit.jupiter.api.Tag;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Tag("ExternalOther")
-public @interface TagExternalOther {}
+public @interface TagDisabledExternalOther {}

@@ -23,9 +23,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import tags.TagAWS;
-import tags.TagIncompleteTest;
-import tags.TagPassword;
+import tags.TagDisabledAWS;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledPassword;
 
 /**
  * This is a Java program to test all of the methods in SSR.
@@ -36,7 +36,7 @@ public class TestSSR {
 
   /** Run all of the tests which are operating system independent. */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagDisabledPassword
   void runNonUnixTests() throws Throwable {
     String sar[];
 
@@ -363,7 +363,7 @@ public class TestSSR {
    * sending mail" is un-checked.
    */
   @org.junit.jupiter.api.Test
-  @TagPassword
+  @TagDisabledPassword
   void testEmail() throws Exception {
 
     String emailServer,
@@ -427,7 +427,7 @@ public class TestSSR {
    * worms from sending mail" is un-checked.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testEmail(String emailUser, String password) throws Exception {
 
     String title = "Email Test from TestSSR";
@@ -465,7 +465,7 @@ public class TestSSR {
 
   /** Runs some AWS S3-related tests. */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAwsS3() throws Exception {
 
     String2.log(
@@ -603,7 +603,7 @@ public class TestSSR {
 
   /** Tests Aws TransferManager. */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAwsTransferManager() throws Exception {
 
     // *** test a lot of AWS S3 actions on a private AWS bucket

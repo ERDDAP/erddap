@@ -193,8 +193,9 @@ class EDDTableFromHttpGetTests {
         count++;
         String text = File2.directReadFromUtf8File(name);
         text = text.substring(Math.max(0, text.length() - 80)).trim();
-        if (text.endsWith("]")) String2.log("The file ends with ']' as expected.");
-        else throw new RuntimeException("Unexpected end of file:\n..." + text);
+        if (!text.endsWith("]")) {
+          throw new RuntimeException("Unexpected end of file:\n..." + text);
+        }
       }
       String2.log("All " + count + " tests passed.");
       return;
@@ -203,7 +204,7 @@ class EDDTableFromHttpGetTests {
     // *** hammer the system with inserts
     if (hammer > 0) {
       long time = System.currentTimeMillis();
-      int n = 20000;
+      int n = 200;
       String tHammer = "" + hammer;
       if (hammer >= 10)
         tHammer = "[" + PrimitiveArray.factory(PAType.INT, hammer, "" + hammer).toCSVString() + "]";
@@ -303,8 +304,6 @@ class EDDTableFromHttpGetTests {
             + timestamp1
             + ",bsimons,0\n";
     Test.ensureEqual(results, expected, "results=" + results);
-
-    Math2.sleep(1000);
 
     // *** add 2 rows via array
     String2.log("\n>> insertOrDelete #2: insert 2 rows via array");

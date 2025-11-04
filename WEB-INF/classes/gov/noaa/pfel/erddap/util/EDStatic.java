@@ -60,7 +60,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -71,6 +70,9 @@ import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -1460,8 +1462,10 @@ public class EDStatic {
         // open a new file
         emailLogFile =
             File2.getBufferedWriterUtf8(
-                new FileOutputStream(
-                    config.fullLogsDirectory + "emailLog" + date + ".txt", true)); // true=append
+                Files.newOutputStream(
+                    Paths.get(config.fullLogsDirectory + "emailLog" + date + ".txt"),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND));
       }
 
       // write the email to the log

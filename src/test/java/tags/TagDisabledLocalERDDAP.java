@@ -11,5 +11,5 @@ import org.junit.jupiter.api.Tag;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Tag("ExternalERDDAP")
-public @interface TagExternalERDDAP {}
+@Tag("LocalERDDAP")
+public @interface TagDisabledLocalERDDAP {}

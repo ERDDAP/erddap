@@ -9,9 +9,9 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
 import tags.TagImageComparison;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -27,7 +27,7 @@ class EDDGridLonPM180Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   @TagImageComparison
   void testGT180() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.testGT180()
@@ -203,7 +203,7 @@ class EDDGridLonPM180Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // source 404
+  @TagDisabledMissingDataset // source 404
   @TagImageComparison
   void test1to359() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.test1to359()
@@ -406,7 +406,7 @@ class EDDGridLonPM180Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // Souce 404
+  @TagDisabledMissingDataset // Souce 404
   @TagImageComparison
   void test0to360() throws Throwable {
     // String2.log("\n****************** EDDGridLonPM180.test0to360()
@@ -734,7 +734,7 @@ Dataset {
 
   /** This tests badFilesFlag. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testBadFilesFlag() throws Throwable {
     // String2.log("\n*** EDDGridLonPM180.testBadFilesFlag()\n" +
     // "This test requires that test_erdPHsstamday_LonPM180 be loaded in the local
@@ -795,7 +795,7 @@ Dataset {
    * localhost ERDDAP.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testFiles() throws Throwable {
     String results, expected;
 
@@ -839,7 +839,7 @@ Dataset {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/gibberish/\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
@@ -855,7 +855,7 @@ Dataset {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish/\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish/\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
@@ -871,7 +871,7 @@ Dataset {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish.csv\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish.csv\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: File not found: gibberish.csv .\";\n"

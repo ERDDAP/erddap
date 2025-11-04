@@ -29,8 +29,8 @@ import java.util.concurrent.locks.Lock;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
-import tags.TagFlaky;
-import tags.TagIncompleteTest;
+import tags.TagDisabledFlaky;
+import tags.TagDisabledIncompleteTest;
 import tags.TagSlowTests;
 
 /** This is a Java program to test all of the methods in com.cohort.util. */
@@ -77,22 +77,6 @@ public class TestUtil {
     Double Dar1[] = {Double.valueOf(1.1), Double.valueOf(2.2)};
     Double Dar2[] = {Double.valueOf(1.1), Double.valueOf(2.2)};
     Test.ensureEqual(Dar1, Dar2, "j");
-
-    /*
-     * //test: if exception in catch clause, is finally still done?
-     * String s = null;
-     * try {
-     * System.out.println("Test.testTest in try block");
-     * s = s.substring(0);
-     * } catch (Exception e) {
-     * System.out.println("Test.testTest in catch block");
-     * s = s.substring(0); //2) but this exception then stops the program
-     * } finally {
-     * System.out.println("Test.testTest finally!"); //1) this is done
-     * }
-     * Math2.sleep(5000);
-     */
-
   }
 
   /** Test the methods in Math2. */
@@ -1156,7 +1140,6 @@ public class TestUtil {
 
   @org.junit.jupiter.api.Test
   void timeString2Log() {
-    Math2.sleep(1000); // take a cleansing breath
     long time1 = System.currentTimeMillis();
     for (int i = 0; i < 1000; i++) String2.log("1234567" + i);
     String results =
@@ -1204,7 +1187,7 @@ public class TestUtil {
 
   /** This runs the interactive tests of the methods in String2. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void interactiveTestString2() throws Exception {
     String2.log("\n*** TestUtil.interactiveTestString2");
     // getPasswordFromConsole
@@ -1253,7 +1236,7 @@ public class TestUtil {
     // String2.pressEnterToContinue();
 
     // digestFile
-    s = TestUtil.class.getResource("/data/simpleTest.nc").getPath();
+    s = Path.of(TestUtil.class.getResource("/data/simpleTest.nc").toURI()).toString();
     // md5 was verified by command line
     Test.ensureEqual(
         String2.fileDigest("MD5", s),
@@ -1803,32 +1786,6 @@ public class TestUtil {
     // Test.ensureTrue(time <= 70,
     //        "Too slow!  Time for 1000000 String.compareTo=" + time + "ms (usual = 46-63)");
 
-    // compareTo times
-    time = System.currentTimeMillis();
-    StringHolder sha = new StringHolder("aaaaabc");
-    StringHolder shb = new StringHolder("aaaaaa");
-    sum = 0;
-    for (i = 0; i < 1000000; i++) {
-      sum += shb.compareTo(sha);
-    }
-    Test.ensureEqual(sum, -1000000, "");
-    time = System.currentTimeMillis() - time;
-    // TODO handle time based performance tests better
-    // Test.ensureTrue(time <= 80,
-    //        "time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
-
-    // compareTo times
-    time = System.currentTimeMillis();
-    sum = 0;
-    for (i = 0; i < 1000000; i++) {
-      sum += shb.toString().compareTo(sha.toString());
-    }
-    Test.ensureEqual(sum, -1000000, "");
-    time = System.currentTimeMillis() - time;
-    // TODO handle time based performance tests better
-    // Test.ensureTrue(time <= 200,
-    //        "time for 1000000 StringHolder.toString().compareTo=" + time + "ms (usual = 154)");
-
     // indexOfIgnoreCase(s)
     String2.log("test indexOfIgnoreCase(s)");
     s = "ABCDEFGHIJK";
@@ -1936,7 +1893,6 @@ public class TestUtil {
     // String2.log("time=" + (System.currentTimeMillis() - tTime));
     // sb2 = null;
     // s9 = null;
-    // Math2.sleep(5000);
 
     // test isLetter
     String2.log("test isLetter");
@@ -2588,8 +2544,7 @@ public class TestUtil {
     n = 10000000;
     long speedResults[] = new long[2];
     for (int test = 0; test < 2; test++) {
-      Math2.gc("TestUtil (between tests)", 2000);
-      Math2.gc("TestUtil (between tests)", 2000);
+      Math2.gcAndWait("TestUtil (between tests)");
       long testSum = 0;
       time = System.currentTimeMillis();
       for (i = 0; i < n; i++) {
@@ -2610,8 +2565,7 @@ public class TestUtil {
     // Test.ensureTrue(speedResults[1] < speedResults[0] * 2,
     //        "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0]
     //                + " (Java 17 typical: 1900ms vs 1300ms");
-    Math2.gc("TestUtil (between tests)", 2000);
-    Math2.gc("TestUtil (between tests)", 2000);
+    Math2.gcAndWait("TestUtil (between tests)");
 
     // parseFloat
     String2.log("test parseFloat");
@@ -7441,7 +7395,7 @@ public class TestUtil {
   }
 
   @org.junit.jupiter.api.Test
-  @TagFlaky
+  @TagDisabledFlaky
   void testCalendar2Now_flaky() {
     // nowStringToEpochSeconds(String nowString)
     Test.ensureEqual(Calendar2.nowStringToEpochSeconds("now"), nextEpochSecond(), "");
@@ -7613,8 +7567,7 @@ public class TestUtil {
 
     // test boolean touch(String dirName) and getLastModified
     String2.log("test touch and getLastModified");
-    Math2.gc("TestUtil (between tests)", 1000);
-    Math2.gc("TestUtil (between tests)", 1000);
+    Math2.gcAndWait("TestUtil (between tests)");
     File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
     Math2.sleep(20); // make the file a little older
     long fileTime = File2.getLastModified(utilDir + "temp.txt");
@@ -7650,13 +7603,6 @@ public class TestUtil {
     // this only works on Bob's computer
     String2.log("File2.getSystemTempDirectory()=" + File2.getSystemTempDirectory());
     String tempDir = File2.getSystemTempDirectory();
-    // if (!tempDir.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
-    // !tempDir.equals("C:/Users/Robert/AppData/Local/Temp/")) {
-    // String2.log(
-    // "getSystemTempDirectory =" + tempDir);
-    // //+ "\n" + String2.Press_CtrlC_or_Enter);
-    // Math2.gc(5000); //pause in test to display info
-    // }
 
     // test int deleteIfOld(String dir, long time) {
     // make dir in tempDir
@@ -8059,8 +8005,6 @@ public class TestUtil {
         // initial sizes
         oMemoryInUse = memoryInUse;
         canSize = canonicalSize(); // added strings should be gc'd after each iteration
-        canSHSize =
-            canonicalStringHolderSize(); // added strings should be gc'd after each iteration
       } else {
         // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
         // too inaccurate to be useful
@@ -8072,8 +8016,6 @@ public class TestUtil {
         //     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
       }
       Test.ensureEqual(canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
-      Test.ensureEqual(
-          canonicalStringHolderSize(), canSHSize, "Unexpected String2.canonicalStringHolderSize!");
     }
     // for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
     // TODO Memory use checks can fail in GitHub runners
@@ -8089,108 +8031,13 @@ public class TestUtil {
     // messages.xml
   }
 
-  /** This tests String2.canonicalStringHolder(). */
-  @org.junit.jupiter.api.Test
-  @TagSlowTests
-  void testString2canonicalStringHolder() throws Exception {
-    String2.log("\n*** TestUtil.testString2canonicalStringHolder()");
-    // find a way to make != strings (for tests below)
-    byte[] a = String2.stringToUtf8Bytes("" + 1);
-    int i = 1;
-    byte[] b = String2.stringToUtf8Bytes("" + i);
-    Test.ensureTrue(a != b, "");
-
-    String filler100 =
-        "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-    int n = 1000;
-    StringHolder sa[] = new StringHolder[95 * 95];
-    long oMemoryInUse = -1;
-    Math2.gcAndWait("TestUtil (between tests)");
-    Math2.gcAndWait("TestUtil (between tests)"); // aggressive preparation //in a test
-    String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + String2.canonicalStatistics());
-    int canSize = -1;
-    int canSHSize = -1;
-
-    // for each outer loop, create a different group of 95*95 canonical strings
-    for (int outer = 0; outer < 10; outer++) {
-
-      // create 1000000 strings, but only 1000 different strings per outer loop
-      // With each outer loop, sa values are overwritten.
-      // So previous values should be garbage collected.
-      // If not, memory use and count of nStrings in canonical system
-      // (tested below) will increase with each outer loop.
-      long time = System.currentTimeMillis();
-      for (int inner = 0; inner < n; inner++) {
-        for (int inner2 = 0; inner2 < n; inner2++) {
-          int j = (inner % 95) * 95 + (inner2 % 95);
-          sa[j] =
-              String2.canonicalStringHolder(
-                  new StringHolder(
-                      // makes 95*95 different strings, dispersed to different canonical maps
-                      ((char) (32 + (inner % 95)))
-                          + ""
-                          + // "" keeps char+char->int
-                          ((char) (32 + (inner2 % 95)))
-                          + ""
-                          +
-                          // make this string unique to this outer loop iteration
-                          ((char) (65 + outer))
-                          + ""
-                          +
-                          // make it a long string
-                          filler100));
-          // String2.log(">[" + j + "]=" + sa[j]);
-        }
-      }
-
-      // ensure that memory use and nStrings in maps don't grow unexpectedly
-      time = System.currentTimeMillis() - time;
-      Math2.gcAndWait("TestUtil (between tests)");
-      Math2.gcAndWait("TestUtil (between tests)"); // aggressive //in a test
-      long memoryInUse = Math2.getMemoryInUse();
-      // TODO get a better system for time based performance tests
-      //     int shouldBe = outer == 0 ? 415 : 260; // ms
-      //     String2.log(String2.canonicalStatistics() +
-      //             "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe +
-      //             "ms [1st pass is slower]) " +
-      //             Math2.memoryString());
-      //     Test.ensureTrue(time < shouldBe * 3, "Unexpected time");
-      if (oMemoryInUse == -1) {
-        oMemoryInUse = memoryInUse;
-        canSize = canonicalSize(); // added strings should be gc'd after each iteration
-        canSHSize =
-            canonicalStringHolderSize(); // added strings should be gc'd after each iteration
-      } else {
-        // String2.log(" bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
-        // too inaccurate to be useful
-        Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-        // Disable this total memory usage check because with new test approach there is no
-        // guarantee
-        // about what else might be running. If we need this check, make an isolated test to do
-        // this.
-        // Test.ensureTrue(memoryInUse < 50L * Math2.BytesPerMB,
-        //         "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
-      }
-      Test.ensureEqual(canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
-      Test.ensureEqual(
-          canonicalStringHolderSize(), canSHSize, "Unexpected String2.canonicalStringHolderSize!");
-    }
-    // for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
-    // TODO Memory use checks can fail in GitHub runners
-    // Test.ensureTrue(
-    //     Math2.getMemoryInUse() / Math2.BytesPerMB <= 90,
-    //     "Unexpected memoryInUse="
-    //         + (Math2.getMemoryInUse() / Math2.BytesPerMB)
-    //         + "MB (usually 73MB)");
-  }
-
   /**
    * This tests String2.canonical(), specifically: does new String(s) (where s is a substring of a
    * larger string) grab just the chars in question (good) or a reference to a substring (bad).
    */
   @RepeatedTest(value = 5, failureThreshold = 4)
-  @TagIncompleteTest // repeated test is marking as a fail if any fail, not a pass, need a better
-  // approach
+  @TagDisabledIncompleteTest // repeated test is marking as a fail if any fail, not a pass, need a
+  // better approach
   void testString2canonical2() throws Exception {
     String2.log("\n*** TestUtil.testString2canonical2()");
     String sar[] = new String[127];
@@ -8273,14 +8120,6 @@ public class TestUtil {
     int sum = 0;
     for (Map<String, WeakReference<String>> stringWeakReferenceMap : String2.canonicalMap)
       sum += stringWeakReferenceMap.size();
-    return sum;
-  }
-
-  /** This is only used to test canonicalStringHolder. */
-  private static int canonicalStringHolderSize() {
-    int sum = 0;
-    for (Map<StringHolder, WeakReference<StringHolder>> stringHolderWeakReferenceMap :
-        String2.canonicalStringHolderMap) sum += stringHolderWeakReferenceMap.size();
     return sum;
   }
 
@@ -8407,8 +8246,5 @@ public class TestUtil {
             + (msg.endsWith("\n") ? "" : "\n")
             + "*** KNOWN PROBLEM: "
             + title); // + "\n" +
-    // "Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
-    // Math2.sleep(10000);
-    // String2.pressEnterToContinue();
   }
 }

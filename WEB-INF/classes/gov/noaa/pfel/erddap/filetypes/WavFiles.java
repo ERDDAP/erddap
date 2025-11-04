@@ -18,8 +18,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @FileTypeClass(
     fileTypeExtension = ".wav",
@@ -184,7 +185,9 @@ public class WavFiles extends CacheLockFiles {
       }
 
       // write data to dos
-      dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullDosName)));
+      dos =
+          new DataOutputStream(
+              new BufferedOutputStream(Files.newOutputStream(Paths.get(fullDosName))));
 
       // send the data to dos
       PrimitiveArray[] pdv = gda.getPartialDataValues();

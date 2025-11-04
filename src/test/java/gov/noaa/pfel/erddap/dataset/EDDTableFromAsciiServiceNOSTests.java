@@ -8,7 +8,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -55,7 +55,7 @@ class EDDTableFromAsciiServiceNOSTests {
         "nosCoopsMV",
         "nosCoopsCA"
       })
-  @TagIncompleteTest // "this.stationTable" is null
+  @TagDisabledIncompleteTest // "this.stationTable" is null
   // EDDTableFromAsciiServiceNOS requires loading the stationTable from a file
   // if there is no file, it attempts to make a request of the dataset (during
   // the constructor), which fails because the stationTable is null.

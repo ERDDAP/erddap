@@ -10,7 +10,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -25,7 +25,7 @@ class EDDTableFromColumnarAsciiFilesTests {
    * tests that a dataset with old data doesn't get a recommended value.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testGenerateDatasetsXmlFromEML() throws Throwable {
     // testVerboseOn();
     int language = 0;

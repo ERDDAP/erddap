@@ -14,7 +14,8 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * This class gets all of the grid data requested by a grid data query to an EDDGrid and makes it
@@ -73,7 +74,8 @@ public class GridDataAllAccessor implements AutoCloseable {
       for (int dv = 0; dv < nDv; dv++) {
         dataPAType[dv] = dataVars[dv].destinationDataPAType();
         dos[dv] =
-            new DataOutputStream(new BufferedOutputStream(new FileOutputStream(baseFileName + dv)));
+            new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(Paths.get(baseFileName + dv))));
       }
 
       // get all the data

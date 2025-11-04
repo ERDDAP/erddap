@@ -12,8 +12,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,8 +25,11 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -761,71 +762,42 @@ public class File2 {
   }
 
   /**
-   * This renames the specified file. If the fullNewName file already exists, it will be deleted
-   * before the renaming. The files must be in the same directory.
+   * This renames the specified file. If the fullNewName file already exists, it will be atomically
+   * replaced. The files must be in the same directory.
    *
    * @param fullOldName the complete old name of the file
    * @param fullNewName the complete new name of the file
-   * @throws RuntimeException if trouble
+   * @throws RuntimeException if the rename operation fails
    */
   public static void rename(String fullOldName, String fullNewName) throws RuntimeException {
-    File oldFile = new File(fullOldName);
-    if (!oldFile.isFile())
-      throw new RuntimeException(
-          "Unable to rename\n"
-              + fullOldName
-              + " to\n"
-              + fullNewName
-              + "\nbecause source file doesn't exist.");
+    Path sourcePath = Paths.get(fullOldName);
+    Path targetPath = Paths.get(fullNewName);
 
-    // delete any existing file with destination name
-    File newFile = new File(fullNewName);
-    if (newFile.isFile()) {
-      // It may try a few times.
-      // Since we know file exists, !delete really means it couldn't be deleted; take result at its
-      // word.
-      if (!delete(fullNewName))
-        throw new RuntimeException(
-            "Unable to rename\n"
-                + fullOldName
-                + " to\n"
-                + fullNewName
-                + "\nbecause "
-                + UNABLE_TO_DELETE
-                + " an existing file with destinationName.");
-
-      // In Windows, file may be isFile() for a short time. Give it time to delete.
-      if (String2.OSIsWindows)
-        Math2.sleep(Math2.shortSleep); // if Windows: encourage successful file deletion
-    }
-    // rename
-    if (oldFile.renameTo(newFile)) return;
-
-    // failed? give it a second try. This fixed a problem in a test on Windows.
-    // The problem might be that something needs to be gc'd.
-    Math2.gcAndWait("File2.rename (before retry)");
-    if (oldFile.renameTo(newFile)) return;
-
-    // This is a bad idea, but its better than datasets failing to load.
     try {
-      Thread.sleep(5000);
-    } catch (InterruptedException e) {
-      String2.log("Was sleeping to allow file handles time to free, but got interrupted.");
-    }
-    Math2.gcAndWait("File2.rename (before retry)");
+      // This single command replaces the entire original function.
+      // It automatically handles deleting the target file if it exists.
+      Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-    if (oldFile.renameTo(newFile)) return;
-
-    if (!oldFile.canWrite()) {
+    } catch (NoSuchFileException e) {
+      // Handle the case where the source file doesn't exist
       throw new RuntimeException(
           "Unable to rename\n"
               + fullOldName
               + " to\n"
               + fullNewName
-              + "\nbecause the source file is not writable.");
+              + "\nbecause source file doesn't exist.",
+          e);
+    } catch (IOException e) {
+      // Handle all other errors (e.g., permissions, file locks)
+      throw new RuntimeException(
+          "Unable to rename\n"
+              + fullOldName
+              + " to\n"
+              + fullNewName
+              + "\nReason: "
+              + e.getMessage(),
+          e);
     }
-
-    throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
   }
 
   /**
@@ -1184,7 +1156,7 @@ public class File2 {
     InputStream is = null;
     if (bro == null) {
       // no, it's a regular file
-      is = new FileInputStream(fullFileName);
+      is = Files.newInputStream(Paths.get(fullFileName));
       skipFully(is, firstByte);
     } else {
       // yes, it's an AWS S3 object. Get it.
@@ -1342,10 +1314,10 @@ public class File2 {
     // handle .Z (capital Z) specially first
     // This assumes Z files contain only 1 file.
     if (ext.equals(".Z")) {
-      try (FileOutputStream out = new FileOutputStream(destDir);
+      try (OutputStream out = Files.newOutputStream(Paths.get(destDir));
           ZCompressorInputStream zIn =
               new ZCompressorInputStream(
-                  new BufferedInputStream(new FileInputStream(sourceFullName)))) {
+                  new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))))) {
         final byte[] buffer = new byte[1024];
         int n = 0;
         while (-1 != (n = zIn.read(buffer))) {
@@ -1370,7 +1342,7 @@ public class File2 {
       try {
         gzipIn =
             new GzipCompressorInputStream(
-                new BufferedInputStream(new FileInputStream(sourceFullName)));
+                new BufferedInputStream(Files.newInputStream(Paths.get(sourceFullName))));
         tarIn = new TarArchiveInputStream(gzipIn);
         ArchiveEntry entry;
         while ((entry = tarIn.getNextEntry()) != null) {
@@ -1385,7 +1357,9 @@ public class File2 {
           } else {
             int count;
             byte data[] = new byte[bufferSize];
-            FileOutputStream fos = new FileOutputStream(newFile(destDir, entry.getName()), false);
+            OutputStream fos =
+                Files.newOutputStream(
+                    newFile(destDir, entry.getName()).toPath(), StandardOpenOption.CREATE);
             try (BufferedOutputStream dest = new BufferedOutputStream(fos, bufferSize)) {
               while ((count = tarIn.read(data, 0, bufferSize)) != -1) {
                 dest.write(data, 0, count);
@@ -1409,9 +1383,9 @@ public class File2 {
 
     } else if (ext.equals(".gz") || ext.equals(".gzip")) {
       try (GZIPInputStream gzipInputStream =
-          new GZIPInputStream(new FileInputStream(sourceFullName))) {
+          new GZIPInputStream(Files.newInputStream(Paths.get(sourceFullName)))) {
         File outputFile = new File(destDir, getFileNameWithoutExtension(sourceFullName));
-        try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile)) {
+        try (OutputStream fileOutputStream = Files.newOutputStream(outputFile.toPath())) {
           byte[] buffer = new byte[1024];
           int len;
           while ((len = gzipInputStream.read(buffer)) > 0) {
@@ -1424,7 +1398,7 @@ public class File2 {
     } else if (ext.equals(".zip")) {
       // This can actually have multiple files.
       byte[] buffer = new byte[bufferSize];
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(sourceFullName));
+      ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get(sourceFullName)));
       try {
         ZipEntry zipEntry = zis.getNextEntry();
         while (zipEntry != null) {
@@ -1441,7 +1415,7 @@ public class File2 {
             }
 
             // write file content
-            FileOutputStream fos = new FileOutputStream(newFile);
+            OutputStream fos = Files.newOutputStream(newFile.toPath());
             int len;
             while ((len = zis.read(buffer)) > 0) {
               fos.write(buffer, 0, len);
@@ -1811,7 +1785,7 @@ public class File2 {
    */
   public static BufferedWriter getBufferedFileWriter(String fullFileName, Charset charset)
       throws IOException {
-    return getBufferedWriter(new FileOutputStream(fullFileName), charset);
+    return getBufferedWriter(Files.newOutputStream(Paths.get(fullFileName)), charset);
   }
 
   /**
@@ -1878,28 +1852,28 @@ public class File2 {
    * @param charset e.g., File2.ISO_8859_1 or File2.UTF_8
    * @return an error message (or "" if no error).
    */
-  public static String writeToFile(String fileName, String contents, String charset) {
+  public static String writeToFile(String fileName, String contents, Charset charset) {
     return lowWriteToFile(fileName, contents, charset, "\n", false);
   }
 
   public static String writeToFile88591(String fileName, String contents) {
-    return lowWriteToFile(fileName, contents, ISO_8859_1, "\n", false);
+    return lowWriteToFile(fileName, contents, StandardCharsets.ISO_8859_1, "\n", false);
   }
 
   public static String writeToFileUtf8(String fileName, String contents) {
-    return lowWriteToFile(fileName, contents, UTF_8, "\n", false);
+    return lowWriteToFile(fileName, contents, StandardCharsets.UTF_8, "\n", false);
   }
 
   /**
    * This is like writeToFile, but it appends the text if the file already exists. If the file
    * doesn't exist, it makes a new file.
    */
-  public static String appendFile(String fileName, String contents, String charset) {
+  public static String appendFile(String fileName, String contents, Charset charset) {
     return lowWriteToFile(fileName, contents, charset, "\n", true);
   }
 
   public static String appendFileUtf8(String fileName, String contents) {
-    return lowWriteToFile(fileName, contents, UTF_8, "\n", true);
+    return lowWriteToFile(fileName, contents, StandardCharsets.UTF_8, "\n", true);
   }
 
   /**
@@ -1918,7 +1892,7 @@ public class File2 {
    * @return an error message (or "" if no error).
    */
   private static String lowWriteToFile(
-      String fileName, String contents, String charset, String lineSeparator, boolean append) {
+      String fileName, String contents, Charset charset, String lineSeparator, boolean append) {
 
     // bufferedWriter and error are declared outside try/catch so
     // that they can be accessed from within either try/catch block.
@@ -1929,8 +1903,13 @@ public class File2 {
       // open the file
       // This uses a BufferedWriter wrapped around a FileWriter
       // to write the information to the file.
-      if (charset == null || charset.length() == 0) charset = ISO_8859_1;
-      bufferedWriter = getBufferedWriter(new FileOutputStream(fileName, append), charset);
+      if (charset == null) charset = StandardCharsets.ISO_8859_1;
+      bufferedWriter =
+          Files.newBufferedWriter(
+              Paths.get(fileName),
+              charset,
+              StandardOpenOption.CREATE,
+              append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING);
 
       // convert \n to operating-system-specific lineSeparator
       if (!lineSeparator.equals("\n")) contents = String2.replaceAll(contents, "\n", lineSeparator);
@@ -2031,7 +2010,7 @@ public class File2 {
     OutputStream out = null;
     boolean success = false;
     try {
-      out = new BufferedOutputStream(new FileOutputStream(destination));
+      out = new BufferedOutputStream(Files.newOutputStream(Paths.get(destination)));
       success = copy(source, out, first, last);
     } catch (Exception e) {
       String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e);

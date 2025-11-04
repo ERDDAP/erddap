@@ -371,44 +371,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${mavenTestPluginVersion}</version>
-                <configuration>
-                    <argLine>${surefire.jacoco.args}</argLine>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
-                    </additionalClasspathElements>
-                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${mavenTestPluginVersion}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <argLine>${failsafe.jacoco.args}</argLine>
-                            <additionalClasspathElements>
-                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
-                            </additionalClasspathElements>
-                            <groups>Jetty, Slow</groups>
-                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
-                            <includes>
-                                <include>**/IT*.java</include>
-                                <include>**/*IT.java</include>
-                                <include>**/*ITCase.java</include>
-                                <include>**/*Test*.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>4.9.8.1</version>
@@ -599,9 +561,6 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2Log.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogFactory.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogOutputStream.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolder.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparator.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparatorIgnoreCase.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Test.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Units2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/XML.java</file>
@@ -645,6 +604,102 @@
             </plugins>
         </pluginManagement>
     </build>
+    <profiles>
+        <profile>
+        <id>default</id>
+        <activation>
+      <activeByDefault>true</activeByDefault>
+    </activation>
+        <build>
+        <plugins>
+        <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <configuration>
+                    <argLine>${surefire.jacoco.args}</argLine>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>${failsafe.jacoco.args}</argLine>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <groups>Jetty, Slow</groups>
+                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External</excludedGroups>
+                            <includes>
+                                <include>**/IT*.java</include>
+                                <include>**/*IT.java</include>
+                                <include>**/*ITCase.java</include>
+                                <include>**/*Test*.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            </plugins>
+            </build>
+    </profile>
+    <profile>
+      <id>external</id>
+      <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <configuration>
+                    <argLine>${surefire.jacoco.args}</argLine>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <groups>External</groups>
+                    <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>${failsafe.jacoco.args}</argLine>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <groups>External</groups>
+                            <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
+                            <includes>
+                                <include>**/IT*.java</include>
+                                <include>**/*IT.java</include>
+                                <include>**/*ITCase.java</include>
+                                <include>**/*Test*.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
     <dependencyManagement>
         <dependencies>

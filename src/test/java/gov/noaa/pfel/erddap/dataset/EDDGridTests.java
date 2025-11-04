@@ -30,9 +30,9 @@ import java.security.MessageDigest;
 import java.text.MessageFormat;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledThredds;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -379,7 +379,7 @@ class EDDGridTests {
 
   @org.junit.jupiter.api.Test
   @TagImageComparison
-  @TagThredds
+  @TagDisabledThredds
   void testGeotif2() throws Throwable {
     String tDir = Image2Tests.urlToAbsolutePath(Image2Tests.OBS_DIR);
     EDDGrid gridDataset = (EDDGrid) EDDTestDataset.geterdMHchla8day();
@@ -802,7 +802,7 @@ class EDDGridTests {
    * @throws Throwable
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testSaveAsImageVsExpected(
       EDDGrid eddGrid,
       String dir,
@@ -857,7 +857,7 @@ class EDDGridTests {
 
   /** Test the WCS server using erdBAssta5day. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testWcsBAssta() throws Throwable {
     String2.log("\n*** EDDGridFromNcFiles.testWcsBAssta()");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdBAssta5day();

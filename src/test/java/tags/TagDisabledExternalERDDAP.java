@@ -11,5 +11,5 @@ import org.junit.jupiter.api.Tag;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Tag("IncompleteTest")
-public @interface TagIncompleteTest {}
+@Tag("ExternalERDDAP")
+public @interface TagDisabledExternalERDDAP {}

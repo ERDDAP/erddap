@@ -636,12 +636,12 @@ class StringArrayTests {
 
     // arrayFromCSV, test with unquoted internal strings
     // outside of a quoted string \\u20ac is json-encoded
-    sar = StringArray.arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ", ",", true); // trim?
+    sar = StringArray.arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ", ',', true); // trim?
     Test.ensureEqual(
         String2.annotatedString(String2.toCSVString(sar)),
         "ab,\"\\\\\\u00c3\\u20ac\",\"\\u20ac\",[end]",
         ""); // spaces, \n, \\t are trimmed
-    sar = StringArray.arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ", ",", false); // trim?
+    sar = StringArray.arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ", ',', false); // trim?
     Test.ensureEqual(
         String2.toCSVString(sar),
         "\" ab \",\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",\" \"",
@@ -651,12 +651,12 @@ class StringArrayTests {
     // inside of a quoted string \\u20ac is Euro
     sar =
         StringArray.arrayFromCSV(
-            " ab , \" \n\t\\\u00c3\u20ac \", \" \n\u20ac \" , ", ",", true); // trim?
+            " ab , \" \n\t\\\u00c3\u20ac \", \" \n\u20ac \" , ", ',', true); // trim?
     Test.ensureEqual(
         String2.toCSVString(sar), "ab,\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",", "");
     sar =
         StringArray.arrayFromCSV(
-            " ab , \" \n\t\\\u00c3\u20ac \", \" \n\u20ac \", \" \"", ",", false); // trim?
+            " ab , \" \n\t\\\u00c3\u20ac \", \" \n\u20ac \", \" \"", ',', false); // trim?
     Test.ensureEqual(
         String2.toCSVString(sar),
         "\" ab \",\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",\" \"",

@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableList;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.BufferedReader;
 import java.io.StringReader;
-import tags.TagExternalOther;
+import tags.TagDisabledExternalOther;
 import tags.TagSlowTests;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
@@ -102,7 +102,7 @@ class DigirHelperTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther // error in response (meta tag not closed)
+  @TagDisabledExternalOther // error in response (meta tag not closed)
   void testGetMetadata() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -305,7 +305,7 @@ class DigirHelperTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther // error in response (meta tag not closed)
+  @TagDisabledExternalOther // error in response (meta tag not closed)
   void testGetInventory() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -626,13 +626,13 @@ class DigirHelperTests {
           "THIS STOPPED WORKING ~JAN 2009: "
               + MustBe.throwableToString(e)
               + "\nI think Digir is dead.");
-      Math2.gc("DigirHelper (between tests)", 5000); // in a test, after displaying a message
+      Math2.gcAndWait("DigirHelper (between tests)"); // in a test, after displaying a message
     }
   }
 
   /** This tests searchObis. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther // error in response (meta tag not closed)
+  @TagDisabledExternalOther // error in response (meta tag not closed)
   void testObis() throws Exception {
     // verbose = true;
     // reallyVerbose = true;
@@ -1127,7 +1127,7 @@ class DigirHelperTests {
 
   /** This tests searchOpendapStyleObis(). */
   @org.junit.jupiter.api.Test
-  @TagExternalOther // error in response (meta tag not closed)
+  @TagDisabledExternalOther // error in response (meta tag not closed)
   void testOpendapStyleObis() throws Exception {
     Table table = new Table();
     // Table.verbose = true;

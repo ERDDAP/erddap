@@ -354,29 +354,30 @@ public class EDDTableCopy extends EDDTable {
                   + "&distinct()";
           String cacheDir = cacheDirectory();
           File2.makeDirectory(cacheDir); // ensure it exists
-          TableWriterAll twa =
-              new TableWriterAll(
-                  language, null, null, // metadata not relevant
-                  cacheDir, "extract");
-          TableWriter tw =
-              encloseTableWriter(
-                  0,
-                  true,
-                  cacheDir,
-                  "extractDistinct",
-                  twa,
-                  "", // metadata not relevant
-                  query); // leads to enclosing in TableWriterDistinct
-          sourceEdd.getDataForDapQuery(
-              0,
-              EDStatic.loggedInAsSuperuser,
-              "",
-              query,
-              tw); // "" is requestUrl, not relevant here
-          Table table = twa.cumulativeTable(); // has the distinct results
-          tw.close();
-          tw = null;
-          twa.releaseResources();
+          Table table = null;
+          try (TableWriterAll twa =
+                  new TableWriterAll(
+                      language, null, null, // metadata not relevant
+                      cacheDir, "extract");
+              TableWriter tw =
+                  encloseTableWriter(
+                      0,
+                      true,
+                      cacheDir,
+                      "extractDistinct",
+                      twa,
+                      "", // metadata not relevant
+                      query); ) { // leads to enclosing in TableWriterDistinct
+            sourceEdd.getDataForDapQuery(
+                0,
+                EDStatic.loggedInAsSuperuser,
+                "",
+                query,
+                tw); // "" is requestUrl, not relevant here
+            table = twa.cumulativeTable(); // has the distinct results
+            tw.close();
+            twa.releaseResources();
+          }
           int nRows = table.nRows(); // nRows = 0 will throw an exception above
           if (verbose) String2.log("source nChunks=" + nRows);
           nRows = Math.min(maxChunks, nRows);

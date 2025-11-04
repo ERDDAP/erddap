@@ -12,7 +12,6 @@ import java.awt.datatransfer.StringSelection;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
@@ -21,6 +20,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -78,8 +80,6 @@ public class String2 {
   public static final String EMPTY_STRING = "";
   public static final byte[] BAR_ZERO = new byte[0];
   public static final char[] CAR_ZERO = new char[0];
-  public static final StringHolder STRING_HOLDER_NULL = new StringHolder((String) null);
-  public static final StringHolder STRING_HOLDER_ZERO = new StringHolder("");
 
   /** Returns true if the current Operating System is Windows. */
   public static final String OSName = System.getProperty("os.name");
@@ -197,18 +197,15 @@ public class String2 {
   private static final DecimalFormat genStdFormat10 = new DecimalFormat("0.##########");
   private static final DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
-  // splitting canonicalMap and canonicalStringHolderMap into 127 maps allows each
+  // splitting canonicalMap into 127 maps allows each
   // to be bigger and makes synchronized contention less common.
   // 127 seems better than 128. See stats at end of Table.testBigAscii();
   private static final int nCanonicalMaps = 127;
   static final Map<String, WeakReference<String>>[] canonicalMap = new Map[nCanonicalMaps];
-  static final Map<StringHolder, WeakReference<StringHolder>>[] canonicalStringHolderMap =
-      new Map[nCanonicalMaps];
 
   static {
     for (int i = 0; i < nCanonicalMaps; i++) {
       canonicalMap[i] = new WeakHashMap<>();
-      canonicalStringHolderMap[i] = new WeakHashMap<>();
     }
   }
 
@@ -831,6 +828,13 @@ public class String2 {
     if (c <= 'F') return true;
     if (c < 'a') return false;
     return c <= 'f';
+  }
+
+  /** Returns true if all of the characters in specified range of s are hex digits. */
+  public static final boolean isHexString(final String s, final int start, final int end) {
+    if (s == null) return false;
+    for (int i = start; i < end; i++) if (!isHexDigit(s.charAt(i))) return false;
+    return true;
   }
 
   /** Returns true if all of the characters in s are hex digits. A 0-length string returns false. */
@@ -1660,33 +1664,64 @@ public class String2 {
    */
   public static int replaceAll(
       final StringBuilder sb, final String oldS, final String newS, final boolean ignoreCase) {
-    final int sbL = sb.length();
     final int oldSL = oldS.length();
-    if (oldSL == 0) return 0;
-    StringBuilder testSB = sb;
-    String testOldS = oldS;
-    if (ignoreCase) {
-      testSB = new StringBuilder(sbL);
-      for (int i = 0; i < sbL; i++) testSB.append(Character.toLowerCase(sb.charAt(i)));
-      testOldS = oldS.toLowerCase();
+    if (oldSL == 0) {
+      return 0;
     }
-    int po = testSB.indexOf(testOldS);
-    // System.out.println("testSB=" + testSB.toString() + " testOldS=" + testOldS + " po=" + po);
-    // //not String2.log
-    if (po < 0) return 0;
-    final StringBuilder sb2 = new StringBuilder(sbL / 5 * 6); // a little bigger
-    int base = 0;
+    final int newSL = newS.length();
+    final int sbL = sb.length();
     int n = 0;
-    while (po >= 0) {
-      n++;
-      sb2.append(sb, base, po);
-      sb2.append(newS);
-      base = po + oldSL;
-      po = testSB.indexOf(testOldS, base);
-      // System.out.println("testSB=" + testSB.toString() + " testOldS=" + testOldS + " po=" + po +
-      //    " sb2=" + sb2.toString()); //not String2.log
+    int base = 0;
+    StringBuilder sb2 = null;
+    if (!ignoreCase) {
+      int po = sb.indexOf(oldS, base);
+      if (po < 0) {
+        return 0;
+      }
+      sb2 = new StringBuilder(sbL + Math.max(0, (newSL - oldSL) * 16));
+      while (po >= 0) {
+        n++;
+        sb2.append(sb, base, po);
+        sb2.append(newS);
+        base = po + oldSL;
+        po = sb.indexOf(oldS, base);
+      }
+      sb2.append(sb, base, sbL);
+    } else {
+      // --- Case-Insensitive Path ---
+      // Use a manual, single-pass search to avoid new StringBuilders
+      final int maxPo = sbL - oldSL;
+      final String oldS_lc = oldS.toLowerCase();
+      for (int po = base; po <= maxPo; po++) {
+        // Fast-check: find the first character case-insensitively
+        if (Character.toLowerCase(sb.charAt(po)) != oldS_lc.charAt(0)) {
+          continue;
+        }
+        // First char matched, now check the rest of the string
+        boolean match = true;
+        for (int j = 1; j < oldSL; j++) {
+          if (Character.toLowerCase(sb.charAt(po + j)) != Character.toLowerCase(oldS.charAt(j))) {
+            match = false;
+            break;
+          }
+        }
+        if (match) {
+          // We found a full match
+          if (sb2 == null) {
+            sb2 = new StringBuilder(sbL + Math.max(0, (newSL - oldSL) * 16));
+          }
+          n++;
+          sb2.append(sb, base, po);
+          sb2.append(newS);
+          base = po + oldSL;
+          po = base - 1;
+        }
+      }
+      if (sb2 == null) {
+        return 0; // No matches found at all
+      }
+      sb2.append(sb, base, sbL); // Append final remaining part
     }
-    sb2.append(sb.substring(base));
     sb.setLength(0);
     sb.append(sb2);
     return n;
@@ -1788,7 +1823,7 @@ public class String2 {
    */
   public static void whitespacesToSpace(final StringBuilder sb) {
     if (sb == null) return;
-    final String s = sb.toString().trim(); // this removes whitespace, not just ' '
+    final String s = trimAndToString(sb); // this removes whitespace, not just ' '
     final int sLength = s.length();
     sb.setLength(0);
     if (sLength == 0) return;
@@ -1823,12 +1858,18 @@ public class String2 {
     int po = s.indexOf(oldCh);
     if (po < 0) return s;
 
-    final StringBuilder buffer = new StringBuilder(s);
+    int sLength = s.length();
+    StringBuilder sb = new StringBuilder(sLength);
+    int start = 0;
     while (po >= 0) {
-      buffer.setCharAt(po, newCh);
-      po = s.indexOf(oldCh, po + 1);
+      sb.append(s, start, po);
+      sb.append(newCh);
+      start = po + 1;
+      po = s.indexOf(oldCh, start);
     }
-    return buffer.toString();
+
+    sb.append(s, start, sLength);
+    return sb.toString();
   }
 
   /**
@@ -2230,23 +2271,75 @@ public class String2 {
    * @return the decoded string
    */
   public static String fromNccsvString(String s) {
-    // Avoid the effort if no " or \ in the string.
-    // If s starts with ", this will quickly (and correctly) go to full effort.
-    // This is significant time savings for Table.readASCII().
+    if (s == null) {
+      return null;
+    }
     final int sLength = s.length();
-    if (sLength >= 2 && s.charAt(0) == '\"' && s.charAt(sLength - 1) == '\"') {
-      s = s.substring(1, sLength - 1); // remove surrounding "
-      s = replaceAll(s, "\"\"", "\""); // then convert "" to \"
-      return fromJson(s);
+    if (sLength == 0) {
+      return EMPTY_STRING;
     }
 
-    s = replaceAll(s, "\"\"", "\""); // convert "" to \"
+    final boolean quoted = sLength >= 2 && s.charAt(0) == '\"' && s.charAt(sLength - 1) == '\"';
+    final int start;
+    final int end;
 
-    // there may be a \ escaped char
-    if (s.indexOf('\\') >= 0) return fromJson(s);
-    return s;
+    if (quoted) {
+      start = 1;
+      end = sLength - 1;
+    } else {
+      start = 0;
+      end = sLength;
+    }
 
-    // return replaceAll(fromJson(s), "\"\"", "\"");
+    // Fast path: Scan for any escapes ("" or \)
+    int quoteIndex = -1;
+    int slashIndex = -1;
+    for (int i = start; i < end; i++) {
+      char ch = s.charAt(i);
+      if (ch == '\"' && i < end - 1 && s.charAt(i + 1) == '\"') {
+        quoteIndex = i; // Found first ""
+        if (slashIndex != -1) break; // Found both, no need to scan further
+      } else if (ch == '\\') {
+        slashIndex = i; // Found first \
+        if (quoteIndex != -1) break; // Found both, no need to scan further
+      }
+    }
+
+    // If no escapes found, just return the content (after unquoting if needed)
+    if (quoteIndex == -1 && slashIndex == -1) {
+      return quoted ? s.substring(start, end) : s;
+    }
+
+    // Escapes exist. We need to unescape.
+    String toUnescape;
+
+    // 1. Handle "" escapes
+    if (quoteIndex != -1) {
+      // "" exists, do a single-pass replacement
+      StringBuilder sb = new StringBuilder(end - start);
+      int copyStart = start;
+      for (int po = start; po < end; po++) {
+        char ch = s.charAt(po);
+        if (ch == '\"' && po < end - 1 && s.charAt(po + 1) == '\"') {
+          sb.append(s, copyStart, po); // Append chunk before ""
+          sb.append('\"'); // Append single "
+          po++; // Skip next "
+          copyStart = po + 1; // Set new copy start
+        }
+      }
+      sb.append(s, copyStart, end); // Append final chunk
+      toUnescape = sb.toString();
+    } else {
+      // no "" escapes, just unquote if needed
+      toUnescape = quoted ? s.substring(start, end) : s;
+    }
+
+    // 2. Handle \ escapes (only if we know they exist)
+    if (slashIndex != -1) {
+      return fromJson(toUnescape); // fromJson handles \ escapes
+    } else {
+      return toUnescape; // No \ escapes, return as-is
+    }
   }
 
   /**
@@ -3338,7 +3431,12 @@ public class String2 {
     // always synchronize on logFileLock
     synchronized (logFileLock) {
       try {
-        logFile = File2.getBufferedWriterUtf8(new FileOutputStream(fullFileName, append));
+        logFile =
+            File2.getBufferedWriterUtf8(
+                Files.newOutputStream(
+                    Paths.get(fullFileName),
+                    StandardOpenOption.CREATE,
+                    append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING));
         logFileSize = Math2.narrowToInt(new File(fullFileName).length());
         logFileName = fullFileName; // log file created, so assign logFileName
       } catch (Throwable t) {
@@ -3559,17 +3657,21 @@ public class String2 {
     // log("split line=" + annotatedString(s));
     for (int index = 0; index < sLength; index++) {
       if (s.charAt(index) == separator) {
-        String ts = s.substring(start, index);
-        if (trim) ts = ts.trim();
-        al.add(ts);
+        if (trim) {
+          al.add(trimSubString(s, start, index));
+        } else {
+          al.add(s.substring(start, index));
+        }
         start = index + 1;
       }
     }
 
     // add the final substring
-    String ts = s.substring(start, sLength); // start == sLength? "" : s.substring(start, sLength);
-    if (trim) ts = ts.trim();
-    al.add(ts);
+    if (trim) {
+      al.add(trimSubString(s, start, sLength));
+    } else {
+      al.add(s.substring(start, sLength));
+    }
     // log("al.size=" + al.size() + "\n");
     return al;
   }
@@ -4756,6 +4858,65 @@ public class String2 {
   }
 
   /**
+   * This trims the StringBuilder and then does toString(), minimizing allocations.
+   *
+   * @param sb a StringBuilder
+   * @return the trimmed string
+   */
+  public static String trimAndToString(StringBuilder sb) {
+    // Manually trim the StringBuilder *before* toString()
+    // This avoids the toString().trim() double allocation.
+    int start = 0;
+    int end = sb.length();
+
+    String s;
+    while (start < end && sb.charAt(start) <= ' ') {
+      start++;
+    }
+    while (end > start && sb.charAt(end - 1) <= ' ') {
+      end--;
+    }
+
+    if (start >= end) {
+      s = ""; // String was all whitespace
+    } else {
+      // Create one string from the trimmed indices
+      s = sb.substring(start, end);
+    }
+    return s;
+  }
+
+  /**
+   * This trims the substring line[start:end] and returns it as a new String. This is used to
+   * minimize allocations when parsing substrings.
+   *
+   * @param line the original String
+   * @param start the start index of the substring (inclusive)
+   * @param end the end index of the substring (exclusive)
+   * @return the trimmed substring as a new String
+   */
+  public static String trimSubString(String line, int start, int end) {
+    // Manually trim: find the new 'start' index (skip leading whitespace)
+    while (start < end && line.charAt(start) <= ' ') {
+      start++;
+    }
+    // Manually trim: find the new 'end' index (skip trailing whitespace)
+    // Note: 'end' is exclusive, so we check the char at end-1
+    while (end > start && line.charAt(end - 1) <= ' ') {
+      end--;
+    }
+
+    // After trimming, the token might be empty.
+    // We add the string slice from the (potentially new) start to the (potentially new) end.
+    // String.substring() handles the (start == end) case and returns ""
+    if (start > end) {
+      return "";
+    } else {
+      return line.substring(start, end); // <-- THE ONLY ALLOCATION
+    }
+  }
+
+  /**
    * This trims just the start of the string.
    *
    * @param s
@@ -5689,52 +5850,8 @@ public class String2 {
       if (canonical == null) {
         // For proof that new String(s.substring(,)) is just storing relevant chars,
         // not a reference to the parent string, see TestUtil.testString2canonical2()
-        canonical = s; // in case s is from s2.substring, copy to be just the characters
+        canonical = s;
         tCanonicalMap.put(canonical, new WeakReference<>(canonical));
-        // log("new canonical string: " + canonical);
-      }
-      return canonical;
-    }
-  }
-
-  /**
-   * This is like String.intern(), but uses a WeakHashMap so the canonical StringHolder can be
-   * garbage collected. <br>
-   * This is thread safe. <br>
-   * It is fast: ~0.002ms per call. <br>
-   * See TestUtil.testString2canonicalStringHolder().
-   *
-   * <p>Using this increases memory use by ~6 bytes per canonical byte[] (4 for pointer * ~.5
-   * hashMap load factor). <br>
-   * So it only saves memory if many strings would otherwise be duplicated. <br>
-   * But if lots of strings are originally duplicates, it saves *lots* of memory.
-   *
-   * @param sh byte[] doesn't implement hashCode or equals, so need to store byte[] in
-   *     canonicalStringHolderMap as StringHolder. sh can't be null.
-   * @return a canonical StringHolder with the same characters as sh.
-   */
-  public static StringHolder canonicalStringHolder(StringHolder sh) {
-    char[] car = sh.charArray();
-    if (car == null) return STRING_HOLDER_NULL;
-    if (car.length == 0) return STRING_HOLDER_ZERO;
-    Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap =
-        canonicalStringHolderMap[
-            Math.abs(sh.hashCode() ^ sh.length())
-                % nCanonicalMaps]; // ^length makes it different, so not lots of collisions within
-    // tCanonicalStringHolderMap[i]
-    // see stats at end of Table.testBigAscii();
-
-    // faster and logically better to use synchronized(canonicalStringHolderMap) once
-    //  (and use a few times in consistent state)
-    // than to synchronize canonicalStringHolderMap and lock/unlock twice
-    synchronized (tCanonicalStringHolderMap) {
-      WeakReference<StringHolder> wr = tCanonicalStringHolderMap.get(sh);
-      // wr won't be garbage collected, but reference might (making wr.get() return null)
-      StringHolder canonical = wr == null ? null : wr.get();
-      if (canonical == null) {
-        canonical = sh; // use this object
-        tCanonicalStringHolderMap.put(canonical, new WeakReference<>(canonical));
-        // log("new canonical string: " + canonical);
       }
       return canonical;
     }
@@ -5778,14 +5895,7 @@ public class String2 {
       sum += tSize;
       sb.append((i == 0 ? "" : " + ") + (i % 16 == 0 ? "\n" : "") + tSize);
     }
-    sb.append(" = " + sum + "\ncanonicalStringHolder map sizes: ");
-    sum = 0;
-    for (int i = 0; i < canonicalStringHolderMap.length; i++) {
-      int tSize = canonicalStringHolderMap[i].size();
-      sum += tSize;
-      sb.append((i == 0 ? "" : " + ") + (i % 16 == 0 ? "\n" : "") + tSize);
-    }
-    sb.append(" = " + sum);
+    sb.append(" = " + sum + "\n");
     return sb.toString();
   }
 

@@ -11,5 +11,5 @@ import org.junit.jupiter.api.Tag;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Tag("RequiresContent")
-public @interface TagRequiresContent {}
+@Tag("MissingDataset")
+public @interface TagDisabledMissingDataset {}

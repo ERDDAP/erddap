@@ -11,7 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -496,7 +496,7 @@ class EDDTableFromJsonlCSVFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // no definition for dataset
+  @TagDisabledMissingDataset // no definition for dataset
   void testBase64Image() throws Throwable {
     // String2.log("\n****************** EDDTableFromJsonlCSVFiles.testBase64Image()
     // *****************\n");

@@ -28,14 +28,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagAWS;
+import tags.TagDisabledAWS;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledThredds;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
-import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
 import tags.TagSlowTests;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.ma2.Array;
@@ -124,7 +124,7 @@ class EDDGridFromNcFilesTests {
 
   /** test reading an .ncml file */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
+  @TagDisabledIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
     // 2022-02-07 These were the simplest test I could create to demonstrate
@@ -1191,8 +1191,8 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
-  @TagLargeFiles
+  @TagDisabledAWS
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
     int language = 0;
@@ -1468,7 +1468,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
+  @TagDisabledAWS
   void testPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testPrivateAwsS3(" +
     // deleteCachedFiles + ") *****************\n");
@@ -3051,7 +3051,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testGenerateDatasetsXml4() throws Throwable {
     // takes a long time and no longer useful
     // String2.pressEnterToContinue(
@@ -4010,8 +4010,8 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
-  @TagLargeFiles
+  @TagDisabledAWS
+  @TagDisabledLargeFiles
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -4276,7 +4276,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
+  @TagDisabledAWS
   void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -8391,7 +8391,7 @@ class EDDGridFromNcFilesTests {
    * @param whichChunk -1 (all) or 0 - 4.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   @TagImageComparison
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
@@ -9628,11 +9628,6 @@ class EDDGridFromNcFilesTests {
     // switch to testImagesIdentical
     // String tDir = EDStatic.config.fullTestCacheDirectory;
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
-
-    // TestUtil.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
-    // "See SgtGraph \"yIsTimeAxis = false;\".");
-    // Math2.sleep(10000);
-
   }
 
   /**
@@ -9899,7 +9894,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXmlWithRemoteThreddsFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles()\n");
@@ -10114,7 +10109,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagThredds
+  @TagDisabledThredds
   void testRemoteThreddsFiles(boolean deleteCachedInfo) throws Throwable {
     String tName, results, tResults, expected, userDapQuery;
     String today =
@@ -12872,7 +12867,7 @@ class EDDGridFromNcFilesTests {
 
   /** Test DAP errors. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testDapErrors() throws Throwable {
     String baseRequest = "http://localhost:8080/cwexperimental/griddap/";
     String results;
@@ -12955,7 +12950,7 @@ class EDDGridFromNcFilesTests {
     }
     Test.ensureEqual(
         results,
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/griddap/erdBAssta5dayzztop.html\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/griddap/erdBAssta5dayzztop.html\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Currently unknown datasetID=erdBAssta5dayzztop\";\n"
@@ -12972,7 +12967,7 @@ class EDDGridFromNcFilesTests {
     }
     Test.ensureEqual(
         results,
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.csv?time%5B(2000-01-01):(2000-01-01)%5D\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.csv?time%5B(2000-01-01):(2000-01-01)%5D\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Your query produced no matching results. Query error: For variable=time axis#0=time Constraint=\\\"[(2000-01-01):(2000-01-01)]\\\": Start=\\\"2000-01-01\\\" is less than the axis minimum=2002-07-06T12:00:00Z (and even 2002-07-05T22:49:16Z).\";\n"
@@ -13765,7 +13760,6 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(ints = {3})
-  @TagSlowTests
   void testNThreads(int maxNThreads) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testNThreads()
     // *****************\n");
@@ -13780,7 +13774,7 @@ class EDDGridFromNcFilesTests {
       if (nt == 0) continue;
       // delete all files in .gz cache dir
       File2.deleteAllFiles(eddGrid.decompressedDirectory());
-      Math2.gc("EDDGridFromNcFiles (between tests)", 30000); // let system settle
+      Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); // let system settle
 
       long tTime = System.currentTimeMillis();
       eddGrid.nThreads = Math.abs(nt);
@@ -13815,9 +13809,6 @@ class EDDGridFromNcFilesTests {
       String2.log(msg);
       bigResults.append(msg);
     }
-    // String2.log(bigResults.toString());
-    String2.log("  (Lenovo: 2 cores: nThreads/s 3/4,2/3,1/3,1/4,2/3,3/3");
-    // Math2.gc("EDDGridFromNcFiles (between tests)", 10000);
   }
 
   /**
@@ -15054,7 +15045,6 @@ class EDDGridFromNcFilesTests {
    *
    * @throws Throwable if trouble
    */
-  @TagSlowTests
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testUpdate(boolean allowRssUpdates) throws Throwable {
@@ -15147,7 +15137,7 @@ class EDDGridFromNcFilesTests {
       for (int i = 0; i < 10; i++) {
         String2.log(
             "after rename .nc.gz to .nc.gz2, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
 
       tName =
@@ -15245,7 +15235,7 @@ class EDDGridFromNcFilesTests {
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc2 to .nc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
     }
 
@@ -15332,7 +15322,7 @@ class EDDGridFromNcFilesTests {
       }
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
 
       tName =
@@ -15387,7 +15377,7 @@ class EDDGridFromNcFilesTests {
 
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
     }
 
@@ -15473,7 +15463,7 @@ class EDDGridFromNcFilesTests {
     // *** rename a data file so it doesn't match regex
     try {
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz", "erdQSwind1day_20080101_03.nc.gz2");
-      Math2.sleep(500);
+      Math2.sleep(100);
       SharedWatchService.processEvents();
 
       snapshotDiff = eddGrid.snapshot();
@@ -15532,7 +15522,7 @@ class EDDGridFromNcFilesTests {
     } finally {
       // rename it back to original
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
-      Math2.sleep(500);
+      Math2.sleep(100);
       SharedWatchService.processEvents();
     }
 
@@ -15846,7 +15836,7 @@ class EDDGridFromNcFilesTests {
       // if trouble
       File2.deleteAllFiles(
           EDDGridFromNcFiles.decompressedDirectory(tDatasetID)); // ensure cache is empty
-      Math2.sleep(1000);
+      Math2.sleep(100);
       EDDGridFromFiles.testQuickRestart = true;
       eddGrid = (EDDGridFromNcFiles) EDDTestDataset.gettestGriddedNcFiles();
 
@@ -15899,7 +15889,7 @@ class EDDGridFromNcFilesTests {
       }
       expected =
           "There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)\n"
-              + "(Cause: java.io.FileNotFoundException: "
+              + "(Cause: java.nio.file.NoSuchFileException: "
               + File2.forwardSlashDir(dataDir)
               + "erdQSwind1day_20080101_03.nc.gz";
       results = File2.forwardSlashDir(results);
@@ -15981,7 +15971,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateDatasetsXmlWithRemoteHyraxFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles()\n");
@@ -16205,7 +16195,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testIgor()\n");
     // testVerboseOn();
@@ -16547,7 +16537,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGroups() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testGroups()\n");
     // testVerboseOn();
@@ -16656,7 +16646,7 @@ class EDDGridFromNcFilesTests {
   /** This tests makeCopyFileTasks. */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset // source seems to not have data
+  @TagDisabledMissingDataset // source seems to not have data
   void testMakeCopyFileTasks(boolean deleteAllLocalFiles) throws Exception {
     boolean tRecursive = true;
     boolean tDirectoriesToo = false;
@@ -16756,7 +16746,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testGenerateDatasetsXmlCopy() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String tSourceUrl =
@@ -17042,7 +17032,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCopyFiles(boolean deleteDataFiles) throws Throwable {
     int language = 0;
 
@@ -17283,7 +17273,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCacheFiles(boolean deleteDataFiles) throws Throwable {
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
@@ -23875,7 +23865,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testBufrTemp() throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testBufrTemp()
     // *****************\n");

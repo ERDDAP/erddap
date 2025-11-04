@@ -963,7 +963,6 @@ class SgtGraphTests {
     // TestUtil.displayInBrowser("file://" + fileName + ".png");
     Image2Tests.testImagesIdentical(
         baseImageName + ".png", baseImageName + ".png", baseImageName + "_diff.png");
-    Math2.sleep(2000);
 
     if (testAllAndDisplay) {
       for (int ti = 1; ti <= 6; ti++) {
@@ -972,7 +971,6 @@ class SgtGraphTests {
             baseImageName + ti + ".png",
             baseImageName + ti + ".png",
             baseImageName + ti + "_diff.png");
-        Math2.sleep(400);
       }
     }
 
@@ -1212,7 +1210,7 @@ class SgtGraphTests {
     // TestUtil.displayInBrowser("file://" + fileName);
     Image2Tests.testImagesIdentical(fileName + ".png", fileName + ".png", fileName + "_diff.png");
 
-    Math2.gc("SgtGraph.testSurface (between tests)", 2000);
+    Math2.gcAndWait("SgtGraph.testSurface (between tests)");
     // String2.pressEnterToContinue();
 
     // delete files

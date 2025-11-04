@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -311,7 +312,7 @@ public class Image2Tests {
       if (displayImages) {
         TestUtil.displayInBrowser("file://" + observed);
       }
-      File2.appendFile("missingImage.txt", expected + "\n", File2.UTF_8);
+      File2.appendFile("missingImage.txt", expected + "\n", StandardCharsets.UTF_8);
       if (autoCreateMissing) {
         System.out.println("Expected image file doesn't exist, creating it from observed.");
         File2.copy(observed, expected);

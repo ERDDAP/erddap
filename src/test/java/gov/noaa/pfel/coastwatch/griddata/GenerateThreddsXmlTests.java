@@ -6,7 +6,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import tags.TagMissingFile;
+import tags.TagDisabledMissingFile;
 
 class GenerateThreddsXmlTests {
   /**
@@ -28,7 +28,7 @@ class GenerateThreddsXmlTests {
 
   /** This does a little test of this class -- specific to Bob's computer. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void basicTest() throws Exception {
     // verbose = true;
     StringArray sa =

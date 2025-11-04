@@ -11,7 +11,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.Initialization;
 
 class ArchiveADatasetTests {
@@ -21,7 +21,8 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset //  All of these require the datasets to be defined in the loaded datasets.xml
+  @TagDisabledMissingDataset //  All of these require the datasets to be defined in the loaded
+  // datasets.xml
   void testOriginalNcCF() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalNcCF()");
     int language = 0;
@@ -84,7 +85,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItNcCF() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItNcCF()");
     int language = 0;
@@ -187,7 +188,7 @@ class ArchiveADatasetTests {
 
   /** A test of NCEI-preferences */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItNcCFMA() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItNcCFMA()");
     int language = 0;
@@ -288,7 +289,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOriginalTrajectoryProfile() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalTrajectoryProfile()");
     int language = 0;
@@ -358,7 +359,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItTrajectoryProfile() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItTrajectoryProfile()");
     int language = 0;
@@ -461,7 +462,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOriginalGridAll() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalGridAll()");
     int language = 0;
@@ -528,7 +529,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItGridAll() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItGridAll()");
     int language = 0;
@@ -627,7 +628,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOriginalGridSubset() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalGridSubset()");
     int language = 0;
@@ -688,7 +689,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItGridSubset() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItGridSubset()");
     int language = 0;
@@ -785,7 +786,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItGridSubset2() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItGridSubset2()");
     int language = 0;

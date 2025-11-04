@@ -7,11 +7,26 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
-import tags.TagMissingFile;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
+import tags.TagDisabledMissingFile;
 
 public class GridTests {
-  public static final String testDir = GridTests.class.getResource("/data/gridTests/").getPath();
+  public static String testDir;
   public static final String testName = "OQNux10S1day_20050712_x-135_X-105_y22_Y50";
+
+  @BeforeAll
+  static void setUp() {
+    try {
+      testDir =
+          Path.of(GridTests.class.getResource("/data/gridTests/").toURI()).toString()
+              + File.separator;
+    } catch (URISyntaxException e) {
+      String2.log("Error initializing GridTests.testDir: " + e.toString());
+    }
+  }
 
   /** This tests the little static methods. */
   @org.junit.jupiter.api.Test
@@ -43,7 +58,7 @@ public class GridTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testForMemoryLeak() throws Exception {
     Grid grid = new Grid();
     String dir;
@@ -76,7 +91,7 @@ public class GridTests {
     String2.log("Memory used change after MemoryLeak test: " + increase);
     if (increase > 50000)
       throw new Exception("Memory usage increased: " + increase + " memory leak suspected.");
-    else Math2.gc("Grid (between tests)", 5000); // in a test, a pause after message displayed
+    else Math2.gcAndWait("Grid (between tests)"); // in a test, a pause after message displayed
   }
 
   /**

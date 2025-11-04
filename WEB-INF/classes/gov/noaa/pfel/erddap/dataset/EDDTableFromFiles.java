@@ -4074,7 +4074,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           sourceInfo.fileNameRegexes = new StringArray();
           sourceInfo.fileNameCGs = new IntArray();
         }
-        String csv[] = StringArray.arrayFromCSV(name.substring(12), ",");
+        String csv[] = StringArray.arrayFromCSV(name.substring(12), ',');
         if (csv.length != 2) {
           throw new SimpleException(
               "datasets.xml error: "
@@ -4096,7 +4096,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           sourceInfo.pathNameRegexes = new StringArray();
           sourceInfo.pathNameCGs = new IntArray();
         }
-        String csv[] = StringArray.arrayFromCSV(name.substring(12), ",");
+        String csv[] = StringArray.arrayFromCSV(name.substring(12), ',');
         if (csv.length != 2) {
           throw new SimpleException(
               "datasets.xml error: "

@@ -16,6 +16,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import java.io.File;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import testDataset.Initialization;
 
@@ -295,7 +296,9 @@ class EDDTests {
   @org.junit.jupiter.api.Test
   void testAddFillValueAttributes() throws Throwable {
     // String2.log("\n*** EDD.testAddFillValueAttributes()");
-    String dir = EDDTests.class.getResource("/data/addFillValueAttributes").getPath() + "/";
+    String dir =
+        Path.of(EDDTests.class.getResource("/data/addFillValueAttributes").toURI()).toString()
+            + File.separator;
 
     try {
       // make temp copy of datasets.xml

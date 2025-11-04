@@ -5,8 +5,8 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagAWS;
-import tags.TagExternalOther;
+import tags.TagDisabledAWS;
+import tags.TagDisabledExternalOther;
 import testDataset.Initialization;
 
 class FileVisitorSubdirTests {
@@ -59,7 +59,7 @@ class FileVisitorSubdirTests {
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorSubdir.testAWSS3");
 
@@ -80,7 +80,7 @@ class FileVisitorSubdirTests {
   }
 
   /** This tests a WAF and pathRegex. */
-  @TagExternalOther
+  @TagDisabledExternalOther
   @org.junit.jupiter.api.Test
   void testWAF() throws Throwable {
     // String2.log("\n*** FileVisitorSubdir.testWAF");

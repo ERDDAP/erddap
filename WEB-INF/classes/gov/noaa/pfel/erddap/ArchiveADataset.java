@@ -21,6 +21,8 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import ucar.nc2.write.NetcdfFileFormat;
@@ -196,7 +198,7 @@ public class ArchiveADataset {
       if (!modeLC.equals("original") && !modeLC.equals("bagit"))
         throw new RuntimeException("You must specify 'original' or 'BagIt'.");
       boolean bagitMode = modeLC.equals("bagit");
-      String textFileEncoding = File2.UTF_8;
+      Charset textFileEncoding = StandardCharsets.UTF_8;
 
       // compression
       String compression =

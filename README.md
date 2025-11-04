@@ -29,6 +29,18 @@ Simply run `mvn test` in a terminal to run the JUnit tests.
 
 Note that by default tests that do an image comparison are enabled. To disable those tests add `ImageComparison` to the `excludedGroups` section of the surefire `configuration`. It is recommended you run the image tests before making changes to ERDDAP&trade; so you can generate a baseline set of images that will be later used for comparison.
 
+### Running integration tests
+
+These are slower tests, including those that interact with a locally running server. Run them with `mvn verify`.
+
+If you have issues with tests, it could be good to try a `mvn clean` before running the tests.
+
+### External server tests
+
+While many of the tests interact with external servers, for example to load data. There are some tests that are almost entirely testing an external server and not ERDDAP&trade;. These external tests are run using `mvn verify -P external`. In the code they are tagged with `TagExternal`. This is different from `TagDisabledExternalERDDAP` and `TagDisabledExternalOther`, which are used to label tests where the external source is either no longer available or extremely flaky.
+
+The external tests should be run periodically (maybe around release time), but are unlikely to be relevant to day to day ERDDAP development&trade;.
+
 ### Metrics
 
 Metrics are collected using [Prometheus](https://prometheus.github.io/client_java/). You can see the metrics on a local server at [/erddap/metrics](http://localhost:8080/erddap/metrics?debug=text).

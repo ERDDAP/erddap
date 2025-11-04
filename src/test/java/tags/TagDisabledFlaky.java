@@ -12,4 +12,4 @@ import org.junit.jupiter.api.Tag;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Tag("Flaky")
-public @interface TagFlaky {}
+public @interface TagDisabledFlaky {}
