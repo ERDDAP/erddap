@@ -14720,7 +14720,7 @@ public class Table {
    * end with ] and have same number of columns as the first line. This doesn't simplify the columns
    * at all. null values appear as empty strings.
    *
-   * @param reader This is usually a BufferedReader. This method doesn't close the reader.
+   * @param reader This method doesn't close the reader.
    * @param fullFileName This is just used for error messages.
    * @param colNames If null, all columns will be loaded. If not null, only these columns will be
    *     loaded (if found) and the returned table will be in this order.
@@ -14733,23 +14733,26 @@ public class Table {
    * @throws Exception if serious trouble
    */
   public void readJsonlCSV(
-      Reader reader, String fullFileName, StringArray colNames, String[] colTypes, boolean simplify)
+      BufferedReader reader,
+      String fullFileName,
+      StringArray colNames,
+      String[] colTypes,
+      boolean simplify)
       throws Exception {
     clear();
-    StringBuilder sb = new StringBuilder();
     long time = System.currentTimeMillis();
+
+    // A reasonable default capacity to avoid frequent array resizing
+    final int INITIAL_CAPACITY = 1024;
 
     // read the column names
     // This doesn't just JsonTokener because it resolves to different data types,
-    //  but I don't need that and don't want that (for one variable,
-    //  one line might have an int and the next a long).
+    // but I don't need that and don't want that (for one variable,
+    // one line might have an int and the next a long).
     int line = 1;
-    int ch = reader.read();
-    while (ch != '\n' && ch != -1) {
-      sb.append((char) ch);
-      ch = reader.read();
-    }
-    String s = sb.toString();
+    String s = reader.readLine();
+    if (s == null) return; // No data at all
+
     StringArray sa = StringArray.simpleFromJsonArray(s);
     int nc = sa.size();
     PrimitiveArray pas[] = new PrimitiveArray[nc];
@@ -14760,15 +14763,15 @@ public class Table {
       tColName = tColName.equals("null") ? "" : String2.fromJson(tColName);
       PrimitiveArray pa = null;
       if (colNames == null) {
-        pa = new StringArray();
+        pa = new StringArray(INITIAL_CAPACITY, false);
       } else {
         int which = colNames.indexOf(tColName);
         if (which >= 0) {
           if (colTypes == null) {
-            pa = new StringArray();
+            pa = new StringArray(INITIAL_CAPACITY, false);
           } else {
             PAType tPAType = PAType.fromCohortString(colTypes[which]); // it handles boolean
-            pa = PrimitiveArray.factory(tPAType, 8, false);
+            pa = PrimitiveArray.factory(tPAType, INITIAL_CAPACITY, false); //
             fromJsonString[c] = tPAType == PAType.STRING || tPAType == PAType.CHAR;
             isBoolean[c] = "boolean".equals(colTypes[which]);
           }
@@ -14779,21 +14782,16 @@ public class Table {
         addColumn(tColName, pa);
       }
     }
-    if (ch == -1) // eof
-    return;
 
     // read rows of data
     StringBuilder warnings = new StringBuilder();
     while (true) {
       line++;
-      sb.setLength(0);
-      ch = reader.read();
-      while (ch != '\n' && ch != -1) {
-        sb.append((char) ch);
-        ch = reader.read();
-      }
-      s = sb.toString().trim();
-      if (ch == -1 && s.length() == 0) break; // eof
+      s = reader.readLine();
+      if (s == null) break; // eof
+      s = s.trim();
+      if (s.length() == 0) continue; // skip blank lines
+
       try {
         sa = StringArray.simpleFromJsonArray(s); // throws SimpleException
         if (sa.size() == nc) {
@@ -14819,10 +14817,8 @@ public class Table {
                   + "). [e]\n");
         }
       } catch (Exception e) {
-        warnings.append("  line #" + line + ": " + e.getMessage() + "\n");
+        warnings.append(" line #" + line + ": " + e.getMessage() + "\n");
       }
-      if (ch == -1) // eof
-      break;
     }
 
     if (warnings.length() > 0)

@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -535,64 +536,65 @@ public class File2 {
    *     won't throw an exception.
    */
   public static boolean delete(String fullName) {
-    // This can have problems if another thread is reading the file, so try repeatedly.
-    // Unlike other places, this is often part of delete/rename,
-    //  so we want to know when it is done ASAP.
     int maxAttempts = String2.OSIsWindows ? 11 : 4;
+    Path path = Paths.get(fullName);
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        File file = new File(fullName);
-        if (!file.exists())
-          return attempt > 1; // if attempt=1, nothing to delete; if attempt>1, there was something
-        // I think Linux deletes no matter what.
-        // I think Windows won't delete file if in use by another thread or pending action(?).
-        boolean result = file.delete();
-        file = null; // don't hang on to it
+        // Files.deleteIfExists() returns:
+        //   true: if the file existed and was deleted.
+        //   false: if the file did not exist.
+        //   throws FileSystemException: if file exists but is locked.
+        //   throws NoSuchFileException: if file doesn't exist (e.g., in a race)
+        boolean result = Files.deleteIfExists(path);
+
         if (result) {
-          // take it at its word (file has been or will soon be deleted)
-          // In Windows, file may continue to be isFile() for a short time.
+          // Successfully deleted
           return true;
         } else {
-          // 2009-02-16 I had wierd problems on Windows with File2.delete not deleting when it
-          // should be able to.
-          // 2011-02-18 problem comes and goes (varies from run to run), but still around.
-          // Windows often sets result=false on first attempt in some of my unit tests.
-          // Notably, when creating cwwcNDBCMet on local erddap.
-          // I note (from http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4045014)
-          //  that Win (95?) won't delete an open file, but solaris will.
-          //  But I think the files I'm working with have been closed.
-          // Solution? call Math2.gc instead of Math2.sleep
-          if (attempt == maxAttempts) {
-            String2.log(
-                String2.ERROR
-                    + ": File2.delete was "
-                    + UNABLE_TO_DELETE
-                    + " "
-                    + fullName
-                    + "\n"
-                    + MustBe.getStackTrace());
-            return false;
-          }
-          String2.log(
-              "WARNING #"
-                  + attempt
-                  + ": File2.delete is having trouble. It will try again to delete "
-                  + fullName
-              // + "\n" + MustBe.stackTrace()
-              );
-          if (attempt % 4 == 1)
-            // The problem might be that something needs to be gc'd.
-            Math2.gcAndWait(
-                "File2.delete (before retry)"); // By experiment, gc works better than sleep.
-          else Math2.sleep(1000);
+          // File did not exist.
+          // If attempt 1, it never existed, so return false (nothing deleted).
+          // If attempt > 1, a previous attempt failed but the file is
+          // now gone, so it *was* successfully deleted (just not on this pass).
+          return attempt > 1;
         }
+
+      } catch (NoSuchFileException e) {
+        // File doesn't exist. Same logic as 'result = false'.
+        return attempt > 1;
+
+      } catch (FileSystemException e) {
+        // This is the key case: The file exists but is locked.
+        // We must retry.
+        if (attempt == maxAttempts) {
+          String2.log(
+              String2.ERROR
+                  + ": File2.delete was "
+                  + UNABLE_TO_DELETE
+                  + " "
+                  + fullName
+                  + "\n"
+                  + MustBe.throwableToString(e)); // Log the specific nio exception
+          return false;
+        }
+        String2.log(
+            "WARNING #"
+                + attempt
+                + ": File2.delete (nio) is having trouble. It will try again to delete "
+                + fullName
+            // + "\n" + MustBe.stackTrace()
+            );
+        if (attempt % 4 == 1)
+          // The problem might be that something needs to be gc'd.
+          Math2.gcAndWait(
+              "File2.delete (before retry)"); // By experiment, gc works better than sleep.
+        else Math2.sleep(1000);
 
       } catch (Exception e) {
         if (verbose) String2.log(MustBe.throwable("File2.delete(" + fullName + ")", e));
         return false;
       }
     }
-    return false; // won't get here
+    return false;
   }
 
   /**

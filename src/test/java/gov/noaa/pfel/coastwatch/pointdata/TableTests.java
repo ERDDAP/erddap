@@ -860,7 +860,7 @@ public class TableTests {
             + "        ";
 
     // don't simplify
-    StringReader sr = new StringReader(source);
+    BufferedReader sr = new BufferedReader(new StringReader(source));
     Table table = new Table();
     table.readJsonlCSV(sr, "[StringReader]", null, null, false);
     String results = table.dataToString();
@@ -877,7 +877,7 @@ public class TableTests {
         "results=\n" + results);
 
     // simplify
-    sr = new StringReader(source);
+    sr = new BufferedReader(new StringReader(source));
     table = new Table();
     table.readJsonlCSV(sr, "[StringReader]", null, null, true);
     results = table.dataToString();
@@ -889,7 +889,7 @@ public class TableTests {
         "results=\n" + results);
 
     // specify colNames and simplify
-    sr = new StringReader(source);
+    sr = new BufferedReader(new StringReader(source));
     table = new Table();
     table.readJsonlCSV(sr, "[StringReader]", StringArray.fromCSV("ccc,a,dddd"), null, true);
     results = table.dataToString();
@@ -902,7 +902,7 @@ public class TableTests {
     Test.ensureEqual(table.getColumn(2).elementTypeString(), "byte", ""); // boolean -> byte
 
     // specify colNames and types
-    sr = new StringReader(source);
+    sr = new BufferedReader(new StringReader(source));
     table = new Table();
     table.readJsonlCSV(
         sr,
