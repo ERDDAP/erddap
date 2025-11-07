@@ -49,7 +49,7 @@ public class AddAttributesHandler extends StateWithParent {
           tType = "string";
         }
         PrimitiveArray pa;
-        if (content.isEmpty()) {
+        if (contentStr.isEmpty()) {
           pa = new StringArray();
           pa.addString("null");
         } else if (tType.equalsIgnoreCase("String")) {

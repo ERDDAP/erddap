@@ -5613,22 +5613,12 @@ class EDDGridFromDapTests {
     expected =
         "depth {\n"
             + "    String _CoordinateAxisType \"Height\";\n"
-            + //
-            "    String _CoordinateZisPositive \"down\";\n"
-            + //
-            "    Float64 actual_range 5.01, 5375.0;\n"
-            + //
-            "    String axis \"Z\";\n"
-            + //
-            (EDStatic.config.useSaxParser ? "    String grads_dim \"z\";\n" : "")
-            + (EDStatic.config.useSaxParser ? "    String grads_mapping \"levels\";\n" : "")
+            + "    String _CoordinateZisPositive \"down\";\n"
+            + "    Float64 actual_range 5.01, 5375.0;\n"
+            + "    String axis \"Z\";\n"
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth\";\n"
-            + (EDStatic.config.useSaxParser ? "    Float64 maximum 5375.0;\n" : "")
-            + (EDStatic.config.useSaxParser ? "    Float64 minimum 5.01;\n" : "")
-            + (EDStatic.config.useSaxParser ? "    String name \"Depth\";\n" : "")
             + "    String positive \"down\";\n"
-            + (EDStatic.config.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
             + "    String standard_name \"depth\";\n"
             + "    String units \"m\";\n"
             + "  }";

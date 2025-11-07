@@ -1705,13 +1705,8 @@ class EDDTableFromNcCFFilesTests {
             + "    String creator_email \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n"
             + "    String creator_name \"Neal Pettigrew\";\n"
             + "    String creator_url \"http://gyre.umeoce.maine.edu\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 delta_t 30;\n" : "")
             + "    String depth_datum \"Sea Level\";\n"
             + "    Float64 Easternmost_Easting -70.42755;\n"
-            + (EDStatic.config.useSaxParser
-                ? "    Float64 ending_julian_day_number 56683.64583333349;\n"
-                    + "    String ending_julian_day_string \"2014-01-26 15:30:00\";\n"
-                : "")
             + "    String featureType \"TimeSeries\";\n"
             + "    Float64 geospatial_lat_max 43.18044;\n"
             + "    Float64 geospatial_lat_min 43.18019;\n"
@@ -1738,9 +1733,6 @@ class EDDTableFromNcCFFilesTests {
             + "    String institution \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n"
             + "    String institution_url \"http://gyre.umeoce.maine.edu\";\n"
             + "    Int32 instrument_number 0;\n"
-            + (EDStatic.config.useSaxParser
-                ? "    String julian_day_convention \"Julian date convention begins at 00:00:00 UTC on 17 November 1858 AD\";\n"
-                : "")
             + "    String keywords \"accelerometer, b01, buoy, chemistry, chlorophyll, circulation, conductivity, control, currents, data, density, department, depth, dominant, dominant_wave_period data_quality, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Optics > Turbidity, Earth Science > Oceans > Ocean Pressure > Sea Level Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, Earth Science > Oceans > Ocean Winds > Surface Winds, Earth Science > Oceans > Salinity/Density > Conductivity, Earth Science > Oceans > Salinity/Density > Density, Earth Science > Oceans > Salinity/Density > Salinity, height, level, maine, marine, name, o2, ocean, oceanography, oceans, optics, oxygen, period, physical, pressure, quality, salinity, school, sciences, sea, seawater, sensor, significant, significant_height_of_wind_and_swell_waves, significant_wave_height data_quality, station, station_name, surface, surface waves, swell, swells, temperature, time, turbidity, university, water, wave, waves, wind, winds\";\n"
             + "    String keywords_vocabulary \"GCMD Science Keywords\";\n"
             + "    Float64 latitude 43.18019230109601;\n"
@@ -1778,10 +1770,6 @@ class EDDTableFromNcCFFilesTests {
             + "    String sourceUrl \"\\(local files\\)\";\n"
             + "    Float64 Southernmost_Northing 43.18019;\n"
             + "    String standard_name_vocabulary \"CF-1.6\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    Float64 starting_julian_day_number 56463.66666666651;\n"
-                    + "    String starting_julian_day_string \"2013-06-20 16:00:00\";\n"
-                : "")
             + "    String station_name \"B01\";\n"
             + "    String station_photo \"http://gyre.umeoce.maine.edu/gomoos/images/generic_buoy.png\";\n"
             + "    String station_type \"Surface Mooring\";\n"

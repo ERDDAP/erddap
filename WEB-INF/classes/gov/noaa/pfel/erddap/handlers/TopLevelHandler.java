@@ -100,8 +100,9 @@ public class TopLevelHandler extends State {
           // add user info to tUserHashMap
         } else {
           Arrays.sort(tRoles);
-          if ("email".equals(EDStatic.config.authentication)
-              || "google".equals(EDStatic.config.authentication)) {
+          if (tUsername != null
+              && ("email".equals(EDStatic.config.authentication)
+                  || "google".equals(EDStatic.config.authentication))) {
             tUsername = tUsername.toLowerCase();
           }
           if (reallyVerbose) {
