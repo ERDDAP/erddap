@@ -24,6 +24,7 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.google.common.base.Strings;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.pointdata.FileVariableMetadata;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -1897,10 +1898,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         int tDirI = tFileDirIndexPA.get(tFileListPo);
         String tFileS = tFileNamePA.get(tFileListPo);
         if (Strings.isNullOrEmpty(tFileS)) {
-          boolean isZarr =
-              tFileNameRegex.contains("zarr")
-                  || (tPathRegex != null && tPathRegex.contains("zarr"));
-          if (isZarr) {
+          if (isZarr()) {
             if (tDirI == Integer.MAX_VALUE) {
               tFileListPo++;
               // Skipping file name that is null or empty string and not in zarr.
@@ -2021,22 +2019,9 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           // read all of the data and metadata in the file
           nReadFile++;
           long rfcTime = System.currentTimeMillis();
-          Table tTable =
-              getSourceDataFromFile(
-                  dirList.get(tDirI),
-                  tFileS,
-                  sourceDataNames,
-                  sourceDataTypes,
-                  -1,
-                  Double.NaN,
-                  Double.NaN,
-                  null,
-                  null,
-                  null,
-                  true,
-                  true); // getMetadata, mustGetData
-          // String2.log(">> getSourceDataFromFile " + tFileS + "\n" +
-          // tTable.toString(5));
+          Map<String, FileVariableMetadata> fileMetadata =
+              getFileMetadata(dirList.get(tDirI), tFileS);
+
           readFileCumTime += System.currentTimeMillis() - rfcTime;
 
           // set the values on the fileTable row throws throwable
@@ -2047,7 +2032,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               tFileS,
               tLastMod,
               tSize,
-              tTable,
+              fileMetadata,
               logThis ? tFileListPo : -1);
           tFileListPo++;
           fileListPo++;
@@ -2599,6 +2584,10 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               + "\n");
   }
 
+  public boolean isZarr() {
+    return fileNameRegex.contains("zarr") || (pathRegex != null && pathRegex.contains("zarr"));
+  }
+
   /** */
   public String fileDir() {
     return fileDir;
@@ -2863,10 +2852,103 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
   }
 
   /**
+   * Gathers the required metadata for all source variables from a single file. This base
+   * implementation reads the entire file to a table to do so.
+   *
+   * <p><b>Subclasses can override this</b> for a more efficient implementation (e.g., by reading
+   * only file headers).
+   *
+   * @param fullDir the directory
+   * @param fileName the file name
+   * @return A Map linking variable names to their extracted metadata.
+   * @throws Throwable
+   */
+  protected Map<String, FileVariableMetadata> getFileMetadata(String fullDir, String fileName)
+      throws Throwable {
+    Table tTable =
+        getSourceDataFromFile(
+            fullDir,
+            fileName,
+            sourceDataNames,
+            sourceDataTypes,
+            -1,
+            Double.NaN,
+            Double.NaN,
+            null,
+            null,
+            null,
+            true,
+            true); // getMetadata, mustGetData
+
+    // Now, convert the full tTable into the lightweight metadata map.
+    Map<String, FileVariableMetadata> metadataMap = new HashMap<>();
+    int ndv = sourceDataNames.size();
+    for (int dv = 0; dv < ndv; dv++) {
+      String dvName = sourceDataNames.get(dv);
+      int c = tTable.findColumnNumber(dvName);
+
+      // Case 1: Variable not in file
+      if (c < 0) {
+        metadataMap.put(dvName, new FileVariableMetadata()); // existsInFile = false
+        continue;
+      }
+
+      // Get attributes
+      Attributes dvSourceAtts = tTable.columnAttributes(c);
+
+      // IMPORTANT: This logic must stay here. The conversion to NaN
+      // must happen *before* stats are calculated.
+      if (!Double.isNaN(addAttFillValue[dv])) dvSourceAtts.set("_FillValue", addAttFillValue[dv]);
+      if (!Double.isNaN(addAttMissingValue[dv]))
+        dvSourceAtts.set("missing_value", addAttMissingValue[dv]);
+      tTable.convertToStandardMissingValues(c);
+
+      PrimitiveArray pa = tTable.getColumn(c);
+      PAType tPaPAType = pa.elementType();
+      int size = pa.size();
+
+      if (FileVariableMetadata.treatAsString(tPaPAType)) {
+
+        // Case 2: String/Long types
+        String nMinMax[] = pa.getNMinMax();
+        int n = String2.parseInt(nMinMax[0]);
+        String min = (n > 0) ? nMinMax[1] : "";
+        String max = (n > 0) ? nMinMax[2] : "";
+        metadataMap.put(
+            dvName, new FileVariableMetadata(dvSourceAtts, tPaPAType, n, size, min, max));
+
+      } else {
+        // Case 3: Numeric types
+        double stats[] = pa.calculateStats();
+        int n = Math2.roundToInt(stats[PrimitiveArray.STATS_N]);
+        double min = (n > 0) ? stats[PrimitiveArray.STATS_MIN] : Double.NaN;
+        double max = (n > 0) ? stats[PrimitiveArray.STATS_MAX] : Double.NaN;
+
+        String ts = "n/a";
+        String ts2 = "n/a";
+        boolean isSorted = (dv == sortedDVI);
+
+        if (isSorted && n > 0) {
+          ts = pa.isAscending();
+          if (n > 1 && ts.length() == 0) {
+            ts2 = pa.isEvenlySpaced();
+          }
+        }
+
+        metadataMap.put(
+            dvName,
+            new FileVariableMetadata(
+                dvSourceAtts, tPaPAType, n, size, min, max, isSorted, ts, ts2));
+      }
+    }
+    return metadataMap;
+  }
+
+  /**
    * This sets the values on a local fileTable row.
    *
    * @param tFileS is just name.ext .
-   * @param tTable table (with source atts and data) from a data file
+   * @param fileMetadata A map linking variable names to their metadata.
    * @param logAsRowNumber the fileTable row number to be printed in log messages, or -1 for no log
    *     messages
    * @throws throwable if trouble
@@ -2878,7 +2960,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       String tFileS,
       long tLastMod,
       long tSize,
-      Table tTable,
+      Map<String, FileVariableMetadata> fileMetadata,
       int logAsRowNumber) {
 
     ShortArray ftDirIndex = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL); // 0
@@ -2902,61 +2984,40 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
       // skip this variable if not in this source file
       String dvName = sourceDataNames.get(dv);
-      int c = tTable.findColumnNumber(dvName);
-      if (c < 0) {
-        // String2.log(" " + dvName + " not in source file");
+      FileVariableMetadata varMeta = fileMetadata.get(dvName);
+      if (varMeta == null || !varMeta.existsInFile) {
         continue;
       }
 
       // attributes are as expected???
-      Attributes dvSourceAtts = tTable.columnAttributes(c);
       testIfNewFileAttsAreCompatible( // throws exception if trouble
-          dvName, dv, dvSourceAtts);
-
-      // convert missing_value and _FillValue to NaN
-      // doubles? type not important here, tTable is temporary
-      // others attributes (e.g., scale, add_offset, units) not needed for calculation
-      // of min max below
-      // (if data is packed, missing_value and _FillValue are packed, too)
-      if (!Double.isNaN(addAttFillValue[dv])) dvSourceAtts.set("_FillValue", addAttFillValue[dv]);
-      if (!Double.isNaN(addAttMissingValue[dv]))
-        dvSourceAtts.set("missing_value", addAttMissingValue[dv]);
-      tTable.convertToStandardMissingValues(c);
+          dvName, dv, varMeta.sourceAttributes);
 
       // process source min and max for this column's data
-      PrimitiveArray pa = tTable.getColumn(c);
-      PAType tPaPAType = pa.elementType();
-      if (tPaPAType == PAType.STRING
-          || tPaPAType == PAType.CHAR
-          || tPaPAType == PAType.LONG
-          || tPaPAType == PAType.ULONG) { // so long and ulong are set exactly
+      PAType tPaPAType = varMeta.paType;
+      int tn = varMeta.n;
+
+      if (FileVariableMetadata.treatAsString(tPaPAType)) {
         // get [0]=n,[1]=min,[2]=max (of non-null and non-"") as Strings
-        String nMinMax[] = pa.getNMinMax();
-        int tn = String2.parseInt(nMinMax[0]);
         if (tn > 0) { // there is a non-"" value
-          fileTable.setStringData(dv0 + dv * 3 + 0, fileListPo, nMinMax[1]);
-          fileTable.setStringData(dv0 + dv * 3 + 1, fileListPo, nMinMax[2]);
+          fileTable.setStringData(dv0 + dv * 3 + 0, fileListPo, varMeta.stringMin);
+          fileTable.setStringData(dv0 + dv * 3 + 1, fileListPo, varMeta.stringMax);
         }
-        fileTable.setIntData(dv0 + dv * 3 + 2, fileListPo, tn < pa.size() ? 1 : 0); // hasNaN
+        fileTable.setIntData(dv0 + dv * 3 + 2, fileListPo, varMeta.hasNaN() ? 1 : 0); // hasNaN
 
       } else {
         // numeric
-        double stats[] = pa.calculateStats();
-        int tn = Math2.roundToInt(stats[PrimitiveArray.STATS_N]);
-        // if (dvName.equals("bucket_sal")) String2.log(" " + dvName + " stats=" +
-        // String2.toCSSVString(stats));
-        fileTable.setIntData(dv0 + dv * 3 + 2, fileListPo, tn < pa.size() ? 1 : 0); // hasNaN
+        fileTable.setIntData(dv0 + dv * 3 + 2, fileListPo, varMeta.hasNaN() ? 1 : 0); // hasNaN
         if (tn > 0) {
-          fileTable.setDoubleData(dv0 + dv * 3 + 0, fileListPo, stats[PrimitiveArray.STATS_MIN]);
-          fileTable.setDoubleData(dv0 + dv * 3 + 1, fileListPo, stats[PrimitiveArray.STATS_MAX]);
-          if (dv == sortedDVI) {
-            String ts = pa.isAscending();
+          fileTable.setDoubleData(dv0 + dv * 3 + 0, fileListPo, varMeta.numericMin);
+          fileTable.setDoubleData(dv0 + dv * 3 + 1, fileListPo, varMeta.numericMax);
+          if (varMeta.isSortedColumn) { // dv == sortedDVI
+            String ts = varMeta.ascendingCheckResult;
             double tSortedSpacing;
             if (tn > 1 && ts.length() == 0) {
-              ts = pa.isEvenlySpaced();
+              ts = varMeta.evenlySpacedCheckResult;
               if (ts.length() == 0) {
-                tSortedSpacing =
-                    (stats[PrimitiveArray.STATS_MAX] - stats[PrimitiveArray.STATS_MIN]) / (tn - 1);
+                tSortedSpacing = (varMeta.numericMax - varMeta.numericMin) / (tn - 1);
                 if (logAsRowNumber >= 0)
                   String2.log(
                       logAsRowNumber
@@ -2979,11 +3040,6 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
           }
         }
       }
-      // if (logThis)
-      // String2.log(dvName +
-      // " min=" + fileTable.getStringData(dv0 + dv*3 + 0, fileListPo) +
-      // " max=" + fileTable.getStringData(dv0 + dv*3 + 1, fileListPo));
-      // " hasNaN=" + fileTable.getIntData( dv0 + dv*3 + 2, fileListPo));
     }
   }
 
@@ -3354,37 +3410,23 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       // if it is an existing file, see if it is valid
       if (File2.isFile(fullName)) {
         // test that dataVariable units/etc are identical
-        Table tTable = null;
         String reasonBad = null;
+        Map<String, FileVariableMetadata> fileMetadata = null;
         try {
+          fileMetadata = getFileMetadata(dirName, fileName);
           // check the columns for compatible metadata
-          tTable =
-              getSourceDataFromFile(
-                  dirName,
-                  fileName,
-                  sourceDataNames,
-                  sourceDataTypes,
-                  -1,
-                  Double.NaN,
-                  Double.NaN,
-                  null,
-                  null,
-                  null,
-                  true,
-                  true); // getMetadata, getData
           for (int dv = 0; dv < sourceDataNames.size(); dv++) {
 
             // skip this variable if not in this source file
             String dvName = sourceDataNames.get(dv);
-            int c = tTable.findColumnNumber(dvName);
-            if (c < 0) {
+            if (!fileMetadata.containsKey(dvName)) {
               // String2.log(" " + dvName + " not in source file");
               continue;
             }
 
             // attributes are as expected???
             testIfNewFileAttsAreCompatible( // throws exception if trouble
-                dvName, dv, tTable.columnAttributes(c));
+                dvName, dv, fileMetadata.get(dvName).sourceAttributes);
           }
 
         } catch (Exception e) {
@@ -3445,7 +3487,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
               fileName,
               File2.getLastModified(fullName),
               File2.length(fullName),
-              tTable,
+              fileMetadata,
               debugMode ? evi : -1);
 
         } else {

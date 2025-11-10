@@ -23,13 +23,15 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import ucar.nc2.Variable;
 
 /**
  * This class represents a table of data from a collection of multidimensional .nc data files.
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-05-05
  */
-public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
+public class EDDTableFromMultidimNcFiles extends EDDTableFromFilesNcLow {
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -164,6 +166,31 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
       }
     }
     addGlobalAttributes.remove(TREAT_DIMENSIONS_AS);
+  }
+
+  @Override
+  protected PrimitiveArray loadSingleVar(Variable var, Attributes atts, String fileName)
+      throws Exception {
+    Table tempTable = new Table();
+    TableFromMultidimNcFile loader = new TableFromMultidimNcFile(tempTable);
+
+    Pair<PrimitiveArray, Attributes> result =
+        loader.loadSingleVariable(fileName, var.getFullName(), this.standardizeWhat);
+
+    PrimitiveArray data = result.getLeft();
+    Attributes metadata = result.getRight();
+    atts.add(metadata);
+    data.convertToStandardMissingValues(
+        atts.getString("_FillValue"), atts.getString("missing_value"));
+    // remove current attributes or define new _FillValue
+    atts.remove("missing_value");
+    PAType paPAType = data.elementType();
+    if (data.isFloatingPointType() || paPAType == PAType.STRING) {
+      atts.remove("_FillValue");
+    } else { // integer or char
+      atts.set("_FillValue", PrimitiveArray.factory(paPAType, 1, ""));
+    }
+    return data;
   }
 
   /**
