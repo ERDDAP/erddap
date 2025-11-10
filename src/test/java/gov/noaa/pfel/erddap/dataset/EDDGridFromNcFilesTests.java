@@ -1810,17 +1810,7 @@ class EDDGridFromNcFilesTests {
             + "    String autonav_performed \"true\";\n"
             + "    Int32 autonav_quality 2;\n"
             + "    String cdm_data_type \"Grid\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 cols 1140;\n" : "")
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    String cwhdf_version \"3.4\";\n"
-                    + "    Float64 et_affine 0.0, -1470.0, 1470.0, 0.0, -9778346.500515733, 4398734.085407009;\n"
-                    + "    Int32 gctp_datum 12;\n"
-                    + "    Float64 gctp_parm 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;\n"
-                    + "    Int32 gctp_sys 5;\n"
-                    + "    Int32 gctp_zone 0;\n"
-                    + "    String HDF4_Version \"4.1.5 (NCSA HDF Version 4.1 Release 5, November 5, 2001)\";\n"
-                : "")
             + "    String history \"Direct read of HDF4 file through CDM library\n"
             + today;
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -1843,20 +1833,13 @@ class EDDGridFromNcFilesTests {
             + "particular purpose, or assumes any legal liability for the accuracy,\n"
             + "completeness, or usefulness, of this information.\";\n"
             + "    String origin \"USDOC/NOAA/NESDIS CoastWatch\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 pass_date 13990;\n" : "")
             + "    String pass_type \"day\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    Float64 polygon_latitude 36.89432948408865, 36.89432948408865, 36.89432948408865, 36.89432948408865, 36.89432948408865, 33.51643401115052, 29.999999999936534, 26.35308766180611, 22.586165505358508, 22.586165505358508, 22.586165505358508, 22.586165505358508, 22.586165505358508, 26.35308766180611, 29.999999999936534, 33.51643401115052, 36.89432948408865;\n"
-                    + "    Float64 polygon_longitude -87.8403811482992, -84.08019057414958, -80.32000000000001, -76.5598094258504, -72.79961885170081, -72.79961885170081, -72.79961885170081, -72.79961885170081, -72.79961885170081, -76.5598094258504, -80.32000000000001, -84.08019057414958, -87.8403811482992, -87.8403811482992, -87.8403811482992, -87.8403811482992, -87.8403811482992;\n"
-                : "")
             + "    String projection \"Mercator\";\n"
             + "    String projection_type \"mapped\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 rows 1248;\n" : "")
             + "    String satellite \"noaa-18\";\n"
             + "    String sensor \"avhrr\";\n"
             + "    String sourceUrl \"(local files)\";\n"
             + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
-            + (EDStatic.config.useSaxParser ? "    Float64 start_time 65502.0;\n" : "")
             + "    String summary \"???\";\n"
             + "    String title \"Test of CoastWatch HDF files\";\n"
             + "  }\n"
