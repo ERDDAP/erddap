@@ -25098,6 +25098,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + MustBe.throwableToString(actionT));
           }
         }
+        EDStatic.ensureTouchThreadIsRunningIfNeeded();
 
         // trigger RSS action
         // (after new dataset is in place and if there is either a current or older dataset)

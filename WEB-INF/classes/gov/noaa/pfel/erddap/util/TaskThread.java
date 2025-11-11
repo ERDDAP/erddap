@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.EDD;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
 import io.prometheus.metrics.model.snapshots.Unit;
 
 /**
@@ -54,6 +55,8 @@ public class TaskThread extends Thread {
 
   /** If taskOA[0].equals(TASK_CLEAR_CACHE) */
   public static final Integer TASK_CLEAR_CACHE = 5;
+
+  public static final Integer TASK_CREATE_SUBSET_TABLE = 6;
 
   /**
    * Set this to true (by calling verbose=true in your program, not by changing the code here) if
@@ -223,6 +226,14 @@ public class TaskThread extends Thread {
 
         } else if (taskType.equals(TASK_CLEAR_CACHE)) {
           EDStatic.clearCache("TASK_CLEAR_CACHE", false);
+
+        } else if (taskType.equals(TASK_CREATE_SUBSET_TABLE)) {
+
+          EDDTable eddTable = (EDDTable) taskOA[1];
+          taskSummary = "  TASK_CREATE_SUBSET_TABLE \n" + "    datasetId=" + eddTable.datasetID();
+          String2.log(taskSummary);
+
+          eddTable.createSubsetVariablesTable();
 
           // UNKNOWN taskType
         } else {

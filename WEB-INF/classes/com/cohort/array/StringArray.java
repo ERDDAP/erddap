@@ -2598,7 +2598,7 @@ public class StringArray extends PrimitiveArray {
       } else if (ch == ',' || ch == ']') {
         // end of item
         // it must be something
-        String s = csv.substring(start, po - 1).trim();
+        String s = String2.trimSubString(csv, start, po - 1);
         if (s.length() == 0)
           throw new SimpleException("A value in a JSON array must not be nothing.");
 

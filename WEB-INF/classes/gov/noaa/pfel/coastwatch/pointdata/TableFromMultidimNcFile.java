@@ -988,4 +988,52 @@ public class TableFromMultidimNcFile {
       if (loadDims.size() == 0) String2.log("After analysis, loadDims.size is now 0!");
     }
   }
+
+  /**
+   * Loads a single variable's data and attributes from the NetCDF file.
+   *
+   * <p>This method provides a way to read one variable without loading the entire flattened table.
+   *
+   * @param fullName The full path or URL to the .nc file.
+   * @param variableName The name of the variable to load.
+   * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat. (e.g., 0 for no
+   *     standardization, or 1 to unpack scale_factor/add_offset)
+   * @return A Pair where the left element is the PrimitiveArray (pa) containing the data, and the
+   *     right element is the Attributes (atts).
+   * @throws Exception if the file or variable cannot be found, or if there is an error reading the
+   *     data.
+   */
+  public Pair<PrimitiveArray, Attributes> loadSingleVariable(
+      String fileName, String variableName, int standardizeWhat) throws Exception {
+
+    // Open the file
+    this.ncFile = NcHelper.openFile(fileName);
+
+    try {
+      this.standardizeWhat = standardizeWhat;
+      List<Variable> allVars = ncFile.getVariables();
+      this.notStringLengthDims = findNonStringLengthDims(allVars, allVars.size());
+
+      Variable tVar = ncFile.findVariable(variableName);
+      if (tVar == null) {
+        throw new Exception("Variable '" + variableName + "' not found in file " + fileName);
+      }
+
+      // Use the private VarData class as a helper to load the data
+      VarData data = new VarData();
+      data.loadDims(this, tVar);
+      data.loadArrayAndAttributes(this, tVar);
+
+      return Pair.of(data.pa, data.atts);
+
+    } finally {
+      if (this.ncFile != null) {
+        this.ncFile.close();
+      }
+
+      // Clear the state fields we set to avoid side effects
+      this.ncFile = null;
+      this.notStringLengthDims = null;
+    }
+  }
 }

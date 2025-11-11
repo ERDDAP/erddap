@@ -37,7 +37,7 @@ import ucar.nc2.*;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-02-13
  */
-public class EDDTableFromNcFiles extends EDDTableFromFiles {
+public class EDDTableFromNcFiles extends EDDTableFromFilesNcLow {
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
