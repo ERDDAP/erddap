@@ -775,30 +775,69 @@ public class File2 {
     Path sourcePath = Paths.get(fullOldName);
     Path targetPath = Paths.get(fullNewName);
 
-    try {
-      // This single command replaces the entire original function.
-      // It automatically handles deleting the target file if it exists.
-      Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+    // Configuration for the retry loop
+    int maxRetries = 5;
+    long delayInMillis = 1000;
 
-    } catch (NoSuchFileException e) {
-      // Handle the case where the source file doesn't exist
-      throw new RuntimeException(
-          "Unable to rename\n"
-              + fullOldName
-              + " to\n"
-              + fullNewName
-              + "\nbecause source file doesn't exist.",
-          e);
-    } catch (IOException e) {
-      // Handle all other errors (e.g., permissions, file locks)
-      throw new RuntimeException(
-          "Unable to rename\n"
-              + fullOldName
-              + " to\n"
-              + fullNewName
-              + "\nReason: "
-              + e.getMessage(),
-          e);
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        return; // Done
+
+      } catch (NoSuchFileException e) {
+        // If the source file doesn't exist, retrying won't help.
+        // Fail fast.
+        throw new RuntimeException(
+            "Unable to rename\n"
+                + fullOldName
+                + " to\n"
+                + fullNewName
+                + "\nbecause source file doesn't exist.",
+            e);
+
+      } catch (FileSystemException e) {
+        // This is the exception we expect for a file lock.
+        if (attempt < maxRetries - 1) {
+          // This is not the last attempt, so we wait and try again.
+          long thisDelay = delayInMillis * attempt;
+          String2.log(
+              "Attempt "
+                  + (attempt + 1)
+                  + "/"
+                  + maxRetries
+                  + " failed: "
+                  + e.getMessage()
+                  + ". File may be locked. Retrying in "
+                  + (thisDelay / 1000)
+                  + " sec...");
+          // Wait for the specified delay
+          Math2.gc("File2.rename", thisDelay);
+        } else {
+          // This was the last attempt. We give up and throw the exception.
+          String2.log("All " + maxRetries + " attempts failed.");
+          throw new RuntimeException(
+              "Unable to rename (after "
+                  + maxRetries
+                  + " attempts)\n"
+                  + fullOldName
+                  + " to\n"
+                  + fullNewName
+                  + "\nLast Reason: "
+                  + e.getMessage(),
+              e);
+        }
+
+      } catch (IOException e) {
+        // Handle any other unexpected I/O errors by failing fast.
+        throw new RuntimeException(
+            "Unable to rename\n"
+                + fullOldName
+                + " to\n"
+                + fullNewName
+                + "\nUnexpected IO Reason: "
+                + e.getMessage(),
+            e);
+      }
     }
   }
 
