@@ -130,7 +130,7 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
     return pa;
   }
 
-  private String regexExtractMetadata(String dvName, PAType paType, String inputString) {
+  private String regexExtractMetadata(String dvName, String inputString) {
     String csv[] = StringArray.arrayFromCSV(dvName.substring(12), ',');
     String value = null;
 
@@ -146,7 +146,7 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
   /** Processes a sourceName that extracts a value from a string (e.g., fileName) using a regex. */
   private FileVariableMetadata processRegexExtractMetadata(
       String dvName, PAType paType, String inputString) {
-    String value = regexExtractMetadata(dvName, paType, inputString);
+    String value = regexExtractMetadata(dvName, inputString);
 
     if (value == null) { // No match or bad config
       return new FileVariableMetadata(); // existsInFile = false
@@ -184,17 +184,17 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
       String value = extractFromFileName(fileName);
       result = Pair.of(PrimitiveArray.factory(paType, 1, value), atts);
     } else if (columnName.startsWith("***fileName,")) {
-      String value = regexExtractMetadata(columnName, paType, fileName);
+      String value = regexExtractMetadata(columnName, fileName);
       result = Pair.of(PrimitiveArray.factory(paType, 1, value), atts);
     } else if (columnName.startsWith("***pathName,")) {
-      String value = regexExtractMetadata(columnName, paType, fullDir + fileName);
+      String value = regexExtractMetadata(columnName, fullDir + fileName);
       result = Pair.of(PrimitiveArray.factory(paType, 1, value), atts);
     } else if (columnName.startsWith("global:")) {
       String attName = columnName.substring(7);
       PrimitiveArray pa = globalAttributes.get(attName);
       result = Pair.of(pa, atts);
     } else if (columnName.startsWith("variable:")) {
-      PrimitiveArray pa = getVariableAttribute(columnName, paType, netcdfFile);
+      PrimitiveArray pa = getVariableAttribute(columnName, netcdfFile);
       result = Pair.of(pa, atts);
     } else {
       Variable var = netcdfFile.findVariable(columnName);
@@ -342,7 +342,7 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
     }
   }
 
-  private PrimitiveArray getVariableAttribute(String dvName, PAType paType, NetcdfFile netcdfFile) {
+  private PrimitiveArray getVariableAttribute(String dvName, NetcdfFile netcdfFile) {
     String s = dvName.substring(9);
     int cpo = s.indexOf(':');
     if (cpo <= 0) {
@@ -367,7 +367,7 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
 
   private FileVariableMetadata processVariableMetadata(
       String dvName, PAType paType, NetcdfFile netcdfFile) {
-    PrimitiveArray pa = getVariableAttribute(dvName, paType, netcdfFile);
+    PrimitiveArray pa = getVariableAttribute(dvName, netcdfFile);
 
     if (pa == null || pa.size() == 0) {
       // The *attribute* doesn't exist.
@@ -567,14 +567,13 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
     Map<String, Pair<PrimitiveArray, Attributes>> columnCache = new HashMap<>();
     Map<String, FileVariableMetadata> metadataMap = new HashMap<>();
 
-    // Decompress the file if needed (borrowed from lowGetSourceDataFromFile)
     String decompFullName =
         FileVisitorDNLS.decompressIfNeeded(
             fullDir + fileName,
-            fileDir, // Assumes fileDir is a class member
-            decompressedDirectory(), // Assumes this is a class member
+            fileDir,
+            decompressedDirectory(),
             EDStatic.decompressedCacheMaxGB,
-            true); // reuseExisting
+            true);
 
     Attributes globalAttributes = addGlobalAttributes.toAttributes(EDMessages.DEFAULT_LANGUAGE);
 

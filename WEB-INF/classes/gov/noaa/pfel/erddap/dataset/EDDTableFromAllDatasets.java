@@ -167,8 +167,8 @@ public class EDDTableFromAllDatasets extends EDDTable {
    *     and have DIFFERENT SIZES! So it isn't a valid table! The table will have full metadata.
    */
   @Override
-  public Table distinctSubsetVariablesDataTable(int language, String loggedInAs, String loadVars[])
-      throws Throwable {
+  public synchronized Table distinctSubsetVariablesDataTable(
+      int language, String loggedInAs, String loadVars[]) throws Throwable {
 
     // read the combinations table
     // this will throw exception if trouble
