@@ -6132,7 +6132,7 @@ class EDDTableFromNcFilesTests {
     EDDTable csub = (EDDTableFromNcFiles) EDDTestDataset.gettestGlobal();
     baseName = csub.className() + "Global";
     String csubDapQuery = "&longitude=-106.11667";
-
+    csub.createSubsetVariablesTable();
     // min max
     edv = csub.findDataVariableByDestinationName("longitude");
     Test.ensureEqual(edv.destinationMin(), -164.08333, "");
