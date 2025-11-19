@@ -1340,34 +1340,6 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       // end !doQuickRestart
     }
 
-    // finish up, validate, and (if !quickRestart) save dirTable, fileTable, badFileMap
-    PrimitiveArray sourceAxisValues0 =
-        PrimitiveArray.factory(
-            sourceAxisValues[0].elementType(),
-            ftDirIndex.size(), // size is a guess: the minimum possible, but usually correct
-            false); // not active
-    updateValidateFileTable(
-        dirList,
-        ftDirIndex,
-        ftFileList,
-        ftMin,
-        ftMax,
-        ftStartIndex,
-        ftNValues,
-        ftCsvValues,
-        sourceAxisValues0);
-    if (!doQuickRestart)
-      saveDirTableFileTableBadFiles(-1, dirTable, fileTable, badFileMap); // throws Throwable
-
-    // set creationTimeMillis to fileTable lastModified
-    // (either very recent or (if quickRestart) from previous full restart)
-    creationTimeMillis = File2.getLastModified(datasetDir() + FILE_TABLE_FILENAME);
-
-    if (!badFileMap.isEmpty()) {
-      String emailSB = badFileMapToString(badFileMap, dirList) + msg + "\n\n";
-      EDStatic.email(EDStatic.config.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
-    }
-
     // get source metadataFrom and axis values from FIRST|LAST file (lastModifiedTime)
     sourceGlobalAttributes = new Attributes();
     sourceAxisAttributes = new Attributes[nav];
@@ -1439,7 +1411,34 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     }
 
     // set combined sourceAxisValues[0]
+    // finish up, validate, and (if !quickRestart) save dirTable, fileTable, badFileMap
+    PrimitiveArray sourceAxisValues0 =
+        PrimitiveArray.factory(
+            sourceAxisValues[0].elementType(),
+            ftDirIndex.size(), // size is a guess: the minimum possible, but usually correct
+            false); // not active
+    updateValidateFileTable(
+        dirList,
+        ftDirIndex,
+        ftFileList,
+        ftMin,
+        ftMax,
+        ftStartIndex,
+        ftNValues,
+        ftCsvValues,
+        sourceAxisValues0);
     sourceAxisValues[0] = sourceAxisValues0;
+    if (!doQuickRestart)
+      saveDirTableFileTableBadFiles(-1, dirTable, fileTable, badFileMap); // throws Throwable
+
+    // set creationTimeMillis to fileTable lastModified
+    // (either very recent or (if quickRestart) from previous full restart)
+    creationTimeMillis = File2.getLastModified(datasetDir() + FILE_TABLE_FILENAME);
+
+    if (!badFileMap.isEmpty()) {
+      String emailSB = badFileMapToString(badFileMap, dirList) + msg + "\n\n";
+      EDStatic.email(EDStatic.config.emailEverythingToCsv, errorInMethod + "Bad Files", emailSB);
+    }
     // String2.log("\n>>> sourceAxisValues sav0=" + sourceAxisValues[0].toString() + "\n");
 
     // make the axisVariables[]
@@ -2561,8 +2560,9 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
         if (debugMode)
           String2.log(
               ">> EDDGridFromFiles.getSourceAxisValues just using known info, not reading the file.");
-        for (int av = 1; av < nAxes; av++) // [0] created above. Value will be set below.
-        nsav[av] = (PrimitiveArray) sourceAxisValues[av].clone(); // no need to clone???
+        for (int av = 1; av < nAxes; av++) { // [0] created above. Value will be set below.
+          nsav[av] = (PrimitiveArray) sourceAxisValues[av].clone(); // no need to clone???
+        }
 
       } else {
 
@@ -2669,8 +2669,9 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
             EDStatic.decompressedCacheMaxGB,
             true); // reuseExisting
 
-    if (axis0Type == AXIS0_REGULAR || axis0Type == AXIS0_REPLACE_FROM_FILENAME)
+    if (axis0Type == AXIS0_REGULAR || axis0Type == AXIS0_REPLACE_FROM_FILENAME) {
       return lowGetSourceDataFromFile(decompFullName, tDataVariables, tConstraints);
+    }
 
     // special axis0?  ***fileName, time=YYYYMMDD, regex, captureGroup
     if (axis0Type == AXIS0_FILENAME || axis0Type == AXIS0_PATHNAME || axis0Type == AXIS0_GLOBAL) {

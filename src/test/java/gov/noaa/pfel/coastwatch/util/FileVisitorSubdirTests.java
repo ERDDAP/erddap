@@ -5,7 +5,6 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagDisabledAWS;
 import tags.TagDisabledExternalOther;
 import testDataset.Initialization;
 
@@ -52,14 +51,8 @@ class FileVisitorSubdirTests {
     String2.log("\n*** FileVisitorSubdir.testLocal finished.");
   }
 
-  /**
-   * This tests an Amazon AWS S3 file system. Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
-   * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
-   */
+  /** This tests an Amazon AWS S3 file system. It can use anonymous credentials. */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorSubdir.testAWSS3");
 
