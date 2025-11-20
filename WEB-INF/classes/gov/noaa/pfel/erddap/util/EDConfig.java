@@ -277,7 +277,10 @@ public class EDConfig {
   @FeatureFlag public boolean useSisISO19139 = false;
   @FeatureFlag public boolean useHeadersForUrl = true;
   @FeatureFlag public boolean generateCroissantSchema = true;
+  @FeatureFlag public boolean touchThreadOnlyWhenItems = true;
   @FeatureFlag public boolean taskCacheClear = true;
+  @FeatureFlag public boolean useNcMetadataForFileTable = true;
+  @FeatureFlag public boolean backgroundCreateSubsetTables = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -624,7 +627,11 @@ public class EDConfig {
     cacheMillis = getSetupEVInt(setup, ev, "cacheMinutes", DEFAULT_cacheMinutes) * 60000L;
     cacheClearMillis =
         getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
+    touchThreadOnlyWhenItems = getSetupEVBoolean(setup, ev, "touchThreadOnlyWhenItems", true);
     taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
+    useNcMetadataForFileTable = getSetupEVBoolean(setup, ev, "useNcMetadataForFileTable", true);
+    backgroundCreateSubsetTables =
+        getSetupEVBoolean(setup, ev, "backgroundCreateSubsetTables", true);
     lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
     loadDatasetsMinMillis =
         Math.max(

@@ -44,98 +44,102 @@ public class TouchThread extends Thread {
     return lastStartTime == -1 ? -1 : System.currentTimeMillis() - lastStartTime;
   }
 
-  /** This sleeps, then does any pending touches. */
+  /** This does any pending tasks, then exits. */
   @Override
   public void run() {
-    while (true) {
+    if (EDStatic.config.touchThreadOnlyWhenItems) {
+      handleQueuedTouches();
+    } else {
+      while (true) {
+        Math2.sleep(sleepMillis);
+        if (isInterrupted()) {
+          String2.log(
+              "%%% TouchThread was interrupted at "
+                  + Calendar2.getCurrentISODateTimeStringLocalTZ());
+        }
 
-      // sleep
-      Math2.sleep(sleepMillis);
-
-      // check isInterrupted
-      if (isInterrupted()) {
-        String2.log(
-            "%%% TouchThread was interrupted at " + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        return; // only return (stop thread) if interrupted
+        handleQueuedTouches();
       }
+    }
+  }
 
-      while (EDStatic.touchList.hasNext()) {
-        String url = null;
-        try {
-          // check isInterrupted
-          if (isInterrupted()) {
-            String2.log(
-                "%%% TouchThread was interrupted at "
-                    + Calendar2.getCurrentISODateTimeStringLocalTZ());
-            return; // only return (stop thread) if interrupted
-          }
-
-          // start to do the touch
-          // do these things quickly to keep internal consistency
-          EDStatic.nextTouch.incrementAndGet();
-          url = EDStatic.touchList.getNext();
-          lastStartTime = System.currentTimeMillis();
+  private void handleQueuedTouches() {
+    while (EDStatic.touchList.hasNext()) {
+      String url = null;
+      try {
+        // check isInterrupted
+        if (isInterrupted()) {
           String2.log(
-              "%%% TouchThread started touch #"
-                  + EDStatic.nextTouch.get()
-                  + " of "
-                  + (EDStatic.touchList.size() - 1)
-                  + " at "
-                  + Calendar2.getCurrentISODateTimeStringLocalTZ()
-                  + " url="
-                  + url);
-
-          // do the touch
-          SSR.touchUrl(url, TIMEOUT_MILLIS, true); // handleS3ViaSDK=false
-
-          // touch finished successfully
-          long tElapsedTime = elapsedTime();
-          String2.log(
-              "%%% TouchThread touch #"
-                  + (EDStatic.nextTouch.get() - 1)
-                  + " of "
-                  + (EDStatic.touchList.size() - 1)
-                  + " succeeded.  elapsedTime="
-                  + tElapsedTime
-                  + "ms"
-                  + (tElapsedTime > 10000 ? " (>10s!)" : ""));
-          String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistribution24);
-          String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistributionTotal);
-          EDStatic.metrics
-              .touchThreadDuration
-              .labelValues(Metrics.ThreadStatus.success.name())
-              .observe(Unit.millisToSeconds(tElapsedTime));
-
-        } catch (InterruptedException e) {
-          String2.log("%%% TouchThread was interrupted.");
+              "%%% TouchThread was interrupted at "
+                  + Calendar2.getCurrentISODateTimeStringLocalTZ());
           return; // only return (stop thread) if interrupted
+        }
 
-        } catch (Exception e) {
-          long tElapsedTime = elapsedTime();
-          String2.log(
-              "%%% TouchThread error: touch #"
-                  + (EDStatic.nextTouch.get() - 1)
-                  + " failed after "
-                  + tElapsedTime
-                  + "ms"
-                  + (tElapsedTime > 10000 ? " (>10s!)" : "")
-                  + " url="
-                  + url
-                  + "\n"
-                  + MustBe.throwableToString(e));
-          String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistribution24);
-          String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistributionTotal);
-          EDStatic.metrics
-              .touchThreadDuration
-              .labelValues(Metrics.ThreadStatus.fail.name())
-              .observe(Unit.millisToSeconds(tElapsedTime));
+        // start to do the touch
+        // do these things quickly to keep internal consistency
+        EDStatic.nextTouch.incrementAndGet();
+        url = EDStatic.touchList.getNext();
+        lastStartTime = System.currentTimeMillis();
+        String2.log(
+            "%%% TouchThread started touch #"
+                + EDStatic.nextTouch.get()
+                + " of "
+                + (EDStatic.touchList.size() - 1)
+                + " at "
+                + Calendar2.getCurrentISODateTimeStringLocalTZ()
+                + " url="
+                + url);
 
-        } finally {
-          // whether succeeded or failed
-          lastStartTime = -1;
-          synchronized (EDStatic.touchList) {
-            EDStatic.lastFinishedTouch.set(EDStatic.nextTouch.get() - 1);
-          }
+        // do the touch
+        SSR.touchUrl(url, TIMEOUT_MILLIS, true); // handleS3ViaSDK=false
+
+        // touch finished successfully
+        long tElapsedTime = elapsedTime();
+        String2.log(
+            "%%% TouchThread touch #"
+                + (EDStatic.nextTouch.get() - 1)
+                + " of "
+                + (EDStatic.touchList.size() - 1)
+                + " succeeded.  elapsedTime="
+                + tElapsedTime
+                + "ms"
+                + (tElapsedTime > 10000 ? " (>10s!)" : ""));
+        String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistribution24);
+        String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistributionTotal);
+        EDStatic.metrics
+            .touchThreadDuration
+            .labelValues(Metrics.ThreadStatus.success.name())
+            .observe(Unit.millisToSeconds(tElapsedTime));
+
+      } catch (InterruptedException e) {
+        String2.log("%%% TouchThread was interrupted.");
+        return; // only return (stop thread) if interrupted
+
+      } catch (Exception e) {
+        long tElapsedTime = elapsedTime();
+        String2.log(
+            "%%% TouchThread error: touch #"
+                + (EDStatic.nextTouch.get() - 1)
+                + " failed after "
+                + tElapsedTime
+                + "ms"
+                + (tElapsedTime > 10000 ? " (>10s!)" : "")
+                + " url="
+                + url
+                + "\n"
+                + MustBe.throwableToString(e));
+        String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistribution24);
+        String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistributionTotal);
+        EDStatic.metrics
+            .touchThreadDuration
+            .labelValues(Metrics.ThreadStatus.fail.name())
+            .observe(Unit.millisToSeconds(tElapsedTime));
+
+      } finally {
+        // whether succeeded or failed
+        lastStartTime = -1;
+        synchronized (EDStatic.touchList) {
+          EDStatic.lastFinishedTouch.set(EDStatic.nextTouch.get() - 1);
         }
       }
     }

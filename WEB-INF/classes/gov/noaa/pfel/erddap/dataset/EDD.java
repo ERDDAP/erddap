@@ -1690,6 +1690,7 @@ public abstract class EDD {
                 + SSR.minimalPercentEncode(
                     flagUrl(datasetID)); // %encode deals with & within flagUrl
         EDStatic.addTouch(subscriptionUrl);
+        EDStatic.ensureTouchThreadIsRunningIfNeeded();
         String2.log(datasetID + " sent a subscription request to the remote ERDDAP dataset.");
         // String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are
         // ~confidential
@@ -1769,6 +1770,7 @@ public abstract class EDD {
                   + " is subscribing to underlying fromErddap dataset:\n  "
                   + subscriptionUrl);
         EDStatic.addTouch(subscriptionUrl);
+        EDStatic.ensureTouchThreadIsRunningIfNeeded();
         return; // success
       }
     } catch (Throwable st) {
