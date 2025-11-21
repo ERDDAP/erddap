@@ -12,6 +12,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
 import tags.TagDisabledAWS;
 import tags.TagDisabledExternalOther;
 import tags.TagDisabledLargeFiles;
@@ -19,8 +20,14 @@ import tags.TagDisabledMissingDataset;
 import tags.TagDisabledMissingFile;
 import tags.TagDisabledThredds;
 import tags.TagSlowTests;
+import testDataset.Initialization;
 
 class FileVisitorDNLSTests {
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
+
   /** This tests THREDDS-related methods. */
   @org.junit.jupiter.api.Test
   @TagDisabledThredds
@@ -341,16 +348,13 @@ class FileVisitorDNLSTests {
   }
 
   /**
-   * This tests this class with Amazon AWS S3 file system. Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * This tests this class with Amazon AWS S3 file system. It can use anonymous credentials.
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html See
    * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testAWSS3");
 
@@ -520,7 +524,6 @@ class FileVisitorDNLSTests {
 
   /** This tests this class with Amazon AWS S3 file system using the */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testAWSS3WithS3URI() throws Throwable {
     // set region property
     System.setProperty("aws.region", "us-west-2");
@@ -676,17 +679,14 @@ class FileVisitorDNLSTests {
   }
 
   /**
-   * This tests this class with Amazon AWS S3 file system and reading all from a big directory. Your
-   * S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * This tests this class with Amazon AWS S3 file system and reading all from a big directory. It
+   * can use anonymous credtentials.
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html See
    * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testBigAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testBigAWSS3");
 

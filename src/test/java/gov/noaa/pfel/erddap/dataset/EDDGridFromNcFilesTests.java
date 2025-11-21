@@ -35,6 +35,7 @@ import tags.TagDisabledLocalERDDAP;
 import tags.TagDisabledMissingDataset;
 import tags.TagDisabledThredds;
 import tags.TagImageComparison;
+import tags.TagSlowAWS;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -1191,9 +1192,8 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagDisabledAWS
-  @TagDisabledLargeFiles
   @TagImageComparison
+  @TagSlowAWS
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
     int language = 0;
 
@@ -3993,8 +3993,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
-  @TagDisabledLargeFiles
+  @TagSlowAWS
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -4004,12 +4003,7 @@ class EDDGridFromNcFilesTests {
     // trailing
     // /
     String regex = ".*_CESM1-CAM5_201.*\\.nc";
-    String dir =
-        Path.of(
-                EDDGridFromNcFilesTests.class
-                    .getResource("/veryLarge/points/testAwsS3NexDcp/")
-                    .toURI())
-            .toString();
+    String dir = EDStatic.config.fullTestCacheDirectory + "/points/testAwsS3NexDcp/";
     dir = dir.replace('\\', '/');
 
     String name = ""; // with cacheFromUrl, use nothing. Was: dir +
@@ -4035,7 +4029,7 @@ class EDDGridFromNcFilesTests {
                 cacheFromUrl,
                 null)
             + "\n"; // dimensionsCSV, reloadMinutes, cacheFromUrl
-    String suggDatasetID = EDDGridFromNcFiles.suggestDatasetID(dir + "/" + regex);
+    String suggDatasetID = EDDGridFromNcFiles.suggestDatasetID(dir + regex);
 
     // GenerateDatasetsXml
     String gdxResults =
@@ -23571,5 +23565,94 @@ class EDDGridFromNcFilesTests {
     // 2021-12-14: "Unable to open file or file not .nc-compatible."
     expected = "zztop";
     Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagSlowTests
+  void testAwsPublicBucket() throws Throwable {
+    EDD eddGrid = EDDTestDataset.getpublicAWSGridFromFiles();
+    String tDir = EDStatic.config.fullTestCacheDirectory;
+    String fName = "publicAwsTest";
+    String userDapQuery = "radiance[(2019-01-01T00:48:37Z):(2019-01-01T00:53:37Z)][0:1:5][60:1:65]";
+    String tName = eddGrid.makeNewFileForDapQuery(0, null, null, userDapQuery, tDir, fName, ".csv");
+    String results = File2.directReadFrom88591File(tDir + tName);
+    String expected =
+"""
+time,y,x,radiance
+UTC,rad,rad,W m-2 sr-1 um-1
+2019-01-01T00:48:37Z,0.128226,-0.068306,86.94614
+2019-01-01T00:48:37Z,0.128226,-0.068278,84.50982
+2019-01-01T00:48:37Z,0.128226,-0.06825,86.13403
+2019-01-01T00:48:37Z,0.128226,-0.068222,86.13403
+2019-01-01T00:48:37Z,0.128226,-0.068194,83.697716
+2019-01-01T00:48:37Z,0.128226,-0.068166,102.37616
+2019-01-01T00:48:37Z,0.128198,-0.068306,99.12774
+2019-01-01T00:48:37Z,0.128198,-0.068278,110.49722
+2019-01-01T00:48:37Z,0.128198,-0.06825,104.81248
+2019-01-01T00:48:37Z,0.128198,-0.068222,91.81878
+2019-01-01T00:48:37Z,0.128198,-0.068194,86.94614
+2019-01-01T00:48:37Z,0.128198,-0.068166,111.30933
+2019-01-01T00:48:37Z,0.12817,-0.068306,111.30933
+2019-01-01T00:48:37Z,0.12817,-0.068278,97.503525
+2019-01-01T00:48:37Z,0.12817,-0.06825,87.75825
+2019-01-01T00:48:37Z,0.12817,-0.068222,89.38246
+2019-01-01T00:48:37Z,0.12817,-0.068194,91.00667
+2019-01-01T00:48:37Z,0.12817,-0.068166,97.503525
+2019-01-01T00:48:37Z,0.128142,-0.068306,86.13403
+2019-01-01T00:48:37Z,0.128142,-0.068278,86.13403
+2019-01-01T00:48:37Z,0.128142,-0.06825,85.32193
+2019-01-01T00:48:37Z,0.128142,-0.068222,86.94614
+2019-01-01T00:48:37Z,0.128142,-0.068194,88.57035
+2019-01-01T00:48:37Z,0.128142,-0.068166,83.697716
+2019-01-01T00:48:37Z,0.128114,-0.068306,82.885605
+2019-01-01T00:48:37Z,0.128114,-0.068278,82.0735
+2019-01-01T00:48:37Z,0.128114,-0.06825,82.0735
+2019-01-01T00:48:37Z,0.128114,-0.068222,82.885605
+2019-01-01T00:48:37Z,0.128114,-0.068194,84.50982
+2019-01-01T00:48:37Z,0.128114,-0.068166,83.697716
+2019-01-01T00:48:37Z,0.128086,-0.068306,82.0735
+2019-01-01T00:48:37Z,0.128086,-0.068278,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.06825,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.068222,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.068194,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.068166,82.885605
+2019-01-01T00:53:37Z,0.128226,-0.068306,89.38246
+2019-01-01T00:53:37Z,0.128226,-0.068278,86.13403
+2019-01-01T00:53:37Z,0.128226,-0.06825,91.81878
+2019-01-01T00:53:37Z,0.128226,-0.068222,86.94614
+2019-01-01T00:53:37Z,0.128226,-0.068194,95.87931
+2019-01-01T00:53:37Z,0.128226,-0.068166,106.43669
+2019-01-01T00:53:37Z,0.128198,-0.068306,87.75825
+2019-01-01T00:53:37Z,0.128198,-0.068278,86.94614
+2019-01-01T00:53:37Z,0.128198,-0.06825,86.13403
+2019-01-01T00:53:37Z,0.128198,-0.068222,82.885605
+2019-01-01T00:53:37Z,0.128198,-0.068194,114.557755
+2019-01-01T00:53:37Z,0.128198,-0.068166,115.369865
+2019-01-01T00:53:37Z,0.12817,-0.068306,112.93355
+2019-01-01T00:53:37Z,0.12817,-0.068278,96.691414
+2019-01-01T00:53:37Z,0.12817,-0.06825,83.697716
+2019-01-01T00:53:37Z,0.12817,-0.068222,96.691414
+2019-01-01T00:53:37Z,0.12817,-0.068194,112.12144
+2019-01-01T00:53:37Z,0.12817,-0.068166,93.44299
+2019-01-01T00:53:37Z,0.128142,-0.068306,88.57035
+2019-01-01T00:53:37Z,0.128142,-0.068278,84.50982
+2019-01-01T00:53:37Z,0.128142,-0.06825,87.75825
+2019-01-01T00:53:37Z,0.128142,-0.068222,93.44299
+2019-01-01T00:53:37Z,0.128142,-0.068194,95.06721
+2019-01-01T00:53:37Z,0.128142,-0.068166,82.0735
+2019-01-01T00:53:37Z,0.128114,-0.068306,84.50982
+2019-01-01T00:53:37Z,0.128114,-0.068278,82.0735
+2019-01-01T00:53:37Z,0.128114,-0.06825,88.57035
+2019-01-01T00:53:37Z,0.128114,-0.068222,86.94614
+2019-01-01T00:53:37Z,0.128114,-0.068194,82.0735
+2019-01-01T00:53:37Z,0.128114,-0.068166,82.885605
+2019-01-01T00:53:37Z,0.128086,-0.068306,83.697716
+2019-01-01T00:53:37Z,0.128086,-0.068278,81.2614
+2019-01-01T00:53:37Z,0.128086,-0.06825,82.885605
+2019-01-01T00:53:37Z,0.128086,-0.068222,85.32193
+2019-01-01T00:53:37Z,0.128086,-0.068194,82.0735
+2019-01-01T00:53:37Z,0.128086,-0.068166,82.0735
+""";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
 }

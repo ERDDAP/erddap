@@ -19954,9 +19954,8 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>0</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/veryLarge/points/testAwsS3/").toURI())
-            .toString()
-        + "/</fileDir>\n"
+        + EDStatic.config.fullTestCacheDirectory
+        + "/points/testAwsS3/</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_20.*\\.nc</fileNameRegex>\n"
         + "    <metadataFrom>last</metadataFrom>\n"
@@ -44183,5 +44182,86 @@ public class EDDTestDataset {
         + "        </dataset>\n"
         + "    </dataset>\n"
         + "</dataset>\n";
+  }
+
+  public static EDD getpublicAWSGridFromFiles() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_publicAWSGridFromFiles());
+  }
+
+  private static String xmlFragment_publicAWSGridFromFiles() {
+    return
+"""
+<dataset type="EDDGridFromNcFiles" datasetID="noaa_goes17_abi_l1b_radc" active="true">
+    <reloadEveryNMinutes>60</reloadEveryNMinutes>
+    <updateEveryNMillis>-1</updateEveryNMillis>
+    <fileDir>"""
+        + EDStatic.config.fullTestCacheDirectory
+        +
+"""
+/goes17/</fileDir>
+    <fileNameRegex>.*\\.nc</fileNameRegex>
+    <fileNameRegex>OR_ABI-L1b-RadC.*\\.nc</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <pathRegex>.*ABI-L1b-RadC/2019/001/00/.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <matchAxisNDigits>20</matchAxisNDigits>
+    <fileTableInMemory>false</fileTableInMemory>
+    <cacheFromUrl>https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/001/00/</cacheFromUrl>
+    <cacheSizeGB>50</cacheSizeGB>
+    <axisVariable>
+        <sourceName>t</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+        </addAttributes>
+    </axisVariable>
+
+    <axisVariable>
+        <sourceName>y</sourceName>
+        <destinationName>y</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </axisVariable>
+
+    <axisVariable>
+        <sourceName>x</sourceName>
+        <destinationName>x</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </axisVariable>
+
+    <dataVariable>
+        <sourceName>Rad</sourceName>
+        <destinationName>radiance</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="ioos_category">Other</att>
+        </addAttributes>
+    </dataVariable>
+
+    <dataVariable>
+        <sourceName>DQF</sourceName>
+        <destinationName>data_quality_flag</destinationName>
+        <dataType>byte</dataType>
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+        </addAttributes>
+    </dataVariable>
+
+    <addAttributes>
+        <att name="cdm_data_type">Grid</att>
+        <att name="infoUrl">https://www.goes-r.gov/products/baseline-radiances.html</att>
+        <att name="institution">NOAA/NESDIS</att>
+        <att name="title">NOAA GOES-17 ABI L1b Radiances CONUS</att>
+        <att name="summary">GOES-17 Advanced Baseline Imager (ABI) Level 1b Radiances CONUS sector from 2019 day 001 hour 00, cached from S3.</att>
+    </addAttributes>
+</dataset>
+        """;
   }
 }

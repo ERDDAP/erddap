@@ -16,7 +16,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagDisabledAWS;
 import tags.TagDisabledLocalERDDAP;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
@@ -220,13 +219,10 @@ class EDDTableFromFileNamesTests {
   }
 
   /**
-   * testGenerateDatasetsXmlAwsS3 Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * testGenerateDatasetsXmlAwsS3 - can use anonymous credentials
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3()");
     // testVerboseOn();
@@ -394,7 +390,6 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
     // ensure it is ready-to-use by making a dataset from it
-    String2.log("results=\n" + results);
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -403,9 +398,6 @@ class EDDTableFromFileNamesTests {
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
         "");
-
-    String2.log(
-        "\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3() finished successfully.");
   }
 
   /** testGenerateDatasetsXmlFromFiles */
@@ -856,13 +848,10 @@ class EDDTableFromFileNamesTests {
   }
 
   /**
-   * Do tests of an Amazon AWS S3 file system. Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * Do tests of an Amazon AWS S3 file system. This can use anonymous credentials.
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
     // testVerboseOn();
@@ -1012,8 +1001,6 @@ class EDDTableFromFileNamesTests {
             + ",UTC,bytes\n"
             + "tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_209601-209912.nc,2096-01-01T00:00:00Z,1.098815646E9\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
-
-    String2.log("\n EDDTableFromFileNames.testAwsS3 finished successfully");
   }
 
   @ParameterizedTest
@@ -1139,7 +1126,6 @@ class EDDTableFromFileNamesTests {
 
   /** testGenerateDatasetsXmlFromOnTheFly */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testGenerateDatasetsXmlFromOnTheFly() throws Throwable {
     // String2.log("\n***
     // EDDTableFromFileNames.testGenerateDatasetsXmlFromOnTheFly()");
@@ -1154,7 +1140,7 @@ class EDDTableFromFileNamesTests {
     String tSummary = ""; // test the auto-generated summary
     String tTitle = ""; // test the auto-generated title
     String tDatasetID =
-        EDDTableFromFileNames.suggestDatasetID(tDir + "/" + tRegex + "(EDDTableFromFileNames)");
+        EDDTableFromFileNames.suggestDatasetID(tDir + tRegex + "(EDDTableFromFileNames)");
     String results =
         EDDTableFromFileNames.generateDatasetsXml(
                 tDir, tRegex, tRecursive, -1, tInfoUrl, tInstitution, tSummary, tTitle, null)
@@ -1306,7 +1292,6 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
     // ensure it is ready-to-use by making a dataset from it
-    String2.log("results=\n" + results);
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -1315,9 +1300,6 @@ class EDDTableFromFileNamesTests {
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
         "");
-
-    String2.log(
-        "\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles() finished successfully.");
   }
 
   /** Test an AWS S3 dataset in localhost ERDDAP. */
@@ -1379,7 +1361,6 @@ class EDDTableFromFileNamesTests {
 
   /** Test a ***fromOnTheFile dataset */
   @org.junit.jupiter.api.Test
-  @TagDisabledAWS
   void testOnTheFly() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
     int language = 0;
@@ -1423,7 +1404,7 @@ class EDDTableFromFileNamesTests {
               + "\nlastModified and size change sometimes. If so, change the test.");
       results = subDirs.toString();
       expected =
-          "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LST2KMF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; // changes
+          "ABI-L1b-RadC, ABI-L1b-RadC-Reproc, ABI-L1b-RadF, ABI-L1b-RadF-Reproc, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LST2KMF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; // changes
       // sometimes
       Test.ensureEqual(results, expected, "");
       expTime = 459; // ms
@@ -1499,116 +1480,102 @@ class EDDTableFromFileNamesTests {
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        "url,name,lastModified,size,fileType\n"
-            + ",,UTC,bytes,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/index.html,index.html,2021-09-27T19:48:15Z,32357.0,.html\n"
-            + // changes sometimes
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,\n"
-            + // disappeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,\n"
-            + // appeared 2021-06-24
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LST2KMF/,,,NaN,\n"
-            + // appeared 2021-11-16
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
+"""
+url,name,lastModified,size,fileType
+,,UTC,bytes,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/index.html,index.html,2021-09-27T19:48:15Z,32357.0,.html
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LST2KMF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,
+                """;
+    ;
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     tName =
@@ -1616,25 +1583,28 @@ class EDDTableFromFileNamesTests {
             language, null, null, "&url=~\".*-L1b-.*\"", dir, edd.className() + "_all", ".csv");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        "url,name,lastModified,size,fileType\n"
-            + ",,UTC,bytes,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n"
-            + // 2021-05-03 many added below...
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
+"""
+url,name,lastModified,size,fileType
+,,UTC,bytes,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,
+            """;
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 

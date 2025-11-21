@@ -620,7 +620,7 @@
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                     </additionalClasspathElements>
-                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External</excludedGroups>
+                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External, SlowAWS</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>
@@ -639,7 +639,7 @@
                                 <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                             </additionalClasspathElements>
                             <groups>Jetty, Slow</groups>
-                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External</excludedGroups>
+                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External, SlowAWS</excludedGroups>
                             <includes>
                                 <include>**/IT*.java</include>
                                 <include>**/*IT.java</include>
@@ -669,32 +669,24 @@
                     <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
                 </configuration>
             </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>slowAWS</id>
+      <build>
+        <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <argLine>${failsafe.jacoco.args}</argLine>
-                            <additionalClasspathElements>
-                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
-                            </additionalClasspathElements>
-                            <groups>External</groups>
-                            <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
-                            <includes>
-                                <include>**/IT*.java</include>
-                                <include>**/*IT.java</include>
-                                <include>**/*ITCase.java</include>
-                                <include>**/*Test*.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <argLine>${surefire.jacoco.args}</argLine>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <groups>SlowAWS</groups>
+                    <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
+                </configuration>
             </plugin>
         </plugins>
       </build>

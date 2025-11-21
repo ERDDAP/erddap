@@ -28,6 +28,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.AxisVariableInfo;
 import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
+import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -313,6 +314,51 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     }
   }
 
+  private boolean hasDimensionByName(List<Dimension> dims, EDVGridAxis axis, List<Variable> vars) {
+    for (Dimension dim : dims) {
+      String dimName = dim.getName();
+      if (dimName == null) {
+        // This is a strange case, but if we can't get a name from the dim, it's likely not a file
+        // with proper dimensions. One possibility is in the test
+        // EDDGridFromNcFilesTests.testGenerateDatasetsXmlGroups.
+        return true;
+      }
+      if (dimName.equals(axis.sourceName()) || dimName.equals(axis.destinationName())) {
+        return true;
+      }
+    }
+    for (Variable var : vars) {
+      if ((var.getFullName().equals(axis.sourceName())
+              || var.getFullName().equals(axis.destinationName()))
+          && var.getDimensions().size() == 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private String makeSelectorForVar(Variable var, IntArray tConstraints, List<Variable> vars) {
+    List<Dimension> dimensions = var.getDimensions();
+    StringBuilder selectionSB = new StringBuilder();
+    int axisOffset = axis0Type == AXIS0_REGULAR || axis0Type == AXIS0_REPLACE_FROM_FILENAME ? 0 : 1;
+    for (int avi = 0; avi < tConstraints.size() / 3; avi++) {
+      if (hasDimensionByName(dimensions, axisVariables[avi + axisOffset], vars)) {
+        selectionSB.append(
+            (avi == 0 ? "" : ",")
+                + tConstraints.get(avi * 3)
+                + ":"
+                + tConstraints.get(avi * 3 + 2)
+                + ":"
+                + tConstraints.get(avi * 3 + 1)); // start:STOP:stride !
+      } else {
+        String2.log(
+            "skipping constraint for axis/dim, not in source: "
+                + axisVariableSourceNames[avi + axisOffset]);
+      }
+    }
+    return selectionSB.toString();
+  }
+
   /**
    * This gets source data from one file.
    *
@@ -336,22 +382,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     int nav = tConstraints.size() / 3; // deals with special axis0
     int ndv = tDataVariables.size();
     PrimitiveArray[] paa = new PrimitiveArray[ndv];
-    StringBuilder selectionSB = new StringBuilder();
-    for (int avi = 0; avi < nav; avi++) {
-      selectionSB.append(
-          (avi == 0 ? "" : ",")
-              + tConstraints.get(avi * 3)
-              + ":"
-              + tConstraints.get(avi * 3 + 2)
-              + ":"
-              + tConstraints.get(avi * 3 + 1)); // start:STOP:stride !
-    }
-    String selection = selectionSB.toString();
     int nValues = -1; // not yet calculated
     EDV edv = null;
-
     try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
-
+      List<Variable> vars = ncFile.getVariables();
       for (int dvi = 0; dvi < ndv; dvi++) {
         edv = tDataVariables.get(dvi);
 
@@ -383,6 +417,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
           // is it a regular variable?
           Variable var = ncFile.findVariable(edv.sourceName());
           if (var != null) {
+            String selection = makeSelectorForVar(var, tConstraints, vars);
             String tSel = selection;
             if (edv.sourceDataPAType() == PAType.STRING)
               tSel += ",0:" + (var.getShape(var.getRank() - 1) - 1);
@@ -444,6 +479,17 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
       return paa;
 
     } catch (Throwable t) {
+      StringBuilder selectionSB = new StringBuilder();
+      for (int avi = 0; avi < tConstraints.size() / 3; avi++) {
+        selectionSB.append(
+            (avi == 0 ? "" : ",")
+                + tConstraints.get(avi * 3)
+                + ":"
+                + tConstraints.get(avi * 3 + 2)
+                + ":"
+                + tConstraints.get(avi * 3 + 1)); // start:STOP:stride !
+      }
+      String selection = selectionSB.toString();
       String2.log(
           "ERROR: while reading sourceName="
               + (edv == null ? "null" : edv.sourceName())
