@@ -273,6 +273,7 @@ public class EDConfig {
   @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean includeNcCFSubsetVariables;
+  @FeatureFlag public boolean ncHeaderMakeFile = false;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
   @FeatureFlag public boolean useHeadersForUrl = true;
@@ -671,6 +672,7 @@ public class EDConfig {
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
     includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
+    ncHeaderMakeFile = getSetupEVBoolean(setup, ev, "ncHeaderMakeFile", false);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     useSisISO19139 = getSetupEVBoolean(setup, ev, "useSisISO19139", false);
     generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);

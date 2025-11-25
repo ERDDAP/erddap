@@ -51,6 +51,7 @@ public class AxisDataAccessor {
   // things the constructor generates
   protected EDVGridAxis[] rAxisVariables;
   protected final IntArray constraints;
+  StringArray destinationNames;
   protected Attributes globalAttributes;
   protected Attributes rAxisAttributes[];
   protected PrimitiveArray rAxisValues[];
@@ -79,7 +80,7 @@ public class AxisDataAccessor {
               + userDapQuery);
 
     // parse the query    -- always for just 1 axis variable
-    StringArray destinationNames = new StringArray();
+    destinationNames = new StringArray();
     constraints = new IntArray();
     eddGrid.parseAxisDapQuery(language, userDapQuery, destinationNames, constraints, false);
     if (reallyVerbose) {
@@ -283,5 +284,9 @@ public class AxisDataAccessor {
    */
   public Attributes globalAttributes() {
     return globalAttributes;
+  }
+
+  public StringArray destinationNames() {
+    return destinationNames;
   }
 }
