@@ -10633,6 +10633,9 @@ class JettyTests {
         globecBottle.makeNewFileForDapQuery(
             language, null, null, tUserDapQuery, dir, globecBottle.className() + "_Data", ".nc");
     results = NcHelper.ncdump(dir + tName, "");
+    results =
+        results.replaceFirst("^netcdf\\s+(.+?)\\s*\\{", "netcdf EDDTableFromNcFiles_Data.nc {");
+    results = results.replaceAll("\r\n", "\n");
     String tHeader1 =
         "netcdf EDDTableFromNcFiles_Data.nc {\n"
             + "  dimensions:\n"
@@ -10779,17 +10782,107 @@ class JettyTests {
             ".ncHeader");
     // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
-    String2.log(results);
 
+    results = results.replaceAll("\r\n", "\n");
+    results =
+        results.replaceFirst("^netcdf\\s+(.+?)\\s*\\{", "netcdf EDDTableFromNcFiles_Data.nc {");
+    tHeader1 =
+"""
+netcdf EDDTableFromNcFiles_Data.nc {
+  dimensions:
+    row = 1007;
+    ship_strlen = 11;
+  variables:
+    float longitude(row=1007);
+      :_CoordinateAxisType = "Lon";
+      :_FillValue = 327.67f; // float
+      :actual_range = -126.0f, -124.1f; // float
+      :axis = "X";
+      :ioos_category = "Location";
+      :long_name = "Longitude";
+      :missing_value = 327.67f; // float
+      :standard_name = "longitude";
+      :units = "degrees_east";
+
+    float NO3(row=1007);
+      :_FillValue = -99.0f; // float
+      :actual_range = 0.0f, 99.79f; // float
+      :colorBarMaximum = 50.0; // double
+      :colorBarMinimum = 0.0; // double
+      :ioos_category = "Dissolved Nutrients";
+      :long_name = "Nitrate";
+      :missing_value = -9999.0f; // float
+      :standard_name = "mole_concentration_of_nitrate_in_sea_water";
+      :units = "micromoles L-1";
+
+    double time(row=1007);
+      :_CoordinateAxisType = "Time";
+      :actual_range = 1.02833814E9, 1.02978828E9; // double
+      :axis = "T";
+      :cf_role = "profile_id";
+      :ioos_category = "Time";
+      :long_name = "Time";
+      :standard_name = "time";
+      :time_origin = "01-JAN-1970 00:00:00";
+      :units = "seconds since 1970-01-01T00:00:00Z";
+
+    char ship(row=1007, ship_strlen=11);
+      :_Encoding = "ISO-8859-1";
+      :ioos_category = "Identifier";
+      :long_name = "Ship";
+
+  // global attributes:
+  :cdm_data_type = "TrajectoryProfile";
+  :cdm_profile_variables = "cast, longitude, latitude, time";
+  :cdm_trajectory_variables = "cruise_id, ship";
+  :Conventions = "COARDS, CF-1.6, ACDD-1.3";
+  :Easternmost_Easting = -124.1f; // float
+  :featureType = "TrajectoryProfile";
+  :geospatial_lat_max = 44.65; // double
+  :geospatial_lat_min = 41.9; // double
+  :geospatial_lat_units = "degrees_north";
+  :geospatial_lon_max = -124.1f; // float
+  :geospatial_lon_min = -126.0f; // float
+  :geospatial_lon_units = "degrees_east";
+  :geospatial_vertical_max = 0.0; // double
+  :geospatial_vertical_min = 0.0; // double
+  :geospatial_vertical_positive = "up";
+  :geospatial_vertical_units = "m";
+  :history = """;
+    tHeader1 = tHeader1.replaceAll("\r\n", "\n");
     tResults = results.substring(0, tHeader1.length());
     Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
 
-    expected = tHeader2 + "}\n";
-    tPo = results.indexOf(expected.substring(0, 17));
+    tHeader2 =
+"""
+/erddap/tabledap/testGlobecBottle.ncHeader?longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
+  :id = "Globec_bottle_data_2002";
+  :infoUrl = "https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics";
+  :institution = "GLOBEC";
+  :keywords = "10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water";
+  :keywords_vocabulary = "GCMD Science Keywords";
+  :Northernmost_Northing = 44.65; // double
+  :sourceUrl = "(local files; contact erd.data@noaa.gov)";
+  :Southernmost_Northing = 41.9; // double
+  :standard_name_vocabulary = "CF Standard Name Table v70";
+  :subsetVariables = "cruise_id, ship, cast, longitude, latitude, time";
+  :time_coverage_end = "2002-08-19T20:18:00Z";
+  :time_coverage_start = "2002-08-03T01:29:00Z";
+  :title = "GLOBEC NEP Rosette Bottle Data (2002)";
+  :Westernmost_Easting = -126.0f; // float
+}
+                """;
+    results =
+        results.substring(0, results.indexOf("  :license = "))
+            + results.substring(results.indexOf("  :Northernmost_Northing = "));
+    results =
+        results.substring(0, results.indexOf("  :summary = "))
+            + results.substring(results.indexOf("  :time_coverage_end = "));
+    tPo = results.indexOf(tHeader2.substring(0, 17));
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(
-        results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-        expected,
+        results.substring(tPo, Math.min(results.length(), tPo + tHeader2.length())),
+        tHeader2,
         "results=\n" + results);
 
     // .odvTxt
@@ -13880,6 +13973,8 @@ class JettyTests {
     results =
         results.replaceAll(
             ":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f", ":actual_range = MIN, MAX");
+    results = results.replaceAll("\r\n", "\n");
+    expected = expected.replaceAll("\r\n", "\n");
     tPo = results.indexOf("  variables:\n");
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(
@@ -13899,6 +13994,7 @@ class JettyTests {
       results =
           results.replaceAll(
               ":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f", ":actual_range = MIN, MAX");
+      results = results.replaceAll("\r\n", "\n");
       tPo = results.indexOf("  variables:\n");
       Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
       Test.ensureEqual(
