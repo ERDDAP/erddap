@@ -590,6 +590,13 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.9.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>properties</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-utils -->
                 <plugin>
@@ -616,7 +623,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
                 <configuration>
-                    <argLine>${surefire.jacoco.args}</argLine>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <environmentVariables>
+                        <temp>${project.basedir}/target/temp/</temp>
+                        <tmp>${project.basedir}/target/temp/</tmp>
+                        <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                    </environmentVariables>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                     </additionalClasspathElements>
@@ -634,7 +646,12 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <argLine>${failsafe.jacoco.args}</argLine>
+                            <argLine>${failsafe.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                            <environmentVariables>
+                                <temp>${project.basedir}/target/temp/</temp>
+                                <tmp>${project.basedir}/target/temp/</tmp>
+                                <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                            </environmentVariables>
                             <additionalClasspathElements>
                                 <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                             </additionalClasspathElements>
@@ -661,7 +678,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
                 <configuration>
-                    <argLine>${surefire.jacoco.args}</argLine>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <environmentVariables>
+                        <temp>${project.basedir}/target/temp/</temp>
+                        <tmp>${project.basedir}/target/temp/</tmp>
+                        <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                    </environmentVariables>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                     </additionalClasspathElements>
@@ -680,7 +702,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
                 <configuration>
-                    <argLine>${surefire.jacoco.args}</argLine>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <environmentVariables>
+                        <temp>${project.basedir}/target/temp/</temp>
+                        <tmp>${project.basedir}/target/temp/</tmp>
+                        <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                    </environmentVariables>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
                     </additionalClasspathElements>
