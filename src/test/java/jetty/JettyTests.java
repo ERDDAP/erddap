@@ -20586,4 +20586,29 @@ completeness, or usefulness, of this information.";
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
   }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testCopyImages() throws Exception {
+    // downloadFile will throw an error if the file does not exist.
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/QuestionMarkTest.png",
+        TEMP_DIR.toAbsolutePath().toString() + "/QuestionMarkTest.png",
+        true);
+
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/nlogo2.gif",
+        TEMP_DIR.toAbsolutePath().toString() + "/nlogo2.gif",
+        true);
+
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/noaa2000.gif",
+        TEMP_DIR.toAbsolutePath().toString() + "/noaa2000.gif",
+        true);
+
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/noaa_otherName.gif",
+        TEMP_DIR.toAbsolutePath().toString() + "/noaa_otherName.gif",
+        true);
+  }
 }
