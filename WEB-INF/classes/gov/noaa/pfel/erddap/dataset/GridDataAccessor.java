@@ -802,9 +802,11 @@ public class GridDataAccessor implements AutoCloseable {
    * @return paOne, for convenience
    */
   public PAOne getDataValueAsPAOne(int dv, PAOne paOne) {
-    return paOne.readFrom(
-        partialDataValues[dv],
-        (int) partialIndex.getIndex()); // safe since partialIndex size checked when constructed
+    int index = (int) partialIndex.getIndex();
+    if (partialDataValues[dv].size() <= index) {
+      return paOne.readFrom(partialDataValues[dv].missingValue());
+    }
+    return paOne.readFrom(partialDataValues[dv], index);
   }
 
   /**
@@ -815,8 +817,11 @@ public class GridDataAccessor implements AutoCloseable {
    * @return the data value
    */
   public double getDataValueAsDouble(int dv) {
-    return partialDataValues[dv].getDouble(
-        (int) partialIndex.getIndex()); // safe since partialIndex size checked when constructed
+    int index = (int) partialIndex.getIndex();
+    if (partialDataValues[dv].size() <= index) {
+      return partialDataValues[dv].missingValue().getDouble();
+    }
+    return partialDataValues[dv].getDouble(index);
   }
 
   /**
@@ -827,8 +832,11 @@ public class GridDataAccessor implements AutoCloseable {
    * @return the data value
    */
   public String getDataValueAsString(int dv) {
-    return partialDataValues[dv].getString(
-        (int) partialIndex.getIndex()); // safe since partialIndex size checked when constructed
+    int index = (int) partialIndex.getIndex();
+    if (partialDataValues[dv].size() <= index) {
+      return partialDataValues[dv].missingValue().getString();
+    }
+    return partialDataValues[dv].getString(index);
   }
 
   /**

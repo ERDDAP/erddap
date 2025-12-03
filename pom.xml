@@ -43,7 +43,7 @@
         <erddapcontent.download.version>content1.0.1</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.9.1</netcdfJavaVersion>
-        <test.resources.version>test1.05</test.resources.version>
+        <test.resources.version>test1.06</test.resources.version>
         <jettyVersion>12.1.3</jettyVersion>
         <error-prone.version>2.41.0</error-prone.version>
         <prometheusVersion>1.4.1</prometheusVersion>
