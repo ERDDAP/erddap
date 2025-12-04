@@ -331,7 +331,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
       if ((var.getFullName().equals(axis.sourceName())
               || var.getFullName().equals(axis.destinationName()))
           && var.getDimensions().size() == 1) {
-        return true;
+        if (dims.indexOf(var.getDimension(0)) != -1) {
+          return true;
+        }
       }
     }
     return false;
