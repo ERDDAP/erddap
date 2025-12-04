@@ -4345,11 +4345,13 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         int col = table.findColumnNumber(sourceInfo.variableNames.get(vni));
         if (col >= 0) {
           // var is in file. Try to get attribute
-          PrimitiveArray pa = table.columnAttributes(col).get(sourceInfo.variableAttNames.get(vni));
-          if (pa != null && pa.size() > 0) {
-            pa =
-                PrimitiveArray.factory(
-                    PAType.fromCohortString(sourceInfo.variableTypes.get(vni)), pa);
+          PrimitiveArray sourcePa =
+              table.columnAttributes(col).get(sourceInfo.variableAttNames.get(vni));
+          if (sourcePa != null && sourcePa.size() > 0) {
+            // We force a copy of the pa because there are destructive operations below.
+            PrimitiveArray pa =
+                PrimitiveArray.copyFactory(
+                    PAType.fromCohortString(sourceInfo.variableTypes.get(vni)), sourcePa);
 
             // make pa size=1
             if (pa.size() > 1) {

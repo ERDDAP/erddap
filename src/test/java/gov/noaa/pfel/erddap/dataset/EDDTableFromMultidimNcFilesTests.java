@@ -1,6 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -4820,6 +4821,13 @@ class EDDTableFromMultidimNcFilesTests {
             + "7900594,102,2\n";
     // String2.log(results);
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testAttributePromotion() throws Exception, Throwable {
+    EDDTable eddTable = (EDDTable) EDDTestDataset.getstringVarDataVariable();
+    // If the creeating the variable causes a problem, the dataset creation fails.
+    assertNotNull(eddTable);
   }
 
   @org.junit.jupiter.api.Test

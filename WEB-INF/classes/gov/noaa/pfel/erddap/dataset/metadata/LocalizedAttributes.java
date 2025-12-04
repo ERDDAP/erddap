@@ -417,10 +417,16 @@ public class LocalizedAttributes {
   private void updateUrls(Map<String, PrimitiveArray> map) {
     map.replaceAll(
         (k, v) -> {
+          if (v == null) {
+            return v;
+          }
           if (v != null && v.elementType() != PAType.STRING) {
             return v;
           }
           if (String2.indexOf(EDStatic.messages.updateUrlsSkipAttributes, k) >= 0) {
+            return v;
+          }
+          if (v.size() == 0) {
             return v;
           }
           String value = EDStatic.updateUrls(v.getString(0));
