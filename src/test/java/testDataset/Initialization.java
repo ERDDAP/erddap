@@ -16,5 +16,24 @@ public class Initialization {
     SgtMap.fontFamily = "SansSerif";
     EDStatic.config.useSaxParser = true;
     EDStatic.testingDontDestroy = true;
+
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  try {
+                    System.out.println("Cleaning up files on JVM shutdown.");
+                    cleanup();
+                  } catch (Exception ignored) {
+                    System.out.println("Error deleting files");
+                  }
+                }));
+  }
+
+  public static void cleanup() {
+    File2.delete(EDStatic.config.imageDir + "/nlogo2.gif");
+    File2.delete(EDStatic.config.imageDir + "/noaa_otherName.gif");
+    File2.delete(EDStatic.config.imageDir + "/noaa2000.gif");
+    File2.delete(EDStatic.config.imageDir + "/QuestionMarkTest.png");
   }
 }

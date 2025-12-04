@@ -11,6 +11,7 @@ import com.cohort.util.Test;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.util.Metrics.FeatureFlag;
@@ -698,6 +699,8 @@ public class EDConfig {
         getSetupEVInt(setup, ev, "mqttConnectionTimeout", DEFAULT_CONNECTION_TIMEOUT);
     mqttAutomaticReconnect =
         getSetupEVBoolean(setup, ev, "mqttAutomaticReconnect", DEFAULT_AUTO_RECONNECT);
+
+    copyContentImagesToWebApps();
     // ensure images exist and get their sizes
     Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
     lowResLogoImageFileWidth = tImage.getWidth(null);
@@ -710,6 +713,30 @@ public class EDConfig {
     googleEarthLogoFileHeight = tImage.getHeight(null);
 
     lazyInitializeStatics();
+  }
+
+  private void copyContentImagesToWebApps() {
+    // copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and
+    // subdirectories)
+    String tFiles[] =
+        RegexFilenameFilter.recursiveFullNameList(contentDirectory + "images/", ".+", false);
+    String2.log("contentDirectory: " + contentDirectory);
+    for (String file : tFiles) {
+      int tpo = file.indexOf("/images/");
+      String2.log("copying file: " + file);
+      if (tpo < 0) tpo = file.indexOf("\\images\\");
+      if (tpo < 0) {
+        String2.log("'/images/' not found in images/ file: " + file);
+        continue;
+      }
+      String tName = file.substring(tpo + 8);
+      File2.copy(contentDirectory + "images/" + tName, imageDir + tName);
+    }
+    // copy all <contentDirectory>cptfiles/ files to cptfiles
+    tFiles = RegexFilenameFilter.list(contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
+    for (String tFile : tFiles) {
+      File2.copy(contentDirectory + "cptfiles/" + tFile, fullPaletteDirectory + tFile);
+    }
   }
 
   private void lazyInitializeStatics() {

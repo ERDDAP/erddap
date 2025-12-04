@@ -35,7 +35,6 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
-import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
@@ -753,37 +752,6 @@ public class EDStatic {
                 config.bigParentDirectory + "subscriptionsV1.txt",
                 48, // maxHoursPending,
                 preferredErddapUrl); // prefer https url
-      }
-
-      // ???if logoImgTag is needed, convert to method logoImgTag(loggedInAs)
-      // logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs, language) + lowResLogoImageFile
-      // + "\" " +
-      //    "alt=\"logo\" title=\"logo\">\n";
-
-      // copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and
-      // subdirectories)
-      String tFiles[] =
-          RegexFilenameFilter.recursiveFullNameList(
-              config.contentDirectory + "images/", ".+", false);
-      for (String file : tFiles) {
-        int tpo = file.indexOf("/images/");
-        if (tpo < 0) tpo = file.indexOf("\\images\\");
-        if (tpo < 0) {
-          String2.log("'/images/' not found in images/ file: " + file);
-          continue;
-        }
-        String tName = file.substring(tpo + 8);
-        if (verbose) String2.log("  copying images/ file: " + tName);
-        File2.copy(config.contentDirectory + "images/" + tName, config.imageDir + tName);
-      }
-      // copy all <contentDirectory>cptfiles/ files to cptfiles
-      tFiles =
-          RegexFilenameFilter.list(
-              config.contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
-      for (String tFile : tFiles) {
-        if (verbose) String2.log("  copying cptfiles/ file: " + tFile);
-        File2.copy(
-            config.contentDirectory + "cptfiles/" + tFile, config.fullPaletteDirectory + tFile);
       }
 
       // try to create an nc4 file
