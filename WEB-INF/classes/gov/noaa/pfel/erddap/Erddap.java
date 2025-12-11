@@ -103,6 +103,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15014,86 +15015,127 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 EDStatic.messages.get(Message.SEARCH_TITLE, language),
                 out);
         try {
-          // you are here    Search
-          writer.write(
-              "<div class=\"standard_width\">\n"
-                  + EDStatic.youAreHere(
-                      request,
-                      language,
-                      loggedInAs,
-                      EDStatic.messages.get(Message.SEARCH_TITLE, language)));
-          // youAreHereTable);
-
-          // display the search form
-          writer.write(
+          String searchFormHtml =
               getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor)
                   + "&nbsp;"
-                  + "<br>");
+                  + "<br>";
+          Table table =
+              makeHtmlDatasetTable(request, language, loggedInAs, datasetIDs, sortByTitle);
 
-          // display datasets
-          if (error == null) {
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  true, // =most relevant first
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(request.getQueryString()));
 
-            Table table =
-                makeHtmlDatasetTable(request, language, loggedInAs, datasetIDs, sortByTitle);
-
-            String nMatchingHtml =
-                EDStatic.nMatchingDatasetsHtml(
+          if (useHtmlTemplates(request)) {
+            YouAreHere youAreHere =
+                EDStatic.getYouAreHere(
+                    request,
                     language,
-                    nMatches,
-                    page,
-                    lastPage,
-                    true, // =most relevant first
-                    EDStatic.baseUrl(request, loggedInAs)
-                        + requestUrl
-                        + EDStatic.questionQuery(request.getQueryString()));
+                    loggedInAs,
+                    EDStatic.messages.get(Message.SEARCH_TITLE, language));
 
-            writer.write(
-                nMatchingHtml
-                    + "\n"
-                    + "<span class=\"N\">("
-                    + EDStatic.messages.get(Message.OR_REFINE_SEARCH_WITH, language)
-                    + getAdvancedSearchLink(request, language, loggedInAs, queryString)
-                    + ")</span>\n"
-                    + "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
+            TableOptions tableOptions =
+                new TableOptions.TableOptionsBuilder(table)
+                    .otherClasses("commonBGColor")
+                    .bgColor(null)
+                    .writeUnits(false)
+                    .timeColumn(-1)
+                    .needEncodingAsHtml(false)
+                    .allowWrap(false)
+                    .build();
+            TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
 
-            table.saveAsHtmlTable(
-                writer,
-                "commonBGColor",
-                null,
-                false,
-                -1,
-                false,
-                false); // don't encodeAsHTML the cell's contents, !allowWrap
-
-            if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
-
-            // list plain file types
-            writer.write(
-                "\n"
-                    + "<p>"
-                    + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                    + " \n("
-                    + plainFileTypesString
-                    + // not links, which would be indexed by search engines
-                    ") <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/rest.html\">"
-                    + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                    + "</a>.\n");
-
+            Map<String, Object> searchParamsMap = new HashMap<>();
+            searchParamsMap.put("endOfRequest", endOfRequest);
+            searchParamsMap.put("youAreHere", youAreHere);
+            searchParamsMap.put("language", language);
+            searchParamsMap.put("tErddapUrl", tErddapUrl);
+            searchParamsMap.put("tableOptions", tableOptions);
+            searchParamsMap.put("table", table);
+            searchParamsMap.put("searchFormHtml", searchFormHtml);
+            searchParamsMap.put(
+                "advancedSearchLink",
+                getAdvancedSearchLink(request, language, loggedInAs, queryString));
+            searchParamsMap.put("nMatchingHtml", nMatchingHtml);
+            searchParamsMap.put("plainFileTypesString", plainFileTypesString);
+            searchParamsMap.put("errorLineOne", error != null ? XML.encodeAsHTML(error[0]) : "");
+            searchParamsMap.put("errorLineTwo", error != null ? XML.encodeAsHTML(error[1]) : "");
+            engine.render("search.jte", searchParamsMap, new WriterOutput(writer));
           } else {
-            // error
+
+            // you are here    Search
             writer.write(
-                "<strong>"
-                    + XML.encodeAsHTML(error[0])
-                    + "</strong>\n"
-                    + "<br>"
-                    + XML.encodeAsHTML(error[1])
-                    + "\n");
+                "<div class=\"standard_width\">\n"
+                    + EDStatic.youAreHere(
+                        request,
+                        language,
+                        loggedInAs,
+                        EDStatic.messages.get(Message.SEARCH_TITLE, language)));
+
+            // display the search form
+            writer.write(
+                getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor)
+                    + "&nbsp;"
+                    + "<br>");
+
+            // display datasets
+            if (error == null) {
+
+              writer.write(
+                  nMatchingHtml
+                      + "\n"
+                      + "<span class=\"N\">("
+                      + EDStatic.messages.get(Message.OR_REFINE_SEARCH_WITH, language)
+                      + getAdvancedSearchLink(request, language, loggedInAs, queryString)
+                      + ")</span>\n"
+                      + "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
+
+              table.saveAsHtmlTable(
+                  writer,
+                  "commonBGColor",
+                  null,
+                  false,
+                  -1,
+                  false,
+                  false); // don't encodeAsHTML the cell's contents, !allowWrap
+
+              if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+              // list plain file types
+              writer.write(
+                  "\n"
+                      + "<p>"
+                      + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                      + " \n("
+                      + plainFileTypesString
+                      + // not links, which would be indexed by search engines
+                      ") <a rel=\"help\" href=\""
+                      + tErddapUrl
+                      + "/rest.html\">"
+                      + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                      + "</a>.\n");
+
+            } else {
+              // error
+              writer.write(
+                  "<strong>"
+                      + XML.encodeAsHTML(error[0])
+                      + "</strong>\n"
+                      + "<br>"
+                      + XML.encodeAsHTML(error[1])
+                      + "\n");
+            }
+            // end of document
+            writer.write("</div>\n");
           }
 
-          // end of document
-          writer.write("</div>\n");
           endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
         } catch (Throwable t) {
@@ -23900,7 +23942,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "legal.html",
                 "outOfDateDatasets.html",
                 "status.html",
-                "subscriptions/index.html")
+                "subscriptions/index.html",
+                "search/index.html")
             .contains(endOfRequest);
 
     if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
