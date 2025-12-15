@@ -6805,9 +6805,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         justExtension = id;
         id = "";
       } else if (id.length() > 0) {
-        // id is something, but didn't end in slash
-        // presumably it is datasetID without slash
-        sendRedirect(response, id + "/");
+        if (gridDatasetHashMap.get(id) != null || tableDatasetHashMap.get(id) != null) {
+          // id is something, but didn't end in slash
+          // presumably it is datasetID without slash
+          sendRedirect(response, id + "/");
+        } else {
+          sendResourceNotFoundError(
+              requestNumber,
+              request,
+              response,
+              EDStatic.bilingual(
+                  language,
+                  MessageFormat.format(EDStatic.messages.get(Message.UNKNOWN_DATASET_ID, 0), id),
+                  MessageFormat.format(
+                      EDStatic.messages.get(Message.UNKNOWN_DATASET_ID, language), id)));
+        }
+
         return;
       }
     } else {
