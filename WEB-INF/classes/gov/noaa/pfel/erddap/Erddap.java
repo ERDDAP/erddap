@@ -61,6 +61,7 @@ import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.jte.Index;
 import gov.noaa.pfel.erddap.jte.Status;
 import gov.noaa.pfel.erddap.jte.TableOptions;
 import gov.noaa.pfel.erddap.jte.YouAreHere;
@@ -93,6 +94,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -1204,512 +1206,675 @@ public class Erddap extends HttpServlet {
             queryString,
             "Home Page",
             out);
-    try {
-      // set up the table
-      writer.write(
-          "<div class=\"wide_max_width\">"
-              + // not standard_width
-              "<table style=\"vertical-align:top; "
-              + "width:100%; border:0; border-spacing:0px;\">\n"
-              + "<tr>\n"
-              + "<td style=\"width:60%;\" class=\"T\">\n");
+    if (useHtmlTemplates(request)) {
+      try {
+        // 2. Populate the DTO
+        Index data = new Index();
+        data.language = language;
+        data.erddapUrl = tErddapUrl;
+        data.endOfRequest = endOfRequest;
+        data.loggedInAs = loggedInAs;
+        data.request = request;
+        data.youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, null);
 
-      // *** left column: theShortDescription
-      writer.write(EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl));
+        // Pre-render complex HTML blocks
+        data.shortDescriptionHtml = EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl);
+        data.searchFormHtml = getSearchFormHtml(language, request, loggedInAs, "<h3>", "</h3>", "");
 
-      // thin vertical line between text columns
-      writer.write(
-          "</td>\n"
-              + "<td style=\"width:1%;\">&nbsp;&nbsp;&nbsp;</td>\n"
-              + // spacing to left of vertical line
-              "<td style=\"width:1%;\" class=\"verticalLine\">&nbsp;&nbsp;&nbsp;</td>\n"
-              + // thin vertical line + spacing to right
-              "<td style=\"width:38%;\" class=\"T\">\n");
+        // Capture Categorize Options (it writes to a Writer, so we capture it to a String)
+        StringWriter catSw = new StringWriter();
+        writeCategorizeOptionsHtml1(language, request, loggedInAs, catSw, null, true);
+        data.categorizeOptionsHtml = catSw.toString();
 
-      // *** the right column: Get Started with ERDDAP
-      writer.write(
-          "<h2>" + EDStatic.messages.get(Message.GET_STARTED_HTML, language) + "</h2>\n" + "<ul>");
+        // Dataset counts/links
+        int datasetCount = gridDatasetHashMap.size() + tableDatasetHashMap.size();
+        // Format the number locally to ensure standard Java formatting matches legacy
+        data.viewAllDatasetsTitle =
+            MessageFormat.format(
+                EDStatic.messages.get(Message.INDEX_VIEW_ALL, language),
+                datasetCount); // format expects a number
+        data.viewAllDatasetsUrl =
+            tErddapUrl + "/info/index.html?" + EDStatic.encodedDefaultPIppQuery;
 
-      // display a search form
-      writer.write("\n<li>");
-      writer.write(getSearchFormHtml(language, request, loggedInAs, "<h3>", "</h3>", ""));
+        data.advancedSearchLink =
+            getAdvancedSearchLink(request, language, loggedInAs, EDStatic.defaultPIppQuery);
 
-      // display /info link with list of all datasets
-      writer.write(
-          // here, just use rel=contents for the list of all datasets
-          "\n<li><h3><a rel=\"contents\" href=\""
-              + tErddapUrl
-              + "/info/index.html?"
-              + EDStatic.encodedDefaultPIppQuery
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_VIEW_ALL, language),
-                  // below is one of few places where number isn't converted to string
-                  // (so 1000's separator is used to format the number):
-                  gridDatasetHashMap.size() + tableDatasetHashMap.size())
-              + // no: "" +
-              "</a></h3>\n");
+        data.searchMultipleDescription =
+            String2.replaceAll(
+                EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS_DESCRIPTION, language),
+                "&erddapUrl;",
+                tErddapUrl);
 
-      // display categorize options
-      writer.write("\n<li>");
-      writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, true);
+        // Converters
+        if (EDStatic.config.convertersActive) {
+          data.converterLinks = new ArrayList<>();
 
-      // display Advanced Search option
-      writer.write(
-          "\n<li><h3>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_SEARCH_WITH, language),
-                  getAdvancedSearchLink(request, language, loggedInAs, EDStatic.defaultPIppQuery))
-              + "</h3>\n");
+          // Helper to add links cleanly
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html",
+                  EDStatic.messages.get(Message.ACRONYMS, language),
+                  EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/fipscounty.html",
+                  EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language),
+                  EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/interpolate.html",
+                  EDStatic.messages.get(Message.INTERPOLATE, language),
+                  EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/keywords.html",
+                  EDStatic.messages.get(Message.KEYWORDS, language),
+                  EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/time.html",
+                  EDStatic.messages.get(Message.TIME, language),
+                  EDStatic.messages.get(Message.CONVERT_TIME, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/units.html",
+                  EDStatic.messages.get(Message.UNITS, language),
+                  EDStatic.messages.get(Message.CONVERT_UNITS, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/color.html",
+                  EDStatic.messages.get(Message.CONVERT_COLORS, language),
+                  EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/urls.html",
+                  "URLs",
+                  EDStatic.messages.get(Message.CONVERT_URLS, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
+                  EDStatic.messages.get(Message.VARIABLE_NAMES, language),
+                  EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)));
+        }
 
-      // display protocol links
-      writer.write(
-          "\n<li>"
-              + "<h3>"
-              + EDStatic.messages.get(Message.PROTOCOL_SEARCH_HTML, language)
-              + "</h3>\n"
-              + EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
-              +
-              // "<br>Click on a protocol to see a list of datasets which are available via that
-              // protocol in ERDDAP." +
-              "<br>&nbsp;\n"
-              + "<table class=\"erd commonBGColor\">\n"
-              + "  <tr><th>"
-              + EDStatic.messages.get(Message.INDEX_PROTOCOL, language)
-              + "</th>"
-              + "<th>"
-              + EDStatic.messages.get(Message.INDEX_DESCRIPTION, language)
-              + "</th></tr>\n"
-              + "  <tr>\n"
-              + "    <td><a rel=\"bookmark\" "
-              + "href=\""
-              + tErddapUrl
-              + "/griddap/index.html?"
-              + EDStatic.encodedDefaultPIppQuery
-              + "\""
-              + " title=\""
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "griddap")
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DATASETS, language), "griddap")
-              + "</a> </td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
-              + "\n"
-              + "      <a rel=\"help\" href=\""
-              +
-              // EDStatic.messages.EDDGridErddapUrlExample + //2021-09-22 no, always go local
-              tErddapUrl
-              + "/"
-              + "griddap/documentation.html\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "griddap")
-              + "</a>\n"
-              + "    </td>\n"
-              + "  </tr>\n"
-              + "  <tr>\n"
-              + "    <td><a rel=\"bookmark\" "
-              + "href=\""
-              + tErddapUrl
-              + "/tabledap/index.html?"
-              + EDStatic.encodedDefaultPIppQuery
-              + "\""
-              + " title=\""
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "tabledap")
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DATASETS, language), "tabledap")
-              + "</a></td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language)
-              + "\n"
-              + "      <a rel=\"help\" href=\""
-              +
-              // EDStatic.messages.EDDTableErddapUrlExample + //2021-09-22 no, always go local
-              tErddapUrl
-              + "/"
-              + "tabledap/documentation.html\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "tabledap")
-              + "</a>\n"
-              + "    </td>\n"
-              + "  </tr>\n"
-              + "  <tr>\n"
-              + "    <td><a rel=\"bookmark\" "
-              + "href=\""
-              + tErddapUrl
-              + "/files/\""
-              + " title=\""
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "files")
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DATASETS, language), "\"files\"")
-              + "</a></td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.FILES_DESCRIPTION, language)
-              + " "
-              + EDStatic.messages.get(Message.WARNING, language)
-              + " "
-              + EDStatic.messages.get(Message.FILES_WARNING, language)
-              + "\n"
-              + "      <a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/files/documentation.html\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "\"files\"")
-              + "</a>\n"
-              + "    </td>\n"
-              + "  </tr>\n");
-      if (EDStatic.config.sosActive)
+        // Metadata Logic (WAF)
+        if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
+
+          String fgdcLink1 =
+              "<br><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.fgdcXmlDirectory
+                  + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+
+          String fgdcLink2 =
+              "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\">FGDC&#8209;STD&#8209;001&#8209;1998"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+
+          String isoLink1 =
+              "<br><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.iso19115XmlDirectory
+                  + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+
+          String isoLink2 =
+              "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\">ISO&nbsp;19115&#8209;2/19139"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+
+          if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active) {
+            data.wafMessage =
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF2, language),
+                    fgdcLink1,
+                    fgdcLink2,
+                    isoLink1,
+                    isoLink2);
+          } else if (EDStatic.config.fgdcActive) {
+            data.wafMessage =
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2);
+          } else {
+            data.wafMessage =
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2);
+          }
+        }
+
+        data.subscriptionsDescription =
+            String2.replaceAll(
+                EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language), "<br>", " ");
+
+        // 3. Render using JTE
+        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        engine.render("index.jte", data, new WriterOutput(writer));
+
+        // 4. Footer (End HTML Writer)
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t);
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        throw t;
+      }
+    } else {
+
+      try {
+        // set up the table
         writer.write(
-            "  <tr>\n"
+            "<div class=\"wide_max_width\">"
+                + // not standard_width
+                "<table style=\"vertical-align:top; "
+                + "width:100%; border:0; border-spacing:0px;\">\n"
+                + "<tr>\n"
+                + "<td style=\"width:60%;\" class=\"T\">\n");
+
+        // *** left column: theShortDescription
+        writer.write(EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl));
+
+        // thin vertical line between text columns
+        writer.write(
+            "</td>\n"
+                + "<td style=\"width:1%;\">&nbsp;&nbsp;&nbsp;</td>\n"
+                + // spacing to left of vertical line
+                "<td style=\"width:1%;\" class=\"verticalLine\">&nbsp;&nbsp;&nbsp;</td>\n"
+                + // thin vertical line + spacing to right
+                "<td style=\"width:38%;\" class=\"T\">\n");
+
+        // *** the right column: Get Started with ERDDAP
+        writer.write(
+            "<h2>"
+                + EDStatic.messages.get(Message.GET_STARTED_HTML, language)
+                + "</h2>\n"
+                + "<ul>");
+
+        // display a search form
+        writer.write("\n<li>");
+        writer.write(getSearchFormHtml(language, request, loggedInAs, "<h3>", "</h3>", ""));
+
+        // display /info link with list of all datasets
+        writer.write(
+            // here, just use rel=contents for the list of all datasets
+            "\n<li><h3><a rel=\"contents\" href=\""
+                + tErddapUrl
+                + "/info/index.html?"
+                + EDStatic.encodedDefaultPIppQuery
+                + "\">"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_VIEW_ALL, language),
+                    // below is one of few places where number isn't converted to string
+                    // (so 1000's separator is used to format the number):
+                    gridDatasetHashMap.size() + tableDatasetHashMap.size())
+                + // no: "" +
+                "</a></h3>\n");
+
+        // display categorize options
+        writer.write("\n<li>");
+        writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, true);
+
+        // display Advanced Search option
+        writer.write(
+            "\n<li><h3>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_SEARCH_WITH, language),
+                    getAdvancedSearchLink(request, language, loggedInAs, EDStatic.defaultPIppQuery))
+                + "</h3>\n");
+
+        // display protocol links
+        writer.write(
+            "\n<li>"
+                + "<h3>"
+                + EDStatic.messages.get(Message.PROTOCOL_SEARCH_HTML, language)
+                + "</h3>\n"
+                + EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
+                +
+                // "<br>Click on a protocol to see a list of datasets which are available via that
+                // protocol in ERDDAP." +
+                "<br>&nbsp;\n"
+                + "<table class=\"erd commonBGColor\">\n"
+                + "  <tr><th>"
+                + EDStatic.messages.get(Message.INDEX_PROTOCOL, language)
+                + "</th>"
+                + "<th>"
+                + EDStatic.messages.get(Message.INDEX_DESCRIPTION, language)
+                + "</th></tr>\n"
+                + "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
-                + "/sos/index.html?"
+                + "/griddap/index.html?"
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "SOS")
+                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "griddap")
                 + "\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "SOS")
-                + "</a></td>\n"
+                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "griddap")
+                + "</a> </td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language)
+                + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
                 + "\n"
                 + "      <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/sos/documentation.html\">"
+                +
+                // EDStatic.messages.EDDGridErddapUrlExample + //2021-09-22 no, always go local
+                tErddapUrl
+                + "/"
+                + "griddap/documentation.html\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "SOS")
+                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "griddap")
                 + "</a>\n"
                 + "    </td>\n"
-                + "  </tr>\n");
-      if (EDStatic.config.wcsActive)
-        writer.write(
-            "  <tr>\n"
+                + "  </tr>\n"
+                + "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
-                + "/wcs/index.html?"
+                + "/tabledap/index.html?"
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WCS")
+                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "tabledap")
                 + "\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "WCS")
+                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "tabledap")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language)
+                + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language)
                 + "\n"
                 + "      <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/wcs/documentation.html\">"
+                +
+                // EDStatic.messages.EDDTableErddapUrlExample + //2021-09-22 no, always go local
+                tErddapUrl
+                + "/"
+                + "tabledap/documentation.html\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WCS")
+                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "tabledap")
                 + "</a>\n"
                 + "    </td>\n"
-                + "  </tr>\n");
-      if (EDStatic.config.wmsActive)
-        writer.write(
-            "  <tr>\n"
+                + "  </tr>\n"
+                + "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
-                + "/wms/index.html?"
-                + EDStatic.encodedDefaultPIppQuery
-                + "\""
+                + "/files/\""
                 + " title=\""
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WMS")
+                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "files")
                 + "\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "WMS")
+                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "\"files\"")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language)
+                + EDStatic.messages.get(Message.FILES_DESCRIPTION, language)
+                + " "
+                + EDStatic.messages.get(Message.WARNING, language)
+                + " "
+                + EDStatic.messages.get(Message.FILES_WARNING, language)
                 + "\n"
                 + "      <a rel=\"help\" href=\""
                 + tErddapUrl
-                + "/wms/documentation.html\">"
+                + "/files/documentation.html\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WMS")
+                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "\"files\"")
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      writer.write(
-          """
+        if (EDStatic.config.sosActive)
+          writer.write(
+              "  <tr>\n"
+                  + "    <td><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/sos/index.html?"
+                  + EDStatic.encodedDefaultPIppQuery
+                  + "\""
+                  + " title=\""
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "SOS")
+                  + "\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DATASETS, language), "SOS")
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language)
+                  + "\n"
+                  + "      <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/sos/documentation.html\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "SOS")
+                  + "</a>\n"
+                  + "    </td>\n"
+                  + "  </tr>\n");
+        if (EDStatic.config.wcsActive)
+          writer.write(
+              "  <tr>\n"
+                  + "    <td><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/wcs/index.html?"
+                  + EDStatic.encodedDefaultPIppQuery
+                  + "\""
+                  + " title=\""
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WCS")
+                  + "\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DATASETS, language), "WCS")
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language)
+                  + "\n"
+                  + "      <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/wcs/documentation.html\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WCS")
+                  + "</a>\n"
+                  + "    </td>\n"
+                  + "  </tr>\n");
+        if (EDStatic.config.wmsActive)
+          writer.write(
+              "  <tr>\n"
+                  + "    <td><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/wms/index.html?"
+                  + EDStatic.encodedDefaultPIppQuery
+                  + "\""
+                  + " title=\""
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WMS")
+                  + "\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DATASETS, language), "WMS")
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language)
+                  + "\n"
+                  + "      <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/wms/documentation.html\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WMS")
+                  + "</a>\n"
+                  + "    </td>\n"
+                  + "  </tr>\n");
+        writer.write(
+            """
               </table>
               &nbsp;
 
               """);
 
-      // connections to OpenSearch and SRU
-      writer.write(
-          "<li><h3>"
-              + EDStatic.messages.get(Message.INDEX_DEVELOPERS_SEARCH, language)
-              + "</h3>\n"
-              + "  <ul>\n"
-              + "  <li><a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/rest.html\">"
-              + EDStatic.messages.get(Message.INDEX_RESTFUL_SEARCH, language)
-              + "</a>\n"
-              + "  <li><a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/tabledap/allDatasets.html\">"
-              + EDStatic.messages.get(Message.INDEX_ALL_DATASETS_SEARCH, language)
-              + "</a>\n"
-              + "  <li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/opensearch1.1/index.html\">"
-              + EDStatic.messages.get(Message.INDEX_OPEN_SEARCH, language)
-              + "</a>\n"
-              + "  </ul>\n"
-              + "\n");
+        // connections to OpenSearch and SRU
+        writer.write(
+            "<li><h3>"
+                + EDStatic.messages.get(Message.INDEX_DEVELOPERS_SEARCH, language)
+                + "</h3>\n"
+                + "  <ul>\n"
+                + "  <li><a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/rest.html\">"
+                + EDStatic.messages.get(Message.INDEX_RESTFUL_SEARCH, language)
+                + "</a>\n"
+                + "  <li><a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/tabledap/allDatasets.html\">"
+                + EDStatic.messages.get(Message.INDEX_ALL_DATASETS_SEARCH, language)
+                + "</a>\n"
+                + "  <li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/opensearch1.1/index.html\">"
+                + EDStatic.messages.get(Message.INDEX_OPEN_SEARCH, language)
+                + "</a>\n"
+                + "  </ul>\n"
+                + "\n");
 
-      // Search Multiple ERDDAPs
-      writer.write(
-          "<li><h3>"
-              + EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS, language)
-              + "</h3>\n"
-              + String2.replaceAll(
-                  EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS_DESCRIPTION, language),
-                  "&erddapUrl;",
-                  tErddapUrl)
-              + "\n");
+        // Search Multiple ERDDAPs
+        writer.write(
+            "<li><h3>"
+                + EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS, language)
+                + "</h3>\n"
+                + String2.replaceAll(
+                    EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS_DESCRIPTION, language),
+                    "&erddapUrl;",
+                    tErddapUrl)
+                + "\n");
 
-      // end of search/protocol options list
-      writer.write(
-          """
+        // end of search/protocol options list
+        writer.write(
+            """
 
               </ul>
               <p>&nbsp;<hr>
               """);
 
-      // converters
-      if (EDStatic.config.convertersActive)
+        // converters
+        if (EDStatic.config.convertersActive)
+          writer.write(
+              "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
+                  + EDStatic.messages.get(Message.INDEX_CONVERTERS, language)
+                  + "</a></strong>\n"
+                  + "<br>"
+                  + EDStatic.messages.get(Message.INDEX_DESCRIBE_CONVERTERS, language)
+                  + "\n"
+                  + "<table class=\"erd commonBGColor\">\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/oceanicAtmosphericAcronyms.html\">"
+                  + EDStatic.messages.get(Message.ACRONYMS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/fipscounty.html\">"
+                  + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/interpolate.html\">"
+                  + EDStatic.messages.get(Message.INTERPOLATE, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/keywords.html\">"
+                  + EDStatic.messages.get(Message.KEYWORDS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/time.html\">"
+                  + EDStatic.messages.get(Message.TIME, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_TIME, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/units.html\">"
+                  + EDStatic.messages.get(Message.UNITS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_UNITS, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/color.html\">"
+                  + EDStatic.messages.get(Message.CONVERT_COLORS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/urls.html\">URLs</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_URLS, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/oceanicAtmosphericVariableNames.html\">"
+                  + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
+                  + "</td></tr>\n"
+                  + "</table>\n"
+                  + "\n");
+
+        // metadata
+        if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
+          writer.write(
+              "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
+                  + EDStatic.messages.get(Message.INDEX_METADATA, language)
+                  + "</a></strong>\n"
+                  + "<br>");
+          String fgdcLink1 =
+              "<br><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.fgdcXmlDirectory
+                  + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+          String fgdcLink2 = // &#8209; is a non-breaking hyphen
+              "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n"
+                  + ">FGDC&#8209;STD&#8209;001&#8209;1998"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+          String isoLink1 =
+              "<br><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.iso19115XmlDirectory
+                  + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+          String isoLink2 = // &#8209; is a non-breaking hyphen
+              "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
+                  + ">ISO&nbsp;19115&#8209;2/19139"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+          if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
+            writer.write(
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF2, language),
+                    fgdcLink1,
+                    fgdcLink2,
+                    isoLink1,
+                    isoLink2));
+          else if (EDStatic.config.fgdcActive)
+            writer.write(
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2));
+          else
+            writer.write(
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2));
+          writer.write("\n\n");
+        }
+
+        // REST services
         writer.write(
-            "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
-                + EDStatic.messages.get(Message.INDEX_CONVERTERS, language)
+            "<p><strong><a class=\"selfLink\" id=\"services\" href=\"#services\" rel=\"bookmark\">"
+                + EDStatic.messages.get(Message.INDEX_SERVICES, language)
                 + "</a></strong>\n"
                 + "<br>"
-                + EDStatic.messages.get(Message.INDEX_DESCRIBE_CONVERTERS, language)
-                + "\n"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_DESCRIBE_SERVICES, language), tErddapUrl)
+                + "\n\n");
+
+        // And
+        writer.write(
+            "<p><strong><a class=\"selfLink\" id=\"otherFeatures\" href=\"#otherFeatures\" rel=\"bookmark\">"
+                + EDStatic.messages.get(Message.OTHER_FEATURES, language)
+                + "</a></strong>\n"
                 + "<table class=\"erd commonBGColor\">\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
-                + "/convert/oceanicAtmosphericAcronyms.html\">"
-                + EDStatic.messages.get(Message.ACRONYMS, language)
+                + "/status.html\">"
+                + EDStatic.messages.get(Message.STATUS, language)
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+                + EDStatic.messages.get(Message.STATUS_HTML, language)
                 + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/fipscounty.html\">"
-                + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/interpolate.html\">"
-                + EDStatic.messages.get(Message.INTERPOLATE, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/keywords.html\">"
-                + EDStatic.messages.get(Message.KEYWORDS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/time.html\">"
-                + EDStatic.messages.get(Message.TIME, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_TIME, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/units.html\">"
-                + EDStatic.messages.get(Message.UNITS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_UNITS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/color.html\">"
-                + EDStatic.messages.get(Message.CONVERT_COLORS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/urls.html\">URLs</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_URLS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/oceanicAtmosphericVariableNames.html\">"
-                + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
-                + "</td></tr>\n"
-                + "</table>\n"
-                + "\n");
+                + (EDStatic.config.outOfDateDatasetsActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/outOfDateDatasets.html\">"
+                        + EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + EDStatic.messages.get(Message.OUT_OF_DATE_HTML, language)
+                        + "</td></tr>\n"
+                    : "")
+                + (EDStatic.config.subscriptionSystemActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/subscriptions/index.html\">"
+                        + EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + String2.replaceAll(
+                            EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language),
+                            "<br>",
+                            " ")
+                        + "</td></tr>\n"
+                    : "")
+                + (EDStatic.config.slideSorterActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/slidesorter.html\">"
+                        + EDStatic.messages.get(Message.SLIDE_SORTER, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + EDStatic.messages.get(Message.SS_USE_PLAIN, language)
+                        + "</td></tr>\n"
+                    : "")
+                + (EDStatic.config.dataProviderFormActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/dataProviderForm.html\">"
+                        + EDStatic.messages.get(Message.DATA_PROVIDER_FORM, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + EDStatic.messages.get(
+                            Message.DATA_PROVIDER_FORM_SHORT_DESCRIPTION, language)
+                        + "</td></tr>\n"
+                    : "")
+                + "</table>\n\n");
 
-      // metadata
-      if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
-        writer.write(
-            "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
-                + EDStatic.messages.get(Message.INDEX_METADATA, language)
-                + "</a></strong>\n"
-                + "<br>");
-        String fgdcLink1 =
-            "<br><a rel=\"bookmark\" "
-                + "href=\""
-                + tErddapUrl
-                + "/"
-                + EDConfig.fgdcXmlDirectory
-                + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
-        String fgdcLink2 = // &#8209; is a non-breaking hyphen
-            "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n"
-                + ">FGDC&#8209;STD&#8209;001&#8209;1998"
-                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-                + "</a>";
-        String isoLink1 =
-            "<br><a rel=\"bookmark\" "
-                + "href=\""
-                + tErddapUrl
-                + "/"
-                + EDConfig.iso19115XmlDirectory
-                + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
-        String isoLink2 = // &#8209; is a non-breaking hyphen
-            "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
-                + ">ISO&nbsp;19115&#8209;2/19139"
-                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-                + "</a>";
-        if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF2, language),
-                  fgdcLink1,
-                  fgdcLink2,
-                  isoLink1,
-                  isoLink2));
-        else if (EDStatic.config.fgdcActive)
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2));
-        else
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2));
-        writer.write("\n\n");
+        // end of table
+        writer.write("</td>\n</tr>\n</table>\n");
+
+        // end of home page
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+        writer.write(EDStatic.htmlForException(language, t));
+
+        // end of home page
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        throw t;
       }
-
-      // REST services
-      writer.write(
-          "<p><strong><a class=\"selfLink\" id=\"services\" href=\"#services\" rel=\"bookmark\">"
-              + EDStatic.messages.get(Message.INDEX_SERVICES, language)
-              + "</a></strong>\n"
-              + "<br>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DESCRIBE_SERVICES, language), tErddapUrl)
-              + "\n\n");
-
-      // And
-      writer.write(
-          "<p><strong><a class=\"selfLink\" id=\"otherFeatures\" href=\"#otherFeatures\" rel=\"bookmark\">"
-              + EDStatic.messages.get(Message.OTHER_FEATURES, language)
-              + "</a></strong>\n"
-              + "<table class=\"erd commonBGColor\">\n"
-              + "<tr><td><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/status.html\">"
-              + EDStatic.messages.get(Message.STATUS, language)
-              + "</a></td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.STATUS_HTML, language)
-              + "</td></tr>\n"
-              + (EDStatic.config.outOfDateDatasetsActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/outOfDateDatasets.html\">"
-                      + EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(Message.OUT_OF_DATE_HTML, language)
-                      + "</td></tr>\n"
-                  : "")
-              + (EDStatic.config.subscriptionSystemActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/subscriptions/index.html\">"
-                      + EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + String2.replaceAll(
-                          EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language), "<br>", " ")
-                      + "</td></tr>\n"
-                  : "")
-              + (EDStatic.config.slideSorterActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/slidesorter.html\">"
-                      + EDStatic.messages.get(Message.SLIDE_SORTER, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(Message.SS_USE_PLAIN, language)
-                      + "</td></tr>\n"
-                  : "")
-              + (EDStatic.config.dataProviderFormActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/dataProviderForm.html\">"
-                      + EDStatic.messages.get(Message.DATA_PROVIDER_FORM, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(
-                          Message.DATA_PROVIDER_FORM_SHORT_DESCRIPTION, language)
-                      + "</td></tr>\n"
-                  : "")
-              + "</table>\n\n");
-
-      // end of table
-      writer.write("</td>\n</tr>\n</table>\n");
-
-      // end of home page
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      writer.write(EDStatic.htmlForException(language, t));
-
-      // end of home page
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      throw t;
     }
   }
 
@@ -23938,6 +24103,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // TODO remove this check once all pages support HTML templating
     boolean isSupportedHtmlLayoutPage =
         List.of(
+                "index.html",
                 "info/index.html",
                 "legal.html",
                 "outOfDateDatasets.html",

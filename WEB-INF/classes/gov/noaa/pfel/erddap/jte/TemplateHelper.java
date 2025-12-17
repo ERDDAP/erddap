@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.jte;
 import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,10 @@ public class TemplateHelper {
 
   public static String getMessage(Message message, int language) {
     return EDStatic.messages.get(message, language);
+  }
+
+  public static EDConfig getConfig() {
+    return EDStatic.config;
   }
 
   public static String getCurrentTimeZulu() {
