@@ -42,13 +42,13 @@
             <br>&nbsp;
         @if(tableOptions.getNRows()>0)
         @template.table(tableOptions)
-        @endif
         <p>
         ${TemplateHelper.getMessage(Message.RESTFUL_INFORMATION_FORMATS, language)}
         (${plainFileTypesString})
         <a rel="help" href="${tErddapUrl}/rest.html">
         ${TemplateHelper.getMessage(Message.RESTFUL_VIA_SERVICE, language)}</a>
         </p>
+        @endif
     @endif
     </div>
     `)

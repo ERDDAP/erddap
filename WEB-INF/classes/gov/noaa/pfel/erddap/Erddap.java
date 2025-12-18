@@ -15362,36 +15362,77 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               queryString,
               EDStatic.messages.get(Message.SEARCH_TITLE, language),
               out);
+
       try {
-        // you are here      Search
-        writer.write(
-            "<div class=\"standard_width\">\n"
-                + EDStatic.youAreHere(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.SEARCH_TITLE, language)));
-        // youAreHereTable);
+        if (useHtmlTemplates(request)) {
+          YouAreHere youAreHere =
+              EDStatic.getYouAreHere(
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.SEARCH_TITLE, language));
 
-        // write (error and) search form
-        if (error.indexOf("show index") < 0) writeErrorHtml(language, writer, request, error);
-        writer.write(
-            getSearchFormHtml(
-                language,
-                request,
-                loggedInAs,
-                "<span style=\"font-size:150%;\"><strong>",
-                ":&nbsp;</strong></span>",
-                searchFor));
-        String2.log(String2.ERROR + " message sent to user: " + error);
-        String2.log(MustBe.throwableToString(t));
+          Table table = new Table();
+          TableOptions tableOptions =
+              new TableOptions.TableOptionsBuilder(table)
+                  .otherClasses("commonBGColor")
+                  .bgColor(null)
+                  .writeUnits(false)
+                  .timeColumn(-1)
+                  .needEncodingAsHtml(false)
+                  .allowWrap(false)
+                  .build();
+          TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
 
-        // writer.write(
-        //    "<p>&nbsp;<hr>\n" +
-        //    String2.replaceAll(EDStatic.restfulSearchService, "&erddapUrl;", tErddapUrl) +
-        //    "\n");
+          Map<String, Object> searchParamsMap = new HashMap<>();
+          searchParamsMap.put("endOfRequest", endOfRequest);
+          searchParamsMap.put("youAreHere", youAreHere);
+          searchParamsMap.put("language", language);
+          searchParamsMap.put("tErddapUrl", tErddapUrl);
+          searchParamsMap.put("tableOptions", tableOptions);
+          searchParamsMap.put("table", table);
+          searchParamsMap.put(
+              "searchFormHtml",
+              getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor));
+          searchParamsMap.put(
+              "advancedSearchLink",
+              getAdvancedSearchLink(request, language, loggedInAs, queryString));
+          searchParamsMap.put("nMatchingHtml", "");
+          searchParamsMap.put("plainFileTypesString", plainFileTypesString);
+          searchParamsMap.put("errorLineOne", "");
+          searchParamsMap.put("errorLineTwo", "");
+          engine.render("search.jte", searchParamsMap, new WriterOutput(writer));
+        } else {
+          // you are here      Search
+          writer.write(
+              "<div class=\"standard_width\">\n"
+                  + EDStatic.youAreHere(
+                      request,
+                      language,
+                      loggedInAs,
+                      EDStatic.messages.get(Message.SEARCH_TITLE, language)));
+          // youAreHereTable);
 
-        writer.write("</div>\n");
+          // write (error and) search form
+          if (error.indexOf("show index") < 0) writeErrorHtml(language, writer, request, error);
+          writer.write(
+              getSearchFormHtml(
+                  language,
+                  request,
+                  loggedInAs,
+                  "<span style=\"font-size:150%;\"><strong>",
+                  ":&nbsp;</strong></span>",
+                  searchFor));
+          String2.log(String2.ERROR + " message sent to user: " + error);
+          String2.log(MustBe.throwableToString(t));
+
+          // writer.write(
+          //    "<p>&nbsp;<hr>\n" +
+          //    String2.replaceAll(EDStatic.restfulSearchService, "&erddapUrl;", tErddapUrl) +
+          //    "\n");
+
+          writer.write("</div>\n");
+        }
         endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
       } catch (Throwable t2) {

@@ -4715,12 +4715,12 @@ class JettyTests {
                 + EDStatic.defaultPIppQuery
                 + "&searchFor=all");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">MODIS Aqua, Level-3 SMI, Global, 4km") >= 0, "results=\n" + results);
+        results.indexOf("MODIS Aqua, Level-3 SMI, Global, 4km") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
+        results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -4729,15 +4729,15 @@ class JettyTests {
                 + EDStatic.defaultPIppQuery
                 + "&searchFor=all");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
         results.indexOf(
                 "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)")
             >= 0,
         "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
+        results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -4748,7 +4748,7 @@ class JettyTests {
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(
         results.indexOf(
-                ">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n")
+                "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n")
             > 0,
         "results=\n" + results);
 
