@@ -7726,26 +7726,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   EDStatic.passThroughPIppQueryPage1(request) + "&protocol=" + uProtocol);
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(request, language, loggedInAs, uProtocol)
-              + description);
 
-      /*getYouAreHereTable(
-          EDStatic.youAreHere(loggedInAs, uProtocol) +
-          description +
-          "<h2>" +
-              MessageFormat.format(EDStatic.listOfDatasets, uProtocol) +
-              "</h2>\n",
-          //Or, View All Datasets
-          "&nbsp;\n" +
-          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.get(Message.OR_COMMA, language), ":\n<br>", "") +
-          "<br>" + getCategoryLinksHtml(request, tErddapUrl) +
-          "<br>&nbsp;\n" +
-          "<br>" + refine);
-      */
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, uProtocol);
 
-      if (error == null) {
         String nMatchingHtml =
             EDStatic.nMatchingDatasetsHtml(
                 language,
@@ -7756,35 +7740,88 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 EDStatic.baseUrl(request, loggedInAs)
                     + requestUrl
                     + EDStatic.questionQuery(request.getQueryString()));
-
-        writer.write("<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>\n");
-
-        table.saveAsHtmlTable(
-            writer, "commonBGColor nowrap", null, false, -1, false, false); // allowWrap
-
-        if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
-
-        // list plain file types
-        writer.write(
-            "\n"
-                + "<p>"
-                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                + " \n("
-                + plainFileTypesString
-                + // not links, which would be indexed by search engines
-                ") <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/rest.html\">"
-                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                + "</a>.\n");
+        TableOptions tableOptions =
+            new TableOptions.TableOptionsBuilder(table)
+                .otherClasses("commonBGColor")
+                .bgColor(null)
+                .writeUnits(false)
+                .timeColumn(-1)
+                .needEncodingAsHtml(false)
+                .allowWrap(false)
+                .build();
+        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        engine.render(
+            "info.jte",
+            Map.of(
+                "endOfRequest",
+                endOfRequest,
+                "youAreHere",
+                youAreHere,
+                "language",
+                language,
+                "tErddapUrl",
+                tErddapUrl,
+                "tableOptions",
+                tableOptions,
+                "table",
+                table,
+                "secondLine",
+                description,
+                "nMatchingHtml",
+                "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>",
+                "errorLineOne",
+                error != null ? XML.encodeAsHTML(error[0]) : "",
+                "errorLineTwo",
+                error != null ? XML.encodeAsHTML(error[1]) : ""),
+            new WriterOutput(writer));
       } else {
         writer.write(
-            "<p><span class=\"warningColor\">"
-                + XML.encodeAsHTML(error[0] + " " + error[1])
-                + "</span>\n");
-      }
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(request, language, loggedInAs, uProtocol)
+                + description);
 
-      writer.write("</div>\n");
+        if (error == null) {
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  false, // =alphabetical
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(request.getQueryString()));
+
+          writer.write(
+              "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>\n");
+
+          table.saveAsHtmlTable(
+              writer, "commonBGColor nowrap", null, false, -1, false, false); // allowWrap
+
+          if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+          // list plain file types
+          writer.write(
+              "\n"
+                  + "<p>"
+                  + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                  + " \n("
+                  + plainFileTypesString
+                  + // not links, which would be indexed by search engines
+                  ") <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/rest.html\">"
+                  + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                  + "</a>.\n");
+        } else {
+          writer.write(
+              "<p><span class=\"warningColor\">"
+                  + XML.encodeAsHTML(error[0] + " " + error[1])
+                  + "</span>\n");
+        }
+
+        writer.write("</div>\n");
+      }
       endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -24146,6 +24183,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         List.of(
                 "index.html",
                 "info/index.html",
+                "griddap/index.html",
+                "tabledap/index.html",
+                "sos/index.html",
+                "wcs/index.html",
+                "wms/index.html",
                 "legal.html",
                 "outOfDateDatasets.html",
                 "status.html",
