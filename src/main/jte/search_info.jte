@@ -10,7 +10,8 @@
 @param String loggedInAs
 @param String endOfRequest
 @param HttpServletRequest request
-@param String searchFormHtml
+@param String mode
+@param String secondLine
 @param String nMatchingHtml
 @param String advancedSearchLink
 @param String plainFileTypesString
@@ -25,28 +26,27 @@
     request=request,
     content=@`
     <div class="standard_width">
-    $unsafe{searchFormHtml}
-    
+    $unsafe{secondLine}
+
     @if(errorLineOne.length() > 0)
-        <strong>
-        ${errorLineOne}
-        </strong>
-        <br>
-        ${errorLineTwo}
+        <p><span class="warningColor">
+        $unsafe{errorLineOne}
+        $unsafe{errorLineTwo}
+        </span>
+        </p>
     @else
         $unsafe{nMatchingHtml}
-        <span class="N">(
-            ${TemplateHelper.getMessage(Message.OR_REFINE_SEARCH_WITH, language)}
-            $unsafe{advancedSearchLink}
-            )</span> 
-            <br>&nbsp;
         @if(tableOptions.getNRows()>0)
         @template.table(tableOptions)
         <p>
         ${TemplateHelper.getMessage(Message.RESTFUL_INFORMATION_FORMATS, language)}
         (${plainFileTypesString})
         <a rel="help" href="${tErddapUrl}/rest.html">
-        ${TemplateHelper.getMessage(Message.RESTFUL_VIA_SERVICE, language)}</a>
+            ${TemplateHelper.getMessage(Message.RESTFUL_VIA_SERVICE, language)}
+            </a>
+        </p>
+        <p>
+        ${TemplateHelper.getMessage(Message.ADVANCED_SEARCH_ERROR_HANDLING, language)}
         </p>
         @endif
     @endif

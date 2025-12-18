@@ -7750,30 +7750,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 .allowWrap(false)
                 .build();
         TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-        engine.render(
-            "info.jte",
-            Map.of(
-                "endOfRequest",
-                endOfRequest,
-                "youAreHere",
-                youAreHere,
-                "language",
-                language,
-                "tErddapUrl",
-                tErddapUrl,
-                "tableOptions",
-                tableOptions,
-                "table",
-                table,
-                "secondLine",
-                description,
-                "nMatchingHtml",
-                "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>",
-                "errorLineOne",
-                error != null ? XML.encodeAsHTML(error[0]) : "",
-                "errorLineTwo",
-                error != null ? XML.encodeAsHTML(error[1]) : ""),
-            new WriterOutput(writer));
+        // build params so we can choose combined template or fall back to old template
+        Map<String, Object> _infoParams = new HashMap<>();
+        _infoParams.put("endOfRequest", endOfRequest);
+        _infoParams.put("youAreHere", youAreHere);
+        _infoParams.put("language", language);
+        _infoParams.put("tErddapUrl", tErddapUrl);
+        _infoParams.put("tableOptions", tableOptions);
+        _infoParams.put("table", table);
+        _infoParams.put("secondLine", description);
+        _infoParams.put(
+            "nMatchingHtml",
+            "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>");
+        _infoParams.put("errorLineOne", error != null ? XML.encodeAsHTML(error[0]) : "");
+        _infoParams.put("errorLineTwo", error != null ? XML.encodeAsHTML(error[1]) : "");
+        _infoParams.put("plainFileTypesString", plainFileTypesString);
+        _infoParams.put("mode", "info");
+        engine.render("search_info.jte", _infoParams, new WriterOutput(writer));
       } else {
         writer.write(
             "<div class=\"standard_width\">\n"
@@ -15261,7 +15254,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             searchParamsMap.put("tErddapUrl", tErddapUrl);
             searchParamsMap.put("tableOptions", tableOptions);
             searchParamsMap.put("table", table);
-            searchParamsMap.put("searchFormHtml", searchFormHtml);
+            searchParamsMap.put("secondLine", searchFormHtml);
             searchParamsMap.put(
                 "advancedSearchLink",
                 getAdvancedSearchLink(request, language, loggedInAs, queryString));
@@ -15269,7 +15262,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             searchParamsMap.put("plainFileTypesString", plainFileTypesString);
             searchParamsMap.put("errorLineOne", error != null ? XML.encodeAsHTML(error[0]) : "");
             searchParamsMap.put("errorLineTwo", error != null ? XML.encodeAsHTML(error[1]) : "");
-            engine.render("search.jte", searchParamsMap, new WriterOutput(writer));
+            searchParamsMap.put("mode", "search");
+            searchParamsMap.put("plainFileTypesString", plainFileTypesString);
+            engine.render("search_info.jte", searchParamsMap, new WriterOutput(writer));
           } else {
 
             // you are here    Search
@@ -15429,7 +15424,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           searchParamsMap.put("tableOptions", tableOptions);
           searchParamsMap.put("table", table);
           searchParamsMap.put(
-              "searchFormHtml",
+              "secondLine",
               getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor));
           searchParamsMap.put(
               "advancedSearchLink",
@@ -15438,7 +15433,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           searchParamsMap.put("plainFileTypesString", plainFileTypesString);
           searchParamsMap.put("errorLineOne", "");
           searchParamsMap.put("errorLineTwo", "");
-          engine.render("search.jte", searchParamsMap, new WriterOutput(writer));
+          searchParamsMap.put("mode", "search");
+          searchParamsMap.put("plainFileTypesString", plainFileTypesString);
+          engine.render("search_info.jte", searchParamsMap, new WriterOutput(writer));
         } else {
           // you are here      Search
           writer.write(
@@ -16357,6 +16354,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // *** if .html request, show the form
     OutputStream out = null;
     Writer writer = null;
+    String advancedSearchFormHtml = null;
     if (toHtml) {
       // display start of web page
       out = getHtmlOutputStreamUtf8(request, response);
@@ -16376,101 +16374,76 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         widgets.htmlTooltips = true;
         widgets.enterTextSubmitsForm = true;
 
-        // display the advanced search form
+        // display the advanced search form into a string
         String formName = "f1";
-        writer.write(
-            "<div class=\"standard_width\">\n"
-                + EDStatic.youAreHere(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH, language)
-                        + " "
-                        + EDStatic.htmlTooltipImage(
-                            request,
-                            language,
-                            loggedInAs,
-                            "<div class=\"narrow_max_width\">"
-                                + EDStatic.messages.get(Message.ADVANCED_SEARCH_TOOLTIP, language)
-                                + "</div>"))
-                + "\n\n"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_DIRECTIONS, language)
-                + "\n"
-                + HtmlWidgets.ifJavaScriptDisabled
-                + "\n"
-                + widgets.beginForm(formName, "GET", tErddapUrl + "/search/advanced.html", "")
-                + "\n");
+        StringBuilder _asb = new StringBuilder();
+        _asb.append("\n\n");
+        _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_DIRECTIONS, language));
+        _asb.append("\n");
+        _asb.append(HtmlWidgets.ifJavaScriptDisabled);
+        _asb.append("\n");
+        _asb.append(widgets.beginForm(formName, "GET", tErddapUrl + "/search/advanced.html", ""));
+        _asb.append("\n");
 
         // pipp
-        writer.write(widgets.hidden("page", "1")); // new search always resets to page 1
-        writer.write(widgets.hidden("itemsPerPage", "" + pipp[1]));
+        _asb.append(widgets.hidden("page", "1")); // new search always resets to page 1
+        _asb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
 
         // full text search...
-        writer.write(
-            "<p><strong>"
-                + EDStatic.messages.get(Message.SEARCH_FULL_TEXT_HTML, language)
-                + "</strong>\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language))
-                + "\n"
-                + "<br>"
-                + widgets.textField(
-                    "searchFor",
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
-                    70,
-                    255,
-                    searchFor,
-                    "")
-                + "\n");
+        _asb.append("<p><strong>");
+        _asb.append(EDStatic.messages.get(Message.SEARCH_FULL_TEXT_HTML, language));
+        _asb.append("</strong>\n");
+        _asb.append(
+            EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language)));
+        _asb.append("\n<br>");
+        _asb.append(
+            widgets.textField(
+                "searchFor",
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
+                70,
+                255,
+                searchFor,
+                ""));
+        _asb.append("\n");
 
         // categorize
-        // a table with a row for each attribute
-        writer.write(
-            "&nbsp;\n"
-                + // necessary for the blank line before the form (not <p>)
-                widgets.beginTable("class=\"compact nowrap\"")
-                + "<tr>\n"
-                + "  <td colspan=\"2\"><strong>"
-                + EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language)
-                + "</strong>\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    "<div class=\"narrow_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_CATEGORY_TOOLTIP, language)
-                        + "</div>")
-                + "  </td>\n"
-                + "</tr>\n"
-                + "<tr>\n"
-                + "  <td class=\"N\" style=\"width:20%;\">protocol \n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">" + protocolTooltip + "</div>")
-                + "\n"
-                + "  </td>\n"
-                + "  <td style=\"width:80%;\">&nbsp;=&nbsp;"
-                + widgets.select("protocol", "", 1, protocols.toArray(), whichProtocol, "")
-                + "  </td>\n"
-                + "</tr>\n");
+        _asb.append("&nbsp;\n");
+        _asb.append(widgets.beginTable("class=\"compact nowrap\""));
+        _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
+        _asb.append(EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
+        _asb.append("</strong>\n");
+        _asb.append(
+            EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"narrow_max_width\">"
+                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_CATEGORY_TOOLTIP, language)
+                    + "</div>"));
+        _asb.append("  </td>\n</tr>\n");
+        _asb.append("<tr>\n  <td class=\"N\" style=\"width:20%;\">protocol \n");
+        _asb.append(
+            EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"standard_max_width\">" + protocolTooltip + "</div>"));
+        _asb.append("\n  </td>\n  <td style=\"width:80%;\">&nbsp;=&nbsp;");
+        _asb.append(widgets.select("protocol", "", 1, protocols.toArray(), whichProtocol, ""));
+        _asb.append("  </td>\n</tr>\n");
         for (int ca = 0; ca < nCatAtts; ca++) {
           if (catSAs[ca].length == 1) continue;
-          // left column: attribute;   right column: values
-          writer.write(
-              "<tr>\n"
-                  + "  <td class=\"N\">"
+          _asb.append(
+              "<tr>\n  <td class=\"N\">"
                   + catAttsInURLs[ca]
-                  + "</td>\n"
-                  + "  <td>&nbsp;=&nbsp;"
+                  + "</td>\n  <td>&nbsp;=&nbsp;"
                   + widgets.select(catAttsInURLs[ca], "", 1, catSAs[ca], whichCatSAIndex[ca], "")
-                  + "  </td>\n"
-                  + "</tr>\n");
+                  + "  </td>\n</tr>\n");
         }
 
         // bounding box...
@@ -16485,192 +16458,161 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 widgets.imageDirUrl + "world540Big.png",
                 false); // debugInBrowser
 
-        writer.write(
-            // blank row
-            "<tr>\n"
-                + "  <td colspan=\"2\">&nbsp;</td>\n"
-                + "</tr>\n"
-                +
+        _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
+        _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
+        _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_BOUNDS, language));
+        _asb.append("</strong>\n");
+        _asb.append(
+            EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"standard_max_width\">"
+                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_RANGE_TOOLTIP, language)
+                    + "<p>"
+                    + lonTooltip
+                    + "</div>"));
+        _asb.append("  </td>\n</tr>\n");
 
-                // lon lat time ranges
-                "<tr>\n"
-                + "  <td colspan=\"2\"><strong>"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_BOUNDS, language)
-                + "</strong>\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_RANGE_TOOLTIP, language)
-                        + "<p>"
-                        + lonTooltip
-                        + "</div>")
-                + "  </td>\n"
-                + "</tr>\n"
-                +
-
-                // max lat
-                "<tr>\n"
-                + "  <td class=\"N\">"
+        // max lat
+        _asb.append(
+            "<tr>\n  <td class=\"N\">"
                 + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
-                + widgets.textField(
-                    "maxLat",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                        + " (-90 to 90)<p>"
-                        + mapTooltip,
-                    8,
-                    12,
-                    (Double.isNaN(maxLat) ? "" : "" + maxLat),
-                    "")
-                + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
-                + "    </td>\n"
-                + "</tr>\n"
-                +
+                + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+        _asb.append(
+            widgets.textField(
+                "maxLat",
+                EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
+                    + " (-90 to 90)<p>"
+                    + mapTooltip,
+                8,
+                12,
+                (Double.isNaN(maxLat) ? "" : "" + maxLat),
+                ""));
+        _asb.append("    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n    </td>\n</tr>\n");
 
-                // min max lon
-                "<tr>\n"
-                + "  <td class=\"N\">"
+        // min max lon
+        _asb.append(
+            "<tr>\n  <td class=\"N\">"
                 + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_MAX_LON, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + widgets.textField(
-                    "minLon",
-                    "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LON, language)
-                        + "<p>"
-                        + lonTooltip
-                        + "</div>",
-                    8,
-                    12,
-                    (Double.isNaN(minLon) ? "" : "" + minLon),
-                    "")
-                + "\n"
-                + widgets.textField(
-                    "maxLon",
-                    "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LON, language)
-                        + "<p>"
-                        + lonTooltip
-                        + "</div>",
-                    8,
-                    12,
-                    (Double.isNaN(maxLon) ? "" : "" + maxLon),
-                    "")
-                + "</td>\n"
-                + "</tr>\n"
-                +
+                + "</td>\n  <td>&nbsp;=&nbsp;");
+        _asb.append(
+            widgets.textField(
+                "minLon",
+                "<div class=\"standard_max_width\">"
+                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LON, language)
+                    + "<p>"
+                    + lonTooltip
+                    + "</div>",
+                8,
+                12,
+                (Double.isNaN(minLon) ? "" : "" + minLon),
+                ""));
+        _asb.append(
+            widgets.textField(
+                "maxLon",
+                "<div class=\"standard_max_width\">"
+                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LON, language)
+                    + "<p>"
+                    + lonTooltip
+                    + "</div>",
+                8,
+                12,
+                (Double.isNaN(maxLon) ? "" : "" + maxLon),
+                ""));
+        _asb.append("</td>\n</tr>\n");
 
-                // min lat
-                "<tr>\n"
-                + "  <td class=\"N\">"
+        // min lat
+        _asb.append(
+            "<tr>\n  <td class=\"N\">"
                 + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
-                + widgets.textField(
-                    "minLat",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                        + " (-90 to 90)<p>"
-                        + mapTooltip,
-                    8,
-                    12,
-                    (Double.isNaN(minLat) ? "" : "" + minLat),
-                    "")
-                + "    &nbsp;\n"
-                + widgets.htmlButton(
-                    "button",
-                    "",
-                    "",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR_HELP, language),
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR, language),
-                    "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; "
-                        + "f1.minLat.value=\"\"; f1.maxLat.value=\"\"; "
-                        + "((document.all)? document.all.rubberBand : "
-                        + "document.getElementById(\"rubberBand\"))."
-                        + "style.visibility=\"hidden\";'")
-                + "    </td>\n"
-                + "</tr>\n"
-                +
+                + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+        _asb.append(
+            widgets.textField(
+                "minLat",
+                EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
+                    + " (-90 to 90)<p>"
+                    + mapTooltip,
+                8,
+                12,
+                (Double.isNaN(minLat) ? "" : "" + minLat),
+                ""));
+        _asb.append("    &nbsp;\n");
+        _asb.append(
+            widgets.htmlButton(
+                "button",
+                "",
+                "",
+                EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR_HELP, language),
+                EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR, language),
+                "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; f1.minLat.value=\"\"; f1.maxLat.value=\"\"; ((document.all)? document.all.rubberBand : document.getElementById(\"rubberBand\")).style.visibility=\"hidden\";'"));
+        _asb.append("    </td>\n</tr>\n");
 
-                // world map
-                "<tr>\n"
-                + "  <td colspan=\"2\" class=\"N\">"
+        // world map
+        _asb.append(
+            "<tr>\n  <td colspan=\"2\" class=\"N\">"
                 + twoClickMap[0]
                 + EDStatic.htmlTooltipImage(request, language, loggedInAs, lonTooltip)
                 + twoClickMap[1]
-                + "</td>\n"
-                + "</tr>\n"
-                +
+                + "</td>\n</tr>\n");
 
-                // blank row
-                "<tr>\n"
-                + "  <td colspan=\"2\">&nbsp;</td>\n"
-                + "</tr>\n"
-                +
+        // blank row
+        _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
 
-                // time
-                "<tr>\n"
-                + "  <td class=\"N\">"
+        // time
+        _asb.append(
+            "<tr>\n  <td class=\"N\">"
                 + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + widgets.textField(
-                    "minTime",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                        + "<p>"
-                        + timeTooltip,
-                    27,
-                    40,
-                    minTimeParam,
-                    "")
-                + "</td>\n"
-                + "</tr>\n"
-                + "<tr>\n"
-                + "  <td class=\"N\">"
+                + "</td>\n  <td>&nbsp;=&nbsp;");
+        _asb.append(
+            widgets.textField(
+                "minTime",
+                EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
+                    + "<p>"
+                    + timeTooltip,
+                27,
+                40,
+                minTimeParam,
+                ""));
+        _asb.append("</td>\n</tr>\n");
+        _asb.append(
+            "<tr>\n  <td class=\"N\">"
                 + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + widgets.textField(
-                    "maxTime",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                        + "<p>"
-                        + timeTooltip,
-                    27,
-                    40,
-                    maxTimeParam,
-                    "")
-                + "</td>\n"
-                + "</tr>\n"
-                +
+                + "</td>\n  <td>&nbsp;=&nbsp;");
+        _asb.append(
+            widgets.textField(
+                "maxTime",
+                EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
+                    + "<p>"
+                    + timeTooltip,
+                27,
+                40,
+                maxTimeParam,
+                ""));
+        _asb.append("</td>\n</tr>\n");
 
-                // end table
-                "</table>\n\n"
-                +
+        // end table
+        _asb.append("</table>\n\n");
 
-                // submit button
-                "<p>"
-                + widgets.htmlButton(
-                    "submit",
-                    null,
-                    null,
-                    EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
-                    "<span style=\"font-size:large;\"><strong>"
-                        + EDStatic.messages.get(Message.SEARCH_BUTTON, language)
-                        + "</strong></span>",
-                    "")
-                + "\n"
-                +
+        // submit button
+        _asb.append("<p>");
+        _asb.append(
+            widgets.htmlButton(
+                "submit",
+                null,
+                null,
+                EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
+                "<span style=\"font-size:large;\"><strong>"
+                    + EDStatic.messages.get(Message.SEARCH_BUTTON, language)
+                    + "</strong></span>",
+                ""));
 
-                // end form
-                widgets.endForm()
-                + "\n"
-                + twoClickMap[2]);
-        writer.flush();
+        // end form
+        _asb.append(widgets.endForm());
+        _asb.append("\n");
+        _asb.append(twoClickMap[2]);
 
+        advancedSearchFormHtml = _asb.toString();
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         writer.write(EDStatic.htmlForException(language, t));
@@ -16894,6 +16836,88 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // *** show the .html results
     if (toHtml) {
       try {
+        // If templates are enabled, render via combined template (mode="search").
+        if (useHtmlTemplates(request)) {
+          YouAreHere youAreHere =
+              EDStatic.getYouAreHere(
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.ADVANCED_SEARCH, language));
+
+          TableOptions tableOptions =
+              new TableOptions.TableOptionsBuilder(resultsTable)
+                  .otherClasses("commonBGColor")
+                  .bgColor(null)
+                  .writeUnits(false)
+                  .timeColumn(-1)
+                  .needEncodingAsHtml(false)
+                  .allowWrap(false)
+                  .build();
+
+          TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+          Map<String, Object> searchParamsMap = new HashMap<>();
+          searchParamsMap.put("endOfRequest", endOfRequest);
+          searchParamsMap.put("youAreHere", youAreHere);
+          searchParamsMap.put("language", language);
+          searchParamsMap.put("tErddapUrl", tErddapUrl);
+          searchParamsMap.put("tableOptions", tableOptions);
+          searchParamsMap.put("table", resultsTable);
+          // provide the advanced search form (use generated when available)
+          searchParamsMap.put(
+              "secondLine",
+              advancedSearchFormHtml != null
+                  ? advancedSearchFormHtml
+                  : getSearchFormHtml(language, request, loggedInAs, "", "", ""));
+          searchParamsMap.put(
+              "advancedSearchLink",
+              getAdvancedSearchLink(request, language, loggedInAs, queryString));
+          String nMatchingHtml =
+              "<hr>\n"
+                  + "<h2>"
+                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_RESULTS, language)
+                  + "</h2>\n"
+                  + EDStatic.nMatchingDatasetsHtml(
+                      language,
+                      nMatches,
+                      page,
+                      lastPage,
+                      searchFor.length() > 0 && !searchFor.equals("all"),
+                      EDStatic.baseUrl(request, loggedInAs)
+                          + requestUrl
+                          + EDStatic.questionQuery(request.getQueryString()));
+          searchParamsMap.put("nMatchingHtml", searchPerformed ? nMatchingHtml : "");
+          searchParamsMap.put("plainFileTypesString", plainFileTypesString);
+          searchParamsMap.put("errorLineOne", "");
+          searchParamsMap.put("errorLineTwo", "");
+          searchParamsMap.put("mode", "search");
+          engine.render("search_info.jte", searchParamsMap, new WriterOutput(writer));
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          return;
+        }
+
+        writer.write("<div class=\"standard_width\">\n");
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.ADVANCED_SEARCH, language)
+                        + " "
+                        + EDStatic.htmlTooltipImage(
+                            request,
+                            language,
+                            loggedInAs,
+                            "<div class=\"narrow_max_width\">"
+                                + EDStatic.messages.get(Message.ADVANCED_SEARCH_TOOLTIP, language)
+                                + "</div>\n\n")));
+
+        // legacy rendering (no templates)
+        if (advancedSearchFormHtml != null) {
+          writer.write(advancedSearchFormHtml);
+          writer.flush();
+        }
         // display datasets
         writer.write(
             // "<br>&nbsp;\n" +
@@ -18100,18 +18124,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     .allowWrap(false)
                     .build();
             TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-            engine.render(
-                "info.jte",
-                Map.of(
-                    "endOfRequest", endOfRequest,
-                    "youAreHere", youAreHere,
-                    "language", language,
-                    "tErddapUrl", tErddapUrl,
-                    "tableOptions", tableOptions,
-                    "table", table,
-                    "secondLine", secondLine,
-                    "nMatchingHtml", nMatchingHtml),
-                new WriterOutput(writer));
+            Map<String, Object> _infoParams = new HashMap<>();
+            _infoParams.put("endOfRequest", endOfRequest);
+            _infoParams.put("youAreHere", youAreHere);
+            _infoParams.put("language", language);
+            _infoParams.put("tErddapUrl", tErddapUrl);
+            _infoParams.put("tableOptions", tableOptions);
+            _infoParams.put("table", table);
+            _infoParams.put("secondLine", secondLine);
+            _infoParams.put("nMatchingHtml", nMatchingHtml);
+            _infoParams.put("errorLineOne", "");
+            _infoParams.put("errorLineTwo", "");
+            _infoParams.put("plainFileTypesString", plainFileTypesString);
+            _infoParams.put("mode", "info");
+            engine.render("search_info.jte", _infoParams, new WriterOutput(writer));
           } else {
             writer.write(
                 "<div class=\"standard_width\">\n"
@@ -24192,7 +24218,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "outOfDateDatasets.html",
                 "status.html",
                 "subscriptions/index.html",
-                "search/index.html")
+                "search/index.html",
+                "search/advanced.html")
             .contains(endOfRequest);
 
     if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
