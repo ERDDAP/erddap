@@ -391,6 +391,80 @@ public class Erddap extends HttpServlet {
     EDStatic.cleaner.register(this, new CleanupErddap());
   }
 
+  // Centralized renderer for the search_info.jte template to reduce duplicated code paths.
+  private void renderSearchInfoJte(
+      Writer writer,
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String endOfRequest,
+      String tErddapUrl,
+      YouAreHere youAreHere,
+      Table table,
+      String secondLine,
+      String nMatchingHtml,
+      String errorLineOne,
+      String errorLineTwo)
+      throws Throwable {
+    TableOptions tableOptions = buildSearchTableOptions(table, -1);
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    // Compute advanced-search related values here so callers don't need to.
+    String advancedSearchHtml = "";
+    try {
+      advancedSearchHtml = buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl);
+    } catch (Throwable t) {
+      // If building advanced form fails, fall back to empty string and continue rendering.
+      String2.log("Warning: failed to build advanced search form: " + MustBe.throwableToString(t));
+      advancedSearchHtml = "";
+    }
+
+    boolean advancedOpen = false;
+    try {
+      String uri = request == null ? null : request.getRequestURI();
+      if (uri != null && uri.endsWith("/search/advanced.html")) advancedOpen = true;
+      if (!advancedOpen && endOfRequest != null && endOfRequest.indexOf("advanced") >= 0)
+        advancedOpen = true;
+    } catch (Throwable t) {
+      // ignore
+    }
+
+    String advancedSearchLink =
+        getAdvancedSearchLink(
+            request, language, loggedInAs, request == null ? "" : request.getQueryString());
+    Map<String, Object> params = new HashMap<>();
+    params.put("endOfRequest", endOfRequest);
+    params.put("youAreHere", youAreHere);
+    params.put("language", language);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("tableOptions", tableOptions);
+    params.put("table", table);
+    params.put("secondLine", secondLine != null ? secondLine : "");
+    params.put("advancedSearchHtml", advancedSearchHtml != null ? advancedSearchHtml : "");
+    params.put("advancedOpen", advancedOpen);
+    if (advancedSearchLink != null) params.put("advancedSearchLink", advancedSearchLink);
+    params.put("nMatchingHtml", nMatchingHtml != null ? nMatchingHtml : "");
+    params.put("plainFileTypesString", plainFileTypesString);
+    params.put("errorLineOne", errorLineOne != null ? errorLineOne : "");
+    params.put("errorLineTwo", errorLineTwo != null ? errorLineTwo : "");
+    params.put("loggedInAs", loggedInAs);
+    params.put("request", request);
+    engine.render("search_info.jte", params, new WriterOutput(writer));
+  }
+
+  // Build a common TableOptions used by search/info/list pages to avoid
+  // duplicating the same builder code throughout the file.
+  private TableOptions buildSearchTableOptions(Table table, int timeColumn) {
+    return new TableOptions.TableOptionsBuilder(table)
+        .otherClasses("commonBGColor")
+        .bgColor(null)
+        .writeUnits(false)
+        .timeColumn(timeColumn)
+        .needEncodingAsHtml(false)
+        .allowWrap(false)
+        .build();
+  }
+
   private static class CleanupErddap implements Runnable {
 
     private CleanupErddap() {}
@@ -7740,33 +7814,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 EDStatic.baseUrl(request, loggedInAs)
                     + requestUrl
                     + EDStatic.questionQuery(request.getQueryString()));
-        TableOptions tableOptions =
-            new TableOptions.TableOptionsBuilder(table)
-                .otherClasses("commonBGColor")
-                .bgColor(null)
-                .writeUnits(false)
-                .timeColumn(-1)
-                .needEncodingAsHtml(false)
-                .allowWrap(false)
-                .build();
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-        // build params so we can choose combined template or fall back to old template
-        Map<String, Object> _infoParams = new HashMap<>();
-        _infoParams.put("endOfRequest", endOfRequest);
-        _infoParams.put("youAreHere", youAreHere);
-        _infoParams.put("language", language);
-        _infoParams.put("tErddapUrl", tErddapUrl);
-        _infoParams.put("tableOptions", tableOptions);
-        _infoParams.put("table", table);
-        _infoParams.put("secondLine", description);
-        _infoParams.put(
-            "nMatchingHtml",
-            "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>");
-        _infoParams.put("errorLineOne", error != null ? XML.encodeAsHTML(error[0]) : "");
-        _infoParams.put("errorLineTwo", error != null ? XML.encodeAsHTML(error[1]) : "");
-        _infoParams.put("plainFileTypesString", plainFileTypesString);
-        _infoParams.put("mode", "info");
-        engine.render("search_info.jte", _infoParams, new WriterOutput(writer));
+        renderSearchInfoJte(
+            writer,
+            request,
+            language,
+            loggedInAs,
+            endOfRequest,
+            tErddapUrl,
+            youAreHere,
+            table,
+            description,
+            "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>",
+            error != null ? XML.encodeAsHTML(error[0]) : "",
+            error != null ? XML.encodeAsHTML(error[1]) : "");
       } else {
         writer.write(
             "<div class=\"standard_width\">\n"
@@ -14334,15 +14394,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (useHtmlTemplates(request)) {
         // use html templates
         YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, shortTitle);
-        TableOptions tableOptions =
-            new TableOptions.TableOptionsBuilder(table)
-                .otherClasses("commonBGColor")
-                .bgColor(null)
-                .writeUnits(false)
-                .timeColumn(mtCol)
-                .needEncodingAsHtml(false)
-                .allowWrap(false)
-                .build();
+        TableOptions tableOptions = buildSearchTableOptions(table, mtCol);
         TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
         engine.render(
             "outofdatedatasets.jte",
@@ -15236,35 +15288,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     loggedInAs,
                     EDStatic.messages.get(Message.SEARCH_TITLE, language));
 
-            TableOptions tableOptions =
-                new TableOptions.TableOptionsBuilder(table)
-                    .otherClasses("commonBGColor")
-                    .bgColor(null)
-                    .writeUnits(false)
-                    .timeColumn(-1)
-                    .needEncodingAsHtml(false)
-                    .allowWrap(false)
-                    .build();
-            TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-
-            Map<String, Object> searchParamsMap = new HashMap<>();
-            searchParamsMap.put("endOfRequest", endOfRequest);
-            searchParamsMap.put("youAreHere", youAreHere);
-            searchParamsMap.put("language", language);
-            searchParamsMap.put("tErddapUrl", tErddapUrl);
-            searchParamsMap.put("tableOptions", tableOptions);
-            searchParamsMap.put("table", table);
-            searchParamsMap.put("secondLine", searchFormHtml);
-            searchParamsMap.put(
-                "advancedSearchLink",
-                getAdvancedSearchLink(request, language, loggedInAs, queryString));
-            searchParamsMap.put("nMatchingHtml", nMatchingHtml);
-            searchParamsMap.put("plainFileTypesString", plainFileTypesString);
-            searchParamsMap.put("errorLineOne", error != null ? XML.encodeAsHTML(error[0]) : "");
-            searchParamsMap.put("errorLineTwo", error != null ? XML.encodeAsHTML(error[1]) : "");
-            searchParamsMap.put("mode", "search");
-            searchParamsMap.put("plainFileTypesString", plainFileTypesString);
-            engine.render("search_info.jte", searchParamsMap, new WriterOutput(writer));
+            renderSearchInfoJte(
+                writer,
+                request,
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                youAreHere,
+                table,
+                searchFormHtml,
+                nMatchingHtml,
+                error != null ? XML.encodeAsHTML(error[0]) : "",
+                error != null ? XML.encodeAsHTML(error[1]) : "");
           } else {
 
             // you are here    Search
@@ -15405,37 +15441,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   EDStatic.messages.get(Message.SEARCH_TITLE, language));
 
           Table table = new Table();
-          TableOptions tableOptions =
-              new TableOptions.TableOptionsBuilder(table)
-                  .otherClasses("commonBGColor")
-                  .bgColor(null)
-                  .writeUnits(false)
-                  .timeColumn(-1)
-                  .needEncodingAsHtml(false)
-                  .allowWrap(false)
-                  .build();
-          TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-
-          Map<String, Object> searchParamsMap = new HashMap<>();
-          searchParamsMap.put("endOfRequest", endOfRequest);
-          searchParamsMap.put("youAreHere", youAreHere);
-          searchParamsMap.put("language", language);
-          searchParamsMap.put("tErddapUrl", tErddapUrl);
-          searchParamsMap.put("tableOptions", tableOptions);
-          searchParamsMap.put("table", table);
-          searchParamsMap.put(
-              "secondLine",
-              getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor));
-          searchParamsMap.put(
-              "advancedSearchLink",
-              getAdvancedSearchLink(request, language, loggedInAs, queryString));
-          searchParamsMap.put("nMatchingHtml", "");
-          searchParamsMap.put("plainFileTypesString", plainFileTypesString);
-          searchParamsMap.put("errorLineOne", "");
-          searchParamsMap.put("errorLineTwo", "");
-          searchParamsMap.put("mode", "search");
-          searchParamsMap.put("plainFileTypesString", plainFileTypesString);
-          engine.render("search_info.jte", searchParamsMap, new WriterOutput(writer));
+          renderSearchInfoJte(
+              writer,
+              request,
+              language,
+              loggedInAs,
+              endOfRequest,
+              tErddapUrl,
+              youAreHere,
+              table,
+              getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor),
+              "",
+              "",
+              "");
         } else {
           // you are here      Search
           writer.write(
@@ -16088,6 +16106,352 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         + "</span>";
   }
 
+  private String buildAdvancedSearchFormHtml(
+      HttpServletRequest request, int language, String loggedInAs, String tErddapUrl)
+      throws Throwable {
+    return buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl, "");
+  }
+
+  // Build a reusable advanced search form HTML string, prefilled from the current request.
+  private String buildAdvancedSearchFormHtml(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String tErddapUrl,
+      String protocol)
+      throws Throwable {
+    boolean fixErrors = true;
+    try {
+      HtmlWidgets widgets =
+          new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
+      widgets.htmlTooltips = true;
+      widgets.enterTextSubmitsForm = true;
+
+      String formName = "f1";
+      StringBuilder _asb = new StringBuilder();
+      _asb.append("\n\n");
+      _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_DIRECTIONS, language));
+      _asb.append("\n");
+      _asb.append(HtmlWidgets.ifJavaScriptDisabled);
+      _asb.append("\n");
+      _asb.append(widgets.beginForm(formName, "GET", tErddapUrl + "/search/advanced.html", ""));
+      _asb.append("\n");
+
+      // page/itemsPerPage
+      String page = request.getParameter("page");
+      if (page == null || page.length() == 0) page = "1";
+      String itemsPerPage = request.getParameter("itemsPerPage");
+      if (itemsPerPage == null || itemsPerPage.length() == 0)
+        itemsPerPage = Integer.toString(EDStatic.defaultItemsPerPage);
+      _asb.append(widgets.hidden("page", page));
+      _asb.append(widgets.hidden("itemsPerPage", itemsPerPage));
+
+      // full text search
+      String searchFor = request.getParameter("searchFor");
+      searchFor = searchFor == null ? "" : searchFor;
+      _asb.append("<p><strong>");
+      _asb.append(EDStatic.messages.get(Message.SEARCH_FULL_TEXT_HTML, language));
+      _asb.append("</strong>\n");
+      _asb.append(
+          EDStatic.htmlTooltipImage(
+              request,
+              language,
+              loggedInAs,
+              EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language)));
+      _asb.append("\n<br>");
+      _asb.append(
+          widgets.textField(
+              "searchFor",
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
+              70,
+              255,
+              searchFor,
+              ""));
+      _asb.append("\n");
+
+      // protocol select
+      StringArray protocols = new StringArray();
+      protocols.add("(ANY)");
+      protocols.add("griddap");
+      protocols.add("tabledap");
+      if (EDStatic.config.wmsActive) protocols.add("WMS");
+      if (EDStatic.config.wcsActive) protocols.add("WCS");
+      if (EDStatic.config.sosActive) protocols.add("SOS");
+      String tProt = request.getParameter("protocol");
+      int whichProtocol = protocols.indexOfIgnoreCase(tProt);
+      if (whichProtocol < 0) {
+        if (protocol != null && protocol.length() > 0) {
+          whichProtocol = protocols.indexOfIgnoreCase(protocol);
+        }
+        if (whichProtocol < 0) {
+          whichProtocol = 0;
+        }
+      }
+      _asb.append("&nbsp;\n");
+      _asb.append(widgets.beginTable("class=\"compact nowrap\""));
+      _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
+      _asb.append(EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
+      _asb.append("</strong>\n");
+      _asb.append(
+          EDStatic.htmlTooltipImage(
+              request,
+              language,
+              loggedInAs,
+              "<div class=\"narrow_max_width\">"
+                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_CATEGORY_TOOLTIP, language)
+                  + "</div>"));
+      _asb.append("  </td>\n</tr>\n");
+      _asb.append("<tr>\n  <td class=\"N\" style=\"width:20%;\">protocol \n");
+      StringBuilder protocolTooltip =
+          new StringBuilder(
+              EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
+                  + "\n<p><strong>griddap</strong> - "
+                  + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
+                  + "\n<p><strong>tabledap</strong> - "
+                  + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language));
+      if (EDStatic.config.wmsActive) {
+        protocolTooltip.append(
+            "\n<p><strong>WMS</strong> - "
+                + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language));
+      }
+      if (EDStatic.config.wcsActive) {
+        protocolTooltip.append(
+            "\n<p><strong>WCS</strong> - "
+                + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language));
+      }
+      if (EDStatic.config.sosActive) {
+        protocolTooltip.append(
+            "\n<p><strong>SOS</strong> - "
+                + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language));
+      }
+
+      _asb.append(
+          EDStatic.htmlTooltipImage(
+              request,
+              language,
+              loggedInAs,
+              "<div class=\"standard_max_width\">" + protocolTooltip + "</div>"));
+      _asb.append("\n  </td>\n  <td style=\"width:80%;\">&nbsp;=&nbsp;");
+      _asb.append(widgets.select("protocol", "", 1, protocols.toArray(), whichProtocol, ""));
+      _asb.append("  </td>\n</tr>\n");
+      String ANY = "(ANY)";
+      String catAtts[] = EDStatic.config.categoryAttributes;
+      String catAttsInURLs[] = EDStatic.config.categoryAttributesInURLs;
+      int nCatAtts = catAtts.length;
+      String catSAs[][] = new String[nCatAtts][];
+      int whichCatSAIndex[] = new int[nCatAtts];
+      for (int ca = 0; ca < nCatAtts; ca++) {
+        // get user cat params and validate them (so items on form match items used for search)
+        StringArray tsa = categoryInfo(catAtts[ca]);
+        tsa.atInsert(0, ANY);
+        catSAs[ca] = tsa.toArray();
+        String tParam = request.getParameter(catAttsInURLs[ca]);
+        whichCatSAIndex[ca] =
+            (tParam == null || tParam.isEmpty())
+                ? 0
+                : String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
+        if (whichCatSAIndex[ca] < 0) {
+          if (fixErrors) whichCatSAIndex[ca] = 0; // (ANY)
+          else
+            throw new SimpleException(
+                MustBe.THERE_IS_NO_DATA + " (" + catAttsInURLs[ca] + "=" + tParam + ")");
+        }
+        if (whichCatSAIndex[ca] > 0) {
+          EDStatic.tally.add(
+              "Advanced Search with Category Constraints (since startup)",
+              catAttsInURLs[ca] + " = " + tParam);
+          EDStatic.tally.add(
+              "Advanced Search with Category Constraints (since last daily report)",
+              catAttsInURLs[ca] + " = " + tParam);
+        }
+      }
+      for (int ca = 0; ca < nCatAtts; ca++) {
+        if (catSAs[ca].length == 1) continue;
+        _asb.append(
+            "<tr>\n  <td class=\"N\">"
+                + catAttsInURLs[ca]
+                + "</td>\n  <td>&nbsp;=&nbsp;"
+                + widgets.select(catAttsInURLs[ca], "", 1, catSAs[ca], whichCatSAIndex[ca], "")
+                + "  </td>\n</tr>\n");
+      }
+
+      // bounding box
+      String minLon = request.getParameter("minLon");
+      String maxLon = request.getParameter("maxLon");
+      String minLat = request.getParameter("minLat");
+      String maxLat = request.getParameter("maxLat");
+      String mapTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_MAP_TOOLTIP, language);
+      String lonTooltip =
+          mapTooltip + EDStatic.messages.get(Message.ADVANCED_SEARCH_LON_TOOLTIP, language);
+      String timeTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_TIME_TOOLTIP, language);
+      String twoClickMap[] =
+          HtmlWidgets.myTwoClickMap540Big(
+              language, formName, widgets.imageDirUrl + "world540Big.png", false); // debugInBrowser
+
+      _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
+      _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
+      _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_BOUNDS, language));
+      _asb.append("</strong>\n");
+      _asb.append(
+          EDStatic.htmlTooltipImage(
+              request,
+              language,
+              loggedInAs,
+              "<div class=\"standard_max_width\">"
+                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_RANGE_TOOLTIP, language)
+                  + "<p>"
+                  + lonTooltip
+                  + "</div>"));
+      _asb.append("  </td>\n</tr>\n");
+
+      // max lat
+      _asb.append(
+          "<tr>\n  <td class=\"N\">"
+              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
+              + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+      _asb.append(
+          widgets.textField(
+              "maxLat",
+              EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
+                  + " (-90 to 90)<p>"
+                  + mapTooltip,
+              8,
+              12,
+              maxLat,
+              ""));
+      _asb.append("    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n    </td>\n</tr>\n");
+
+      // min max lon
+      _asb.append(
+          "<tr>\n  <td class=\"N\">"
+              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_MAX_LON, language)
+              + "</td>\n  <td>&nbsp;=&nbsp;");
+      _asb.append(
+          widgets.textField(
+              "minLon",
+              "<div class=\"standard_max_width\">"
+                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LON, language)
+                  + "<p>"
+                  + lonTooltip
+                  + "</div>",
+              8,
+              12,
+              minLon,
+              ""));
+      _asb.append(
+          widgets.textField(
+              "maxLon",
+              "<div class=\"standard_max_width\">"
+                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LON, language)
+                  + "<p>"
+                  + lonTooltip
+                  + "</div>",
+              8,
+              12,
+              maxLon,
+              ""));
+      _asb.append("</td>\n</tr>\n");
+
+      // min lat
+      _asb.append(
+          "<tr>\n  <td class=\"N\">"
+              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
+              + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
+      _asb.append(
+          widgets.textField(
+              "minLat",
+              EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
+                  + " (-90 to 90)<p>"
+                  + mapTooltip,
+              8,
+              12,
+              minLat,
+              ""));
+      _asb.append("    &nbsp;\n");
+      _asb.append(
+          widgets.htmlButton(
+              "button",
+              "",
+              "",
+              EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR_HELP, language),
+              EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR, language),
+              "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; f1.minLat.value=\"\"; f1.maxLat.value=\"\"; ((document.all)? document.all.rubberBand : document.getElementById(\"rubberBand\")).style.visibility=\"hidden\";'"));
+      _asb.append("    </td>\n</tr>\n");
+
+      // world map
+      _asb.append(
+          "<tr>\n  <td colspan=\"2\" class=\"N\">"
+              + twoClickMap[0]
+              + EDStatic.htmlTooltipImage(request, language, loggedInAs, lonTooltip)
+              + twoClickMap[1]
+              + "</td>\n</tr>\n");
+
+      // blank row
+      _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
+
+      // time
+      String minTime = request.getParameter("minTime");
+      String maxTime = request.getParameter("maxTime");
+      _asb.append(
+          "<tr>\n  <td class=\"N\">"
+              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
+              + "</td>\n  <td>&nbsp;=&nbsp;");
+      _asb.append(
+          widgets.textField(
+              "minTime",
+              EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
+                  + "<p>"
+                  + timeTooltip,
+              27,
+              40,
+              minTime,
+              ""));
+      _asb.append("</td>\n</tr>\n");
+      _asb.append(
+          "<tr>\n  <td class=\"N\">"
+              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
+              + "</td>\n  <td>&nbsp;=&nbsp;");
+      _asb.append(
+          widgets.textField(
+              "maxTime",
+              EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
+                  + "<p>"
+                  + timeTooltip,
+              27,
+              40,
+              maxTime,
+              ""));
+      _asb.append("</td>\n</tr>\n");
+
+      _asb.append("</table>\n\n");
+
+      // submit
+      _asb.append("<p>");
+      _asb.append(
+          widgets.htmlButton(
+              "submit",
+              null,
+              null,
+              EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
+              "<span style=\"font-size:large;\"><strong>"
+                  + EDStatic.messages.get(Message.SEARCH_BUTTON, language)
+                  + "</strong></span>",
+              ""));
+
+      // end form
+      _asb.append(widgets.endForm());
+      _asb.append("\n");
+      _asb.append(twoClickMap[2]);
+
+      return _asb.toString();
+    } catch (Throwable t) {
+      StringWriter sw = new StringWriter();
+      sw.write(EDStatic.htmlForException(language, t));
+      return sw.toString();
+    }
+  }
+
   /**
    * This responds to a advanced search request: erddap/search/advanced.html, and other extensions.
    *
@@ -16292,34 +16656,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // protocol
-    StringBuilder protocolTooltip =
-        new StringBuilder(
-            EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
-                + "\n<p><strong>griddap</strong> - "
-                + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
-                + "\n<p><strong>tabledap</strong> - "
-                + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language));
     StringArray protocols = new StringArray();
     protocols.add(ANY);
     protocols.add("griddap");
     protocols.add("tabledap");
     if (EDStatic.config.wmsActive) {
       protocols.add("WMS");
-      protocolTooltip.append(
-          "\n<p><strong>WMS</strong> - "
-              + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language));
     }
     if (EDStatic.config.wcsActive) {
       protocols.add("WCS");
-      protocolTooltip.append(
-          "\n<p><strong>WCS</strong> - "
-              + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language));
     }
     if (EDStatic.config.sosActive) {
       protocols.add("SOS");
-      protocolTooltip.append(
-          "\n<p><strong>SOS</strong> - "
-              + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language));
     }
     String tProt = request.getParameter("protocol");
     int whichProtocol = protocols.indexOfIgnoreCase(tProt);
@@ -16368,251 +16716,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               EDStatic.messages.get(Message.ADVANCED_SEARCH, language),
               out);
       try {
-        HtmlWidgets widgets =
-            new HtmlWidgets(
-                true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
-        widgets.htmlTooltips = true;
-        widgets.enterTextSubmitsForm = true;
 
-        // display the advanced search form into a string
-        String formName = "f1";
-        StringBuilder _asb = new StringBuilder();
-        _asb.append("\n\n");
-        _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_DIRECTIONS, language));
-        _asb.append("\n");
-        _asb.append(HtmlWidgets.ifJavaScriptDisabled);
-        _asb.append("\n");
-        _asb.append(widgets.beginForm(formName, "GET", tErddapUrl + "/search/advanced.html", ""));
-        _asb.append("\n");
-
-        // pipp
-        _asb.append(widgets.hidden("page", "1")); // new search always resets to page 1
-        _asb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
-
-        // full text search...
-        _asb.append("<p><strong>");
-        _asb.append(EDStatic.messages.get(Message.SEARCH_FULL_TEXT_HTML, language));
-        _asb.append("</strong>\n");
-        _asb.append(
-            EDStatic.htmlTooltipImage(
-                request,
-                language,
-                loggedInAs,
-                EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language)));
-        _asb.append("\n<br>");
-        _asb.append(
-            widgets.textField(
-                "searchFor",
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
-                70,
-                255,
-                searchFor,
-                ""));
-        _asb.append("\n");
-
-        // categorize
-        _asb.append("&nbsp;\n");
-        _asb.append(widgets.beginTable("class=\"compact nowrap\""));
-        _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
-        _asb.append(EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
-        _asb.append("</strong>\n");
-        _asb.append(
-            EDStatic.htmlTooltipImage(
-                request,
-                language,
-                loggedInAs,
-                "<div class=\"narrow_max_width\">"
-                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_CATEGORY_TOOLTIP, language)
-                    + "</div>"));
-        _asb.append("  </td>\n</tr>\n");
-        _asb.append("<tr>\n  <td class=\"N\" style=\"width:20%;\">protocol \n");
-        _asb.append(
-            EDStatic.htmlTooltipImage(
-                request,
-                language,
-                loggedInAs,
-                "<div class=\"standard_max_width\">" + protocolTooltip + "</div>"));
-        _asb.append("\n  </td>\n  <td style=\"width:80%;\">&nbsp;=&nbsp;");
-        _asb.append(widgets.select("protocol", "", 1, protocols.toArray(), whichProtocol, ""));
-        _asb.append("  </td>\n</tr>\n");
-        for (int ca = 0; ca < nCatAtts; ca++) {
-          if (catSAs[ca].length == 1) continue;
-          _asb.append(
-              "<tr>\n  <td class=\"N\">"
-                  + catAttsInURLs[ca]
-                  + "</td>\n  <td>&nbsp;=&nbsp;"
-                  + widgets.select(catAttsInURLs[ca], "", 1, catSAs[ca], whichCatSAIndex[ca], "")
-                  + "  </td>\n</tr>\n");
-        }
-
-        // bounding box...
-        String mapTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_MAP_TOOLTIP, language);
-        String lonTooltip =
-            mapTooltip + EDStatic.messages.get(Message.ADVANCED_SEARCH_LON_TOOLTIP, language);
-        String timeTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_TIME_TOOLTIP, language);
-        String twoClickMap[] =
-            HtmlWidgets.myTwoClickMap540Big(
-                language,
-                formName,
-                widgets.imageDirUrl + "world540Big.png",
-                false); // debugInBrowser
-
-        _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
-        _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
-        _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_BOUNDS, language));
-        _asb.append("</strong>\n");
-        _asb.append(
-            EDStatic.htmlTooltipImage(
-                request,
-                language,
-                loggedInAs,
-                "<div class=\"standard_max_width\">"
-                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_RANGE_TOOLTIP, language)
-                    + "<p>"
-                    + lonTooltip
-                    + "</div>"));
-        _asb.append("  </td>\n</tr>\n");
-
-        // max lat
-        _asb.append(
-            "<tr>\n  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
-        _asb.append(
-            widgets.textField(
-                "maxLat",
-                EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                    + " (-90 to 90)<p>"
-                    + mapTooltip,
-                8,
-                12,
-                (Double.isNaN(maxLat) ? "" : "" + maxLat),
-                ""));
-        _asb.append("    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n    </td>\n</tr>\n");
-
-        // min max lon
-        _asb.append(
-            "<tr>\n  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_MAX_LON, language)
-                + "</td>\n  <td>&nbsp;=&nbsp;");
-        _asb.append(
-            widgets.textField(
-                "minLon",
-                "<div class=\"standard_max_width\">"
-                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LON, language)
-                    + "<p>"
-                    + lonTooltip
-                    + "</div>",
-                8,
-                12,
-                (Double.isNaN(minLon) ? "" : "" + minLon),
-                ""));
-        _asb.append(
-            widgets.textField(
-                "maxLon",
-                "<div class=\"standard_max_width\">"
-                    + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LON, language)
-                    + "<p>"
-                    + lonTooltip
-                    + "</div>",
-                8,
-                12,
-                (Double.isNaN(maxLon) ? "" : "" + maxLon),
-                ""));
-        _asb.append("</td>\n</tr>\n");
-
-        // min lat
-        _asb.append(
-            "<tr>\n  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
-        _asb.append(
-            widgets.textField(
-                "minLat",
-                EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                    + " (-90 to 90)<p>"
-                    + mapTooltip,
-                8,
-                12,
-                (Double.isNaN(minLat) ? "" : "" + minLat),
-                ""));
-        _asb.append("    &nbsp;\n");
-        _asb.append(
-            widgets.htmlButton(
-                "button",
-                "",
-                "",
-                EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR_HELP, language),
-                EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR, language),
-                "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; f1.minLat.value=\"\"; f1.maxLat.value=\"\"; ((document.all)? document.all.rubberBand : document.getElementById(\"rubberBand\")).style.visibility=\"hidden\";'"));
-        _asb.append("    </td>\n</tr>\n");
-
-        // world map
-        _asb.append(
-            "<tr>\n  <td colspan=\"2\" class=\"N\">"
-                + twoClickMap[0]
-                + EDStatic.htmlTooltipImage(request, language, loggedInAs, lonTooltip)
-                + twoClickMap[1]
-                + "</td>\n</tr>\n");
-
-        // blank row
-        _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
-
-        // time
-        _asb.append(
-            "<tr>\n  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                + "</td>\n  <td>&nbsp;=&nbsp;");
-        _asb.append(
-            widgets.textField(
-                "minTime",
-                EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                    + "<p>"
-                    + timeTooltip,
-                27,
-                40,
-                minTimeParam,
-                ""));
-        _asb.append("</td>\n</tr>\n");
-        _asb.append(
-            "<tr>\n  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                + "</td>\n  <td>&nbsp;=&nbsp;");
-        _asb.append(
-            widgets.textField(
-                "maxTime",
-                EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                    + "<p>"
-                    + timeTooltip,
-                27,
-                40,
-                maxTimeParam,
-                ""));
-        _asb.append("</td>\n</tr>\n");
-
-        // end table
-        _asb.append("</table>\n\n");
-
-        // submit button
-        _asb.append("<p>");
-        _asb.append(
-            widgets.htmlButton(
-                "submit",
-                null,
-                null,
-                EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
-                "<span style=\"font-size:large;\"><strong>"
-                    + EDStatic.messages.get(Message.SEARCH_BUTTON, language)
-                    + "</strong></span>",
-                ""));
-
-        // end form
-        _asb.append(widgets.endForm());
-        _asb.append("\n");
-        _asb.append(twoClickMap[2]);
-
-        advancedSearchFormHtml = _asb.toString();
+        advancedSearchFormHtml =
+            buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl);
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         writer.write(EDStatic.htmlForException(language, t));
@@ -16844,34 +16950,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   EDStatic.messages.get(Message.ADVANCED_SEARCH, language));
-
-          TableOptions tableOptions =
-              new TableOptions.TableOptionsBuilder(resultsTable)
-                  .otherClasses("commonBGColor")
-                  .bgColor(null)
-                  .writeUnits(false)
-                  .timeColumn(-1)
-                  .needEncodingAsHtml(false)
-                  .allowWrap(false)
-                  .build();
-
-          TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-          Map<String, Object> searchParamsMap = new HashMap<>();
-          searchParamsMap.put("endOfRequest", endOfRequest);
-          searchParamsMap.put("youAreHere", youAreHere);
-          searchParamsMap.put("language", language);
-          searchParamsMap.put("tErddapUrl", tErddapUrl);
-          searchParamsMap.put("tableOptions", tableOptions);
-          searchParamsMap.put("table", resultsTable);
-          // provide the advanced search form (use generated when available)
-          searchParamsMap.put(
-              "secondLine",
-              advancedSearchFormHtml != null
-                  ? advancedSearchFormHtml
-                  : getSearchFormHtml(language, request, loggedInAs, "", "", ""));
-          searchParamsMap.put(
-              "advancedSearchLink",
-              getAdvancedSearchLink(request, language, loggedInAs, queryString));
           String nMatchingHtml =
               "<hr>\n"
                   + "<h2>"
@@ -16886,12 +16964,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                       EDStatic.baseUrl(request, loggedInAs)
                           + requestUrl
                           + EDStatic.questionQuery(request.getQueryString()));
-          searchParamsMap.put("nMatchingHtml", searchPerformed ? nMatchingHtml : "");
-          searchParamsMap.put("plainFileTypesString", plainFileTypesString);
-          searchParamsMap.put("errorLineOne", "");
-          searchParamsMap.put("errorLineTwo", "");
-          searchParamsMap.put("mode", "search");
-          engine.render("search_info.jte", searchParamsMap, new WriterOutput(writer));
+          renderSearchInfoJte(
+              writer,
+              request,
+              language,
+              loggedInAs,
+              endOfRequest,
+              tErddapUrl,
+              youAreHere,
+              resultsTable == null ? new Table() : resultsTable,
+              "",
+              searchPerformed ? nMatchingHtml : "",
+              "",
+              "");
           endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
           return;
         }
@@ -18114,30 +18199,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     MessageFormat.format(
                         EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
                         EDStatic.messages.get(Message.LIST_ALL, language)));
-            TableOptions tableOptions =
-                new TableOptions.TableOptionsBuilder(table)
-                    .otherClasses("commonBGColor")
-                    .bgColor(null)
-                    .writeUnits(false)
-                    .timeColumn(-1)
-                    .needEncodingAsHtml(false)
-                    .allowWrap(false)
-                    .build();
-            TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-            Map<String, Object> _infoParams = new HashMap<>();
-            _infoParams.put("endOfRequest", endOfRequest);
-            _infoParams.put("youAreHere", youAreHere);
-            _infoParams.put("language", language);
-            _infoParams.put("tErddapUrl", tErddapUrl);
-            _infoParams.put("tableOptions", tableOptions);
-            _infoParams.put("table", table);
-            _infoParams.put("secondLine", secondLine);
-            _infoParams.put("nMatchingHtml", nMatchingHtml);
-            _infoParams.put("errorLineOne", "");
-            _infoParams.put("errorLineTwo", "");
-            _infoParams.put("plainFileTypesString", plainFileTypesString);
-            _infoParams.put("mode", "info");
-            engine.render("search_info.jte", _infoParams, new WriterOutput(writer));
+            renderSearchInfoJte(
+                writer,
+                request,
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                youAreHere,
+                table,
+                secondLine,
+                nMatchingHtml,
+                "",
+                "");
           } else {
             writer.write(
                 "<div class=\"standard_width\">\n"
