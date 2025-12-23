@@ -411,7 +411,6 @@ public class Status {
 
   public static String getTraces() {
     String traces = MustBe.allStackTraces(true, true);
-    int po = traces.indexOf('\n');
     return traces;
   }
 }
