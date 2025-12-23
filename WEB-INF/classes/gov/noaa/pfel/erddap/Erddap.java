@@ -391,6 +391,39 @@ public class Erddap extends HttpServlet {
     EDStatic.cleaner.register(this, new CleanupErddap());
   }
 
+  private void renderSearchInfoJte(
+      Writer writer,
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String endOfRequest,
+      String tErddapUrl,
+      YouAreHere youAreHere,
+      Table table,
+      String secondLine,
+      String nMatchingHtml,
+      String errorLineOne,
+      String errorLineTwo,
+      String protocol)
+      throws Throwable {
+    renderSearchInfoJte(
+        writer,
+        request,
+        language,
+        loggedInAs,
+        endOfRequest,
+        tErddapUrl,
+        youAreHere,
+        table,
+        secondLine,
+        nMatchingHtml,
+        errorLineOne,
+        errorLineTwo,
+        protocol,
+        "",
+        "");
+  }
+
   // Centralized renderer for the search_info.jte template to reduce duplicated code paths.
   private void renderSearchInfoJte(
       Writer writer,
@@ -404,7 +437,10 @@ public class Erddap extends HttpServlet {
       String secondLine,
       String nMatchingHtml,
       String errorLineOne,
-      String errorLineTwo)
+      String errorLineTwo,
+      String protocol,
+      String attribute,
+      String categoryName)
       throws Throwable {
     TableOptions tableOptions = buildSearchTableOptions(table, -1);
     TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
@@ -412,7 +448,9 @@ public class Erddap extends HttpServlet {
     // Compute advanced-search related values here so callers don't need to.
     String advancedSearchHtml = "";
     try {
-      advancedSearchHtml = buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl);
+      advancedSearchHtml =
+          buildAdvancedSearchFormHtml(
+              request, language, loggedInAs, tErddapUrl, protocol, attribute, categoryName);
     } catch (Throwable t) {
       // If building advanced form fails, fall back to empty string and continue rendering.
       String2.log("Warning: failed to build advanced search form: " + MustBe.throwableToString(t));
@@ -7823,10 +7861,15 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             tErddapUrl,
             youAreHere,
             table,
-            description,
+            "<h2>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.LIST_OF_DATASETS, language), uProtocol)
+                + "</h2>\n"
+                + description,
             "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>",
             error != null ? XML.encodeAsHTML(error[0]) : "",
-            error != null ? XML.encodeAsHTML(error[1]) : "");
+            error != null ? XML.encodeAsHTML(error[1]) : "",
+            protocol);
       } else {
         writer.write(
             "<div class=\"standard_width\">\n"
@@ -15300,7 +15343,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 searchFormHtml,
                 nMatchingHtml,
                 error != null ? XML.encodeAsHTML(error[0]) : "",
-                error != null ? XML.encodeAsHTML(error[1]) : "");
+                error != null ? XML.encodeAsHTML(error[1]) : "",
+                "");
           } else {
 
             // you are here    Search
@@ -15451,6 +15495,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               youAreHere,
               table,
               getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor),
+              "",
               "",
               "",
               "");
@@ -16109,7 +16154,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   private String buildAdvancedSearchFormHtml(
       HttpServletRequest request, int language, String loggedInAs, String tErddapUrl)
       throws Throwable {
-    return buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl, "");
+    return buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl, "", "", "");
   }
 
   // Build a reusable advanced search form HTML string, prefilled from the current request.
@@ -16118,7 +16163,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       int language,
       String loggedInAs,
       String tErddapUrl,
-      String protocol)
+      String protocol,
+      String attribute,
+      String categoryName)
       throws Throwable {
     boolean fixErrors = true;
     try {
@@ -16251,6 +16298,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             (tParam == null || tParam.isEmpty())
                 ? 0
                 : String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
+        if (attribute != null
+            && attribute.length() > 0
+            && catAtts[ca].equals(attribute)
+            && categoryName != null
+            && categoryName.length() > 0) {
+          whichCatSAIndex[ca] = String2.caseInsensitiveIndexOf(catSAs[ca], categoryName);
+        }
         if (whichCatSAIndex[ca] < 0) {
           if (fixErrors) whichCatSAIndex[ca] = 0; // (ANY)
           else
@@ -16976,6 +17030,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "",
               searchPerformed ? nMatchingHtml : "",
               "",
+              "",
               "");
           endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
           return;
@@ -17687,21 +17742,57 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "Categorize",
                 out);
         try {
-          // you are here  Categorize
-          writer.write("<div class=\"standard_width\">\n" + youAreHere);
-          // youAreHereTable);
-
-          if (!attributeInURL.equals("index.html"))
-            writeErrorHtml(
-                language,
+          if (useHtmlTemplates(request)) {
+            YouAreHere ya =
+                EDStatic.getYouAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
+            // build secondLine via helper that writes HTML to a StringWriter
+            StringWriter sw = new StringWriter();
+            Writer w2 = new java.io.PrintWriter(sw);
+            writeCategorizeOptionsHtml1(language, request, loggedInAs, w2, null, false);
+            w2.flush();
+            Table table = new Table();
+            renderSearchInfoJte(
                 writer,
                 request,
-                "categoryAttribute=\"" + XML.encodeAsHTML(attributeInURL) + "\" is not an option.");
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                ya,
+                table,
+                sw.toString(),
+                "",
+                attributeInURL.equals("index.html")
+                    ? ""
+                    : "categoryAttribute=\""
+                        + XML.encodeAsHTML(attributeInURL)
+                        + "\" is not an option.",
+                "",
+                "");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          } else {
+            // you are here  Categorize
+            writer.write("<div class=\"standard_width\">\n" + youAreHere);
+            // youAreHereTable);
 
-          writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, false);
+            if (!attributeInURL.equals("index.html"))
+              writeErrorHtml(
+                  language,
+                  writer,
+                  request,
+                  "categoryAttribute=\""
+                      + XML.encodeAsHTML(attributeInURL)
+                      + "\" is not an option.");
 
-          writer.write("</div>\n");
-          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+            writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, false);
+
+            writer.write("</div>\n");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          }
 
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -17797,37 +17888,80 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "Categorize",
                 out);
         try {
-          writer.write("<div class=\"standard_width\">\n" + youAreHere);
-          // youAreHereTable);
-          if (!categoryName.equals("index.html")) {
-            writeErrorHtml(
-                language,
+          if (useHtmlTemplates(request)) {
+            YouAreHere ya =
+                EDStatic.getYouAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
+
+            StringWriter sw = new StringWriter();
+            Writer w2 = new java.io.PrintWriter(sw);
+            w2.write("<p>");
+            writeCategorizeOptionsHtml1(language, request, loggedInAs, w2, attributeInURL, false);
+            w2.write("<p>");
+            writeCategoryOptionsHtml2(
+                language, request, loggedInAs, w2, attribute, attributeInURL, categoryName);
+            w2.flush();
+
+            Table table = new Table();
+            String errorOne =
+                categoryName.equals("index.html")
+                    ? ""
+                    : MessageFormat.format(
+                        EDStatic.messages.get(Message.CATEGORY_NOT_AN_OPTION, language),
+                        attributeInURL,
+                        categoryName);
+            renderSearchInfoJte(
                 writer,
                 request,
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.CATEGORY_NOT_AN_OPTION, language),
-                    attributeInURL,
-                    categoryName));
-            writer.write("<hr>\n");
-          }
-          writer.write("<p>");
-          //    "<table class=\"compact nowrap\">\n" +
-          //    "<tr>\n" +
-          //    "<td class=\"T\">\n");
-          writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, attributeInURL, false);
-          writer.write("<p>");
-          //    "</td>\n" +
-          //    "<td>" + gap + "</td>\n" +
-          //    "<td class=\"T\">\n");
-          writeCategoryOptionsHtml2(
-              language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
-          // writer.write(
-          //    "</td>\n" +
-          //    "</tr>\n" +
-          //    "</table>\n");
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                ya,
+                table,
+                sw.toString(),
+                "",
+                errorOne,
+                "",
+                "");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          } else {
+            writer.write("<div class=\"standard_width\">\n" + youAreHere);
+            // youAreHereTable);
+            if (!categoryName.equals("index.html")) {
+              writeErrorHtml(
+                  language,
+                  writer,
+                  request,
+                  MessageFormat.format(
+                      EDStatic.messages.get(Message.CATEGORY_NOT_AN_OPTION, language),
+                      attributeInURL,
+                      categoryName));
+              writer.write("<hr>\n");
+            }
+            writer.write("<p>");
+            //    "<table class=\"compact nowrap\">\n" +
+            //    "<tr>\n" +
+            //    "<td class=\"T\">\n");
+            writeCategorizeOptionsHtml1(
+                language, request, loggedInAs, writer, attributeInURL, false);
+            writer.write("<p>");
+            //    "</td>\n" +
+            //    "<td>" + gap + "</td>\n" +
+            //    "<td class=\"T\">\n");
+            writeCategoryOptionsHtml2(
+                language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
+            // writer.write(
+            //    "</td>\n" +
+            //    "</tr>\n" +
+            //    "</table>\n");
 
-          writer.write("</div>\n");
-          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+            writer.write("</div>\n");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          }
 
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -17935,85 +18069,145 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "Categorize",
               out);
       try {
-        writer.write("<div class=\"standard_width\">\n" + youAreHere);
-        // youAreHereTable);
+        if (useHtmlTemplates(request)) {
+          YouAreHere ya =
+              EDStatic.getYouAreHere(
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
 
-        // write categorizeOptions
-        writer.write("<p>");
-        //    "<table class=\"compact nowrap\">\n" +
-        //    "<tr>\n" +
-        //    "<td class=\"T\">\n");
-        writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, attributeInURL, false);
-        writer.write("<p>");
-        //    "</td>\n" +
-        //    "<td>" + gap + "</td>\n" +
-        //    "<td class=\"T\">\n");
+          StringWriter sw = new StringWriter();
+          Writer w2 = new java.io.PrintWriter(sw);
+          w2.write("<p>");
+          writeCategorizeOptionsHtml1(language, request, loggedInAs, w2, attributeInURL, false);
+          w2.write("<p>");
+          writeCategoryOptionsHtml2(
+              language, request, loggedInAs, w2, attribute, attributeInURL, categoryName);
+          w2.flush();
 
-        // write categoryOptions
-        writeCategoryOptionsHtml2(
-            language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
-        // writer.write(
-        //    "</td>\n" +
-        //    "</tr>\n" +
-        //    "</table>\n");
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  false, // =alphabetical
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(queryString));
 
-        String nMatchingHtml =
-            EDStatic.nMatchingDatasetsHtml(
-                language,
-                nMatches,
-                page,
-                lastPage,
-                false, // =alphabetical
-                EDStatic.baseUrl(request, loggedInAs)
-                    + requestUrl
-                    + EDStatic.questionQuery(queryString));
+          nMatchingHtml =
+              "<h3>3) "
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.RESULTS_OF_SEARCH_FOR, language),
+                      "\n<span class=\"N\"><kbd>"
+                          + attributeInURL
+                          + " = "
+                          + categoryName
+                          + "</kbd></span>")
+                  + "</h3>\n"
+                  + nMatchingHtml
+                  + "\n"
+                  + "<br>&nbsp;\n";
 
-        // display datasets
-        writer.write(
-            "<h3>3) "
-                + MessageFormat.format(
-                    EDStatic.messages.get(Message.RESULTS_OF_SEARCH_FOR, language),
-                    "\n<span class=\"N\"><kbd>"
-                        + attributeInURL
-                        + " = "
-                        + categoryName
-                        + "</kbd></span>")
-                + "</h3>\n"
-                + nMatchingHtml
-                + "\n"
-                +
-                // "<br>&nbsp;\n" +
+          renderSearchInfoJte(
+              writer,
+              request,
+              language,
+              loggedInAs,
+              endOfRequest,
+              tErddapUrl,
+              ya,
+              table,
+              sw.toString(),
+              nMatchingHtml,
+              "",
+              "",
+              "",
+              attribute,
+              categoryName);
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        } else {
+          writer.write("<div class=\"standard_width\">\n" + youAreHere);
+          // youAreHereTable);
 
-                // "<br><strong>" + EDStatic.pickADataset + ":</strong>\n" +
-                refine
-                +
+          // write categorizeOptions
+          writer.write("<p>");
+          //    "<table class=\"compact nowrap\">\n" +
+          //    "<tr>\n" +
+          //    "<td class=\"T\">\n");
+          writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, attributeInURL, false);
+          writer.write("<p>");
+          //    "</td>\n" +
+          //    "<td>" + gap + "</td>\n" +
+          //    "<td class=\"T\">\n");
 
-                // "<br>" + EDStatic.nMatchingDatasetsHtml(nMatches, page, lastPage,
-                //    false,  //=alphabetical
-                //    EDStatic.baseUrl(loggedInAs) + requestUrl +
-                //    EDStatic.questionQuery(request.getQueryString())) +
-                "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
+          // write categoryOptions
+          writeCategoryOptionsHtml2(
+              language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
+          // writer.write(
+          //    "</td>\n" +
+          //    "</tr>\n" +
+          //    "</table>\n");
 
-        table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  false, // =alphabetical
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(queryString));
 
-        if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+          // display datasets
+          writer.write(
+              "<h3>3) "
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.RESULTS_OF_SEARCH_FOR, language),
+                      "\n<span class=\"N\"><kbd>"
+                          + attributeInURL
+                          + " = "
+                          + categoryName
+                          + "</kbd></span>")
+                  + "</h3>\n"
+                  + nMatchingHtml
+                  + "\n"
+                  +
+                  // "<br>&nbsp;\n" +
 
-        // list plain file types
-        writer.write(
-            "\n"
-                + "<p>"
-                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                + " \n("
-                + plainFileTypesString
-                + // not links, which would be indexed by search engines
-                ") <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/rest.html\">"
-                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                + "</a>.\n");
+                  // "<br><strong>" + EDStatic.pickADataset + ":</strong>\n" +
+                  refine
+                  +
+                  // "<br>" + EDStatic.nMatchingDatasetsHtml(nMatches, page, lastPage,
+                  //    false,  //=alphabetical
+                  //    EDStatic.baseUrl(loggedInAs) + requestUrl +
+                  //    EDStatic.questionQuery(request.getQueryString())) +
+                  "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
 
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+
+          if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+          // list plain file types
+          writer.write(
+              "\n"
+                  + "<p>"
+                  + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                  + " \n("
+                  + plainFileTypesString
+                  + // not links, which would be indexed by search engines
+                  ") <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/rest.html\">"
+                  + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                  + "</a>.\n");
+
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        }
 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -18210,6 +18404,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 table,
                 secondLine,
                 nMatchingHtml,
+                "",
                 "",
                 "");
           } else {
@@ -24295,6 +24490,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "search/index.html",
                 "search/advanced.html")
             .contains(endOfRequest);
+
+    if (endOfRequest.contains("categorize/")) {
+      isSupportedHtmlLayoutPage = true;
+    }
 
     if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
       // write the information for this protocol (dataset list table and instructions)

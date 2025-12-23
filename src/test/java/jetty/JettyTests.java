@@ -5380,7 +5380,7 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/categorize/standard_name/sea_water_temperature/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdGlobecBottle\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5486,14 +5486,14 @@ class JettyTests {
             EDStatic.erddapUrl + "/griddap/index.html?" + EDStatic.defaultPIppQuery);
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf("List of griddap Datasets") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Title\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
         results.indexOf(
                 ">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)")
             >= 0,
         "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">erdMPOC1day\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdMPOC1day\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5533,11 +5533,11 @@ class JettyTests {
             EDStatic.erddapUrl + "/tabledap/index.html?" + EDStatic.defaultPIppQuery);
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf("List of tabledap Datasets") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Title\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
+        results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdGlobecBottle\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5612,11 +5612,11 @@ class JettyTests {
               EDStatic.erddapUrl + "/sos/index.html?" + EDStatic.defaultPIppQuery);
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("List of SOS Datasets") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Title") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
       Test.ensureTrue(
-          results.indexOf(">NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">glerAvgTemp") >= 0, "results=\n" + results);
+          results.indexOf("NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("glerAvgTemp") >= 0, "results=\n" + results);
 
       results =
           SSR.getUrlResponseStringUnchanged(
@@ -5671,11 +5671,11 @@ class JettyTests {
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results.indexOf("Datasets Which Can Be Accessed via WCS") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS</th>") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Title</th>") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("RSS</th>") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results.indexOf(
-                  ">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>")
+                  "Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>")
               >= 0,
           "results=\n" + results);
       Test.ensureTrue(results.indexOf(">erdMHchla8day<") >= 0, "results=\n" + results);
@@ -5732,14 +5732,14 @@ class JettyTests {
               EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Title") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results.indexOf(
-                  ">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
+                  "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
               >= 0,
           "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">erdMH1chla1day\n") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("erdMH1chla1day\n") >= 0, "results=\n" + results);
 
       results =
           SSR.getUrlResponseStringUnchanged(
