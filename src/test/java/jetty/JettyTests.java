@@ -8852,7 +8852,7 @@ class JettyTests {
       "&short_name=depth",
       "&minLat=-45&maxLat=45",
       "&minLon=-25&maxLon=25",
-      "&minTime=now-5years&maxTime=now-2years"
+      "&minTime=2018&maxTime=now-2years"
     };
     for (int i = 0; i < goodQueries.length; i++) {
       query += goodQueries[i];
