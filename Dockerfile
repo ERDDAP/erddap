@@ -1,5 +1,5 @@
 # Build the ERDDAP war from source
-FROM --platform=$BUILDPLATFORM maven:3.9.11-eclipse-temurin-25-noble AS build
+FROM --platform=$BUILDPLATFORM maven:3.9.12-eclipse-temurin-25-noble AS build
 
 # install zip so certain tests can pass
 RUN apt-get update && \
@@ -34,7 +34,7 @@ RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository \
     && find target -maxdepth 1 -type d -name 'ERDDAP-*' -exec mv {} target/ERDDAP \;
 
 # Run the built erddap war via a tomcat instance
-FROM tomcat:11.0.13-jdk25-temurin-noble
+FROM tomcat:11.0.15-jdk25-temurin-noble
 
 RUN apt-get update && apt-get install -y \
     unzip \
