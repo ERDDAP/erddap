@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.jte;
 
+import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -14,8 +15,19 @@ public class Index {
 
   // Main HTML blocks (pre-rendered in Java to handle legacy helper methods)
   public String shortDescriptionHtml;
-  public String searchFormHtml;
-  public String categorizeOptionsHtml;
+
+  // Search form data (prefer template usage rather than pre-rendered HTML)
+  public String searchPretext;
+  public String searchPosttext;
+  public String searchFor;
+  public String itemsPerPage;
+  public HtmlWidgets widgets;
+
+  // Categorize options data
+  public String tCategoryHtml;
+  public String[] categorizeLinks;
+  public String categorizeList;
+  public String categorizeAttributeInURLSelected;
 
   // Dynamic Links and Titles
   public String viewAllDatasetsUrl;

@@ -29,7 +29,16 @@
                     
                     <%-- Search Form --%>
                     <li>
-                        $unsafe{data.searchFormHtml}
+                        @template.search_form(
+                            language = data.language,
+                            request = data.request,
+                            loggedInAs = data.loggedInAs,
+                            pretext = data.searchPretext,
+                            posttext = data.searchPosttext,
+                            searchFor = data.searchFor,
+                            itemsPerPage = data.itemsPerPage,
+                            widgets = data.widgets
+                        )
                     </li>
 
                     <%-- View All Datasets --%>
@@ -43,7 +52,18 @@
 
                     <%-- Categorize Options --%>
                     <li>
-                        $unsafe{data.categorizeOptionsHtml}
+                        @template.categorize_options(
+                            language = data.language,
+                            request = data.request,
+                            loggedInAs = data.loggedInAs,
+                            attributeInURL = null,
+                            homePage = true,
+                            tCategoryHtml = data.tCategoryHtml,
+                            attributeInURLSelected = data.categorizeAttributeInURLSelected,
+                            widgets = data.widgets,
+                            links = data.categorizeLinks,
+                            categoryList = data.categorizeList
+                        )
                     </li>
 
                     <%-- Advanced Search --%>
@@ -91,6 +111,7 @@
                                 </td>
                                 <td>
                                     ${TemplateHelper.getMessage(Message.FILES_DESCRIPTION, data.language)}
+                                    ${TemplateHelper.getMessage(Message.WARNING, data.language)}
                                     ${TemplateHelper.getMessage(Message.FILES_WARNING, data.language)}
                                     <a rel="help" href="${data.erddapUrl}/files/documentation.html">
                                         $unsafe{TemplateHelper.getFormated(TemplateHelper.getMessage(Message.INDEX_DOCUMENTATION, data.language), "\"files\"")}

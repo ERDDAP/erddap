@@ -233,6 +233,16 @@ public class Erddap extends HttpServlet {
       categoryInfo = new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
+  private TemplateEngine engine;
+
+  // Compatibility accessor used throughout the codebase; returns the precompiled JTE engine.
+  private synchronized TemplateEngine getTemplateEngine() {
+    if (this.engine == null) {
+      this.engine = TemplateEngine.createPrecompiled(ContentType.Html);
+    }
+    return this.engine;
+  }
+
   /**
    * The constructor.
    *
@@ -420,11 +430,10 @@ public class Erddap extends HttpServlet {
         errorLineOne,
         errorLineTwo,
         protocol,
-        "",
-        "");
+        null,
+        null);
   }
 
-  // Centralized renderer for the search_info.jte template to reduce duplicated code paths.
   private void renderSearchInfoJte(
       Writer writer,
       HttpServletRequest request,
@@ -442,19 +451,21 @@ public class Erddap extends HttpServlet {
       String attribute,
       String categoryName)
       throws Throwable {
-    TableOptions tableOptions = buildSearchTableOptions(table, -1);
-    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
 
-    // Compute advanced-search related values here so callers don't need to.
-    String advancedSearchHtml = "";
+    TableOptions tableOptions = buildSearchTableOptions(table, -1);
+    TemplateEngine engine = getTemplateEngine();
+    // Compute advanced-search related params here so the template can call the advanced form
+    // directly.
+    java.util.Map<String, Object> advancedParams = null;
     try {
-      advancedSearchHtml =
-          buildAdvancedSearchFormHtml(
+      // attribute and categoryName are not available here; pass null when unknown
+      advancedParams =
+          buildAdvancedSearchFormParams(
               request, language, loggedInAs, tErddapUrl, protocol, attribute, categoryName);
     } catch (Throwable t) {
-      // If building advanced form fails, fall back to empty string and continue rendering.
-      String2.log("Warning: failed to build advanced search form: " + MustBe.throwableToString(t));
-      advancedSearchHtml = "";
+      String2.log(
+          "Warning: failed to build advanced search params: " + MustBe.throwableToString(t));
+      advancedParams = new java.util.HashMap<>();
     }
 
     boolean advancedOpen = false;
@@ -478,8 +489,10 @@ public class Erddap extends HttpServlet {
     params.put("tableOptions", tableOptions);
     params.put("table", table);
     params.put("secondLine", secondLine != null ? secondLine : "");
-    params.put("advancedSearchHtml", advancedSearchHtml != null ? advancedSearchHtml : "");
+    // Put advanced form params into the template params so search_info.jte can call the advanced
+    // template.
     params.put("advancedOpen", advancedOpen);
+    if (advancedParams != null) params.putAll(advancedParams);
     if (advancedSearchLink != null) params.put("advancedSearchLink", advancedSearchLink);
     params.put("nMatchingHtml", nMatchingHtml != null ? nMatchingHtml : "");
     params.put("plainFileTypesString", plainFileTypesString);
@@ -488,6 +501,124 @@ public class Erddap extends HttpServlet {
     params.put("loggedInAs", loggedInAs);
     params.put("request", request);
     engine.render("search_info.jte", params, new WriterOutput(writer));
+  }
+
+  // Build the param map for the advanced search form jte template.
+  private java.util.Map<String, Object> buildAdvancedSearchFormParams(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String tErddapUrl,
+      String protocol,
+      String attribute,
+      String categoryName)
+      throws Throwable {
+    boolean fixErrors = true;
+
+    HtmlWidgets widgets =
+        new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
+    widgets.htmlTooltips = true;
+    widgets.enterTextSubmitsForm = true;
+
+    String formName = "f1";
+
+    // page/itemsPerPage
+    String page = request.getParameter("page");
+    if (page == null || page.length() == 0) page = "1";
+    String itemsPerPage = request.getParameter("itemsPerPage");
+    if (itemsPerPage == null || itemsPerPage.length() == 0)
+      itemsPerPage = Integer.toString(EDStatic.defaultItemsPerPage);
+
+    // full text search
+    String searchFor = request.getParameter("searchFor");
+    searchFor = searchFor == null ? "" : searchFor;
+
+    // protocol select
+    StringArray protocols = new StringArray();
+    protocols.add("(ANY)");
+    protocols.add("griddap");
+    protocols.add("tabledap");
+    if (EDStatic.config.wmsActive) protocols.add("WMS");
+    if (EDStatic.config.wcsActive) protocols.add("WCS");
+    if (EDStatic.config.sosActive) protocols.add("SOS");
+    String tProt = request.getParameter("protocol");
+    int whichProtocol = protocols.indexOfIgnoreCase(tProt);
+    if (whichProtocol < 0) {
+      if (protocol != null && protocol.length() > 0) {
+        whichProtocol = protocols.indexOfIgnoreCase(protocol);
+      }
+      if (whichProtocol < 0) whichProtocol = 0;
+    }
+
+    String ANY = "(ANY)";
+    String catAtts[] = EDStatic.config.categoryAttributes;
+    String catAttsInURLs[] = EDStatic.config.categoryAttributesInURLs;
+    int nCatAtts = catAtts.length;
+    String catSAs[][] = new String[nCatAtts][];
+    int whichCatSAIndex[] = new int[nCatAtts];
+    for (int ca = 0; ca < nCatAtts; ca++) {
+      StringArray tsa = categoryInfo(catAtts[ca]);
+      tsa.atInsert(0, ANY);
+      catSAs[ca] = tsa.toArray();
+      String tParam = request.getParameter(catAttsInURLs[ca]);
+      whichCatSAIndex[ca] =
+          (tParam == null || tParam.isEmpty())
+              ? 0
+              : String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
+      if (attribute != null
+          && attribute.length() > 0
+          && catAtts[ca].equals(attribute)
+          && categoryName != null
+          && categoryName.length() > 0) {
+        whichCatSAIndex[ca] = String2.caseInsensitiveIndexOf(catSAs[ca], categoryName);
+      }
+      if (whichCatSAIndex[ca] < 0) {
+        if (fixErrors) whichCatSAIndex[ca] = 0; // (ANY)
+        else
+          throw new SimpleException(
+              MustBe.THERE_IS_NO_DATA + " (" + catAttsInURLs[ca] + "=" + tParam + ")");
+      }
+    }
+
+    // bounding box and map
+    String minLon = request.getParameter("minLon");
+    String maxLon = request.getParameter("maxLon");
+    String minLat = request.getParameter("minLat");
+    String maxLat = request.getParameter("maxLat");
+    String twoClickMap[] =
+        HtmlWidgets.myTwoClickMap540Big(
+            language, formName, widgets.imageDirUrl + "world540Big.png", false);
+
+    // time
+    String minTime = request.getParameter("minTime");
+    String maxTime = request.getParameter("maxTime");
+    if (minTime == null) minTime = "";
+    if (maxTime == null) maxTime = "";
+
+    // prepare params
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("widgets", widgets);
+    params.put("request", request);
+    params.put("language", language);
+    params.put("loggedInAs", loggedInAs);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("formName", formName);
+    params.put("page", page);
+    params.put("itemsPerPage", itemsPerPage);
+    params.put("searchFor", searchFor);
+    params.put("protocols", protocols.toArray());
+    params.put("whichProtocol", whichProtocol);
+    params.put("catAttsInURLs", catAttsInURLs);
+    params.put("catSAs", catSAs);
+    params.put("whichCatSAIndex", whichCatSAIndex);
+    params.put("minLon", minLon);
+    params.put("maxLon", maxLon);
+    params.put("minLat", minLat);
+    params.put("maxLat", maxLat);
+    params.put("twoClickMap", twoClickMap);
+    params.put("minTime", minTime);
+    params.put("maxTime", maxTime);
+    return params;
   }
 
   // Build a common TableOptions used by search/info/list pages to avoid
@@ -1329,14 +1460,35 @@ public class Erddap extends HttpServlet {
         data.request = request;
         data.youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, null);
 
-        // Pre-render complex HTML blocks
+        // Short description (HTML safe)
         data.shortDescriptionHtml = EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl);
-        data.searchFormHtml = getSearchFormHtml(language, request, loggedInAs, "<h3>", "</h3>", "");
 
-        // Capture Categorize Options (it writes to a Writer, so we capture it to a String)
-        StringWriter catSw = new StringWriter();
-        writeCategorizeOptionsHtml1(language, request, loggedInAs, catSw, null, true);
-        data.categorizeOptionsHtml = catSw.toString();
+        // Provide search form data for template rendering (avoid pre-rendered HTML)
+        data.searchPretext = "<h3>";
+        data.searchPosttext = "</h3>";
+        data.searchFor = "";
+        data.itemsPerPage = Integer.toString(EDStatic.getRequestedPIpp(request)[1]);
+        gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+            new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+                true, EDStatic.imageDirUrl(request, loggedInAs, language));
+        widgets.enterTextSubmitsForm = true;
+        data.widgets = widgets;
+
+        // Provide categorize options data (pass links/list to template rather than pre-rendered
+        // HTML)
+        data.tCategoryHtml = EDStatic.messages.get(Message.CATEGORY_HTML, language);
+        String tErddapUrlLocal = tErddapUrl;
+        Table catTable = categorizeOptionsTable(request, tErddapUrlLocal, ".html");
+        int cn = catTable.nRows();
+        String[] links = new String[cn];
+        StringBuilder sbCat = new StringBuilder("\n(");
+        for (int row = 0; row < cn; row++) {
+          links[row] = catTable.getStringData(0, row);
+          sbCat.append(links[row] + (row < cn - 1 ? ", \n" : ""));
+        }
+        sbCat.append(")\n");
+        data.categorizeLinks = links;
+        data.categorizeList = sbCat.toString();
 
         // Dataset counts/links
         int datasetCount = gridDatasetHashMap.size() + tableDatasetHashMap.size();
@@ -1460,7 +1612,7 @@ public class Erddap extends HttpServlet {
                 EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language), "<br>", " ");
 
         // 3. Render using JTE
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        TemplateEngine engine = getTemplateEngine();
         engine.render("index.jte", data, new WriterOutput(writer));
 
         // 4. Footer (End HTML Writer)
@@ -2105,7 +2257,7 @@ public class Erddap extends HttpServlet {
                 language,
                 loggedInAs,
                 EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language));
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        TemplateEngine engine = getTemplateEngine();
         engine.render(
             "legal.html",
             Map.of(
@@ -5421,7 +5573,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       YouAreHere youAreHere =
           EDStatic.getYouAreHere(
               request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
-      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      TemplateEngine engine = getTemplateEngine();
       engine.render(
           "status.jte",
           Map.of(
@@ -14438,7 +14590,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // use html templates
         YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, shortTitle);
         TableOptions tableOptions = buildSearchTableOptions(table, mtCol);
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        TemplateEngine engine = getTemplateEngine();
         engine.render(
             "outofdatedatasets.jte",
             Map.of(
@@ -16154,351 +16306,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   private String buildAdvancedSearchFormHtml(
       HttpServletRequest request, int language, String loggedInAs, String tErddapUrl)
       throws Throwable {
-    return buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl, "", "", "");
-  }
-
-  // Build a reusable advanced search form HTML string, prefilled from the current request.
-  private String buildAdvancedSearchFormHtml(
-      HttpServletRequest request,
-      int language,
-      String loggedInAs,
-      String tErddapUrl,
-      String protocol,
-      String attribute,
-      String categoryName)
-      throws Throwable {
-    boolean fixErrors = true;
     try {
-      HtmlWidgets widgets =
-          new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
-      widgets.htmlTooltips = true;
-      widgets.enterTextSubmitsForm = true;
-
-      String formName = "f1";
-      StringBuilder _asb = new StringBuilder();
-      _asb.append("\n\n");
-      _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_DIRECTIONS, language));
-      _asb.append("\n");
-      _asb.append(HtmlWidgets.ifJavaScriptDisabled);
-      _asb.append("\n");
-      _asb.append(widgets.beginForm(formName, "GET", tErddapUrl + "/search/advanced.html", ""));
-      _asb.append("\n");
-
-      // page/itemsPerPage
-      String page = request.getParameter("page");
-      if (page == null || page.length() == 0) page = "1";
-      String itemsPerPage = request.getParameter("itemsPerPage");
-      if (itemsPerPage == null || itemsPerPage.length() == 0)
-        itemsPerPage = Integer.toString(EDStatic.defaultItemsPerPage);
-      _asb.append(widgets.hidden("page", page));
-      _asb.append(widgets.hidden("itemsPerPage", itemsPerPage));
-
-      // full text search
-      String searchFor = request.getParameter("searchFor");
-      searchFor = searchFor == null ? "" : searchFor;
-      _asb.append("<p><strong>");
-      _asb.append(EDStatic.messages.get(Message.SEARCH_FULL_TEXT_HTML, language));
-      _asb.append("</strong>\n");
-      _asb.append(
-          EDStatic.htmlTooltipImage(
-              request,
-              language,
-              loggedInAs,
-              EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language)));
-      _asb.append("\n<br>");
-      _asb.append(
-          widgets.textField(
-              "searchFor",
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
-              70,
-              255,
-              searchFor,
-              ""));
-      _asb.append("\n");
-
-      // protocol select
-      StringArray protocols = new StringArray();
-      protocols.add("(ANY)");
-      protocols.add("griddap");
-      protocols.add("tabledap");
-      if (EDStatic.config.wmsActive) protocols.add("WMS");
-      if (EDStatic.config.wcsActive) protocols.add("WCS");
-      if (EDStatic.config.sosActive) protocols.add("SOS");
-      String tProt = request.getParameter("protocol");
-      int whichProtocol = protocols.indexOfIgnoreCase(tProt);
-      if (whichProtocol < 0) {
-        if (protocol != null && protocol.length() > 0) {
-          whichProtocol = protocols.indexOfIgnoreCase(protocol);
-        }
-        if (whichProtocol < 0) {
-          whichProtocol = 0;
-        }
-      }
-      _asb.append("&nbsp;\n");
-      _asb.append(widgets.beginTable("class=\"compact nowrap\""));
-      _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
-      _asb.append(EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
-      _asb.append("</strong>\n");
-      _asb.append(
-          EDStatic.htmlTooltipImage(
-              request,
-              language,
-              loggedInAs,
-              "<div class=\"narrow_max_width\">"
-                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_CATEGORY_TOOLTIP, language)
-                  + "</div>"));
-      _asb.append("  </td>\n</tr>\n");
-      _asb.append("<tr>\n  <td class=\"N\" style=\"width:20%;\">protocol \n");
-      StringBuilder protocolTooltip =
-          new StringBuilder(
-              EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
-                  + "\n<p><strong>griddap</strong> - "
-                  + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
-                  + "\n<p><strong>tabledap</strong> - "
-                  + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language));
-      if (EDStatic.config.wmsActive) {
-        protocolTooltip.append(
-            "\n<p><strong>WMS</strong> - "
-                + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language));
-      }
-      if (EDStatic.config.wcsActive) {
-        protocolTooltip.append(
-            "\n<p><strong>WCS</strong> - "
-                + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language));
-      }
-      if (EDStatic.config.sosActive) {
-        protocolTooltip.append(
-            "\n<p><strong>SOS</strong> - "
-                + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language));
-      }
-
-      _asb.append(
-          EDStatic.htmlTooltipImage(
-              request,
-              language,
-              loggedInAs,
-              "<div class=\"standard_max_width\">" + protocolTooltip + "</div>"));
-      _asb.append("\n  </td>\n  <td style=\"width:80%;\">&nbsp;=&nbsp;");
-      _asb.append(widgets.select("protocol", "", 1, protocols.toArray(), whichProtocol, ""));
-      _asb.append("  </td>\n</tr>\n");
-      String ANY = "(ANY)";
-      String catAtts[] = EDStatic.config.categoryAttributes;
-      String catAttsInURLs[] = EDStatic.config.categoryAttributesInURLs;
-      int nCatAtts = catAtts.length;
-      String catSAs[][] = new String[nCatAtts][];
-      int whichCatSAIndex[] = new int[nCatAtts];
-      for (int ca = 0; ca < nCatAtts; ca++) {
-        // get user cat params and validate them (so items on form match items used for search)
-        StringArray tsa = categoryInfo(catAtts[ca]);
-        tsa.atInsert(0, ANY);
-        catSAs[ca] = tsa.toArray();
-        String tParam = request.getParameter(catAttsInURLs[ca]);
-        whichCatSAIndex[ca] =
-            (tParam == null || tParam.isEmpty())
-                ? 0
-                : String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
-        if (attribute != null
-            && attribute.length() > 0
-            && catAtts[ca].equals(attribute)
-            && categoryName != null
-            && categoryName.length() > 0) {
-          whichCatSAIndex[ca] = String2.caseInsensitiveIndexOf(catSAs[ca], categoryName);
-        }
-        if (whichCatSAIndex[ca] < 0) {
-          if (fixErrors) whichCatSAIndex[ca] = 0; // (ANY)
-          else
-            throw new SimpleException(
-                MustBe.THERE_IS_NO_DATA + " (" + catAttsInURLs[ca] + "=" + tParam + ")");
-        }
-        if (whichCatSAIndex[ca] > 0) {
-          EDStatic.tally.add(
-              "Advanced Search with Category Constraints (since startup)",
-              catAttsInURLs[ca] + " = " + tParam);
-          EDStatic.tally.add(
-              "Advanced Search with Category Constraints (since last daily report)",
-              catAttsInURLs[ca] + " = " + tParam);
-        }
-      }
-      for (int ca = 0; ca < nCatAtts; ca++) {
-        if (catSAs[ca].length == 1) continue;
-        _asb.append(
-            "<tr>\n  <td class=\"N\">"
-                + catAttsInURLs[ca]
-                + "</td>\n  <td>&nbsp;=&nbsp;"
-                + widgets.select(catAttsInURLs[ca], "", 1, catSAs[ca], whichCatSAIndex[ca], "")
-                + "  </td>\n</tr>\n");
-      }
-
-      // bounding box
-      String minLon = request.getParameter("minLon");
-      String maxLon = request.getParameter("maxLon");
-      String minLat = request.getParameter("minLat");
-      String maxLat = request.getParameter("maxLat");
-      String mapTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_MAP_TOOLTIP, language);
-      String lonTooltip =
-          mapTooltip + EDStatic.messages.get(Message.ADVANCED_SEARCH_LON_TOOLTIP, language);
-      String timeTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_TIME_TOOLTIP, language);
-      String twoClickMap[] =
-          HtmlWidgets.myTwoClickMap540Big(
-              language, formName, widgets.imageDirUrl + "world540Big.png", false); // debugInBrowser
-
-      _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
-      _asb.append("<tr>\n  <td colspan=\"2\"><strong>");
-      _asb.append(EDStatic.messages.get(Message.ADVANCED_SEARCH_BOUNDS, language));
-      _asb.append("</strong>\n");
-      _asb.append(
-          EDStatic.htmlTooltipImage(
-              request,
-              language,
-              loggedInAs,
-              "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_RANGE_TOOLTIP, language)
-                  + "<p>"
-                  + lonTooltip
-                  + "</div>"));
-      _asb.append("  </td>\n</tr>\n");
-
-      // max lat
-      _asb.append(
-          "<tr>\n  <td class=\"N\">"
-              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-              + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
-      _asb.append(
-          widgets.textField(
-              "maxLat",
-              EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                  + " (-90 to 90)<p>"
-                  + mapTooltip,
-              8,
-              12,
-              maxLat,
-              ""));
-      _asb.append("    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n    </td>\n</tr>\n");
-
-      // min max lon
-      _asb.append(
-          "<tr>\n  <td class=\"N\">"
-              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_MAX_LON, language)
-              + "</td>\n  <td>&nbsp;=&nbsp;");
-      _asb.append(
-          widgets.textField(
-              "minLon",
-              "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LON, language)
-                  + "<p>"
-                  + lonTooltip
-                  + "</div>",
-              8,
-              12,
-              minLon,
-              ""));
-      _asb.append(
-          widgets.textField(
-              "maxLon",
-              "<div class=\"standard_max_width\">"
-                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LON, language)
-                  + "<p>"
-                  + lonTooltip
-                  + "</div>",
-              8,
-              12,
-              maxLon,
-              ""));
-      _asb.append("</td>\n</tr>\n");
-
-      // min lat
-      _asb.append(
-          "<tr>\n  <td class=\"N\">"
-              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-              + "</td>\n  <td>&nbsp;=&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
-      _asb.append(
-          widgets.textField(
-              "minLat",
-              EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                  + " (-90 to 90)<p>"
-                  + mapTooltip,
-              8,
-              12,
-              minLat,
-              ""));
-      _asb.append("    &nbsp;\n");
-      _asb.append(
-          widgets.htmlButton(
-              "button",
-              "",
-              "",
-              EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR_HELP, language),
-              EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR, language),
-              "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; f1.minLat.value=\"\"; f1.maxLat.value=\"\"; ((document.all)? document.all.rubberBand : document.getElementById(\"rubberBand\")).style.visibility=\"hidden\";'"));
-      _asb.append("    </td>\n</tr>\n");
-
-      // world map
-      _asb.append(
-          "<tr>\n  <td colspan=\"2\" class=\"N\">"
-              + twoClickMap[0]
-              + EDStatic.htmlTooltipImage(request, language, loggedInAs, lonTooltip)
-              + twoClickMap[1]
-              + "</td>\n</tr>\n");
-
-      // blank row
-      _asb.append("<tr>\n  <td colspan=\"2\">&nbsp;</td>\n</tr>\n");
-
-      // time
-      String minTime = request.getParameter("minTime");
-      String maxTime = request.getParameter("maxTime");
-      _asb.append(
-          "<tr>\n  <td class=\"N\">"
-              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-              + "</td>\n  <td>&nbsp;=&nbsp;");
-      _asb.append(
-          widgets.textField(
-              "minTime",
-              EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                  + "<p>"
-                  + timeTooltip,
-              27,
-              40,
-              minTime,
-              ""));
-      _asb.append("</td>\n</tr>\n");
-      _asb.append(
-          "<tr>\n  <td class=\"N\">"
-              + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-              + "</td>\n  <td>&nbsp;=&nbsp;");
-      _asb.append(
-          widgets.textField(
-              "maxTime",
-              EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                  + "<p>"
-                  + timeTooltip,
-              27,
-              40,
-              maxTime,
-              ""));
-      _asb.append("</td>\n</tr>\n");
-
-      _asb.append("</table>\n\n");
-
-      // submit
-      _asb.append("<p>");
-      _asb.append(
-          widgets.htmlButton(
-              "submit",
-              null,
-              null,
-              EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
-              "<span style=\"font-size:large;\"><strong>"
-                  + EDStatic.messages.get(Message.SEARCH_BUTTON, language)
-                  + "</strong></span>",
-              ""));
-
-      // end form
-      _asb.append(widgets.endForm());
-      _asb.append("\n");
-      _asb.append(twoClickMap[2]);
-
-      return _asb.toString();
+      java.util.Map<String, Object> params =
+          buildAdvancedSearchFormParams(
+              request, language, loggedInAs, tErddapUrl, null, null, null);
+      java.io.StringWriter sw = new java.io.StringWriter();
+      TemplateEngine engine = getTemplateEngine();
+      engine.render("advanced_search_form.jte", params, new WriterOutput(sw));
+      return sw.toString();
     } catch (Throwable t) {
       StringWriter sw = new StringWriter();
       sw.write(EDStatic.htmlForException(language, t));
@@ -19543,7 +19358,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               language,
               loggedInAs,
               EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language));
-      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      TemplateEngine engine = getTemplateEngine();
       engine.render(
           "subscription.jte",
           Map.of(
@@ -24580,14 +24395,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int brPo = error.indexOf("<br> at ");
     if (brPo < 0) brPo = error.indexOf("<br>at ");
     if (brPo < 0) brPo = error.length();
-    writer.write(
-        "<span class=\"warningColor\">"
-            + EDStatic.messages.get(Message.ERROR_TITLE, language)
-            + ": "
-            + error.substring(0, brPo)
-            + "</span>"
-            + error.substring(brPo)
-            + "<br>&nbsp;");
+    String errorHead = error.substring(0, brPo);
+    String errorTail = error.substring(brPo);
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("errorHead", errorHead);
+    params.put("errorTail", errorTail);
+    TemplateEngine engine = getTemplateEngine();
+    engine.render("error_fragment.jte", params, new WriterOutput(writer));
   }
 
   /**
@@ -24623,49 +24438,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String posttext,
       String searchFor)
       throws Throwable {
-
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    HtmlWidgets widgets =
-        new HtmlWidgets(
-            true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
+    String itemsPerPage = Integer.toString(EDStatic.getRequestedPIpp(request)[1]);
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("request", request);
+    params.put("loggedInAs", loggedInAs);
+    params.put("pretext", pretext);
+    params.put("posttext", posttext);
+    params.put("searchFor", searchFor);
+    params.put("itemsPerPage", itemsPerPage);
+    gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+        new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+            true, EDStatic.imageDirUrl(request, loggedInAs, language));
     widgets.enterTextSubmitsForm = true;
-    StringBuilder sb = new StringBuilder();
-    sb.append(widgets.beginForm("search", "GET", tErddapUrl + "/search/index.html", ""));
-    sb.append(
-        pretext + EDStatic.messages.get(Message.SEARCH_DO_FULL_TEXT_HTML, language) + posttext);
-    int pipp[] = EDStatic.getRequestedPIpp(request);
-    sb.append(widgets.hidden("page", "1")); // new search always resets to page 1
-    sb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
-    if (searchFor == null) searchFor = "";
-    widgets.htmlTooltips = false;
-    sb.append(
-        widgets.textField(
-            "searchFor",
-            MessageFormat.format(EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
-            40,
-            255,
-            searchFor,
-            ""));
-    widgets.htmlTooltips = true;
-    sb.append(
-        EDStatic.htmlTooltipImage(
-            request,
-            language,
-            loggedInAs,
-            EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language)));
-    widgets.htmlTooltips = false;
-    sb.append(
-        widgets.htmlButton(
-            "submit",
-            null,
-            null,
-            EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
-            EDStatic.messages.get(Message.SEARCH_BUTTON, language),
-            ""));
-    widgets.htmlTooltips = true;
-    sb.append("\n");
-    sb.append(widgets.endForm());
-    return sb.toString();
+    params.put("widgets", widgets);
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+    engine.render("search_form.jte", params, new WriterOutput(sw));
+    return sw.toString();
   }
 
   /**
@@ -24760,59 +24550,36 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String attributeInURL,
       boolean homePage)
       throws Throwable {
-
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("request", request);
+    params.put("loggedInAs", loggedInAs);
+    params.put("attributeInURL", attributeInURL);
+    params.put("homePage", homePage);
+    // pass raw message (template will format with category list)
+    params.put("tCategoryHtml", EDStatic.messages.get(Message.CATEGORY_HTML, language));
     if (homePage) {
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
       Table table = categorizeOptionsTable(request, tErddapUrl, ".html");
       int n = table.nRows();
+      String[] links = new String[n];
       StringBuilder sb = new StringBuilder("\n(");
-      for (int row = 0; row < n; row++)
-        sb.append(table.getStringData(0, row) + (row < n - 1 ? ", \n" : ""));
+      for (int row = 0; row < n; row++) {
+        links[row] = table.getStringData(0, row);
+        sb.append(links[row] + (row < n - 1 ? ", \n" : ""));
+      }
       sb.append(")\n");
-      String tCategoryHtml =
-          String2.replaceAll(EDStatic.messages.get(Message.CATEGORY_HTML, language), "<br>", "");
-      writer.write(
-          "<h3>"
-              + EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language)
-              + "</h3>\n"
-              + MessageFormat.format(tCategoryHtml, sb.toString())
-              + "\n"
-              + EDStatic.messages.get(Message.CATEGORY3_HTML, language)
-              + "\n");
-      return;
+      params.put("links", links);
+      params.put("categoryList", sb.toString());
     }
-
-    // categorize page
-    String tCategoryHtml =
-        String2.replaceAll(
-            MessageFormat.format(EDStatic.messages.get(Message.CATEGORY_HTML, language), ""),
-            "  ",
-            " "); // {0}="" leads to 2 adjacent spaces
-    writer.write(
-        // "<h3>" + EDStatic.messages.categoryTitleHtml + "</h3>\n" +
-        "<h3>1) "
-            + EDStatic.messages.get(Message.CATEGORY_PICK_ATTRIBUTE, language)
-            + "&nbsp;"
-            + EDStatic.htmlTooltipImage(request, language, loggedInAs, tCategoryHtml)
-            + "</h3>\n");
-    String attsInURLs[] = EDStatic.config.categoryAttributesInURLs;
-    HtmlWidgets widgets =
-        new HtmlWidgets(
-            true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
-    writer.write(
-        widgets.select(
-            "cat1",
-            "",
-            Math.min(attsInURLs.length, 12),
-            attsInURLs,
-            String2.indexOf(attsInURLs, attributeInURL),
-            "onchange=\"window.location='"
-                + tErddapUrl
-                + "/categorize/' + "
-                + "this.options[this.selectedIndex].text + '/index.html?"
-                + EDStatic.encodedPassThroughPIppQueryPage1(request)
-                + "';\""));
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    params.put("attributeInURLSelected", attributeInURL);
+    gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+        new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+            true, EDStatic.imageDirUrl(request, loggedInAs, language));
+    params.put("widgets", widgets);
+    TemplateEngine engine = getTemplateEngine();
+    engine.render("categorize_options.jte", params, new WriterOutput(writer));
+    writer.flush();
   }
 
   /**
@@ -24839,40 +24606,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String values[] = categoryInfo(attribute).toArray();
-    writer.write(
-        "<h3>2) "
-            + MessageFormat.format(
-                EDStatic.messages.get(Message.CATEGORY_SEARCH_HTML, language), attributeInURL)
-            + ":&nbsp;"
-            + EDStatic.htmlTooltipImage(
-                request,
-                language,
-                loggedInAs,
-                EDStatic.messages.get(Message.CATEGORY_CLICK_HTML, language))
-            + "</h3>\n");
-    if (values.length == 0) {
-      writer.write(MustBe.THERE_IS_NO_DATA);
-    } else {
-      HtmlWidgets widgets =
-          new HtmlWidgets(
-              true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
-      writer.write(
-          widgets.select(
-              "cat2",
-              "",
-              Math.min(values.length, 12),
-              values,
-              String2.indexOf(values, value),
-              "onchange=\"window.location='"
-                  + tErddapUrl
-                  + "/categorize/"
-                  + attributeInURL
-                  + "/' + "
-                  + "this.options[this.selectedIndex].text + '/index.html?"
-                  + EDStatic.encodedPassThroughPIppQueryPage1(request)
-                  + "';\""));
-    }
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("request", request);
+    params.put("loggedInAs", loggedInAs);
+    params.put("attribute", attribute);
+    params.put("attributeInURL", attributeInURL);
+    params.put("value", value);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("values", values);
+    gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+        new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+            true, EDStatic.imageDirUrl(request, loggedInAs, language));
+    params.put("widgets", widgets);
+    TemplateEngine engine = getTemplateEngine();
+    engine.render("categorize_options2.jte", params, new WriterOutput(sw));
+    writer.write(sw.toString());
+    writer.flush();
   }
 
   /**

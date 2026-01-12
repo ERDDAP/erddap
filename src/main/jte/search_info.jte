@@ -3,6 +3,7 @@
 @import gov.noaa.pfel.erddap.jte.TableOptions
 @import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
+@import gov.noaa.pfel.coastwatch.util.HtmlWidgets
 @param TableOptions tableOptions
 @param String tErddapUrl
 @param int language
@@ -11,8 +12,24 @@
 @param String endOfRequest
 @param HttpServletRequest request
 @param String secondLine
-@param String advancedSearchHtml
 @param boolean advancedOpen
+@param HtmlWidgets widgets
+@param String formName
+@param String page
+@param String itemsPerPage
+@param String searchFor
+@param String[] protocols
+@param int whichProtocol
+@param String[] catAttsInURLs
+@param String[][] catSAs
+@param int[] whichCatSAIndex
+@param String minLon
+@param String maxLon
+@param String minLat
+@param String maxLat
+@param String[] twoClickMap
+@param String minTime
+@param String maxTime
 @param String nMatchingHtml
 @param String advancedSearchLink
 @param String plainFileTypesString
@@ -38,7 +55,28 @@
                 ${TemplateHelper.getMessage(Message.ADVANCED_SEARCH, language)}
             </summary>
             <div id="advancedSearchContent">
-                $unsafe{advancedSearchHtml}
+                @template.advanced_search_form(
+                    widgets=widgets,
+                    request=request,
+                    language=language,
+                    loggedInAs=loggedInAs,
+                    tErddapUrl=tErddapUrl,
+                    formName=formName,
+                    page=page,
+                    itemsPerPage=itemsPerPage,
+                    searchFor=searchFor,
+                    protocols=protocols,
+                    whichProtocol=whichProtocol,
+                    catAttsInURLs=catAttsInURLs,
+                    catSAs=catSAs,
+                    whichCatSAIndex=whichCatSAIndex,
+                    minLon=minLon,
+                    maxLon=maxLon,
+                    minLat=minLat,
+                    maxLat=maxLat,
+                    twoClickMap=twoClickMap,
+                    minTime=minTime,
+                    maxTime=maxTime)
             </div>
         </details>
         @else
@@ -47,7 +85,28 @@
                 ${TemplateHelper.getMessage(Message.ADVANCED_SEARCH, language)}
             </summary>
             <div id="advancedSearchContent">
-                $unsafe{advancedSearchHtml}
+                @template.advanced_search_form(
+                    widgets=widgets,
+                    request=request,
+                    language=language,
+                    loggedInAs=loggedInAs,
+                    tErddapUrl=tErddapUrl,
+                    formName=formName,
+                    page=page,
+                    itemsPerPage=itemsPerPage,
+                    searchFor=searchFor,
+                    protocols=protocols,
+                    whichProtocol=whichProtocol,
+                    catAttsInURLs=catAttsInURLs,
+                    catSAs=catSAs,
+                    whichCatSAIndex=whichCatSAIndex,
+                    minLon=minLon,
+                    maxLon=maxLon,
+                    minLat=minLat,
+                    maxLat=maxLat,
+                    twoClickMap=twoClickMap,
+                    minTime=minTime,
+                    maxTime=maxTime)
             </div>
         </details>
         @endif
