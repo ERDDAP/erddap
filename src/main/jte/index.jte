@@ -29,7 +29,7 @@
                     
                     <%-- Search Form --%>
                     <li>
-                        @template.search_form(
+                        @template.components.search_form(
                             language = data.language,
                             request = data.request,
                             loggedInAs = data.loggedInAs,
@@ -37,7 +37,6 @@
                             posttext = data.searchPosttext,
                             searchFor = data.searchFor,
                             itemsPerPage = data.itemsPerPage,
-                            widgets = data.widgets
                         )
                     </li>
 
@@ -52,7 +51,7 @@
 
                     <%-- Categorize Options --%>
                     <li>
-                        @template.categorize_options(
+                        @template.components.categorize_options(
                             language = data.language,
                             request = data.request,
                             loggedInAs = data.loggedInAs,
@@ -60,7 +59,6 @@
                             homePage = true,
                             tCategoryHtml = data.tCategoryHtml,
                             attributeInURLSelected = data.categorizeAttributeInURLSelected,
-                            widgets = data.widgets,
                             links = data.categorizeLinks,
                             categoryList = data.categorizeList
                         )
@@ -85,7 +83,7 @@
                             </tr>
                             
                             <%-- Helper template for protocol rows to avoid repetition --%>
-                            @template.protocolRow(
+                            @template.components.protocolRow(
                                 url = data.erddapUrl + "/griddap/index.html",
                                 protocolName = "griddap",
                                 description = TemplateHelper.getMessage(Message.EDD_GRID_DAP_DESCRIPTION, data.language),
@@ -93,7 +91,7 @@
                                 data = data
                             )
 
-                            @template.protocolRow(
+                            @template.components.protocolRow(
                                 url = data.erddapUrl + "/tabledap/index.html",
                                 protocolName = "tabledap",
                                 description = TemplateHelper.getMessage(Message.EDD_TABLE_DAP_DESCRIPTION, data.language),
@@ -120,7 +118,7 @@
                             </tr>
 
                             @if(TemplateHelper.getConfig().sosActive)
-                                @template.protocolRow(
+                                @template.components.protocolRow(
                                     url = data.erddapUrl + "/sos/index.html",
                                     protocolName = "SOS",
                                     description = TemplateHelper.getMessage(Message.SOS_DESCRIPTION_HTML, data.language),
@@ -130,7 +128,7 @@
                             @endif
 
                             @if(TemplateHelper.getConfig().wcsActive)
-                                @template.protocolRow(
+                                @template.components.protocolRow(
                                     url = data.erddapUrl + "/wcs/index.html",
                                     protocolName = "WCS",
                                     description = TemplateHelper.getMessage(Message.WCS_DESCRIPTION_HTML, data.language),
@@ -140,7 +138,7 @@
                             @endif
 
                             @if(TemplateHelper.getConfig().wmsActive)
-                                @template.protocolRow(
+                                @template.components.protocolRow(
                                     url = data.erddapUrl + "/wms/index.html",
                                     protocolName = "WMS",
                                     description = TemplateHelper.getMessage(Message.WMS_DESCRIPTION_HTML, data.language),

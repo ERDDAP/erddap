@@ -5266,7 +5266,7 @@ class JettyTests {
     // categorize
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/categorize/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">standard_name\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">standard_name") >= 0, "results=\n" + results);
 
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/categorize/index.json");
     Test.ensureEqual(
@@ -5347,7 +5347,7 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/categorize/standard_name/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">sea_water_temperature\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">sea_water_temperature") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5359,9 +5359,9 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/categorize/institution/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">ioos_category\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">ioos_category") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">noaa_coastwatch_west_coast_node\n") >= 0, "results=\n" + results);
+        results.indexOf(">noaa_coastwatch_west_coast_node") >= 0, "results=\n" + results);
 
     results =
         String2.annotatedString(

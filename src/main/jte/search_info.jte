@@ -3,7 +3,6 @@
 @import gov.noaa.pfel.erddap.jte.TableOptions
 @import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
-@import gov.noaa.pfel.coastwatch.util.HtmlWidgets
 @param TableOptions tableOptions
 @param String tErddapUrl
 @param int language
@@ -13,7 +12,6 @@
 @param HttpServletRequest request
 @param String secondLine
 @param boolean advancedOpen
-@param HtmlWidgets widgets
 @param String formName
 @param String page
 @param String itemsPerPage
@@ -55,8 +53,7 @@
                 ${TemplateHelper.getMessage(Message.ADVANCED_SEARCH, language)}
             </summary>
             <div id="advancedSearchContent">
-                @template.advanced_search_form(
-                    widgets=widgets,
+                @template.components.advanced_search_form(
                     request=request,
                     language=language,
                     loggedInAs=loggedInAs,
@@ -85,8 +82,7 @@
                 ${TemplateHelper.getMessage(Message.ADVANCED_SEARCH, language)}
             </summary>
             <div id="advancedSearchContent">
-                @template.advanced_search_form(
-                    widgets=widgets,
+                @template.components.advanced_search_form(
                     request=request,
                     language=language,
                     loggedInAs=loggedInAs,
@@ -121,7 +117,7 @@
     @else
         $unsafe{nMatchingHtml}
         @if(tableOptions.getNRows()>0)
-        @template.table(tableOptions)
+        @template.components.table(tableOptions)
         <p>
         ${TemplateHelper.getMessage(Message.RESTFUL_INFORMATION_FORMATS, language)}
         (${plainFileTypesString})

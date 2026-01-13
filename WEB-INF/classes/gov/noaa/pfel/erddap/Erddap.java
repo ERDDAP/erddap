@@ -16312,7 +16312,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               request, language, loggedInAs, tErddapUrl, null, null, null);
       java.io.StringWriter sw = new java.io.StringWriter();
       TemplateEngine engine = getTemplateEngine();
-      engine.render("advanced_search_form.jte", params, new WriterOutput(sw));
+      engine.render("components/advanced_search_form.jte", params, new WriterOutput(sw));
       return sw.toString();
     } catch (Throwable t) {
       StringWriter sw = new StringWriter();
@@ -24402,7 +24402,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     params.put("errorHead", errorHead);
     params.put("errorTail", errorTail);
     TemplateEngine engine = getTemplateEngine();
-    engine.render("error_fragment.jte", params, new WriterOutput(writer));
+    engine.render("components/error_fragment.jte", params, new WriterOutput(writer));
   }
 
   /**
@@ -24454,7 +24454,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     widgets.enterTextSubmitsForm = true;
     params.put("widgets", widgets);
     TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-    engine.render("search_form.jte", params, new WriterOutput(sw));
+    engine.render("components/search_form.jte", params, new WriterOutput(sw));
     return sw.toString();
   }
 
@@ -24578,7 +24578,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             true, EDStatic.imageDirUrl(request, loggedInAs, language));
     params.put("widgets", widgets);
     TemplateEngine engine = getTemplateEngine();
-    engine.render("categorize_options.jte", params, new WriterOutput(writer));
+    engine.render("components/categorize_options.jte", params, new WriterOutput(writer));
     writer.flush();
   }
 
@@ -24621,7 +24621,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             true, EDStatic.imageDirUrl(request, loggedInAs, language));
     params.put("widgets", widgets);
     TemplateEngine engine = getTemplateEngine();
-    engine.render("categorize_options2.jte", params, new WriterOutput(sw));
+    engine.render("components/categorize_options2.jte", params, new WriterOutput(sw));
     writer.write(sw.toString());
     writer.flush();
   }
