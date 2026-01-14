@@ -18490,30 +18490,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // respond to info/tID/index.html request
     if (parts[1].equals("index.html")) {
-      // display start of web page
-      OutputStream out = getHtmlOutputStreamUtf8(request, response);
-      Writer writer =
-          getHtmlWriterUtf8(
-              request,
-              language,
-              loggedInAs,
-              "info/" + tID + "/index.html", // was endOfRequest,
-              queryString,
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INFO_ABOUT_FROM, language),
-                  edd.title(language),
-                  edd.institution(language)),
-              out);
-      try {
-        writer.write("<div class=\"wide_max_width\">\n"); // not standard_width
-        writer.write(EDStatic.youAreHere(request, language, loggedInAs, protocol, parts[0]));
-
-        // display a table with the one dataset
+      if (useHtmlTemplates(request)) {
         StringArray sa = new StringArray();
         sa.add(parts[0]);
         boolean sortByTitle = true;
         Table dsTable = makeHtmlDatasetTable(request, language, loggedInAs, sa, sortByTitle);
-        dsTable.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+        TableOptions dsTableOptions = buildSearchTableOptions(dsTable, -1);
+        TableOptions infoTableOptions = buildSearchTableOptions(table, -1);
+        YouAreHere yaH =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(protocol, parts[0]),
+                List.of(EDStatic.protocolUrl(tErddapUrl, protocol)));
 
         // html format the valueSA values
         String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
@@ -18548,65 +18538,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
 
-        // display the info table
-        writer.write(
-            "<h2>" + EDStatic.messages.get(Message.INFO_TABLE_TITLE_HTML, language) + "</h2>");
-
-        // ******** custom table writer (to change color on "variable" rows)
-        writer.write("<table class=\"erd commonBGColor\">\n");
-
-        // write the column names
-        writer.write("<tr>\n");
-        int nColumns = table.nColumns();
-        for (int col = 0; col < nColumns; col++)
-          writer.write("<th>" + table.getColumnName(col) + "</th>\n");
-        writer.write("</tr>\n");
-
-        // write the data
-        int nRows = table.nRows();
-        for (int row = 0; row < nRows; row++) {
-          String s = table.getStringData(0, row);
-          if (s.equals("variable") || s.equals("dimension"))
-            writer.write("<tr class=\"highlightBGColor\">\n");
-          else writer.write("<tr>\n");
-          for (int col = 0; col < nColumns; col++) {
-            writer.write("<td>");
-            s = table.getStringData(col, row);
-            writer.write(s.length() == 0 ? "&nbsp;" : s);
-            writer.write("</td>\n");
-          }
-          writer.write("</tr>\n");
-        }
-
-        // close the table
-        writer.write("</table>\n");
-
-        // list plain file types
-        writer.write(
-            "\n"
-                + "<p>"
-                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                + " \n("
-                + plainFileTypesString
-                + // not links, which would be indexed by search engines
-                ") <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/rest.html\">"
-                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                + "</a>.\n");
-
-        // jsonld
-        if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
+        String jsonldScript = "";
+        if (EDStatic.config.jsonldActive) {
           try {
-            String tId = parts[0];
-            boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
-            if (!isAllDatasets) {
-              // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
-              // java version:
-              theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
-            }
+            java.io.StringWriter sw = new java.io.StringWriter();
+            theSchemaDotOrgDataset(request, loggedInAs, language, sw, edd);
+            jsonldScript = sw.toString();
           } catch (Exception e) {
-            EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+            EDStatic.rethrowClientAbortException(e);
             String2.log(
                 "Caught ERROR while writing jsonld for "
                     + edd.datasetID()
@@ -18615,15 +18554,176 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
 
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        OutputStream out = getHtmlOutputStreamUtf8(request, response);
+        Writer writer =
+            getHtmlWriterUtf8(
+                request,
+                language,
+                loggedInAs,
+                "info/" + tID + "/index.html",
+                queryString,
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INFO_ABOUT_FROM, language),
+                    edd.title(language),
+                    edd.institution(language)),
+                out);
+        try {
+          TemplateEngine engine = getTemplateEngine();
+          java.util.Map<String, Object> params = new java.util.HashMap<>();
+          params.put("dsTableOptions", dsTableOptions);
+          params.put("infoTableOptions", infoTableOptions);
+          params.put("tErddapUrl", tErddapUrl);
+          params.put("language", language);
+          params.put("youAreHere", yaH);
+          params.put("loggedInAs", loggedInAs);
+          params.put("request", request);
+          params.put("plainFileTypesString", plainFileTypesString);
+          params.put("jsonldScript", jsonldScript);
+          engine.render("info_dataset.jte", params, new WriterOutput(writer));
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        } catch (Throwable t) {
+          EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+          writer.write(EDStatic.htmlForException(language, t));
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          throw t;
+        }
+      } else {
+        // display start of web page
+        OutputStream out = getHtmlOutputStreamUtf8(request, response);
+        Writer writer =
+            getHtmlWriterUtf8(
+                request,
+                language,
+                loggedInAs,
+                "info/" + tID + "/index.html", // was endOfRequest,
+                queryString,
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INFO_ABOUT_FROM, language),
+                    edd.title(language),
+                    edd.institution(language)),
+                out);
+        try {
+          writer.write("<div class=\"wide_max_width\">\n"); // not standard_width
+          writer.write(EDStatic.youAreHere(request, language, loggedInAs, protocol, parts[0]));
 
-      } catch (Throwable t) {
-        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-        writer.write(EDStatic.htmlForException(language, t));
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-        throw t;
+          // display a table with the one dataset
+          StringArray sa = new StringArray();
+          sa.add(parts[0]);
+          boolean sortByTitle = true;
+          Table dsTable = makeHtmlDatasetTable(request, language, loggedInAs, sa, sortByTitle);
+          dsTable.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+
+          // html format the valueSA values
+          String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
+          for (int i = 0; i < valueSA.size(); i++) {
+            String s = valueSA.get(i);
+            if (String2.containsUrl(s)) {
+              List<String> separatedText = String2.extractUrls(s);
+              StringBuilder output = new StringBuilder();
+              for (String text : separatedText) {
+                if (String2.containsUrl(text)) {
+                  // display as a link
+                  boolean isLocal = text.startsWith(EDStatic.config.baseUrl);
+                  text = XML.encodeAsHTMLAttribute(text);
+                  output.append(
+                      "<a href=\""
+                          + String2.addHttpsForWWW(text)
+                          + "\">"
+                          + text
+                          + (isLocal ? "" : externalLinkHtml)
+                          + "</a>");
+                } else {
+                  output.append(text);
+                }
+              }
+              valueSA.set(i, output.toString());
+            } else if (String2.isEmailAddress(s)) {
+              // to improve security, convert "@" to " at "
+              s = XML.encodeAsHTMLAttribute(String2.replaceAll(s, "@", " at "));
+              valueSA.set(i, s);
+            } else {
+              valueSA.set(i, XML.encodeAsPreHTML(s, 10000)); // ???
+            }
+          }
+
+          // display the info table
+          writer.write(
+              "<h2>" + EDStatic.messages.get(Message.INFO_TABLE_TITLE_HTML, language) + "</h2>");
+
+          // ******** custom table writer (to change color on "variable" rows)
+          writer.write("<table class=\"erd commonBGColor\">\n");
+
+          // write the column names
+          writer.write("<tr>\n");
+          int nColumns = table.nColumns();
+          for (int col = 0; col < nColumns; col++)
+            writer.write("<th>" + table.getColumnName(col) + "</th>\n");
+          writer.write("</tr>\n");
+
+          // write the data
+          int nRows = table.nRows();
+          for (int row = 0; row < nRows; row++) {
+            String s = table.getStringData(0, row);
+            if (s.equals("variable") || s.equals("dimension"))
+              writer.write("<tr class=\"highlightBGColor\">\n");
+            else writer.write("<tr>\n");
+            for (int col = 0; col < nColumns; col++) {
+              writer.write("<td>");
+              s = table.getStringData(col, row);
+              writer.write(s.length() == 0 ? "&nbsp;" : s);
+              writer.write("</td>\n");
+            }
+            writer.write("</tr>\n");
+          }
+
+          // close the table
+          writer.write("</table>\n");
+
+          // list plain file types
+          writer.write(
+              "\n"
+                  + "<p>"
+                  + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                  + " \n("
+                  + plainFileTypesString
+                  + // not links, which would be indexed by search engines
+                  ") <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/rest.html\">"
+                  + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                  + "</a>.\n");
+
+          // jsonld
+          if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
+            try {
+              String tId = parts[0];
+              boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
+              if (!isAllDatasets) {
+                // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
+                // java version:
+                theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
+              }
+            } catch (Exception e) {
+              EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+              String2.log(
+                  "Caught ERROR while writing jsonld for "
+                      + edd.datasetID()
+                      + ":\n"
+                      + MustBe.throwableToString(e));
+            }
+          }
+
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+
+        } catch (Throwable t) {
+          EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+          writer.write(EDStatic.htmlForException(language, t));
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          throw t;
+        }
       }
       return;
     }
@@ -24307,6 +24407,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
+      isSupportedHtmlLayoutPage = true;
+    }
+
+    if (endOfRequest.contains("info/") && endOfRequest.endsWith("index.html")) {
       isSupportedHtmlLayoutPage = true;
     }
 
