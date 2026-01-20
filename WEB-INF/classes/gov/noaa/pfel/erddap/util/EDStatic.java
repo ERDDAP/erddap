@@ -1122,7 +1122,31 @@ public class EDStatic {
     return new YouAreHere(
         erddapUrl(request, loggedInAs, language),
         EDStatic.messages.get(Message.CLICK_ERDDAP, language),
-        protocol);
+        protocol == null ? new ArrayList<String>() : List.of(protocol),
+        new ArrayList<String>());
+  }
+
+  /**
+   * Create a YouAreHere model for JTE rendering.
+   *
+   * @param request the request
+   * @param language the index of the selected language
+   * @param loggedInAs the logged in user
+   * @param List<String> breadcrumbs the breadcrumb labels
+   * @param List<String> breadcrumbUrls the breadcrumb URLs
+   * @return a YouAreHere model for JTE rendering
+   */
+  public static YouAreHere getYouAreHere(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      List<String> breadcrumbs,
+      List<String> breadcrumbUrls) {
+    return new YouAreHere(
+        erddapUrl(request, loggedInAs, language),
+        EDStatic.messages.get(Message.CLICK_ERDDAP, language),
+        breadcrumbs,
+        breadcrumbUrls);
   }
 
   /**

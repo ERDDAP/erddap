@@ -61,6 +61,7 @@ import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.jte.Index;
 import gov.noaa.pfel.erddap.jte.Status;
 import gov.noaa.pfel.erddap.jte.TableOptions;
 import gov.noaa.pfel.erddap.jte.YouAreHere;
@@ -93,6 +94,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -103,6 +105,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -229,6 +232,16 @@ public class Erddap extends HttpServlet {
           String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
       categoryInfo = new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
+
+  private TemplateEngine engine;
+
+  // Compatibility accessor used throughout the codebase; returns the precompiled JTE engine.
+  private synchronized TemplateEngine getTemplateEngine() {
+    if (this.engine == null) {
+      this.engine = TemplateEngine.createPrecompiled(ContentType.Html);
+    }
+    return this.engine;
+  }
 
   /**
    * The constructor.
@@ -386,6 +399,239 @@ public class Erddap extends HttpServlet {
             + "ms");
 
     EDStatic.cleaner.register(this, new CleanupErddap());
+  }
+
+  private void renderSearchInfoJte(
+      Writer writer,
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String endOfRequest,
+      String tErddapUrl,
+      YouAreHere youAreHere,
+      Table table,
+      String secondLine,
+      String nMatchingHtml,
+      String errorLineOne,
+      String errorLineTwo,
+      String protocol)
+      throws Throwable {
+    renderSearchInfoJte(
+        writer,
+        request,
+        language,
+        loggedInAs,
+        endOfRequest,
+        tErddapUrl,
+        youAreHere,
+        table,
+        secondLine,
+        nMatchingHtml,
+        errorLineOne,
+        errorLineTwo,
+        protocol,
+        null,
+        null);
+  }
+
+  private void renderSearchInfoJte(
+      Writer writer,
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String endOfRequest,
+      String tErddapUrl,
+      YouAreHere youAreHere,
+      Table table,
+      String secondLine,
+      String nMatchingHtml,
+      String errorLineOne,
+      String errorLineTwo,
+      String protocol,
+      String attribute,
+      String categoryName)
+      throws Throwable {
+
+    TableOptions tableOptions = buildSearchTableOptions(table, -1);
+    TemplateEngine engine = getTemplateEngine();
+    // Compute advanced-search related params here so the template can call the advanced form
+    // directly.
+    java.util.Map<String, Object> advancedParams = null;
+    try {
+      // attribute and categoryName are not available here; pass null when unknown
+      advancedParams =
+          buildAdvancedSearchFormParams(
+              request, language, loggedInAs, tErddapUrl, protocol, attribute, categoryName);
+    } catch (Throwable t) {
+      String2.log(
+          "Warning: failed to build advanced search params: " + MustBe.throwableToString(t));
+      advancedParams = new java.util.HashMap<>();
+    }
+
+    boolean advancedOpen = false;
+    try {
+      String uri = request == null ? null : request.getRequestURI();
+      if (uri != null && uri.endsWith("/search/advanced.html")) advancedOpen = true;
+      if (!advancedOpen && endOfRequest != null && endOfRequest.indexOf("advanced") >= 0)
+        advancedOpen = true;
+    } catch (Throwable t) {
+      // ignore
+    }
+
+    String advancedSearchLink =
+        getAdvancedSearchLink(
+            request, language, loggedInAs, request == null ? "" : request.getQueryString());
+    Map<String, Object> params = new HashMap<>();
+    params.put("endOfRequest", endOfRequest);
+    params.put("youAreHere", youAreHere);
+    params.put("language", language);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("tableOptions", tableOptions);
+    params.put("table", table);
+    params.put("secondLine", secondLine != null ? secondLine : "");
+    // Put advanced form params into the template params so search_info.jte can call the advanced
+    // template.
+    params.put("advancedOpen", advancedOpen);
+    if (advancedParams != null) params.putAll(advancedParams);
+    if (advancedSearchLink != null) params.put("advancedSearchLink", advancedSearchLink);
+    params.put("nMatchingHtml", nMatchingHtml != null ? nMatchingHtml : "");
+    params.put("plainFileTypesString", plainFileTypesString);
+    params.put("errorLineOne", errorLineOne != null ? errorLineOne : "");
+    params.put("errorLineTwo", errorLineTwo != null ? errorLineTwo : "");
+    params.put("loggedInAs", loggedInAs);
+    params.put("request", request);
+    engine.render("search_info.jte", params, new WriterOutput(writer));
+  }
+
+  // Build the param map for the advanced search form jte template.
+  private java.util.Map<String, Object> buildAdvancedSearchFormParams(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String tErddapUrl,
+      String protocol,
+      String attribute,
+      String categoryName)
+      throws Throwable {
+    boolean fixErrors = true;
+
+    HtmlWidgets widgets =
+        new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
+    widgets.htmlTooltips = true;
+    widgets.enterTextSubmitsForm = true;
+
+    String formName = "f1";
+
+    // page/itemsPerPage
+    String page = request.getParameter("page");
+    if (page == null || page.length() == 0) page = "1";
+    String itemsPerPage = request.getParameter("itemsPerPage");
+    if (itemsPerPage == null || itemsPerPage.length() == 0)
+      itemsPerPage = Integer.toString(EDStatic.defaultItemsPerPage);
+
+    // full text search
+    String searchFor = request.getParameter("searchFor");
+    searchFor = searchFor == null ? "" : searchFor;
+
+    // protocol select
+    StringArray protocols = new StringArray();
+    protocols.add("(ANY)");
+    protocols.add("griddap");
+    protocols.add("tabledap");
+    if (EDStatic.config.wmsActive) protocols.add("WMS");
+    if (EDStatic.config.wcsActive) protocols.add("WCS");
+    if (EDStatic.config.sosActive) protocols.add("SOS");
+    String tProt = request.getParameter("protocol");
+    int whichProtocol = protocols.indexOfIgnoreCase(tProt);
+    if (whichProtocol < 0) {
+      if (protocol != null && protocol.length() > 0) {
+        whichProtocol = protocols.indexOfIgnoreCase(protocol);
+      }
+      if (whichProtocol < 0) whichProtocol = 0;
+    }
+
+    String ANY = "(ANY)";
+    String catAtts[] = EDStatic.config.categoryAttributes;
+    String catAttsInURLs[] = EDStatic.config.categoryAttributesInURLs;
+    int nCatAtts = catAtts.length;
+    String catSAs[][] = new String[nCatAtts][];
+    int whichCatSAIndex[] = new int[nCatAtts];
+    for (int ca = 0; ca < nCatAtts; ca++) {
+      StringArray tsa = categoryInfo(catAtts[ca]);
+      tsa.atInsert(0, ANY);
+      catSAs[ca] = tsa.toArray();
+      String tParam = request.getParameter(catAttsInURLs[ca]);
+      whichCatSAIndex[ca] =
+          (tParam == null || tParam.isEmpty())
+              ? 0
+              : String2.caseInsensitiveIndexOf(catSAs[ca], tParam);
+      if (attribute != null
+          && attribute.length() > 0
+          && catAtts[ca].equals(attribute)
+          && categoryName != null
+          && categoryName.length() > 0) {
+        whichCatSAIndex[ca] = String2.caseInsensitiveIndexOf(catSAs[ca], categoryName);
+      }
+      if (whichCatSAIndex[ca] < 0) {
+        if (fixErrors) whichCatSAIndex[ca] = 0; // (ANY)
+        else
+          throw new SimpleException(
+              MustBe.THERE_IS_NO_DATA + " (" + catAttsInURLs[ca] + "=" + tParam + ")");
+      }
+    }
+
+    // bounding box and map
+    String minLon = request.getParameter("minLon");
+    String maxLon = request.getParameter("maxLon");
+    String minLat = request.getParameter("minLat");
+    String maxLat = request.getParameter("maxLat");
+    String twoClickMap[] =
+        HtmlWidgets.myTwoClickMap540Big(
+            language, formName, widgets.imageDirUrl + "world540Big.png", false);
+
+    // time
+    String minTime = request.getParameter("minTime");
+    String maxTime = request.getParameter("maxTime");
+    if (minTime == null) minTime = "";
+    if (maxTime == null) maxTime = "";
+
+    // prepare params
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("widgets", widgets);
+    params.put("request", request);
+    params.put("language", language);
+    params.put("loggedInAs", loggedInAs);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("formName", formName);
+    params.put("page", page);
+    params.put("itemsPerPage", itemsPerPage);
+    params.put("searchFor", searchFor);
+    params.put("protocols", protocols.toArray());
+    params.put("whichProtocol", whichProtocol);
+    params.put("catAttsInURLs", catAttsInURLs);
+    params.put("catSAs", catSAs);
+    params.put("whichCatSAIndex", whichCatSAIndex);
+    params.put("minLon", minLon);
+    params.put("maxLon", maxLon);
+    params.put("minLat", minLat);
+    params.put("maxLat", maxLat);
+    params.put("twoClickMap", twoClickMap);
+    params.put("minTime", minTime);
+    params.put("maxTime", maxTime);
+    return params;
+  }
+
+  // Build a common TableOptions used by search/info/list pages to avoid
+  // duplicating the same builder code throughout the file.
+  private TableOptions buildSearchTableOptions(Table table, int timeColumn) {
+    return new TableOptions.TableOptionsBuilder(table)
+        .otherClasses("commonBGColor")
+        .bgColor(null)
+        .writeUnits(false)
+        .timeColumn(timeColumn)
+        .needEncodingAsHtml(false)
+        .allowWrap(false)
+        .build();
   }
 
   private static class CleanupErddap implements Runnable {
@@ -1203,512 +1449,696 @@ public class Erddap extends HttpServlet {
             queryString,
             "Home Page",
             out);
-    try {
-      // set up the table
-      writer.write(
-          "<div class=\"wide_max_width\">"
-              + // not standard_width
-              "<table style=\"vertical-align:top; "
-              + "width:100%; border:0; border-spacing:0px;\">\n"
-              + "<tr>\n"
-              + "<td style=\"width:60%;\" class=\"T\">\n");
+    if (useHtmlTemplates(request)) {
+      try {
+        // 2. Populate the DTO
+        Index data = new Index();
+        data.language = language;
+        data.erddapUrl = tErddapUrl;
+        data.endOfRequest = endOfRequest;
+        data.loggedInAs = loggedInAs;
+        data.request = request;
+        data.youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, null);
 
-      // *** left column: theShortDescription
-      writer.write(EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl));
+        // Short description (HTML safe)
+        data.shortDescriptionHtml = EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl);
 
-      // thin vertical line between text columns
-      writer.write(
-          "</td>\n"
-              + "<td style=\"width:1%;\">&nbsp;&nbsp;&nbsp;</td>\n"
-              + // spacing to left of vertical line
-              "<td style=\"width:1%;\" class=\"verticalLine\">&nbsp;&nbsp;&nbsp;</td>\n"
-              + // thin vertical line + spacing to right
-              "<td style=\"width:38%;\" class=\"T\">\n");
+        // Provide search form data for template rendering (avoid pre-rendered HTML)
+        data.searchPretext = "<h3>";
+        data.searchPosttext = "</h3>";
+        data.searchFor = "";
+        data.itemsPerPage = Integer.toString(EDStatic.getRequestedPIpp(request)[1]);
+        gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+            new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+                true, EDStatic.imageDirUrl(request, loggedInAs, language));
+        widgets.enterTextSubmitsForm = true;
+        data.widgets = widgets;
 
-      // *** the right column: Get Started with ERDDAP
-      writer.write(
-          "<h2>" + EDStatic.messages.get(Message.GET_STARTED_HTML, language) + "</h2>\n" + "<ul>");
+        // Provide categorize options data (pass links/list to template rather than pre-rendered
+        // HTML)
+        data.tCategoryHtml = EDStatic.messages.get(Message.CATEGORY_HTML, language);
+        String tErddapUrlLocal = tErddapUrl;
+        Table catTable = categorizeOptionsTable(request, tErddapUrlLocal, ".html");
+        int cn = catTable.nRows();
+        String[] links = new String[cn];
+        StringBuilder sbCat = new StringBuilder("\n(");
+        for (int row = 0; row < cn; row++) {
+          links[row] = catTable.getStringData(0, row);
+          sbCat.append(links[row] + (row < cn - 1 ? ", \n" : ""));
+        }
+        sbCat.append(")\n");
+        data.categorizeLinks = links;
+        data.categorizeList = sbCat.toString();
 
-      // display a search form
-      writer.write("\n<li>");
-      writer.write(getSearchFormHtml(language, request, loggedInAs, "<h3>", "</h3>", ""));
+        // Dataset counts/links
+        int datasetCount = gridDatasetHashMap.size() + tableDatasetHashMap.size();
+        // Format the number locally to ensure standard Java formatting matches legacy
+        data.viewAllDatasetsTitle =
+            MessageFormat.format(
+                EDStatic.messages.get(Message.INDEX_VIEW_ALL, language),
+                datasetCount); // format expects a number
+        data.viewAllDatasetsUrl =
+            tErddapUrl + "/info/index.html?" + EDStatic.encodedDefaultPIppQuery;
 
-      // display /info link with list of all datasets
-      writer.write(
-          // here, just use rel=contents for the list of all datasets
-          "\n<li><h3><a rel=\"contents\" href=\""
-              + tErddapUrl
-              + "/info/index.html?"
-              + EDStatic.encodedDefaultPIppQuery
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_VIEW_ALL, language),
-                  // below is one of few places where number isn't converted to string
-                  // (so 1000's separator is used to format the number):
-                  gridDatasetHashMap.size() + tableDatasetHashMap.size())
-              + // no: "" +
-              "</a></h3>\n");
+        data.advancedSearchLink =
+            getAdvancedSearchLink(request, language, loggedInAs, EDStatic.defaultPIppQuery);
 
-      // display categorize options
-      writer.write("\n<li>");
-      writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, true);
+        data.searchMultipleDescription =
+            String2.replaceAll(
+                EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS_DESCRIPTION, language),
+                "&erddapUrl;",
+                tErddapUrl);
 
-      // display Advanced Search option
-      writer.write(
-          "\n<li><h3>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_SEARCH_WITH, language),
-                  getAdvancedSearchLink(request, language, loggedInAs, EDStatic.defaultPIppQuery))
-              + "</h3>\n");
+        // Converters
+        if (EDStatic.config.convertersActive) {
+          data.converterLinks = new ArrayList<>();
 
-      // display protocol links
-      writer.write(
-          "\n<li>"
-              + "<h3>"
-              + EDStatic.messages.get(Message.PROTOCOL_SEARCH_HTML, language)
-              + "</h3>\n"
-              + EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
-              +
-              // "<br>Click on a protocol to see a list of datasets which are available via that
-              // protocol in ERDDAP." +
-              "<br>&nbsp;\n"
-              + "<table class=\"erd commonBGColor\">\n"
-              + "  <tr><th>"
-              + EDStatic.messages.get(Message.INDEX_PROTOCOL, language)
-              + "</th>"
-              + "<th>"
-              + EDStatic.messages.get(Message.INDEX_DESCRIPTION, language)
-              + "</th></tr>\n"
-              + "  <tr>\n"
-              + "    <td><a rel=\"bookmark\" "
-              + "href=\""
-              + tErddapUrl
-              + "/griddap/index.html?"
-              + EDStatic.encodedDefaultPIppQuery
-              + "\""
-              + " title=\""
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "griddap")
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DATASETS, language), "griddap")
-              + "</a> </td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
-              + "\n"
-              + "      <a rel=\"help\" href=\""
-              +
-              // EDStatic.messages.EDDGridErddapUrlExample + //2021-09-22 no, always go local
-              tErddapUrl
-              + "/"
-              + "griddap/documentation.html\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "griddap")
-              + "</a>\n"
-              + "    </td>\n"
-              + "  </tr>\n"
-              + "  <tr>\n"
-              + "    <td><a rel=\"bookmark\" "
-              + "href=\""
-              + tErddapUrl
-              + "/tabledap/index.html?"
-              + EDStatic.encodedDefaultPIppQuery
-              + "\""
-              + " title=\""
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "tabledap")
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DATASETS, language), "tabledap")
-              + "</a></td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language)
-              + "\n"
-              + "      <a rel=\"help\" href=\""
-              +
-              // EDStatic.messages.EDDTableErddapUrlExample + //2021-09-22 no, always go local
-              tErddapUrl
-              + "/"
-              + "tabledap/documentation.html\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "tabledap")
-              + "</a>\n"
-              + "    </td>\n"
-              + "  </tr>\n"
-              + "  <tr>\n"
-              + "    <td><a rel=\"bookmark\" "
-              + "href=\""
-              + tErddapUrl
-              + "/files/\""
-              + " title=\""
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "files")
-              + "\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DATASETS, language), "\"files\"")
-              + "</a></td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.FILES_DESCRIPTION, language)
-              + " "
-              + EDStatic.messages.get(Message.WARNING, language)
-              + " "
-              + EDStatic.messages.get(Message.FILES_WARNING, language)
-              + "\n"
-              + "      <a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/files/documentation.html\">"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "\"files\"")
-              + "</a>\n"
-              + "    </td>\n"
-              + "  </tr>\n");
-      if (EDStatic.config.sosActive)
+          // Helper to add links cleanly
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html",
+                  EDStatic.messages.get(Message.ACRONYMS, language),
+                  EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/fipscounty.html",
+                  EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language),
+                  EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/interpolate.html",
+                  EDStatic.messages.get(Message.INTERPOLATE, language),
+                  EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/keywords.html",
+                  EDStatic.messages.get(Message.KEYWORDS, language),
+                  EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/time.html",
+                  EDStatic.messages.get(Message.TIME, language),
+                  EDStatic.messages.get(Message.CONVERT_TIME, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/units.html",
+                  EDStatic.messages.get(Message.UNITS, language),
+                  EDStatic.messages.get(Message.CONVERT_UNITS, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/color.html",
+                  EDStatic.messages.get(Message.CONVERT_COLORS, language),
+                  EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/urls.html",
+                  "URLs",
+                  EDStatic.messages.get(Message.CONVERT_URLS, language)));
+          data.converterLinks.add(
+              new Index.ConverterLink(
+                  tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
+                  EDStatic.messages.get(Message.VARIABLE_NAMES, language),
+                  EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)));
+        }
+
+        // Metadata Logic (WAF)
+        if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
+
+          String fgdcLink1 =
+              "<br><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.fgdcXmlDirectory
+                  + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+
+          String fgdcLink2 =
+              "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\">FGDC&#8209;STD&#8209;001&#8209;1998"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+
+          String isoLink1 =
+              "<br><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.iso19115XmlDirectory
+                  + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+
+          String isoLink2 =
+              "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\">ISO&nbsp;19115&#8209;2/19139"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+
+          if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active) {
+            data.wafMessage =
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF2, language),
+                    fgdcLink1,
+                    fgdcLink2,
+                    isoLink1,
+                    isoLink2);
+          } else if (EDStatic.config.fgdcActive) {
+            data.wafMessage =
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2);
+          } else {
+            data.wafMessage =
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2);
+          }
+        }
+
+        data.subscriptionsDescription =
+            String2.replaceAll(
+                EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language), "<br>", " ");
+
+        // 3. Render using JTE
+        TemplateEngine engine = getTemplateEngine();
+        engine.render("index.jte", data, new WriterOutput(writer));
+
+        // 4. Footer (End HTML Writer)
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t);
+        writer.write(EDStatic.htmlForException(language, t));
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        throw t;
+      }
+    } else {
+
+      try {
+        // set up the table
         writer.write(
-            "  <tr>\n"
+            "<div class=\"wide_max_width\">"
+                + // not standard_width
+                "<table style=\"vertical-align:top; "
+                + "width:100%; border:0; border-spacing:0px;\">\n"
+                + "<tr>\n"
+                + "<td style=\"width:60%;\" class=\"T\">\n");
+
+        // *** left column: theShortDescription
+        writer.write(EDStatic.messages.theShortDescriptionHtml(language, tErddapUrl));
+
+        // thin vertical line between text columns
+        writer.write(
+            "</td>\n"
+                + "<td style=\"width:1%;\">&nbsp;&nbsp;&nbsp;</td>\n"
+                + // spacing to left of vertical line
+                "<td style=\"width:1%;\" class=\"verticalLine\">&nbsp;&nbsp;&nbsp;</td>\n"
+                + // thin vertical line + spacing to right
+                "<td style=\"width:38%;\" class=\"T\">\n");
+
+        // *** the right column: Get Started with ERDDAP
+        writer.write(
+            "<h2>"
+                + EDStatic.messages.get(Message.GET_STARTED_HTML, language)
+                + "</h2>\n"
+                + "<ul>");
+
+        // display a search form
+        writer.write("\n<li>");
+        writer.write(getSearchFormHtml(language, request, loggedInAs, "<h3>", "</h3>", ""));
+
+        // display /info link with list of all datasets
+        writer.write(
+            // here, just use rel=contents for the list of all datasets
+            "\n<li><h3><a rel=\"contents\" href=\""
+                + tErddapUrl
+                + "/info/index.html?"
+                + EDStatic.encodedDefaultPIppQuery
+                + "\">"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_VIEW_ALL, language),
+                    // below is one of few places where number isn't converted to string
+                    // (so 1000's separator is used to format the number):
+                    gridDatasetHashMap.size() + tableDatasetHashMap.size())
+                + // no: "" +
+                "</a></h3>\n");
+
+        // display categorize options
+        writer.write("\n<li>");
+        writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, true);
+
+        // display Advanced Search option
+        writer.write(
+            "\n<li><h3>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_SEARCH_WITH, language),
+                    getAdvancedSearchLink(request, language, loggedInAs, EDStatic.defaultPIppQuery))
+                + "</h3>\n");
+
+        // display protocol links
+        writer.write(
+            "\n<li>"
+                + "<h3>"
+                + EDStatic.messages.get(Message.PROTOCOL_SEARCH_HTML, language)
+                + "</h3>\n"
+                + EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
+                +
+                // "<br>Click on a protocol to see a list of datasets which are available via that
+                // protocol in ERDDAP." +
+                "<br>&nbsp;\n"
+                + "<table class=\"erd commonBGColor\">\n"
+                + "  <tr><th>"
+                + EDStatic.messages.get(Message.INDEX_PROTOCOL, language)
+                + "</th>"
+                + "<th>"
+                + EDStatic.messages.get(Message.INDEX_DESCRIPTION, language)
+                + "</th></tr>\n"
+                + "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
-                + "/sos/index.html?"
+                + "/griddap/index.html?"
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "SOS")
+                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "griddap")
                 + "\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "SOS")
-                + "</a></td>\n"
+                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "griddap")
+                + "</a> </td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language)
+                + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
                 + "\n"
                 + "      <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/sos/documentation.html\">"
+                +
+                // EDStatic.messages.EDDGridErddapUrlExample + //2021-09-22 no, always go local
+                tErddapUrl
+                + "/"
+                + "griddap/documentation.html\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "SOS")
+                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "griddap")
                 + "</a>\n"
                 + "    </td>\n"
-                + "  </tr>\n");
-      if (EDStatic.config.wcsActive)
-        writer.write(
-            "  <tr>\n"
+                + "  </tr>\n"
+                + "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
-                + "/wcs/index.html?"
+                + "/tabledap/index.html?"
                 + EDStatic.encodedDefaultPIppQuery
                 + "\""
                 + " title=\""
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WCS")
+                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "tabledap")
                 + "\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "WCS")
+                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "tabledap")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language)
+                + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language)
                 + "\n"
                 + "      <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/wcs/documentation.html\">"
+                +
+                // EDStatic.messages.EDDTableErddapUrlExample + //2021-09-22 no, always go local
+                tErddapUrl
+                + "/"
+                + "tabledap/documentation.html\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WCS")
+                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "tabledap")
                 + "</a>\n"
                 + "    </td>\n"
-                + "  </tr>\n");
-      if (EDStatic.config.wmsActive)
-        writer.write(
-            "  <tr>\n"
+                + "  </tr>\n"
+                + "  <tr>\n"
                 + "    <td><a rel=\"bookmark\" "
                 + "href=\""
                 + tErddapUrl
-                + "/wms/index.html?"
-                + EDStatic.encodedDefaultPIppQuery
-                + "\""
+                + "/files/\""
                 + " title=\""
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WMS")
+                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "files")
                 + "\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "WMS")
+                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "\"files\"")
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language)
+                + EDStatic.messages.get(Message.FILES_DESCRIPTION, language)
+                + " "
+                + EDStatic.messages.get(Message.WARNING, language)
+                + " "
+                + EDStatic.messages.get(Message.FILES_WARNING, language)
                 + "\n"
                 + "      <a rel=\"help\" href=\""
                 + tErddapUrl
-                + "/wms/documentation.html\">"
+                + "/files/documentation.html\">"
                 + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WMS")
+                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "\"files\"")
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      writer.write(
-          """
+        if (EDStatic.config.sosActive)
+          writer.write(
+              "  <tr>\n"
+                  + "    <td><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/sos/index.html?"
+                  + EDStatic.encodedDefaultPIppQuery
+                  + "\""
+                  + " title=\""
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "SOS")
+                  + "\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DATASETS, language), "SOS")
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language)
+                  + "\n"
+                  + "      <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/sos/documentation.html\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "SOS")
+                  + "</a>\n"
+                  + "    </td>\n"
+                  + "  </tr>\n");
+        if (EDStatic.config.wcsActive)
+          writer.write(
+              "  <tr>\n"
+                  + "    <td><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/wcs/index.html?"
+                  + EDStatic.encodedDefaultPIppQuery
+                  + "\""
+                  + " title=\""
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WCS")
+                  + "\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DATASETS, language), "WCS")
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language)
+                  + "\n"
+                  + "      <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/wcs/documentation.html\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WCS")
+                  + "</a>\n"
+                  + "    </td>\n"
+                  + "  </tr>\n");
+        if (EDStatic.config.wmsActive)
+          writer.write(
+              "  <tr>\n"
+                  + "    <td><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/wms/index.html?"
+                  + EDStatic.encodedDefaultPIppQuery
+                  + "\""
+                  + " title=\""
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WMS")
+                  + "\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DATASETS, language), "WMS")
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language)
+                  + "\n"
+                  + "      <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/wms/documentation.html\">"
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WMS")
+                  + "</a>\n"
+                  + "    </td>\n"
+                  + "  </tr>\n");
+        writer.write(
+            """
               </table>
               &nbsp;
 
               """);
 
-      // connections to OpenSearch and SRU
-      writer.write(
-          "<li><h3>"
-              + EDStatic.messages.get(Message.INDEX_DEVELOPERS_SEARCH, language)
-              + "</h3>\n"
-              + "  <ul>\n"
-              + "  <li><a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/rest.html\">"
-              + EDStatic.messages.get(Message.INDEX_RESTFUL_SEARCH, language)
-              + "</a>\n"
-              + "  <li><a rel=\"help\" href=\""
-              + tErddapUrl
-              + "/tabledap/allDatasets.html\">"
-              + EDStatic.messages.get(Message.INDEX_ALL_DATASETS_SEARCH, language)
-              + "</a>\n"
-              + "  <li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/opensearch1.1/index.html\">"
-              + EDStatic.messages.get(Message.INDEX_OPEN_SEARCH, language)
-              + "</a>\n"
-              + "  </ul>\n"
-              + "\n");
+        // connections to OpenSearch and SRU
+        writer.write(
+            "<li><h3>"
+                + EDStatic.messages.get(Message.INDEX_DEVELOPERS_SEARCH, language)
+                + "</h3>\n"
+                + "  <ul>\n"
+                + "  <li><a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/rest.html\">"
+                + EDStatic.messages.get(Message.INDEX_RESTFUL_SEARCH, language)
+                + "</a>\n"
+                + "  <li><a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/tabledap/allDatasets.html\">"
+                + EDStatic.messages.get(Message.INDEX_ALL_DATASETS_SEARCH, language)
+                + "</a>\n"
+                + "  <li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/opensearch1.1/index.html\">"
+                + EDStatic.messages.get(Message.INDEX_OPEN_SEARCH, language)
+                + "</a>\n"
+                + "  </ul>\n"
+                + "\n");
 
-      // Search Multiple ERDDAPs
-      writer.write(
-          "<li><h3>"
-              + EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS, language)
-              + "</h3>\n"
-              + String2.replaceAll(
-                  EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS_DESCRIPTION, language),
-                  "&erddapUrl;",
-                  tErddapUrl)
-              + "\n");
+        // Search Multiple ERDDAPs
+        writer.write(
+            "<li><h3>"
+                + EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS, language)
+                + "</h3>\n"
+                + String2.replaceAll(
+                    EDStatic.messages.get(Message.SEARCH_MULTIPLE_ERDDAPS_DESCRIPTION, language),
+                    "&erddapUrl;",
+                    tErddapUrl)
+                + "\n");
 
-      // end of search/protocol options list
-      writer.write(
-          """
+        // end of search/protocol options list
+        writer.write(
+            """
 
               </ul>
               <p>&nbsp;<hr>
               """);
 
-      // converters
-      if (EDStatic.config.convertersActive)
+        // converters
+        if (EDStatic.config.convertersActive)
+          writer.write(
+              "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
+                  + EDStatic.messages.get(Message.INDEX_CONVERTERS, language)
+                  + "</a></strong>\n"
+                  + "<br>"
+                  + EDStatic.messages.get(Message.INDEX_DESCRIBE_CONVERTERS, language)
+                  + "\n"
+                  + "<table class=\"erd commonBGColor\">\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/oceanicAtmosphericAcronyms.html\">"
+                  + EDStatic.messages.get(Message.ACRONYMS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/fipscounty.html\">"
+                  + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/interpolate.html\">"
+                  + EDStatic.messages.get(Message.INTERPOLATE, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/keywords.html\">"
+                  + EDStatic.messages.get(Message.KEYWORDS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/time.html\">"
+                  + EDStatic.messages.get(Message.TIME, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_TIME, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/units.html\">"
+                  + EDStatic.messages.get(Message.UNITS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_UNITS, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/color.html\">"
+                  + EDStatic.messages.get(Message.CONVERT_COLORS, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/urls.html\">URLs</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_URLS, language)
+                  + "</td></tr>\n"
+                  + "<tr><td><a rel=\"bookmark\" href=\""
+                  + tErddapUrl
+                  + "/convert/oceanicAtmosphericVariableNames.html\">"
+                  + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
+                  + "</a></td>\n"
+                  + "    <td>"
+                  + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
+                  + "</td></tr>\n"
+                  + "</table>\n"
+                  + "\n");
+
+        // metadata
+        if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
+          writer.write(
+              "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
+                  + EDStatic.messages.get(Message.INDEX_METADATA, language)
+                  + "</a></strong>\n"
+                  + "<br>");
+          String fgdcLink1 =
+              "<br><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.fgdcXmlDirectory
+                  + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+          String fgdcLink2 = // &#8209; is a non-breaking hyphen
+              "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n"
+                  + ">FGDC&#8209;STD&#8209;001&#8209;1998"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+          String isoLink1 =
+              "<br><a rel=\"bookmark\" "
+                  + "href=\""
+                  + tErddapUrl
+                  + "/"
+                  + EDConfig.iso19115XmlDirectory
+                  + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+          String isoLink2 = // &#8209; is a non-breaking hyphen
+              "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
+                  + ">ISO&nbsp;19115&#8209;2/19139"
+                  + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                  + "</a>";
+          if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
+            writer.write(
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF2, language),
+                    fgdcLink1,
+                    fgdcLink2,
+                    isoLink1,
+                    isoLink2));
+          else if (EDStatic.config.fgdcActive)
+            writer.write(
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2));
+          else
+            writer.write(
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2));
+          writer.write("\n\n");
+        }
+
+        // REST services
         writer.write(
-            "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
-                + EDStatic.messages.get(Message.INDEX_CONVERTERS, language)
+            "<p><strong><a class=\"selfLink\" id=\"services\" href=\"#services\" rel=\"bookmark\">"
+                + EDStatic.messages.get(Message.INDEX_SERVICES, language)
                 + "</a></strong>\n"
                 + "<br>"
-                + EDStatic.messages.get(Message.INDEX_DESCRIBE_CONVERTERS, language)
-                + "\n"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.INDEX_DESCRIBE_SERVICES, language), tErddapUrl)
+                + "\n\n");
+
+        // And
+        writer.write(
+            "<p><strong><a class=\"selfLink\" id=\"otherFeatures\" href=\"#otherFeatures\" rel=\"bookmark\">"
+                + EDStatic.messages.get(Message.OTHER_FEATURES, language)
+                + "</a></strong>\n"
                 + "<table class=\"erd commonBGColor\">\n"
                 + "<tr><td><a rel=\"bookmark\" href=\""
                 + tErddapUrl
-                + "/convert/oceanicAtmosphericAcronyms.html\">"
-                + EDStatic.messages.get(Message.ACRONYMS, language)
+                + "/status.html\">"
+                + EDStatic.messages.get(Message.STATUS, language)
                 + "</a></td>\n"
                 + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+                + EDStatic.messages.get(Message.STATUS_HTML, language)
                 + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/fipscounty.html\">"
-                + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/interpolate.html\">"
-                + EDStatic.messages.get(Message.INTERPOLATE, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/keywords.html\">"
-                + EDStatic.messages.get(Message.KEYWORDS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/time.html\">"
-                + EDStatic.messages.get(Message.TIME, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_TIME, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/units.html\">"
-                + EDStatic.messages.get(Message.UNITS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_UNITS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/color.html\">"
-                + EDStatic.messages.get(Message.CONVERT_COLORS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/urls.html\">URLs</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_URLS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/oceanicAtmosphericVariableNames.html\">"
-                + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
-                + "</td></tr>\n"
-                + "</table>\n"
-                + "\n");
+                + (EDStatic.config.outOfDateDatasetsActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/outOfDateDatasets.html\">"
+                        + EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + EDStatic.messages.get(Message.OUT_OF_DATE_HTML, language)
+                        + "</td></tr>\n"
+                    : "")
+                + (EDStatic.config.subscriptionSystemActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/subscriptions/index.html\">"
+                        + EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + String2.replaceAll(
+                            EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language),
+                            "<br>",
+                            " ")
+                        + "</td></tr>\n"
+                    : "")
+                + (EDStatic.config.slideSorterActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/slidesorter.html\">"
+                        + EDStatic.messages.get(Message.SLIDE_SORTER, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + EDStatic.messages.get(Message.SS_USE_PLAIN, language)
+                        + "</td></tr>\n"
+                    : "")
+                + (EDStatic.config.dataProviderFormActive
+                    ? "<tr><td><a rel=\"bookmark\" href=\""
+                        + tErddapUrl
+                        + "/dataProviderForm.html\">"
+                        + EDStatic.messages.get(Message.DATA_PROVIDER_FORM, language)
+                        + "</a></td>\n"
+                        + "    <td>"
+                        + EDStatic.messages.get(
+                            Message.DATA_PROVIDER_FORM_SHORT_DESCRIPTION, language)
+                        + "</td></tr>\n"
+                    : "")
+                + "</table>\n\n");
 
-      // metadata
-      if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
-        writer.write(
-            "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
-                + EDStatic.messages.get(Message.INDEX_METADATA, language)
-                + "</a></strong>\n"
-                + "<br>");
-        String fgdcLink1 =
-            "<br><a rel=\"bookmark\" "
-                + "href=\""
-                + tErddapUrl
-                + "/"
-                + EDConfig.fgdcXmlDirectory
-                + "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
-        String fgdcLink2 = // &#8209; is a non-breaking hyphen
-            "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n"
-                + ">FGDC&#8209;STD&#8209;001&#8209;1998"
-                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-                + "</a>";
-        String isoLink1 =
-            "<br><a rel=\"bookmark\" "
-                + "href=\""
-                + tErddapUrl
-                + "/"
-                + EDConfig.iso19115XmlDirectory
-                + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
-        String isoLink2 = // &#8209; is a non-breaking hyphen
-            "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
-                + ">ISO&nbsp;19115&#8209;2/19139"
-                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-                + "</a>";
-        if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF2, language),
-                  fgdcLink1,
-                  fgdcLink2,
-                  isoLink1,
-                  isoLink2));
-        else if (EDStatic.config.fgdcActive)
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2));
-        else
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2));
-        writer.write("\n\n");
+        // end of table
+        writer.write("</td>\n</tr>\n</table>\n");
+
+        // end of home page
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+
+      } catch (Throwable t) {
+        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+        writer.write(EDStatic.htmlForException(language, t));
+
+        // end of home page
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        throw t;
       }
-
-      // REST services
-      writer.write(
-          "<p><strong><a class=\"selfLink\" id=\"services\" href=\"#services\" rel=\"bookmark\">"
-              + EDStatic.messages.get(Message.INDEX_SERVICES, language)
-              + "</a></strong>\n"
-              + "<br>"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_DESCRIBE_SERVICES, language), tErddapUrl)
-              + "\n\n");
-
-      // And
-      writer.write(
-          "<p><strong><a class=\"selfLink\" id=\"otherFeatures\" href=\"#otherFeatures\" rel=\"bookmark\">"
-              + EDStatic.messages.get(Message.OTHER_FEATURES, language)
-              + "</a></strong>\n"
-              + "<table class=\"erd commonBGColor\">\n"
-              + "<tr><td><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/status.html\">"
-              + EDStatic.messages.get(Message.STATUS, language)
-              + "</a></td>\n"
-              + "    <td>"
-              + EDStatic.messages.get(Message.STATUS_HTML, language)
-              + "</td></tr>\n"
-              + (EDStatic.config.outOfDateDatasetsActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/outOfDateDatasets.html\">"
-                      + EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(Message.OUT_OF_DATE_HTML, language)
-                      + "</td></tr>\n"
-                  : "")
-              + (EDStatic.config.subscriptionSystemActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/subscriptions/index.html\">"
-                      + EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + String2.replaceAll(
-                          EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language), "<br>", " ")
-                      + "</td></tr>\n"
-                  : "")
-              + (EDStatic.config.slideSorterActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/slidesorter.html\">"
-                      + EDStatic.messages.get(Message.SLIDE_SORTER, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(Message.SS_USE_PLAIN, language)
-                      + "</td></tr>\n"
-                  : "")
-              + (EDStatic.config.dataProviderFormActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/dataProviderForm.html\">"
-                      + EDStatic.messages.get(Message.DATA_PROVIDER_FORM, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(
-                          Message.DATA_PROVIDER_FORM_SHORT_DESCRIPTION, language)
-                      + "</td></tr>\n"
-                  : "")
-              + "</table>\n\n");
-
-      // end of table
-      writer.write("</td>\n</tr>\n</table>\n");
-
-      // end of home page
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
-    } catch (Throwable t) {
-      EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-      writer.write(EDStatic.htmlForException(language, t));
-
-      // end of home page
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-      throw t;
     }
   }
 
@@ -1827,7 +2257,7 @@ public class Erddap extends HttpServlet {
                 language,
                 loggedInAs,
                 EDStatic.messages.get(Message.LEGAL_NOTICES_TITLE, language));
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        TemplateEngine engine = getTemplateEngine();
         engine.render(
             "legal.html",
             Map.of(
@@ -5143,7 +5573,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       YouAreHere youAreHere =
           EDStatic.getYouAreHere(
               request, language, loggedInAs, EDStatic.messages.get(Message.STATUS, language));
-      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      TemplateEngine engine = getTemplateEngine();
       engine.render(
           "status.jte",
           Map.of(
@@ -7560,26 +7990,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   language,
                   loggedInAs,
                   EDStatic.passThroughPIppQueryPage1(request) + "&protocol=" + uProtocol);
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + EDStatic.youAreHere(request, language, loggedInAs, uProtocol)
-              + description);
 
-      /*getYouAreHereTable(
-          EDStatic.youAreHere(loggedInAs, uProtocol) +
-          description +
-          "<h2>" +
-              MessageFormat.format(EDStatic.listOfDatasets, uProtocol) +
-              "</h2>\n",
-          //Or, View All Datasets
-          "&nbsp;\n" +
-          "<br>" + getSearchFormHtml(language, request, loggedInAs, EDStatic.messages.get(Message.OR_COMMA, language), ":\n<br>", "") +
-          "<br>" + getCategoryLinksHtml(request, tErddapUrl) +
-          "<br>&nbsp;\n" +
-          "<br>" + refine);
-      */
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, uProtocol);
 
-      if (error == null) {
         String nMatchingHtml =
             EDStatic.nMatchingDatasetsHtml(
                 language,
@@ -7590,35 +8004,72 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 EDStatic.baseUrl(request, loggedInAs)
                     + requestUrl
                     + EDStatic.questionQuery(request.getQueryString()));
-
-        writer.write("<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>\n");
-
-        table.saveAsHtmlTable(
-            writer, "commonBGColor nowrap", null, false, -1, false, false); // allowWrap
-
-        if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
-
-        // list plain file types
-        writer.write(
-            "\n"
-                + "<p>"
-                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                + " \n("
-                + plainFileTypesString
-                + // not links, which would be indexed by search engines
-                ") <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/rest.html\">"
-                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                + "</a>.\n");
+        renderSearchInfoJte(
+            writer,
+            request,
+            language,
+            loggedInAs,
+            endOfRequest,
+            tErddapUrl,
+            youAreHere,
+            table,
+            "<h2>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.LIST_OF_DATASETS, language), uProtocol)
+                + "</h2>\n"
+                + description,
+            "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>",
+            error != null ? XML.encodeAsHTML(error[0]) : "",
+            error != null ? XML.encodeAsHTML(error[1]) : "",
+            protocol);
       } else {
         writer.write(
-            "<p><span class=\"warningColor\">"
-                + XML.encodeAsHTML(error[0] + " " + error[1])
-                + "</span>\n");
-      }
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(request, language, loggedInAs, uProtocol)
+                + description);
 
-      writer.write("</div>\n");
+        if (error == null) {
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  false, // =alphabetical
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(request.getQueryString()));
+
+          writer.write(
+              "<p>" + nMatchingHtml + "\n" + "<span class=\"N\">(" + refine + ")</span>\n");
+
+          table.saveAsHtmlTable(
+              writer, "commonBGColor nowrap", null, false, -1, false, false); // allowWrap
+
+          if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+          // list plain file types
+          writer.write(
+              "\n"
+                  + "<p>"
+                  + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                  + " \n("
+                  + plainFileTypesString
+                  + // not links, which would be indexed by search engines
+                  ") <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/rest.html\">"
+                  + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                  + "</a>.\n");
+        } else {
+          writer.write(
+              "<p><span class=\"warningColor\">"
+                  + XML.encodeAsHTML(error[0] + " " + error[1])
+                  + "</span>\n");
+        }
+
+        writer.write("</div>\n");
+      }
       endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -14138,16 +14589,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (useHtmlTemplates(request)) {
         // use html templates
         YouAreHere youAreHere = EDStatic.getYouAreHere(request, language, loggedInAs, shortTitle);
-        TableOptions tableOptions =
-            new TableOptions.TableOptionsBuilder(table)
-                .otherClasses("commonBGColor")
-                .bgColor(null)
-                .writeUnits(false)
-                .timeColumn(mtCol)
-                .needEncodingAsHtml(false)
-                .allowWrap(false)
-                .build();
-        TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+        TableOptions tableOptions = buildSearchTableOptions(table, mtCol);
+        TemplateEngine engine = getTemplateEngine();
         engine.render(
             "outofdatedatasets.jte",
             Map.of(
@@ -15014,86 +15457,114 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 EDStatic.messages.get(Message.SEARCH_TITLE, language),
                 out);
         try {
-          // you are here    Search
-          writer.write(
-              "<div class=\"standard_width\">\n"
-                  + EDStatic.youAreHere(
-                      request,
-                      language,
-                      loggedInAs,
-                      EDStatic.messages.get(Message.SEARCH_TITLE, language)));
-          // youAreHereTable);
-
-          // display the search form
-          writer.write(
+          String searchFormHtml =
               getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor)
                   + "&nbsp;"
-                  + "<br>");
+                  + "<br>";
+          Table table =
+              makeHtmlDatasetTable(request, language, loggedInAs, datasetIDs, sortByTitle);
 
-          // display datasets
-          if (error == null) {
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  true, // =most relevant first
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(request.getQueryString()));
 
-            Table table =
-                makeHtmlDatasetTable(request, language, loggedInAs, datasetIDs, sortByTitle);
-
-            String nMatchingHtml =
-                EDStatic.nMatchingDatasetsHtml(
+          if (useHtmlTemplates(request)) {
+            YouAreHere youAreHere =
+                EDStatic.getYouAreHere(
+                    request,
                     language,
-                    nMatches,
-                    page,
-                    lastPage,
-                    true, // =most relevant first
-                    EDStatic.baseUrl(request, loggedInAs)
-                        + requestUrl
-                        + EDStatic.questionQuery(request.getQueryString()));
+                    loggedInAs,
+                    EDStatic.messages.get(Message.SEARCH_TITLE, language));
 
-            writer.write(
-                nMatchingHtml
-                    + "\n"
-                    + "<span class=\"N\">("
-                    + EDStatic.messages.get(Message.OR_REFINE_SEARCH_WITH, language)
-                    + getAdvancedSearchLink(request, language, loggedInAs, queryString)
-                    + ")</span>\n"
-                    + "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
-
-            table.saveAsHtmlTable(
+            renderSearchInfoJte(
                 writer,
-                "commonBGColor",
-                null,
-                false,
-                -1,
-                false,
-                false); // don't encodeAsHTML the cell's contents, !allowWrap
-
-            if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
-
-            // list plain file types
-            writer.write(
-                "\n"
-                    + "<p>"
-                    + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                    + " \n("
-                    + plainFileTypesString
-                    + // not links, which would be indexed by search engines
-                    ") <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/rest.html\">"
-                    + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                    + "</a>.\n");
-
+                request,
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                youAreHere,
+                table,
+                searchFormHtml,
+                nMatchingHtml,
+                error != null ? XML.encodeAsHTML(error[0]) : "",
+                error != null ? XML.encodeAsHTML(error[1]) : "",
+                "");
           } else {
-            // error
+
+            // you are here    Search
             writer.write(
-                "<strong>"
-                    + XML.encodeAsHTML(error[0])
-                    + "</strong>\n"
-                    + "<br>"
-                    + XML.encodeAsHTML(error[1])
-                    + "\n");
+                "<div class=\"standard_width\">\n"
+                    + EDStatic.youAreHere(
+                        request,
+                        language,
+                        loggedInAs,
+                        EDStatic.messages.get(Message.SEARCH_TITLE, language)));
+
+            // display the search form
+            writer.write(
+                getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor)
+                    + "&nbsp;"
+                    + "<br>");
+
+            // display datasets
+            if (error == null) {
+
+              writer.write(
+                  nMatchingHtml
+                      + "\n"
+                      + "<span class=\"N\">("
+                      + EDStatic.messages.get(Message.OR_REFINE_SEARCH_WITH, language)
+                      + getAdvancedSearchLink(request, language, loggedInAs, queryString)
+                      + ")</span>\n"
+                      + "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
+
+              table.saveAsHtmlTable(
+                  writer,
+                  "commonBGColor",
+                  null,
+                  false,
+                  -1,
+                  false,
+                  false); // don't encodeAsHTML the cell's contents, !allowWrap
+
+              if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+              // list plain file types
+              writer.write(
+                  "\n"
+                      + "<p>"
+                      + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                      + " \n("
+                      + plainFileTypesString
+                      + // not links, which would be indexed by search engines
+                      ") <a rel=\"help\" href=\""
+                      + tErddapUrl
+                      + "/rest.html\">"
+                      + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                      + "</a>.\n");
+
+            } else {
+              // error
+              writer.write(
+                  "<strong>"
+                      + XML.encodeAsHTML(error[0])
+                      + "</strong>\n"
+                      + "<br>"
+                      + XML.encodeAsHTML(error[1])
+                      + "\n");
+            }
+            // end of document
+            writer.write("</div>\n");
           }
 
-          // end of document
-          writer.write("</div>\n");
           endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
         } catch (Throwable t) {
@@ -15155,36 +15626,62 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               queryString,
               EDStatic.messages.get(Message.SEARCH_TITLE, language),
               out);
+
       try {
-        // you are here      Search
-        writer.write(
-            "<div class=\"standard_width\">\n"
-                + EDStatic.youAreHere(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.SEARCH_TITLE, language)));
-        // youAreHereTable);
+        if (useHtmlTemplates(request)) {
+          YouAreHere youAreHere =
+              EDStatic.getYouAreHere(
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.SEARCH_TITLE, language));
 
-        // write (error and) search form
-        if (error.indexOf("show index") < 0) writeErrorHtml(language, writer, request, error);
-        writer.write(
-            getSearchFormHtml(
-                language,
-                request,
-                loggedInAs,
-                "<span style=\"font-size:150%;\"><strong>",
-                ":&nbsp;</strong></span>",
-                searchFor));
-        String2.log(String2.ERROR + " message sent to user: " + error);
-        String2.log(MustBe.throwableToString(t));
+          Table table = new Table();
+          renderSearchInfoJte(
+              writer,
+              request,
+              language,
+              loggedInAs,
+              endOfRequest,
+              tErddapUrl,
+              youAreHere,
+              table,
+              getSearchFormHtml(language, request, loggedInAs, preText, postText, searchFor),
+              "",
+              "",
+              "",
+              "");
+        } else {
+          // you are here      Search
+          writer.write(
+              "<div class=\"standard_width\">\n"
+                  + EDStatic.youAreHere(
+                      request,
+                      language,
+                      loggedInAs,
+                      EDStatic.messages.get(Message.SEARCH_TITLE, language)));
+          // youAreHereTable);
 
-        // writer.write(
-        //    "<p>&nbsp;<hr>\n" +
-        //    String2.replaceAll(EDStatic.restfulSearchService, "&erddapUrl;", tErddapUrl) +
-        //    "\n");
+          // write (error and) search form
+          if (error.indexOf("show index") < 0) writeErrorHtml(language, writer, request, error);
+          writer.write(
+              getSearchFormHtml(
+                  language,
+                  request,
+                  loggedInAs,
+                  "<span style=\"font-size:150%;\"><strong>",
+                  ":&nbsp;</strong></span>",
+                  searchFor));
+          String2.log(String2.ERROR + " message sent to user: " + error);
+          String2.log(MustBe.throwableToString(t));
 
-        writer.write("</div>\n");
+          // writer.write(
+          //    "<p>&nbsp;<hr>\n" +
+          //    String2.replaceAll(EDStatic.restfulSearchService, "&erddapUrl;", tErddapUrl) +
+          //    "\n");
+
+          writer.write("</div>\n");
+        }
         endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
       } catch (Throwable t2) {
@@ -15806,6 +16303,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         + "</span>";
   }
 
+  private String buildAdvancedSearchFormHtml(
+      HttpServletRequest request, int language, String loggedInAs, String tErddapUrl)
+      throws Throwable {
+    try {
+      java.util.Map<String, Object> params =
+          buildAdvancedSearchFormParams(
+              request, language, loggedInAs, tErddapUrl, null, null, null);
+      java.io.StringWriter sw = new java.io.StringWriter();
+      TemplateEngine engine = getTemplateEngine();
+      engine.render("components/advanced_search_form.jte", params, new WriterOutput(sw));
+      return sw.toString();
+    } catch (Throwable t) {
+      StringWriter sw = new StringWriter();
+      sw.write(EDStatic.htmlForException(language, t));
+      return sw.toString();
+    }
+  }
+
   /**
    * This responds to a advanced search request: erddap/search/advanced.html, and other extensions.
    *
@@ -16010,34 +16525,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
 
     // protocol
-    StringBuilder protocolTooltip =
-        new StringBuilder(
-            EDStatic.messages.get(Message.PROTOCOL_SEARCH_2_HTML, language)
-                + "\n<p><strong>griddap</strong> - "
-                + EDStatic.messages.get(Message.EDD_GRID_DAP_DESCRIPTION, language)
-                + "\n<p><strong>tabledap</strong> - "
-                + EDStatic.messages.get(Message.EDD_TABLE_DAP_DESCRIPTION, language));
     StringArray protocols = new StringArray();
     protocols.add(ANY);
     protocols.add("griddap");
     protocols.add("tabledap");
     if (EDStatic.config.wmsActive) {
       protocols.add("WMS");
-      protocolTooltip.append(
-          "\n<p><strong>WMS</strong> - "
-              + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language));
     }
     if (EDStatic.config.wcsActive) {
       protocols.add("WCS");
-      protocolTooltip.append(
-          "\n<p><strong>WCS</strong> - "
-              + EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language));
     }
     if (EDStatic.config.sosActive) {
       protocols.add("SOS");
-      protocolTooltip.append(
-          "\n<p><strong>SOS</strong> - "
-              + EDStatic.messages.get(Message.SOS_DESCRIPTION_HTML, language));
     }
     String tProt = request.getParameter("protocol");
     int whichProtocol = protocols.indexOfIgnoreCase(tProt);
@@ -16072,6 +16571,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // *** if .html request, show the form
     OutputStream out = null;
     Writer writer = null;
+    String advancedSearchFormHtml = null;
     if (toHtml) {
       // display start of web page
       out = getHtmlOutputStreamUtf8(request, response);
@@ -16085,307 +16585,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               EDStatic.messages.get(Message.ADVANCED_SEARCH, language),
               out);
       try {
-        HtmlWidgets widgets =
-            new HtmlWidgets(
-                true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
-        widgets.htmlTooltips = true;
-        widgets.enterTextSubmitsForm = true;
 
-        // display the advanced search form
-        String formName = "f1";
-        writer.write(
-            "<div class=\"standard_width\">\n"
-                + EDStatic.youAreHere(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH, language)
-                        + " "
-                        + EDStatic.htmlTooltipImage(
-                            request,
-                            language,
-                            loggedInAs,
-                            "<div class=\"narrow_max_width\">"
-                                + EDStatic.messages.get(Message.ADVANCED_SEARCH_TOOLTIP, language)
-                                + "</div>"))
-                + "\n\n"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_DIRECTIONS, language)
-                + "\n"
-                + HtmlWidgets.ifJavaScriptDisabled
-                + "\n"
-                + widgets.beginForm(formName, "GET", tErddapUrl + "/search/advanced.html", "")
-                + "\n");
-
-        // pipp
-        writer.write(widgets.hidden("page", "1")); // new search always resets to page 1
-        writer.write(widgets.hidden("itemsPerPage", "" + pipp[1]));
-
-        // full text search...
-        writer.write(
-            "<p><strong>"
-                + EDStatic.messages.get(Message.SEARCH_FULL_TEXT_HTML, language)
-                + "</strong>\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language))
-                + "\n"
-                + "<br>"
-                + widgets.textField(
-                    "searchFor",
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
-                    70,
-                    255,
-                    searchFor,
-                    "")
-                + "\n");
-
-        // categorize
-        // a table with a row for each attribute
-        writer.write(
-            "&nbsp;\n"
-                + // necessary for the blank line before the form (not <p>)
-                widgets.beginTable("class=\"compact nowrap\"")
-                + "<tr>\n"
-                + "  <td colspan=\"2\"><strong>"
-                + EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language)
-                + "</strong>\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    "<div class=\"narrow_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_CATEGORY_TOOLTIP, language)
-                        + "</div>")
-                + "  </td>\n"
-                + "</tr>\n"
-                + "<tr>\n"
-                + "  <td class=\"N\" style=\"width:20%;\">protocol \n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">" + protocolTooltip + "</div>")
-                + "\n"
-                + "  </td>\n"
-                + "  <td style=\"width:80%;\">&nbsp;=&nbsp;"
-                + widgets.select("protocol", "", 1, protocols.toArray(), whichProtocol, "")
-                + "  </td>\n"
-                + "</tr>\n");
-        for (int ca = 0; ca < nCatAtts; ca++) {
-          if (catSAs[ca].length == 1) continue;
-          // left column: attribute;   right column: values
-          writer.write(
-              "<tr>\n"
-                  + "  <td class=\"N\">"
-                  + catAttsInURLs[ca]
-                  + "</td>\n"
-                  + "  <td>&nbsp;=&nbsp;"
-                  + widgets.select(catAttsInURLs[ca], "", 1, catSAs[ca], whichCatSAIndex[ca], "")
-                  + "  </td>\n"
-                  + "</tr>\n");
-        }
-
-        // bounding box...
-        String mapTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_MAP_TOOLTIP, language);
-        String lonTooltip =
-            mapTooltip + EDStatic.messages.get(Message.ADVANCED_SEARCH_LON_TOOLTIP, language);
-        String timeTooltip = EDStatic.messages.get(Message.ADVANCED_SEARCH_TIME_TOOLTIP, language);
-        String twoClickMap[] =
-            HtmlWidgets.myTwoClickMap540Big(
-                language,
-                formName,
-                widgets.imageDirUrl + "world540Big.png",
-                false); // debugInBrowser
-
-        writer.write(
-            // blank row
-            "<tr>\n"
-                + "  <td colspan=\"2\">&nbsp;</td>\n"
-                + "</tr>\n"
-                +
-
-                // lon lat time ranges
-                "<tr>\n"
-                + "  <td colspan=\"2\"><strong>"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_BOUNDS, language)
-                + "</strong>\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_RANGE_TOOLTIP, language)
-                        + "<p>"
-                        + lonTooltip
-                        + "</div>")
-                + "  </td>\n"
-                + "</tr>\n"
-                +
-
-                // max lat
-                "<tr>\n"
-                + "  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
-                + widgets.textField(
-                    "maxLat",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LAT, language)
-                        + " (-90 to 90)<p>"
-                        + mapTooltip,
-                    8,
-                    12,
-                    (Double.isNaN(maxLat) ? "" : "" + maxLat),
-                    "")
-                + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
-                + "    </td>\n"
-                + "</tr>\n"
-                +
-
-                // min max lon
-                "<tr>\n"
-                + "  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_MAX_LON, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + widgets.textField(
-                    "minLon",
-                    "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LON, language)
-                        + "<p>"
-                        + lonTooltip
-                        + "</div>",
-                    8,
-                    12,
-                    (Double.isNaN(minLon) ? "" : "" + minLon),
-                    "")
-                + "\n"
-                + widgets.textField(
-                    "maxLon",
-                    "<div class=\"standard_max_width\">"
-                        + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_LON, language)
-                        + "<p>"
-                        + lonTooltip
-                        + "</div>",
-                    8,
-                    12,
-                    (Double.isNaN(maxLon) ? "" : "" + maxLon),
-                    "")
-                + "</td>\n"
-                + "</tr>\n"
-                +
-
-                // min lat
-                "<tr>\n"
-                + "  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n"
-                + widgets.textField(
-                    "minLat",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_LAT, language)
-                        + " (-90 to 90)<p>"
-                        + mapTooltip,
-                    8,
-                    12,
-                    (Double.isNaN(minLat) ? "" : "" + minLat),
-                    "")
-                + "    &nbsp;\n"
-                + widgets.htmlButton(
-                    "button",
-                    "",
-                    "",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR_HELP, language),
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_CLEAR, language),
-                    "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; "
-                        + "f1.minLat.value=\"\"; f1.maxLat.value=\"\"; "
-                        + "((document.all)? document.all.rubberBand : "
-                        + "document.getElementById(\"rubberBand\"))."
-                        + "style.visibility=\"hidden\";'")
-                + "    </td>\n"
-                + "</tr>\n"
-                +
-
-                // world map
-                "<tr>\n"
-                + "  <td colspan=\"2\" class=\"N\">"
-                + twoClickMap[0]
-                + EDStatic.htmlTooltipImage(request, language, loggedInAs, lonTooltip)
-                + twoClickMap[1]
-                + "</td>\n"
-                + "</tr>\n"
-                +
-
-                // blank row
-                "<tr>\n"
-                + "  <td colspan=\"2\">&nbsp;</td>\n"
-                + "</tr>\n"
-                +
-
-                // time
-                "<tr>\n"
-                + "  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + widgets.textField(
-                    "minTime",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MIN_TIME, language)
-                        + "<p>"
-                        + timeTooltip,
-                    27,
-                    40,
-                    minTimeParam,
-                    "")
-                + "</td>\n"
-                + "</tr>\n"
-                + "<tr>\n"
-                + "  <td class=\"N\">"
-                + EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                + "</td>\n"
-                + "  <td>&nbsp;=&nbsp;"
-                + widgets.textField(
-                    "maxTime",
-                    EDStatic.messages.get(Message.ADVANCED_SEARCH_MAX_TIME, language)
-                        + "<p>"
-                        + timeTooltip,
-                    27,
-                    40,
-                    maxTimeParam,
-                    "")
-                + "</td>\n"
-                + "</tr>\n"
-                +
-
-                // end table
-                "</table>\n\n"
-                +
-
-                // submit button
-                "<p>"
-                + widgets.htmlButton(
-                    "submit",
-                    null,
-                    null,
-                    EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
-                    "<span style=\"font-size:large;\"><strong>"
-                        + EDStatic.messages.get(Message.SEARCH_BUTTON, language)
-                        + "</strong></span>",
-                    "")
-                + "\n"
-                +
-
-                // end form
-                widgets.endForm()
-                + "\n"
-                + twoClickMap[2]);
-        writer.flush();
-
+        advancedSearchFormHtml =
+            buildAdvancedSearchFormHtml(request, language, loggedInAs, tErddapUrl);
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
         writer.write(EDStatic.htmlForException(language, t));
@@ -16609,6 +16811,68 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // *** show the .html results
     if (toHtml) {
       try {
+        // If templates are enabled, render via combined template (mode="search").
+        if (useHtmlTemplates(request)) {
+          YouAreHere youAreHere =
+              EDStatic.getYouAreHere(
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.ADVANCED_SEARCH, language));
+          String nMatchingHtml =
+              "<hr>\n"
+                  + "<h2>"
+                  + EDStatic.messages.get(Message.ADVANCED_SEARCH_RESULTS, language)
+                  + "</h2>\n"
+                  + EDStatic.nMatchingDatasetsHtml(
+                      language,
+                      nMatches,
+                      page,
+                      lastPage,
+                      searchFor.length() > 0 && !searchFor.equals("all"),
+                      EDStatic.baseUrl(request, loggedInAs)
+                          + requestUrl
+                          + EDStatic.questionQuery(request.getQueryString()));
+          renderSearchInfoJte(
+              writer,
+              request,
+              language,
+              loggedInAs,
+              endOfRequest,
+              tErddapUrl,
+              youAreHere,
+              resultsTable == null ? new Table() : resultsTable,
+              "",
+              searchPerformed ? nMatchingHtml : "",
+              "",
+              "",
+              "");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          return;
+        }
+
+        writer.write("<div class=\"standard_width\">\n");
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + EDStatic.youAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.ADVANCED_SEARCH, language)
+                        + " "
+                        + EDStatic.htmlTooltipImage(
+                            request,
+                            language,
+                            loggedInAs,
+                            "<div class=\"narrow_max_width\">"
+                                + EDStatic.messages.get(Message.ADVANCED_SEARCH_TOOLTIP, language)
+                                + "</div>\n\n")));
+
+        // legacy rendering (no templates)
+        if (advancedSearchFormHtml != null) {
+          writer.write(advancedSearchFormHtml);
+          writer.flush();
+        }
         // display datasets
         writer.write(
             // "<br>&nbsp;\n" +
@@ -17293,21 +17557,57 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "Categorize",
                 out);
         try {
-          // you are here  Categorize
-          writer.write("<div class=\"standard_width\">\n" + youAreHere);
-          // youAreHereTable);
-
-          if (!attributeInURL.equals("index.html"))
-            writeErrorHtml(
-                language,
+          if (useHtmlTemplates(request)) {
+            YouAreHere ya =
+                EDStatic.getYouAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
+            // build secondLine via helper that writes HTML to a StringWriter
+            StringWriter sw = new StringWriter();
+            Writer w2 = new java.io.PrintWriter(sw);
+            writeCategorizeOptionsHtml1(language, request, loggedInAs, w2, null, false);
+            w2.flush();
+            Table table = new Table();
+            renderSearchInfoJte(
                 writer,
                 request,
-                "categoryAttribute=\"" + XML.encodeAsHTML(attributeInURL) + "\" is not an option.");
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                ya,
+                table,
+                sw.toString(),
+                "",
+                attributeInURL.equals("index.html")
+                    ? ""
+                    : "categoryAttribute=\""
+                        + XML.encodeAsHTML(attributeInURL)
+                        + "\" is not an option.",
+                "",
+                "");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          } else {
+            // you are here  Categorize
+            writer.write("<div class=\"standard_width\">\n" + youAreHere);
+            // youAreHereTable);
 
-          writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, false);
+            if (!attributeInURL.equals("index.html"))
+              writeErrorHtml(
+                  language,
+                  writer,
+                  request,
+                  "categoryAttribute=\""
+                      + XML.encodeAsHTML(attributeInURL)
+                      + "\" is not an option.");
 
-          writer.write("</div>\n");
-          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+            writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, null, false);
+
+            writer.write("</div>\n");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          }
 
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -17403,37 +17703,80 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "Categorize",
                 out);
         try {
-          writer.write("<div class=\"standard_width\">\n" + youAreHere);
-          // youAreHereTable);
-          if (!categoryName.equals("index.html")) {
-            writeErrorHtml(
-                language,
+          if (useHtmlTemplates(request)) {
+            YouAreHere ya =
+                EDStatic.getYouAreHere(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
+
+            StringWriter sw = new StringWriter();
+            Writer w2 = new java.io.PrintWriter(sw);
+            w2.write("<p>");
+            writeCategorizeOptionsHtml1(language, request, loggedInAs, w2, attributeInURL, false);
+            w2.write("<p>");
+            writeCategoryOptionsHtml2(
+                language, request, loggedInAs, w2, attribute, attributeInURL, categoryName);
+            w2.flush();
+
+            Table table = new Table();
+            String errorOne =
+                categoryName.equals("index.html")
+                    ? ""
+                    : MessageFormat.format(
+                        EDStatic.messages.get(Message.CATEGORY_NOT_AN_OPTION, language),
+                        attributeInURL,
+                        categoryName);
+            renderSearchInfoJte(
                 writer,
                 request,
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.CATEGORY_NOT_AN_OPTION, language),
-                    attributeInURL,
-                    categoryName));
-            writer.write("<hr>\n");
-          }
-          writer.write("<p>");
-          //    "<table class=\"compact nowrap\">\n" +
-          //    "<tr>\n" +
-          //    "<td class=\"T\">\n");
-          writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, attributeInURL, false);
-          writer.write("<p>");
-          //    "</td>\n" +
-          //    "<td>" + gap + "</td>\n" +
-          //    "<td class=\"T\">\n");
-          writeCategoryOptionsHtml2(
-              language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
-          // writer.write(
-          //    "</td>\n" +
-          //    "</tr>\n" +
-          //    "</table>\n");
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                ya,
+                table,
+                sw.toString(),
+                "",
+                errorOne,
+                "",
+                "");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          } else {
+            writer.write("<div class=\"standard_width\">\n" + youAreHere);
+            // youAreHereTable);
+            if (!categoryName.equals("index.html")) {
+              writeErrorHtml(
+                  language,
+                  writer,
+                  request,
+                  MessageFormat.format(
+                      EDStatic.messages.get(Message.CATEGORY_NOT_AN_OPTION, language),
+                      attributeInURL,
+                      categoryName));
+              writer.write("<hr>\n");
+            }
+            writer.write("<p>");
+            //    "<table class=\"compact nowrap\">\n" +
+            //    "<tr>\n" +
+            //    "<td class=\"T\">\n");
+            writeCategorizeOptionsHtml1(
+                language, request, loggedInAs, writer, attributeInURL, false);
+            writer.write("<p>");
+            //    "</td>\n" +
+            //    "<td>" + gap + "</td>\n" +
+            //    "<td class=\"T\">\n");
+            writeCategoryOptionsHtml2(
+                language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
+            // writer.write(
+            //    "</td>\n" +
+            //    "</tr>\n" +
+            //    "</table>\n");
 
-          writer.write("</div>\n");
-          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+            writer.write("</div>\n");
+            endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          }
 
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -17541,85 +17884,145 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               "Categorize",
               out);
       try {
-        writer.write("<div class=\"standard_width\">\n" + youAreHere);
-        // youAreHereTable);
+        if (useHtmlTemplates(request)) {
+          YouAreHere ya =
+              EDStatic.getYouAreHere(
+                  request,
+                  language,
+                  loggedInAs,
+                  EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language));
 
-        // write categorizeOptions
-        writer.write("<p>");
-        //    "<table class=\"compact nowrap\">\n" +
-        //    "<tr>\n" +
-        //    "<td class=\"T\">\n");
-        writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, attributeInURL, false);
-        writer.write("<p>");
-        //    "</td>\n" +
-        //    "<td>" + gap + "</td>\n" +
-        //    "<td class=\"T\">\n");
+          StringWriter sw = new StringWriter();
+          Writer w2 = new java.io.PrintWriter(sw);
+          w2.write("<p>");
+          writeCategorizeOptionsHtml1(language, request, loggedInAs, w2, attributeInURL, false);
+          w2.write("<p>");
+          writeCategoryOptionsHtml2(
+              language, request, loggedInAs, w2, attribute, attributeInURL, categoryName);
+          w2.flush();
 
-        // write categoryOptions
-        writeCategoryOptionsHtml2(
-            language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
-        // writer.write(
-        //    "</td>\n" +
-        //    "</tr>\n" +
-        //    "</table>\n");
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  false, // =alphabetical
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(queryString));
 
-        String nMatchingHtml =
-            EDStatic.nMatchingDatasetsHtml(
-                language,
-                nMatches,
-                page,
-                lastPage,
-                false, // =alphabetical
-                EDStatic.baseUrl(request, loggedInAs)
-                    + requestUrl
-                    + EDStatic.questionQuery(queryString));
+          nMatchingHtml =
+              "<h3>3) "
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.RESULTS_OF_SEARCH_FOR, language),
+                      "\n<span class=\"N\"><kbd>"
+                          + attributeInURL
+                          + " = "
+                          + categoryName
+                          + "</kbd></span>")
+                  + "</h3>\n"
+                  + nMatchingHtml
+                  + "\n"
+                  + "<br>&nbsp;\n";
 
-        // display datasets
-        writer.write(
-            "<h3>3) "
-                + MessageFormat.format(
-                    EDStatic.messages.get(Message.RESULTS_OF_SEARCH_FOR, language),
-                    "\n<span class=\"N\"><kbd>"
-                        + attributeInURL
-                        + " = "
-                        + categoryName
-                        + "</kbd></span>")
-                + "</h3>\n"
-                + nMatchingHtml
-                + "\n"
-                +
-                // "<br>&nbsp;\n" +
+          renderSearchInfoJte(
+              writer,
+              request,
+              language,
+              loggedInAs,
+              endOfRequest,
+              tErddapUrl,
+              ya,
+              table,
+              sw.toString(),
+              nMatchingHtml,
+              "",
+              "",
+              "",
+              attribute,
+              categoryName);
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        } else {
+          writer.write("<div class=\"standard_width\">\n" + youAreHere);
+          // youAreHereTable);
 
-                // "<br><strong>" + EDStatic.pickADataset + ":</strong>\n" +
-                refine
-                +
+          // write categorizeOptions
+          writer.write("<p>");
+          //    "<table class=\"compact nowrap\">\n" +
+          //    "<tr>\n" +
+          //    "<td class=\"T\">\n");
+          writeCategorizeOptionsHtml1(language, request, loggedInAs, writer, attributeInURL, false);
+          writer.write("<p>");
+          //    "</td>\n" +
+          //    "<td>" + gap + "</td>\n" +
+          //    "<td class=\"T\">\n");
 
-                // "<br>" + EDStatic.nMatchingDatasetsHtml(nMatches, page, lastPage,
-                //    false,  //=alphabetical
-                //    EDStatic.baseUrl(loggedInAs) + requestUrl +
-                //    EDStatic.questionQuery(request.getQueryString())) +
-                "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
+          // write categoryOptions
+          writeCategoryOptionsHtml2(
+              language, request, loggedInAs, writer, attribute, attributeInURL, categoryName);
+          // writer.write(
+          //    "</td>\n" +
+          //    "</tr>\n" +
+          //    "</table>\n");
 
-        table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+          String nMatchingHtml =
+              EDStatic.nMatchingDatasetsHtml(
+                  language,
+                  nMatches,
+                  page,
+                  lastPage,
+                  false, // =alphabetical
+                  EDStatic.baseUrl(request, loggedInAs)
+                      + requestUrl
+                      + EDStatic.questionQuery(queryString));
 
-        if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+          // display datasets
+          writer.write(
+              "<h3>3) "
+                  + MessageFormat.format(
+                      EDStatic.messages.get(Message.RESULTS_OF_SEARCH_FOR, language),
+                      "\n<span class=\"N\"><kbd>"
+                          + attributeInURL
+                          + " = "
+                          + categoryName
+                          + "</kbd></span>")
+                  + "</h3>\n"
+                  + nMatchingHtml
+                  + "\n"
+                  +
+                  // "<br>&nbsp;\n" +
 
-        // list plain file types
-        writer.write(
-            "\n"
-                + "<p>"
-                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                + " \n("
-                + plainFileTypesString
-                + // not links, which would be indexed by search engines
-                ") <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/rest.html\">"
-                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                + "</a>.\n");
+                  // "<br><strong>" + EDStatic.pickADataset + ":</strong>\n" +
+                  refine
+                  +
+                  // "<br>" + EDStatic.nMatchingDatasetsHtml(nMatches, page, lastPage,
+                  //    false,  //=alphabetical
+                  //    EDStatic.baseUrl(loggedInAs) + requestUrl +
+                  //    EDStatic.questionQuery(request.getQueryString())) +
+                  "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
 
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          table.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+
+          if (lastPage > 1) writer.write("\n<p>" + nMatchingHtml);
+
+          // list plain file types
+          writer.write(
+              "\n"
+                  + "<p>"
+                  + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                  + " \n("
+                  + plainFileTypesString
+                  + // not links, which would be indexed by search engines
+                  ") <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/rest.html\">"
+                  + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                  + "</a>.\n");
+
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        }
 
       } catch (Throwable t) {
         EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -17805,28 +18208,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     MessageFormat.format(
                         EDStatic.messages.get(Message.LIST_OF_DATASETS, language),
                         EDStatic.messages.get(Message.LIST_ALL, language)));
-            TableOptions tableOptions =
-                new TableOptions.TableOptionsBuilder(table)
-                    .otherClasses("commonBGColor")
-                    .bgColor(null)
-                    .writeUnits(false)
-                    .timeColumn(-1)
-                    .needEncodingAsHtml(false)
-                    .allowWrap(false)
-                    .build();
-            TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
-            engine.render(
-                "info.jte",
-                Map.of(
-                    "endOfRequest", endOfRequest,
-                    "youAreHere", youAreHere,
-                    "language", language,
-                    "tErddapUrl", tErddapUrl,
-                    "tableOptions", tableOptions,
-                    "table", table,
-                    "secondLine", secondLine,
-                    "nMatchingHtml", nMatchingHtml),
-                new WriterOutput(writer));
+            renderSearchInfoJte(
+                writer,
+                request,
+                language,
+                loggedInAs,
+                endOfRequest,
+                tErddapUrl,
+                youAreHere,
+                table,
+                secondLine,
+                nMatchingHtml,
+                "",
+                "",
+                "");
           } else {
             writer.write(
                 "<div class=\"standard_width\">\n"
@@ -18095,30 +18490,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // respond to info/tID/index.html request
     if (parts[1].equals("index.html")) {
-      // display start of web page
-      OutputStream out = getHtmlOutputStreamUtf8(request, response);
-      Writer writer =
-          getHtmlWriterUtf8(
-              request,
-              language,
-              loggedInAs,
-              "info/" + tID + "/index.html", // was endOfRequest,
-              queryString,
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INFO_ABOUT_FROM, language),
-                  edd.title(language),
-                  edd.institution(language)),
-              out);
-      try {
-        writer.write("<div class=\"wide_max_width\">\n"); // not standard_width
-        writer.write(EDStatic.youAreHere(request, language, loggedInAs, protocol, parts[0]));
-
-        // display a table with the one dataset
+      if (useHtmlTemplates(request)) {
         StringArray sa = new StringArray();
         sa.add(parts[0]);
         boolean sortByTitle = true;
         Table dsTable = makeHtmlDatasetTable(request, language, loggedInAs, sa, sortByTitle);
-        dsTable.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+        TableOptions dsTableOptions = buildSearchTableOptions(dsTable, -1);
+        TableOptions infoTableOptions = buildSearchTableOptions(table, -1);
+        YouAreHere yaH =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(protocol, parts[0]),
+                List.of(EDStatic.protocolUrl(tErddapUrl, protocol)));
 
         // html format the valueSA values
         String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
@@ -18153,65 +18538,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
 
-        // display the info table
-        writer.write(
-            "<h2>" + EDStatic.messages.get(Message.INFO_TABLE_TITLE_HTML, language) + "</h2>");
-
-        // ******** custom table writer (to change color on "variable" rows)
-        writer.write("<table class=\"erd commonBGColor\">\n");
-
-        // write the column names
-        writer.write("<tr>\n");
-        int nColumns = table.nColumns();
-        for (int col = 0; col < nColumns; col++)
-          writer.write("<th>" + table.getColumnName(col) + "</th>\n");
-        writer.write("</tr>\n");
-
-        // write the data
-        int nRows = table.nRows();
-        for (int row = 0; row < nRows; row++) {
-          String s = table.getStringData(0, row);
-          if (s.equals("variable") || s.equals("dimension"))
-            writer.write("<tr class=\"highlightBGColor\">\n");
-          else writer.write("<tr>\n");
-          for (int col = 0; col < nColumns; col++) {
-            writer.write("<td>");
-            s = table.getStringData(col, row);
-            writer.write(s.length() == 0 ? "&nbsp;" : s);
-            writer.write("</td>\n");
-          }
-          writer.write("</tr>\n");
-        }
-
-        // close the table
-        writer.write("</table>\n");
-
-        // list plain file types
-        writer.write(
-            "\n"
-                + "<p>"
-                + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
-                + " \n("
-                + plainFileTypesString
-                + // not links, which would be indexed by search engines
-                ") <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/rest.html\">"
-                + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
-                + "</a>.\n");
-
-        // jsonld
-        if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
+        String jsonldScript = "";
+        if (EDStatic.config.jsonldActive) {
           try {
-            String tId = parts[0];
-            boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
-            if (!isAllDatasets) {
-              // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
-              // java version:
-              theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
-            }
+            java.io.StringWriter sw = new java.io.StringWriter();
+            theSchemaDotOrgDataset(request, loggedInAs, language, sw, edd);
+            jsonldScript = sw.toString();
           } catch (Exception e) {
-            EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+            EDStatic.rethrowClientAbortException(e);
             String2.log(
                 "Caught ERROR while writing jsonld for "
                     + edd.datasetID()
@@ -18220,15 +18554,176 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
         }
 
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        OutputStream out = getHtmlOutputStreamUtf8(request, response);
+        Writer writer =
+            getHtmlWriterUtf8(
+                request,
+                language,
+                loggedInAs,
+                "info/" + tID + "/index.html",
+                queryString,
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INFO_ABOUT_FROM, language),
+                    edd.title(language),
+                    edd.institution(language)),
+                out);
+        try {
+          TemplateEngine engine = getTemplateEngine();
+          java.util.Map<String, Object> params = new java.util.HashMap<>();
+          params.put("dsTableOptions", dsTableOptions);
+          params.put("infoTableOptions", infoTableOptions);
+          params.put("tErddapUrl", tErddapUrl);
+          params.put("language", language);
+          params.put("youAreHere", yaH);
+          params.put("loggedInAs", loggedInAs);
+          params.put("request", request);
+          params.put("plainFileTypesString", plainFileTypesString);
+          params.put("jsonldScript", jsonldScript);
+          engine.render("info_dataset.jte", params, new WriterOutput(writer));
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        } catch (Throwable t) {
+          EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+          writer.write(EDStatic.htmlForException(language, t));
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          throw t;
+        }
+      } else {
+        // display start of web page
+        OutputStream out = getHtmlOutputStreamUtf8(request, response);
+        Writer writer =
+            getHtmlWriterUtf8(
+                request,
+                language,
+                loggedInAs,
+                "info/" + tID + "/index.html", // was endOfRequest,
+                queryString,
+                MessageFormat.format(
+                    EDStatic.messages.get(Message.INFO_ABOUT_FROM, language),
+                    edd.title(language),
+                    edd.institution(language)),
+                out);
+        try {
+          writer.write("<div class=\"wide_max_width\">\n"); // not standard_width
+          writer.write(EDStatic.youAreHere(request, language, loggedInAs, protocol, parts[0]));
 
-      } catch (Throwable t) {
-        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
-        writer.write(EDStatic.htmlForException(language, t));
-        writer.write("</div>\n");
-        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-        throw t;
+          // display a table with the one dataset
+          StringArray sa = new StringArray();
+          sa.add(parts[0]);
+          boolean sortByTitle = true;
+          Table dsTable = makeHtmlDatasetTable(request, language, loggedInAs, sa, sortByTitle);
+          dsTable.saveAsHtmlTable(writer, "commonBGColor", null, false, -1, false, false);
+
+          // html format the valueSA values
+          String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
+          for (int i = 0; i < valueSA.size(); i++) {
+            String s = valueSA.get(i);
+            if (String2.containsUrl(s)) {
+              List<String> separatedText = String2.extractUrls(s);
+              StringBuilder output = new StringBuilder();
+              for (String text : separatedText) {
+                if (String2.containsUrl(text)) {
+                  // display as a link
+                  boolean isLocal = text.startsWith(EDStatic.config.baseUrl);
+                  text = XML.encodeAsHTMLAttribute(text);
+                  output.append(
+                      "<a href=\""
+                          + String2.addHttpsForWWW(text)
+                          + "\">"
+                          + text
+                          + (isLocal ? "" : externalLinkHtml)
+                          + "</a>");
+                } else {
+                  output.append(text);
+                }
+              }
+              valueSA.set(i, output.toString());
+            } else if (String2.isEmailAddress(s)) {
+              // to improve security, convert "@" to " at "
+              s = XML.encodeAsHTMLAttribute(String2.replaceAll(s, "@", " at "));
+              valueSA.set(i, s);
+            } else {
+              valueSA.set(i, XML.encodeAsPreHTML(s, 10000)); // ???
+            }
+          }
+
+          // display the info table
+          writer.write(
+              "<h2>" + EDStatic.messages.get(Message.INFO_TABLE_TITLE_HTML, language) + "</h2>");
+
+          // ******** custom table writer (to change color on "variable" rows)
+          writer.write("<table class=\"erd commonBGColor\">\n");
+
+          // write the column names
+          writer.write("<tr>\n");
+          int nColumns = table.nColumns();
+          for (int col = 0; col < nColumns; col++)
+            writer.write("<th>" + table.getColumnName(col) + "</th>\n");
+          writer.write("</tr>\n");
+
+          // write the data
+          int nRows = table.nRows();
+          for (int row = 0; row < nRows; row++) {
+            String s = table.getStringData(0, row);
+            if (s.equals("variable") || s.equals("dimension"))
+              writer.write("<tr class=\"highlightBGColor\">\n");
+            else writer.write("<tr>\n");
+            for (int col = 0; col < nColumns; col++) {
+              writer.write("<td>");
+              s = table.getStringData(col, row);
+              writer.write(s.length() == 0 ? "&nbsp;" : s);
+              writer.write("</td>\n");
+            }
+            writer.write("</tr>\n");
+          }
+
+          // close the table
+          writer.write("</table>\n");
+
+          // list plain file types
+          writer.write(
+              "\n"
+                  + "<p>"
+                  + EDStatic.messages.get(Message.RESTFUL_INFORMATION_FORMATS, language)
+                  + " \n("
+                  + plainFileTypesString
+                  + // not links, which would be indexed by search engines
+                  ") <a rel=\"help\" href=\""
+                  + tErddapUrl
+                  + "/rest.html\">"
+                  + EDStatic.messages.get(Message.RESTFUL_VIA_SERVICE, language)
+                  + "</a>.\n");
+
+          // jsonld
+          if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
+            try {
+              String tId = parts[0];
+              boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
+              if (!isAllDatasets) {
+                // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
+                // java version:
+                theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
+              }
+            } catch (Exception e) {
+              EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+              String2.log(
+                  "Caught ERROR while writing jsonld for "
+                      + edd.datasetID()
+                      + ":\n"
+                      + MustBe.throwableToString(e));
+            }
+          }
+
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+
+        } catch (Throwable t) {
+          EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+          writer.write(EDStatic.htmlForException(language, t));
+          writer.write("</div>\n");
+          endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+          throw t;
+        }
       }
       return;
     }
@@ -18963,7 +19458,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               language,
               loggedInAs,
               EDStatic.messages.get(Message.SUBSCRIPTIONS_TITLE, language));
-      TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+      TemplateEngine engine = getTemplateEngine();
       engine.render(
           "subscription.jte",
           Map.of(
@@ -23896,12 +24391,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // TODO remove this check once all pages support HTML templating
     boolean isSupportedHtmlLayoutPage =
         List.of(
+                "index.html",
                 "info/index.html",
+                "griddap/index.html",
+                "tabledap/index.html",
+                "sos/index.html",
+                "wcs/index.html",
+                "wms/index.html",
                 "legal.html",
                 "outOfDateDatasets.html",
                 "status.html",
-                "subscriptions/index.html")
+                "subscriptions/index.html",
+                "search/index.html",
+                "search/advanced.html")
             .contains(endOfRequest);
+
+    if (endOfRequest.contains("categorize/")) {
+      isSupportedHtmlLayoutPage = true;
+    }
+
+    if (endOfRequest.contains("info/") && endOfRequest.endsWith("index.html")) {
+      isSupportedHtmlLayoutPage = true;
+    }
 
     if (!useHtmlTemplates(request) || !isSupportedHtmlLayoutPage) {
       // write the information for this protocol (dataset list table and instructions)
@@ -23988,14 +24499,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     int brPo = error.indexOf("<br> at ");
     if (brPo < 0) brPo = error.indexOf("<br>at ");
     if (brPo < 0) brPo = error.length();
-    writer.write(
-        "<span class=\"warningColor\">"
-            + EDStatic.messages.get(Message.ERROR_TITLE, language)
-            + ": "
-            + error.substring(0, brPo)
-            + "</span>"
-            + error.substring(brPo)
-            + "<br>&nbsp;");
+    String errorHead = error.substring(0, brPo);
+    String errorTail = error.substring(brPo);
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("errorHead", errorHead);
+    params.put("errorTail", errorTail);
+    TemplateEngine engine = getTemplateEngine();
+    engine.render("components/error_fragment.jte", params, new WriterOutput(writer));
   }
 
   /**
@@ -24031,49 +24542,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String posttext,
       String searchFor)
       throws Throwable {
-
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
-    HtmlWidgets widgets =
-        new HtmlWidgets(
-            true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
+    String itemsPerPage = Integer.toString(EDStatic.getRequestedPIpp(request)[1]);
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("request", request);
+    params.put("loggedInAs", loggedInAs);
+    params.put("pretext", pretext);
+    params.put("posttext", posttext);
+    params.put("searchFor", searchFor);
+    params.put("itemsPerPage", itemsPerPage);
+    gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+        new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+            true, EDStatic.imageDirUrl(request, loggedInAs, language));
     widgets.enterTextSubmitsForm = true;
-    StringBuilder sb = new StringBuilder();
-    sb.append(widgets.beginForm("search", "GET", tErddapUrl + "/search/index.html", ""));
-    sb.append(
-        pretext + EDStatic.messages.get(Message.SEARCH_DO_FULL_TEXT_HTML, language) + posttext);
-    int pipp[] = EDStatic.getRequestedPIpp(request);
-    sb.append(widgets.hidden("page", "1")); // new search always resets to page 1
-    sb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
-    if (searchFor == null) searchFor = "";
-    widgets.htmlTooltips = false;
-    sb.append(
-        widgets.textField(
-            "searchFor",
-            MessageFormat.format(EDStatic.messages.get(Message.SEARCH_TIP, language), "noaa wind"),
-            40,
-            255,
-            searchFor,
-            ""));
-    widgets.htmlTooltips = true;
-    sb.append(
-        EDStatic.htmlTooltipImage(
-            request,
-            language,
-            loggedInAs,
-            EDStatic.messages.get(Message.SEARCH_HINTS_TOOLTIP, language)));
-    widgets.htmlTooltips = false;
-    sb.append(
-        widgets.htmlButton(
-            "submit",
-            null,
-            null,
-            EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
-            EDStatic.messages.get(Message.SEARCH_BUTTON, language),
-            ""));
-    widgets.htmlTooltips = true;
-    sb.append("\n");
-    sb.append(widgets.endForm());
-    return sb.toString();
+    params.put("widgets", widgets);
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+    engine.render("components/search_form.jte", params, new WriterOutput(sw));
+    return sw.toString();
   }
 
   /**
@@ -24168,59 +24654,36 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String attributeInURL,
       boolean homePage)
       throws Throwable {
-
-    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("request", request);
+    params.put("loggedInAs", loggedInAs);
+    params.put("attributeInURL", attributeInURL);
+    params.put("homePage", homePage);
+    // pass raw message (template will format with category list)
+    params.put("tCategoryHtml", EDStatic.messages.get(Message.CATEGORY_HTML, language));
     if (homePage) {
+      String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
       Table table = categorizeOptionsTable(request, tErddapUrl, ".html");
       int n = table.nRows();
+      String[] links = new String[n];
       StringBuilder sb = new StringBuilder("\n(");
-      for (int row = 0; row < n; row++)
-        sb.append(table.getStringData(0, row) + (row < n - 1 ? ", \n" : ""));
+      for (int row = 0; row < n; row++) {
+        links[row] = table.getStringData(0, row);
+        sb.append(links[row] + (row < n - 1 ? ", \n" : ""));
+      }
       sb.append(")\n");
-      String tCategoryHtml =
-          String2.replaceAll(EDStatic.messages.get(Message.CATEGORY_HTML, language), "<br>", "");
-      writer.write(
-          "<h3>"
-              + EDStatic.messages.get(Message.CATEGORY_TITLE_HTML, language)
-              + "</h3>\n"
-              + MessageFormat.format(tCategoryHtml, sb.toString())
-              + "\n"
-              + EDStatic.messages.get(Message.CATEGORY3_HTML, language)
-              + "\n");
-      return;
+      params.put("links", links);
+      params.put("categoryList", sb.toString());
     }
-
-    // categorize page
-    String tCategoryHtml =
-        String2.replaceAll(
-            MessageFormat.format(EDStatic.messages.get(Message.CATEGORY_HTML, language), ""),
-            "  ",
-            " "); // {0}="" leads to 2 adjacent spaces
-    writer.write(
-        // "<h3>" + EDStatic.messages.categoryTitleHtml + "</h3>\n" +
-        "<h3>1) "
-            + EDStatic.messages.get(Message.CATEGORY_PICK_ATTRIBUTE, language)
-            + "&nbsp;"
-            + EDStatic.htmlTooltipImage(request, language, loggedInAs, tCategoryHtml)
-            + "</h3>\n");
-    String attsInURLs[] = EDStatic.config.categoryAttributesInURLs;
-    HtmlWidgets widgets =
-        new HtmlWidgets(
-            true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
-    writer.write(
-        widgets.select(
-            "cat1",
-            "",
-            Math.min(attsInURLs.length, 12),
-            attsInURLs,
-            String2.indexOf(attsInURLs, attributeInURL),
-            "onchange=\"window.location='"
-                + tErddapUrl
-                + "/categorize/' + "
-                + "this.options[this.selectedIndex].text + '/index.html?"
-                + EDStatic.encodedPassThroughPIppQueryPage1(request)
-                + "';\""));
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    params.put("attributeInURLSelected", attributeInURL);
+    gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+        new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+            true, EDStatic.imageDirUrl(request, loggedInAs, language));
+    params.put("widgets", widgets);
+    TemplateEngine engine = getTemplateEngine();
+    engine.render("components/categorize_options.jte", params, new WriterOutput(writer));
+    writer.flush();
   }
 
   /**
@@ -24247,40 +24710,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String values[] = categoryInfo(attribute).toArray();
-    writer.write(
-        "<h3>2) "
-            + MessageFormat.format(
-                EDStatic.messages.get(Message.CATEGORY_SEARCH_HTML, language), attributeInURL)
-            + ":&nbsp;"
-            + EDStatic.htmlTooltipImage(
-                request,
-                language,
-                loggedInAs,
-                EDStatic.messages.get(Message.CATEGORY_CLICK_HTML, language))
-            + "</h3>\n");
-    if (values.length == 0) {
-      writer.write(MustBe.THERE_IS_NO_DATA);
-    } else {
-      HtmlWidgets widgets =
-          new HtmlWidgets(
-              true, EDStatic.imageDirUrl(request, loggedInAs, language)); // true=htmlTooltips
-      writer.write(
-          widgets.select(
-              "cat2",
-              "",
-              Math.min(values.length, 12),
-              values,
-              String2.indexOf(values, value),
-              "onchange=\"window.location='"
-                  + tErddapUrl
-                  + "/categorize/"
-                  + attributeInURL
-                  + "/' + "
-                  + "this.options[this.selectedIndex].text + '/index.html?"
-                  + EDStatic.encodedPassThroughPIppQueryPage1(request)
-                  + "';\""));
-    }
-    writer.flush(); // Steve Souder says: the sooner you can send some html to user, the better
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", language);
+    params.put("request", request);
+    params.put("loggedInAs", loggedInAs);
+    params.put("attribute", attribute);
+    params.put("attributeInURL", attributeInURL);
+    params.put("value", value);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("values", values);
+    gov.noaa.pfel.coastwatch.util.HtmlWidgets widgets =
+        new gov.noaa.pfel.coastwatch.util.HtmlWidgets(
+            true, EDStatic.imageDirUrl(request, loggedInAs, language));
+    params.put("widgets", widgets);
+    TemplateEngine engine = getTemplateEngine();
+    engine.render("components/categorize_options2.jte", params, new WriterOutput(sw));
+    writer.write(sw.toString());
+    writer.flush();
   }
 
   /**
