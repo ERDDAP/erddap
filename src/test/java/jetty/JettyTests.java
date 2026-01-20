@@ -4757,12 +4757,12 @@ class JettyTests extends WireMockLifecycle {
                 + EDStatic.defaultPIppQuery
                 + "&searchFor=all");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">MODIS Aqua, Level-3 SMI, Global, 4km") >= 0, "results=\n" + results);
+        results.indexOf("MODIS Aqua, Level-3 SMI, Global, 4km") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
+        results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -4771,15 +4771,15 @@ class JettyTests extends WireMockLifecycle {
                 + EDStatic.defaultPIppQuery
                 + "&searchFor=all");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
         results.indexOf(
                 "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)")
             >= 0,
         "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
+        results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -4790,7 +4790,7 @@ class JettyTests extends WireMockLifecycle {
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(
         results.indexOf(
-                ">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n")
+                "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\n")
             > 0,
         "results=\n" + results);
 
@@ -5308,7 +5308,7 @@ class JettyTests extends WireMockLifecycle {
     // categorize
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/categorize/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">standard_name\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">standard_name") >= 0, "results=\n" + results);
 
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/categorize/index.json");
     Test.ensureEqual(
@@ -5389,7 +5389,7 @@ class JettyTests extends WireMockLifecycle {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/categorize/standard_name/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">sea_water_temperature\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">sea_water_temperature") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5401,9 +5401,9 @@ class JettyTests extends WireMockLifecycle {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/categorize/institution/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">ioos_category\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">ioos_category") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">noaa_coastwatch_west_coast_node\n") >= 0, "results=\n" + results);
+        results.indexOf(">noaa_coastwatch_west_coast_node") >= 0, "results=\n" + results);
 
     results =
         String2.annotatedString(
@@ -5422,7 +5422,7 @@ class JettyTests extends WireMockLifecycle {
         SSR.getUrlResponseStringUnchanged(
             EDStatic.erddapUrl + "/categorize/standard_name/sea_water_temperature/index.html");
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdGlobecBottle\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5528,14 +5528,14 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl + "/griddap/index.html?" + EDStatic.defaultPIppQuery);
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf("List of griddap Datasets") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Title\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
         results.indexOf(
                 ">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)")
             >= 0,
         "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">erdMPOC1day\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdMPOC1day\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5575,11 +5575,11 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl + "/tabledap/index.html?" + EDStatic.defaultPIppQuery);
     Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
     Test.ensureTrue(results.indexOf("List of tabledap Datasets") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Title\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
     Test.ensureTrue(
-        results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
-    Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
+        results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("erdGlobecBottle\n") >= 0, "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(
@@ -5654,11 +5654,11 @@ class JettyTests extends WireMockLifecycle {
               EDStatic.erddapUrl + "/sos/index.html?" + EDStatic.defaultPIppQuery);
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("List of SOS Datasets") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Title") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
       Test.ensureTrue(
-          results.indexOf(">NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">glerAvgTemp") >= 0, "results=\n" + results);
+          results.indexOf("NDBC Standard Meteorological Buoy Data") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("glerAvgTemp") >= 0, "results=\n" + results);
 
       results =
           SSR.getUrlResponseStringUnchanged(
@@ -5713,11 +5713,11 @@ class JettyTests extends WireMockLifecycle {
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results.indexOf("Datasets Which Can Be Accessed via WCS") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS</th>") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Title</th>") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("RSS</th>") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results.indexOf(
-                  ">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>")
+                  "Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)</td>")
               >= 0,
           "results=\n" + results);
       Test.ensureTrue(results.indexOf(">erdMHchla8day<") >= 0, "results=\n" + results);
@@ -5774,14 +5774,14 @@ class JettyTests extends WireMockLifecycle {
               EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
       Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
       Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("Title") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("RSS") >= 0, "results=\n" + results);
       Test.ensureTrue(
           results.indexOf(
-                  ">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
+                  "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
               >= 0,
           "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">erdMH1chla1day\n") >= 0, "results=\n" + results);
+      Test.ensureTrue(results.indexOf("erdMH1chla1day\n") >= 0, "results=\n" + results);
 
       results =
           SSR.getUrlResponseStringUnchanged(

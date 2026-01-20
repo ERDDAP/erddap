@@ -1,16 +1,23 @@
 package gov.noaa.pfel.erddap.jte;
 
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.util.List;
 
 public class YouAreHere {
   private final String erddapUrl;
   private final String erddapLinkTitle;
-  private final String protocol;
+  private final List<String> breadcrumbs;
+  private final List<String> breadcrumbLinks;
 
-  public YouAreHere(final String erddapUrl, final String erddapLinkTitle, final String protocol) {
+  public YouAreHere(
+      final String erddapUrl,
+      final String erddapLinkTitle,
+      final List<String> breadcrumbs,
+      final List<String> breadcrumbLinks) {
     this.erddapUrl = erddapUrl;
     this.erddapLinkTitle = erddapLinkTitle;
-    this.protocol = protocol;
+    this.breadcrumbs = breadcrumbs;
+    this.breadcrumbLinks = breadcrumbLinks;
   }
 
   public String getErddapUrl() {
@@ -25,7 +32,11 @@ public class YouAreHere {
     return EDStatic.ProgramName;
   }
 
-  public String getProtocol() {
-    return protocol;
+  public List<String> getBreadcrumbs() {
+    return breadcrumbs;
+  }
+
+  public List<String> getBreadcrumbLinks() {
+    return breadcrumbLinks;
   }
 }

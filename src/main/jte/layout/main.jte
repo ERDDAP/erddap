@@ -58,7 +58,7 @@
       </td>
   </tr>
 </table>
-@template.youarehere(youAreHere)
+@template.components.youarehere(youAreHere)
 <!-- Content block -->
 ${content}
 

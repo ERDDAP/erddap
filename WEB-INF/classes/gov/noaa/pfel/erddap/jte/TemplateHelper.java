@@ -3,6 +3,7 @@ package gov.noaa.pfel.erddap.jte;
 import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
+import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,10 @@ public class TemplateHelper {
 
   public static String getMessage(Message message, int language) {
     return EDStatic.messages.get(message, language);
+  }
+
+  public static EDConfig getConfig() {
+    return EDStatic.config;
   }
 
   public static String getCurrentTimeZulu() {
@@ -47,5 +52,30 @@ public class TemplateHelper {
 
   public static String getLoginHtml(HttpServletRequest request, int language, String loggedInAs) {
     return EDStatic.getLoginHtml(request, language, loggedInAs);
+  }
+
+  // Prepare tooltip text for Tip('...') by escaping characters similarly to HtmlWidgets.htmlTooltip
+  public static String escapeTooltipForTip(String html) {
+    if (html == null) html = "";
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < html.length(); i++) {
+      char ch = html.charAt(i);
+      if (ch == '\\') sb.append("\\\\");
+      else if (ch == '"') sb.append("&quot;");
+      else if (ch == '\'') sb.append("&#39;");
+      else if (ch == '\n') sb.append(' ');
+      else sb.append(ch);
+    }
+    String s = sb.toString();
+    s = s.replace("&#39;", "\\'");
+    s = s.replace("  ", "&nbsp;&nbsp;");
+    return s;
+  }
+
+  // Return the question-mark image URL used in templates
+  public static String questionMarkImageUrl(
+      HttpServletRequest request, int language, String loggedInAs) {
+    return EDStatic.imageDirUrl(request, loggedInAs, language)
+        + EDStatic.messages.questionMarkImageFile;
   }
 }

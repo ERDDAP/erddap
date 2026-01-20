@@ -30,7 +30,7 @@ ${TemplateHelper.getMessage(Message.ADVC_OUT_OF_DATE,language)}
     ${TemplateHelper.getFormated(TemplateHelper.getMessage(Message.N_MATCHING,language),""+tableOptions.getNRows())} <br>
     ${TemplateHelper.getFormated(TemplateHelper.getMessage(Message.GENERATED_AT,language),TemplateHelper.getCurrentTimeZulu())}<br>
     <br>
-    @template.table(tableOptions)
+    @template.components.table(tableOptions)
 @endif
 </p>
 </div>
