@@ -2298,12 +2298,17 @@ public abstract class EDDTable extends EDD {
       int dvi = String2.indexOf(dataVariableDestinationNames(), tName);
       if (dvi < 0) {
         if (repair) continue;
-        else
-          throw new SimpleException(
-              EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
-                  + "Unrecognized constraint variable=\""
-                  + tName
-                  + "\"."); // + "\nValid=" + String2.toCSSVString(dataVariableDestionNames())
+        else {
+          if (!"jte".equalsIgnoreCase(tName)) {
+            throw new SimpleException(
+                EDStatic.simpleBilingual(language, Message.QUERY_ERROR)
+                    + "Unrecognized constraint variable=\""
+                    + tName
+                    + "\"."); // + "\nValid=" + String2.toCSSVString(dataVariableDestionNames())
+          } else {
+            continue; // ignore jte variable for this
+          }
+        }
       }
 
       EDV conEdv = dataVariables[dvi];

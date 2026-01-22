@@ -411,7 +411,7 @@ public class Erddap extends HttpServlet {
   }
 
   public static boolean useHtmlTemplates(HttpServletRequest request) {
-    if (request.getParameter("jte") != null) {
+    if (request != null && request.getParameter("jte") != null) {
       return Boolean.parseBoolean(request.getParameter("jte"));
     }
     return EDStatic.config.useHtmlTemplates;

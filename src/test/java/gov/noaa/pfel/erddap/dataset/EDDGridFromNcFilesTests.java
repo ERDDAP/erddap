@@ -8943,43 +8943,89 @@ class EDDGridFromNcFilesTests {
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, tDir, fName, ".htmlTable");
     results = File2.directReadFromUtf8File(tDir + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>time</th>\n"
+                    + "  <th>ECEF_X</th>\n"
+                    + "  <th>IB_time</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>m</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>time\n"
+                    + "<th>ECEF_X\n"
+                    + "<th>IB_time\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC\n"
+                    + "<th>m\n"
+                    + "<th>UTC\n"
+                    + "</tr>\n")
             + "<tr>\n"
-            + "<th>time\n"
-            + "<th>ECEF_X\n"
-            + "<th>IB_time\n"
+            + "<td>1984-02-01T12:00:59.001Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">9.96921E36"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1994-01-31T12:00:59.000Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<th>UTC\n"
-            + "<th>m\n"
-            + "<th>UTC\n"
+            + "<td>1984-02-01T12:00:59.101Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">9.96921E36"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1994-01-31T12:00:59.100Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td>1984-02-01T12:00:59.001Z\n"
-            + "<td class=\"R\">9.96921E36\n"
-            + "<td>1994-01-31T12:00:59.000Z\n"
+            + "<td>1984-02-01T12:00:59.201Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">9.96921E36"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1994-01-31T12:00:59.200Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td>1984-02-01T12:00:59.101Z\n"
-            + "<td class=\"R\">9.96921E36\n"
-            + "<td>1994-01-31T12:00:59.100Z\n"
+            + "<td>1984-02-01T12:00:59.301Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">9.96921E36"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1994-01-31T12:00:59.300Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td>1984-02-01T12:00:59.201Z\n"
-            + "<td class=\"R\">9.96921E36\n"
-            + "<td>1994-01-31T12:00:59.200Z\n"
+            + "<td>1984-02-01T12:00:59.401Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">9.96921E36"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1994-01-31T12:00:59.400Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
-            + "<tr>\n"
-            + "<td>1984-02-01T12:00:59.301Z\n"
-            + "<td class=\"R\">9.96921E36\n"
-            + "<td>1994-01-31T12:00:59.300Z\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<td>1984-02-01T12:00:59.401Z\n"
-            + "<td class=\"R\">9.96921E36\n"
-            + "<td>1994-01-31T12:00:59.400Z\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n";
     po = results.indexOf("<table class=\"erd commonBGColor nowrap\">");
     ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length()));
@@ -9085,18 +9131,33 @@ class EDDGridFromNcFilesTests {
     tName =
         eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, fName, ".xhtml");
     results = File2.directReadFromUtf8File(tDir + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
-            + "<tr>\n"
-            + "<th>time</th>\n"
-            + "<th>ECEF_X</th>\n"
-            + "<th>IB_time</th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>UTC</th>\n"
-            + "<th>m</th>\n"
-            + "<th>UTC</th>\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>time</th>\n"
+                    + "  <th>ECEF_X</th>\n"
+                    + "  <th>IB_time</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>m</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>time</th>\n"
+                    + "<th>ECEF_X</th>\n"
+                    + "<th>IB_time</th>\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th>m</th>\n"
+                    + "<th>UTC</th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
             + "<td>1984-02-01T12:00:59.001Z</td>\n"
             + "<td class=\"R\">9.96921E36</td>\n"
@@ -9122,6 +9183,7 @@ class EDDGridFromNcFilesTests {
             + "<td class=\"R\">9.96921E36</td>\n"
             + "<td>1994-01-31T12:00:59.400Z</td>\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n";
     po = results.indexOf("<table ");
     ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length()));
@@ -9298,60 +9360,136 @@ class EDDGridFromNcFilesTests {
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, tDir, fName, ".htmlTable");
     results = File2.directReadFromUtf8File(tDir + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>days</th>\n"
+                    + "  <th>hours</th>\n"
+                    + "  <th>minutes</th>\n"
+                    + "  <th>seconds</th>\n"
+                    + "  <th>millis</th>\n"
+                    + "  <th>bytes</th>\n"
+                    + "  <th>shorts</th>\n"
+                    + "  <th>ints</th>\n"
+                    + "  <th>floats</th>\n"
+                    + "  <th>doubles</th>\n"
+                    + "  <th>Strings</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>days\n"
+                    + "<th>hours\n"
+                    + "<th>minutes\n"
+                    + "<th>seconds\n"
+                    + "<th>millis\n"
+                    + "<th>bytes\n"
+                    + "<th>shorts\n"
+                    + "<th>ints\n"
+                    + "<th>floats\n"
+                    + "<th>doubles\n"
+                    + "<th>Strings\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC\n"
+                    + "<th>UTC\n"
+                    + "<th>UTC\n"
+                    + "<th>UTC\n"
+                    + "<th>UTC\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
-            + "<th>days\n"
-            + "<th>hours\n"
-            + "<th>minutes\n"
-            + "<th>seconds\n"
-            + "<th>millis\n"
-            + "<th>bytes\n"
-            + "<th>shorts\n"
-            + "<th>ints\n"
-            + "<th>floats\n"
-            + "<th>doubles\n"
-            + "<th>Strings\n"
+            + "<td>1970-01-03"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1980-01-01T06Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1990-01-01T00:10Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>2000-01-01T00:00:21Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>2010-01-01T00:00:00.031Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">41"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">10001"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1000001"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1.1"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1.0000000000001E12"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>10"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<th>UTC\n"
-            + "<th>UTC\n"
-            + "<th>UTC\n"
-            + "<th>UTC\n"
-            + "<th>UTC\n"
-            + "<th>\n"
-            + "<th>\n"
-            + "<th>\n"
-            + "<th>\n"
-            + "<th>\n"
-            + "<th>\n"
+            + "<td>1970-01-04"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1980-01-01T07Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>1990-01-01T00:11Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>2000-01-01T00:00:22Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>2010-01-01T00:00:00.032Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">42"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">10002"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1000002"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">2.2"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1.0000000000002E12"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>20"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
-            + "<tr>\n"
-            + "<td>1970-01-03\n"
-            + "<td>1980-01-01T06Z\n"
-            + "<td>1990-01-01T00:10Z\n"
-            + "<td>2000-01-01T00:00:21Z\n"
-            + "<td>2010-01-01T00:00:00.031Z\n"
-            + "<td class=\"R\">41\n"
-            + "<td class=\"R\">10001\n"
-            + "<td class=\"R\">1000001\n"
-            + "<td class=\"R\">1.1\n"
-            + "<td class=\"R\">1.0000000000001E12\n"
-            + "<td>10\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<td>1970-01-04\n"
-            + "<td>1980-01-01T07Z\n"
-            + "<td>1990-01-01T00:11Z\n"
-            + "<td>2000-01-01T00:00:22Z\n"
-            + "<td>2010-01-01T00:00:00.032Z\n"
-            + "<td class=\"R\">42\n"
-            + "<td class=\"R\">10002\n"
-            + "<td class=\"R\">1000002\n"
-            + "<td class=\"R\">2.2\n"
-            + "<td class=\"R\">1.0000000000002E12\n"
-            + "<td>20\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n";
     po = results.indexOf("<table class=\"erd commonBGColor nowrap\">");
     ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length()));
@@ -9518,6 +9656,7 @@ class EDDGridFromNcFilesTests {
     tName =
         eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, fName, ".xhtml");
     results = File2.directReadFromUtf8File(tDir + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -9532,32 +9671,62 @@ class EDDGridFromNcFilesTests {
             + "\n"
             + "&nbsp;\n"
             + "<table class=\"erd commonBGColor nowrap\">\n"
-            + "<tr>\n"
-            + "<th>days</th>\n"
-            + "<th>hours</th>\n"
-            + "<th>minutes</th>\n"
-            + "<th>seconds</th>\n"
-            + "<th>millis</th>\n"
-            + "<th>bytes</th>\n"
-            + "<th>shorts</th>\n"
-            + "<th>ints</th>\n"
-            + "<th>floats</th>\n"
-            + "<th>doubles</th>\n"
-            + "<th>Strings</th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>UTC</th>\n"
-            + "<th>UTC</th>\n"
-            + "<th>UTC</th>\n"
-            + "<th>UTC</th>\n"
-            + "<th>UTC</th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>days</th>\n"
+                    + "  <th>hours</th>\n"
+                    + "  <th>minutes</th>\n"
+                    + "  <th>seconds</th>\n"
+                    + "  <th>millis</th>\n"
+                    + "  <th>bytes</th>\n"
+                    + "  <th>shorts</th>\n"
+                    + "  <th>ints</th>\n"
+                    + "  <th>floats</th>\n"
+                    + "  <th>doubles</th>\n"
+                    + "  <th>Strings</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>days</th>\n"
+                    + "<th>hours</th>\n"
+                    + "<th>minutes</th>\n"
+                    + "<th>seconds</th>\n"
+                    + "<th>millis</th>\n"
+                    + "<th>bytes</th>\n"
+                    + "<th>shorts</th>\n"
+                    + "<th>ints</th>\n"
+                    + "<th>floats</th>\n"
+                    + "<th>doubles</th>\n"
+                    + "<th>Strings</th>\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
             + "<td>1970-01-03T00:00:00Z</td>\n"
             + "<td>1980-01-01T06:00:00Z</td>\n"
@@ -9584,7 +9753,9 @@ class EDDGridFromNcFilesTests {
             + "<td class=\"R\">1.0000000000002E12</td>\n"
             + "<td>20</td>\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n"
+            + (EDStatic.config.useHtmlTemplates ? "\n" : "")
             + "</body>\n"
             + "</html>\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -9684,32 +9855,66 @@ class EDDGridFromNcFilesTests {
         eddGrid.makeNewFileForDapQuery(
             language, null, null, userDapQuery, tDir, fName, ".htmlTable");
     results = File2.directReadFromUtf8File(tDir + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>days</th>\n"
+                    + "  <th>bytes</th>\n"
+                    + "  <th>doubles</th>\n"
+                    + "  <th>Strings</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>days\n"
+                    + "<th>bytes\n"
+                    + "<th>doubles\n"
+                    + "<th>Strings\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "<th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
-            + "<th>days\n"
-            + "<th>bytes\n"
-            + "<th>doubles\n"
-            + "<th>Strings\n"
+            + "<td>1970-01-04"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">42"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1.0000000000002E12"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>20"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<th>UTC\n"
-            + "<th>\n"
-            + "<th>\n"
-            + "<th>\n"
+            + "<td>1970-01-05"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">43"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">1.0000000000003E12"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>30"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
-            + "<tr>\n"
-            + "<td>1970-01-04\n"
-            + "<td class=\"R\">42\n"
-            + "<td class=\"R\">1.0000000000002E12\n"
-            + "<td>20\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<td>1970-01-05\n"
-            + "<td class=\"R\">43\n"
-            + "<td class=\"R\">1.0000000000003E12\n"
-            + "<td>30\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n";
     po = results.indexOf("<table class=\"erd commonBGColor nowrap\">");
     ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length()));
@@ -9820,6 +10025,7 @@ class EDDGridFromNcFilesTests {
     tName =
         eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, fName, ".xhtml");
     results = File2.directReadFromUtf8File(tDir + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -9834,18 +10040,34 @@ class EDDGridFromNcFilesTests {
             + "\n"
             + "&nbsp;\n"
             + "<table class=\"erd commonBGColor nowrap\">\n"
-            + "<tr>\n"
-            + "<th>days</th>\n"
-            + "<th>bytes</th>\n"
-            + "<th>doubles</th>\n"
-            + "<th>Strings</th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>UTC</th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "<th></th>\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>days</th>\n"
+                    + "  <th>bytes</th>\n"
+                    + "  <th>doubles</th>\n"
+                    + "  <th>Strings</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>days</th>\n"
+                    + "<th>bytes</th>\n"
+                    + "<th>doubles</th>\n"
+                    + "<th>Strings</th>\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "<th></th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
             + "<td>1970-01-04T00:00:00Z</td>\n"
             + "<td class=\"R\">42</td>\n"
@@ -9858,7 +10080,9 @@ class EDDGridFromNcFilesTests {
             + "<td class=\"R\">1.0000000000003E12</td>\n"
             + "<td>30</td>\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n"
+            + (EDStatic.config.useHtmlTemplates ? "\n" : "")
             + "</body>\n"
             + "</html>\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -13327,48 +13551,100 @@ class EDDGridFromNcFilesTests {
             edd.className() + "_testUnsignedGrid",
             ".htmlTable");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>rgb</th>\n"
+                    + "  <th>eightbitcolor</th>\n"
+                    + "  <th>palette</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>count</th>\n"
+                    + "  <th>count</th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>rgb\n"
+                    + "<th>eightbitcolor\n"
+                    + "<th>palette\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>count\n"
+                    + "<th>count\n"
+                    + "<th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
-            + "<th>rgb\n"
-            + "<th>eightbitcolor\n"
-            + "<th>palette\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">146"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">252"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<th>count\n"
-            + "<th>count\n"
-            + "<th>\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">147"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td class=\"R\">0\n"
-            + "<td class=\"R\">146\n"
-            + "<td class=\"R\">252\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">148"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td class=\"R\">0\n"
-            + "<td class=\"R\">147\n"
-            + "<td class=\"R\">0\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">149"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">255"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td class=\"R\">0\n"
-            + "<td class=\"R\">148\n"
-            + "<td class=\"R\">0\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">150"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td class=\"R\">0\n"
-            + "<td class=\"R\">149\n"
-            + "<td class=\"R\">255\n"
+            + "<td class=\"R\">0"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">151"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">5"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
-            + "<tr>\n"
-            + "<td class=\"R\">0\n"
-            + "<td class=\"R\">150\n"
-            + "<td class=\"R\">0\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<td class=\"R\">0\n"
-            + "<td class=\"R\">151\n"
-            + "<td class=\"R\">5\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n";
     po = results.indexOf(expected.substring(0, 40));
     Test.ensureEqual(
@@ -13678,18 +13954,33 @@ class EDDGridFromNcFilesTests {
             edd.className() + "_testUnsignedGrid",
             ".xhtml");
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<table class=\"erd commonBGColor nowrap\">\n"
-            + "<tr>\n"
-            + "<th>rgb</th>\n"
-            + "<th>eightbitcolor</th>\n"
-            + "<th>palette</th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>count</th>\n"
-            + "<th>count</th>\n"
-            + "<th></th>\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>rgb</th>\n"
+                    + "  <th>eightbitcolor</th>\n"
+                    + "  <th>palette</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>count</th>\n"
+                    + "  <th>count</th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>rgb</th>\n"
+                    + "<th>eightbitcolor</th>\n"
+                    + "<th>palette</th>\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>count</th>\n"
+                    + "<th>count</th>\n"
+                    + "<th></th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
             + "<td class=\"R\">0</td>\n"
             + "<td class=\"R\">146</td>\n"
@@ -13720,6 +14011,7 @@ class EDDGridFromNcFilesTests {
             + "<td class=\"R\">151</td>\n"
             + "<td class=\"R\">5</td>\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>";
     po = results.indexOf(expected.substring(0, 40));
     Test.ensureEqual(
