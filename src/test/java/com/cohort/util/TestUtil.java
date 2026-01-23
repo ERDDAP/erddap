@@ -534,6 +534,12 @@ public class TestUtil {
     Test.ensureEqual(Math2.roundToLong(Double.POSITIVE_INFINITY), Long.MAX_VALUE, "o");
     Test.ensureEqual(Math2.roundToLong(Double.NEGATIVE_INFINITY), Long.MAX_VALUE, "p");
 
+    // sqr
+    String2.log("test sqr");
+    Test.ensureEqual(Math2.sqr(2), 4.0, "positive test");
+    Test.ensureEqual(Math2.sqr(-3), 9.0, "negative test");
+    Test.ensureEqual(Math2.sqr(0), 0.0, "zero test");
+
     // roundToDouble
     String2.log("test roundToDouble");
     Test.ensureEqual(Math2.roundToDouble(-1.49), -1, "a");

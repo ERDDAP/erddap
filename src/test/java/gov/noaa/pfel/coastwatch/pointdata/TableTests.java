@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.BitSet;
 import org.junit.jupiter.api.BeforeAll;
@@ -18230,7 +18231,7 @@ public class TableTests {
 
       // test readSql (read a table)
       Table tempTable2 = new Table();
-      tempTable2.readSql(con, "SELECT * FROM " + tempTableName);
+      readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
       Test.ensureEqual(tempTable, tempTable2, "");
 
       // *** test rollback: add data that causes database to throw exception
@@ -18270,7 +18271,7 @@ public class TableTests {
       }
 
       // and ensure database was rolled back to previous state
-      tempTable2.readSql(con, "SELECT * FROM " + tempTableName);
+      readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
       Test.ensureEqual(tempTable, tempTable2, "");
 
       // *** test pre-execute errors: add data that causes saveAsSql to throw
@@ -18309,7 +18310,7 @@ public class TableTests {
       }
 
       // and ensure it rolls back to previous state
-      tempTable2.readSql(con, "SELECT * FROM " + tempTableName);
+      readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
       Test.ensureEqual(tempTable, tempTable2, "");
 
       // *** test successfully add data (and ensure previous rollbacks worked
@@ -18330,7 +18331,7 @@ public class TableTests {
           1.5);
 
       // and ensure result has 8 rows
-      tempTable2.readSql(con, "SELECT uid, string FROM " + tempTableName);
+      readSql(tempTable2, con, "SELECT uid, string FROM " + tempTableName);
       Test.ensureEqual(tempTable2.getColumn(0).toString(), "1, 2, 3, 4, 9, 10, 11, 12", "");
       Test.ensureEqual(
           tempTable2.getColumn(1).toString(), "ab, , [null], longer, ab, , [null], longer", "");
@@ -19457,7 +19458,7 @@ public class TableTests {
     // query = "SELECT * FROM names WHERE id = 3"
     String query = "SELECT * FROM " + tableName;
     Table table = new Table();
-    table.readSql(con, query);
+    readSql(table, con, query);
     String2.log(table.dataToString(5));
   }
 
@@ -21537,6 +21538,59 @@ public class TableTests {
     }; // float->double because lots of decimal digits
     for (int col = 0; col < 12; col++) {
       Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
+    }
+  }
+
+  /**
+   * This reads data from the resultsSet from an sql query using jdbc. !!!WARNING - THIS APPROACH
+   * OFFERS NO PROTECTION FROM SQL INJECTION. ONLY USE THIS IF YOU, NOT SOME POSSIBLY MALICIOUS
+   * USER, SPECIFIED THE QUERY.
+   *
+   * <p>Examples of things done to prepare to use this method:
+   *
+   * <ul>
+   *   <li>Class.forName("org.postgresql.Driver");
+   *   <li>String url = "jdbc:postgresql://otter.pfeg.noaa.gov/posttest"; //database name
+   *   <li>String user = "postadmin";
+   *   <li>String password = String2.getPasswordFromSystemIn("Password for '" + user + "'? ");
+   *   <li>Connection con = DriverManager.getConnection(url, user, password);
+   * </ul>
+   *
+   * @param con a Connection (these are sometimes pooled to save time)
+   * @param query e.g., "SELECT * FROM names WHERE id = 3"
+   * @throws Exception if trouble
+   */
+  public void readSql(Table table, Connection con, String query) throws Exception {
+
+    String msg = "  Table.readSql " + query;
+    long time = System.currentTimeMillis();
+    table.clear();
+
+    // create the statement and execute the query
+    Statement statement = con.createStatement();
+    try {
+      table.readSqlResultSet(statement.executeQuery(query));
+      statement.close();
+      statement = null;
+      if (Table.reallyVerbose)
+        String2.log(
+            msg
+                + " finished. nColumns="
+                + table.nColumns()
+                + " nRows="
+                + table.nRows()
+                + " TIME="
+                + (System.currentTimeMillis() - time)
+                + "ms");
+
+    } catch (Throwable t) {
+      String2.log(msg);
+      if (statement != null)
+        try {
+          statement.close();
+        } catch (Throwable t9) {
+        }
+      throw t;
     }
   }
 }
