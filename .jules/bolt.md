@@ -1,0 +1,3 @@
+## 2024-07-26 - Performance and Resource Management
+Learning: 1) Not all "obvious" performance optimizations (like replacing string concatenation with StringBuilder) result in a measurable improvement. Always benchmark to verify the impact. 2) When a method's purpose is to return a stream, that stream must not be closed within the method. `try-with-resources` should only be used when the resource's entire lifecycle is contained within the `try` block.
+Action: 1) Always benchmark performance changes. 2) Be mindful of resource lifecycles when using `try-with-resources` to avoid closing streams prematurely.
