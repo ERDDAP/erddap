@@ -176,7 +176,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
       Table table = new Table();
       // use try-with-resources to ensure the InputStream and BufferedReader are closed
       try (InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl);
-          BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+          BufferedReader in =
+              new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
         table.readXml(
             in,
             false, // no validate since no .dtd

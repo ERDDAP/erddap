@@ -611,7 +611,8 @@ public class XML {
    */
   public static Document parseXml(URL resourceFile, boolean validating) throws Exception {
     try (InputStream decompressedStream = File2.getDecompressedBufferedInputStream(resourceFile);
-        InputStreamReader reader = new InputStreamReader(decompressedStream, StandardCharsets.UTF_8)) {
+        InputStreamReader reader =
+            new InputStreamReader(decompressedStream, StandardCharsets.UTF_8)) {
       return parseXml(new InputSource(new BufferedReader(reader)), validating);
     }
   }
