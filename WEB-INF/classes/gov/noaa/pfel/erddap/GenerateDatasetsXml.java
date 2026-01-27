@@ -1257,7 +1257,15 @@ public class GenerateDatasetsXml {
               String2.log("working...");
               printToBoth(NcHelper.ncdump(s1, s2));
             }
-            default -> String2.log("ERROR: eddType=" + eddType + " is not an option.");
+            default -> {
+              // Check if registered via reflection (allows adding new types without modifying this switch)
+              if (DatasetTypeRegistry.isRegistered(eddType)) {
+                String2.log("Found '" + eddType + "' in registry (reflection-based).");
+                String2.log("Full implementation pending - register your dataset type and parameters.");
+              } else {
+                String2.log("ERROR: eddType=" + eddType + " is not an option.");
+              }
+            }
           }
         } catch (Throwable t) {
           String msg = MustBe.throwableToString(t);
