@@ -8,6 +8,8 @@ import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.TestUtil;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -1540,8 +1542,9 @@ class FileVisitorDNLSTests {
     File2.setLastModified(name22560, 100);
 
     // make 1 local file newer
+    long originalTime = File2.getLastModified(name22565);
     File2.setLastModified(name22565, System.currentTimeMillis() + 100);
-    Math2.sleep(500);
+    await().atMost(5, SECONDS).until(() -> File2.getLastModified(name22565) > originalTime);
 
     // test the sync
     Table table = FileVisitorDNLS.sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);

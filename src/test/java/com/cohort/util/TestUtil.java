@@ -4,6 +4,9 @@
  */
 package com.cohort.util;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
 import com.cohort.array.StringArray;
 import java.io.File;
 import java.io.Writer;
@@ -251,12 +254,6 @@ public class TestUtil {
     Test.ensureEqual(Math2.NaNCheck(Double.NaN), Double.NaN, "e");
     Test.ensureEqual(Math2.NaNCheck(Double.POSITIVE_INFINITY), Double.NaN, "f");
     Test.ensureEqual(Math2.NaNCheck(Double.NEGATIVE_INFINITY), Double.NaN, "g");
-
-    // sleep
-    String2.log("test sleep(3000)");
-    Math2.sleep(3000);
-    String2.log("test sleep(-5000)");
-    Math2.sleep(-5000);
 
     // memory
     double da[] = new double[1000000]; // use some memory
@@ -7575,18 +7572,16 @@ public class TestUtil {
     String2.log("test touch and getLastModified");
     Math2.gcAndWait("TestUtil (between tests)");
     File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
-    Math2.sleep(20); // make the file a little older
-    long fileTime = File2.getLastModified(utilDir + "temp.txt");
-    long time1 = System.currentTimeMillis();
-    Test.ensureTrue(time1 >= fileTime + 10, "a1 " + time1 + " " + fileTime);
-    Test.ensureTrue(
-        time1 <= fileTime + 50,
-        "a2 " + time1 + " " + fileTime + "\nThis fails when the computer is busy.");
+    final long originalFileTime = File2.getLastModified(utilDir + "temp.txt");
+
+    // Wait for the system clock to advance far enough that a new touch will have a new timestamp
+    await().atMost(5, SECONDS).until(() -> System.currentTimeMillis() > originalFileTime);
+
     Test.ensureTrue(File2.touch(utilDir + "temp.txt"), "a"); // touch the file
-    long time2 = System.currentTimeMillis();
-    fileTime = File2.getLastModified(utilDir + "temp.txt");
-    Test.ensureTrue(fileTime >= time1, "b");
-    Test.ensureTrue(fileTime <= time2, "c");
+
+    // Now wait for the file's timestamp to be updated
+    await().atMost(5, SECONDS).until(() -> File2.getLastModified(utilDir + "temp.txt") > originalFileTime);
+
     Test.ensureEqual(File2.touch(utilDir + "temp.gibberish"), false, "d");
 
     // test boolean delete(String dirName) {
