@@ -5117,6 +5117,7 @@ class EDDGridFromDapTests {
             gridDataset.className() + "_soda224",
             ".htmlTable"); // was ok
     String results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
+    results = results.replaceAll("\r\n", "\n");
     String expected =
         EDStatic.startHeadHtml(
                 language,
@@ -5144,68 +5145,148 @@ class EDDGridFromDapTests {
             // they
             // change
             // language
-            "&nbsp;<br>\n"
+            (EDStatic.config.useHtmlTemplates ? "\n" : "&nbsp;<br>\n")
             +
             // HtmlWidgets.BACK_BUTTON +
             "&nbsp;\n"
             + "<table class=\"erd commonBGColor nowrap\">\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>time</th>\n"
+                    + "  <th>depth</th>\n"
+                    + "  <th>latitude</th>\n"
+                    + "  <th>longitude</th>\n"
+                    + "  <th>temp</th>\n"
+                    + "  <th>salt</th>\n"
+                    + "  <th>u</th>\n"
+                    + "  <th>v</th>\n"
+                    + "  <th>w</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>m</th>\n"
+                    + "  <th>degrees_north</th>\n"
+                    + "  <th>degrees_east</th>\n"
+                    + "  <th>degree_C</th>\n"
+                    + "  <th>PSU</th>\n"
+                    + "  <th>m s-1</th>\n"
+                    + "  <th>m s-1</th>\n"
+                    + "  <th>m s-1</th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>time\n"
+                    + "<th>depth\n"
+                    + "<th>latitude\n"
+                    + "<th>longitude\n"
+                    + "<th>temp\n"
+                    + "<th>salt\n"
+                    + "<th>u\n"
+                    + "<th>v\n"
+                    + "<th>w\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC\n"
+                    + "<th>m\n"
+                    + "<th>degrees_north\n"
+                    + "<th>degrees_east\n"
+                    + "<th>degree_C\n"
+                    + "<th>PSU\n"
+                    + "<th>m s-1\n"
+                    + "<th>m s-1\n"
+                    + "<th>m s-1\n"
+                    + "</tr>\n")
             + "<tr>\n"
-            + "<th>time\n"
-            + "<th>depth\n"
-            + "<th>latitude\n"
-            + "<th>longitude\n"
-            + "<th>temp\n"
-            + "<th>salt\n"
-            + "<th>u\n"
-            + "<th>v\n"
-            + "<th>w\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>UTC\n"
-            + "<th>m\n"
-            + "<th>degrees_north\n"
-            + "<th>degrees_east\n"
-            + "<th>degree_C\n"
-            + "<th>PSU\n"
-            + "<th>m s-1\n"
-            + "<th>m s-1\n"
-            + "<th>m s-1\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<td>2001-12-15T00:00:00Z\n"
-            + "<td class=\"R\">5.01\n"
+            + "<td>2001-12-15T00:00:00Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">5.01"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + // 2014-01-17 was 5.0
-            "<td class=\"R\">23.25\n"
-            + "<td class=\"R\">185.25\n"
-            + "<td class=\"R\">26.7815\n"
-            + "<td class=\"R\">35.205196\n"
-            + "<td class=\"R\">-0.16983111\n"
-            + "<td class=\"R\">0.11358413\n"
-            + "<td class=\"R\">2.099171E-10\n"
+            "<td class=\"R\">23.25"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">185.25"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">26.7815"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">35.205196"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">-0.16983111"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">0.11358413"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">2.099171E-10"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td>2001-12-15T00:00:00Z\n"
-            + "<td class=\"R\">15.07\n"
+            + "<td>2001-12-15T00:00:00Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">15.07"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + // 2014-01-17 was 15.0
-            "<td class=\"R\">23.25\n"
-            + "<td class=\"R\">185.25\n"
-            + "<td class=\"R\">26.77543\n"
-            + "<td class=\"R\">35.205135\n"
-            + "<td class=\"R\">-0.15841055\n"
-            + "<td class=\"R\">0.11168823\n"
-            + "<td class=\"R\">-6.394319E-7\n"
+            "<td class=\"R\">23.25"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">185.25"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">26.77543"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">35.205135"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">-0.15841055"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">0.11168823"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">-6.394319E-7"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
             + "<tr>\n"
-            + "<td>2001-12-15T00:00:00Z\n"
-            + "<td class=\"R\">25.28\n"
+            + "<td>2001-12-15T00:00:00Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">25.28"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + // 2014-01-17 was 25.0
-            "<td class=\"R\">23.25\n"
-            + "<td class=\"R\">185.25\n"
-            + "<td class=\"R\">26.774588\n"
-            + "<td class=\"R\">35.205017\n"
-            + "<td class=\"R\">-0.15311892\n"
-            + "<td class=\"R\">0.10998611\n"
-            + "<td class=\"R\">-1.3381572E-6\n"
+            "<td class=\"R\">23.25"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">185.25"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">26.774588"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">35.205017"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">-0.15311892"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">0.10998611"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">-1.3381572E-6"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 

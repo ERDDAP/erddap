@@ -1,12 +1,14 @@
 package gov.noaa.pfel.erddap.filetypes;
 
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.AxisDataAccessor;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.dataset.TableWriterJte;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,25 +24,47 @@ public class HtmlTableFiles extends TableWriterFileType {
 
   @Override
   public TableWriter generateTableWriter(DapRequestInfo requestInfo) {
-    return new TableWriterHtmlTable(
-        requestInfo.request(),
-        requestInfo.language(),
-        requestInfo.edd(),
-        requestInfo.newHistory(),
-        requestInfo.loggedInAs(),
-        requestInfo.endOfRequest(),
-        requestInfo.userDapQuery(),
-        requestInfo.outputStream(),
-        true,
-        requestInfo.fileName(),
-        false,
-        "",
-        "",
-        true,
-        true,
-        -1,
-        EDStatic.imageDirUrl(null, requestInfo.loggedInAs(), requestInfo.language())
-            + EDStatic.messages.questionMarkImageFile);
+    if (Erddap.useHtmlTemplates(requestInfo.request())) {
+      return new TableWriterJte(
+          requestInfo.request(),
+          requestInfo.language(),
+          requestInfo.edd(),
+          requestInfo.newHistory(),
+          requestInfo.loggedInAs(),
+          requestInfo.endOfRequest(),
+          requestInfo.userDapQuery(),
+          requestInfo.outputStream(),
+          true,
+          requestInfo.fileName(),
+          false,
+          "",
+          "",
+          true,
+          true,
+          -1,
+          EDStatic.imageDirUrl(null, requestInfo.loggedInAs(), requestInfo.language())
+              + EDStatic.messages.questionMarkImageFile);
+    } else {
+      return new TableWriterHtmlTable(
+          requestInfo.request(),
+          requestInfo.language(),
+          requestInfo.edd(),
+          requestInfo.newHistory(),
+          requestInfo.loggedInAs(),
+          requestInfo.endOfRequest(),
+          requestInfo.userDapQuery(),
+          requestInfo.outputStream(),
+          true,
+          requestInfo.fileName(),
+          false,
+          "",
+          "",
+          true,
+          true,
+          -1,
+          EDStatic.imageDirUrl(null, requestInfo.loggedInAs(), requestInfo.language())
+              + EDStatic.messages.questionMarkImageFile);
+    }
   }
 
   @Override
@@ -119,26 +143,50 @@ public class HtmlTableFiles extends TableWriterFileType {
               true); // rowMajor, convertToNaN  (better to do it here)
 
     // write the data to the tableWriter
-    TableWriter tw =
-        new TableWriterHtmlTable(
-            request,
-            language,
-            eddGrid,
-            eddGrid.getNewHistory(language, requestUrl, userDapQuery),
-            loggedInAs,
-            endOfRequest,
-            userDapQuery,
-            outputStreamSource,
-            true,
-            fileName,
-            xhtmlMode,
-            preTableHtml,
-            postTableHtml,
-            true,
-            true,
-            -1, // tencodeAsHTML, tWriteUnits
-            EDStatic.imageDirUrl(request, loggedInAs, language)
-                + EDStatic.messages.questionMarkImageFile);
+    TableWriter tw = null;
+    if (Erddap.useHtmlTemplates(request)) {
+      tw =
+          new TableWriterJte(
+              request,
+              language,
+              eddGrid,
+              eddGrid.getNewHistory(language, requestUrl, userDapQuery),
+              loggedInAs,
+              endOfRequest,
+              userDapQuery,
+              outputStreamSource,
+              true,
+              fileName,
+              xhtmlMode,
+              preTableHtml,
+              postTableHtml,
+              true,
+              true,
+              -1, // tencodeAsHTML, tWriteUnits
+              EDStatic.imageDirUrl(request, loggedInAs, language)
+                  + EDStatic.messages.questionMarkImageFile);
+    } else {
+      tw =
+          new TableWriterHtmlTable(
+              request,
+              language,
+              eddGrid,
+              eddGrid.getNewHistory(language, requestUrl, userDapQuery),
+              loggedInAs,
+              endOfRequest,
+              userDapQuery,
+              outputStreamSource,
+              true,
+              fileName,
+              xhtmlMode,
+              preTableHtml,
+              postTableHtml,
+              true,
+              true,
+              -1, // tencodeAsHTML, tWriteUnits
+              EDStatic.imageDirUrl(request, loggedInAs, language)
+                  + EDStatic.messages.questionMarkImageFile);
+    }
     if (isAxisDapQuery) {
       eddGrid.saveAsTableWriter(ada, tw);
     } else {

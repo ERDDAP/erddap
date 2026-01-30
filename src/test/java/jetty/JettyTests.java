@@ -8852,7 +8852,7 @@ class JettyTests {
       "&short_name=depth",
       "&minLat=-45&maxLat=45",
       "&minLon=-25&maxLon=25",
-      "&minTime=now-5years&maxTime=now-2years"
+      "&minTime=2018&maxTime=now-2years"
     };
     for (int i = 0; i < goodQueries.length; i++) {
       query += goodQueries[i];
@@ -10300,6 +10300,7 @@ class JettyTests {
             ".htmlTable");
     // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
+    results = results.replaceAll("\r\n", "\n");
     // String2.log(results);
     expected =
         EDStatic.startHeadHtml(
@@ -10328,38 +10329,71 @@ class JettyTests {
             // they
             // change
             // language
-            "&nbsp;<br>\n"
+            (EDStatic.config.useHtmlTemplates ? "\n" : "&nbsp;<br>\n")
             +
             // HtmlWidgets.BACK_BUTTON +
             "&nbsp;\n"
             + "<table class=\"erd commonBGColor nowrap\">\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>longitude</th>\n"
+                    + "  <th>NO3</th>\n"
+                    + "  <th>time</th>\n"
+                    + "  <th>ship</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>degrees_east</th>\n"
+                    + "  <th>micromoles L-1</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>longitude\n"
+                    + "<th>NO3\n"
+                    + "<th>time\n"
+                    + "<th>ship\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>degrees_east\n"
+                    + "<th>micromoles L-1\n"
+                    + "<th>UTC\n"
+                    + "<th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
-            + "<th>longitude\n"
-            + "<th>NO3\n"
-            + "<th>time\n"
-            + "<th>ship\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>degrees_east\n"
-            + "<th>micromoles L-1\n"
-            + "<th>UTC\n"
-            + "<th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<td class=\"R\">-124.4\n"
-            + "<td class=\"R\">35.7\n"
-            + "<td>2002-08-03T01:29:00Z\n"
-            + "<td>New_Horizon\n"
+            + "<td class=\"R\">-124.4"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">35.7"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>2002-08-03T01:29:00Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>New_Horizon"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n";
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
     expected = // row with missing value has "&nbsp;" missing value
         "<tr>\n"
-            + "<td class=\"R\">-124.1\n"
-            + "<td class=\"R\">24.45\n"
-            + "<td>2002-08-19T20:18:00Z\n"
-            + "<td>New_Horizon\n"
+            + "<td class=\"R\">-124.1"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td class=\"R\">24.45"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>2002-08-19T20:18:00Z"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
+            + "<td>New_Horizon"
+            + (EDStatic.config.useHtmlTemplates ? "</td>" : "")
+            + "\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n"
             + EDStatic.endBodyHtml(
                 null, language, EDStatic.erddapUrl(null, (String) null, language), (String) null)
@@ -11037,7 +11071,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
             language, null, null, userDapQuery, dir, globecBottle.className() + "_Data", ".xhtml");
     // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
-    // String2.log(results);
+    results = results.replaceAll("\r\n", "\n");
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -11054,18 +11088,34 @@ netcdf EDDTableFromNcFiles_Data.nc {
             + "\n"
             + "&nbsp;\n"
             + "<table class=\"erd commonBGColor nowrap\">\n"
-            + "<tr>\n"
-            + "<th>longitude</th>\n"
-            + "<th>NO3</th>\n"
-            + "<th>time</th>\n"
-            + "<th>ship</th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>degrees_east</th>\n"
-            + "<th>micromoles L-1</th>\n"
-            + "<th>UTC</th>\n"
-            + "<th></th>\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>longitude</th>\n"
+                    + "  <th>NO3</th>\n"
+                    + "  <th>time</th>\n"
+                    + "  <th>ship</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>degrees_east</th>\n"
+                    + "  <th>micromoles L-1</th>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th></th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>longitude</th>\n"
+                    + "<th>NO3</th>\n"
+                    + "<th>time</th>\n"
+                    + "<th>ship</th>\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>degrees_east</th>\n"
+                    + "<th>micromoles L-1</th>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th></th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
             + "<td class=\"R\">-124.4</td>\n"
             + "<td class=\"R\">35.7</td>\n"
@@ -11080,7 +11130,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
             + "<td>2002-08-19T20:18:00Z</td>\n"
             + "<td>New_Horizon</td>\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n"
+            + (EDStatic.config.useHtmlTemplates ? "\n" : "")
             + "</body>\n"
             + "</html>\n";
     tResults = results.substring(results.length() - expected.length());
@@ -11175,7 +11227,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
               language, null, null, userDapQuery, dir, eddTable2.className() + "_Itself", ".xhtml");
       // TestUtil.displayInBrowser("file://" + dir + tName);
       results = File2.directReadFromUtf8File(dir + tName);
-      // String2.log(results);
+      results = results.replaceAll("\r\n", "\n");
       expected =
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
               + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -11192,18 +11244,34 @@ netcdf EDDTableFromNcFiles_Data.nc {
               + "\n"
               + "&nbsp;\n"
               + "<table class=\"erd commonBGColor nowrap\">\n"
-              + "<tr>\n"
-              + "<th>longitude</th>\n"
-              + "<th>NO3</th>\n"
-              + "<th>time</th>\n"
-              + "<th>ship</th>\n"
-              + "</tr>\n"
-              + "<tr>\n"
-              + "<th>degrees_east</th>\n"
-              + "<th>micromoles L-1</th>\n"
-              + "<th>UTC</th>\n"
-              + "<th></th>\n"
-              + "</tr>\n"
+              + (EDStatic.config.useHtmlTemplates
+                  ? "<thead>\n"
+                      + "  <tr>\n"
+                      + "  <th>longitude</th>\n"
+                      + "  <th>NO3</th>\n"
+                      + "  <th>time</th>\n"
+                      + "  <th>ship</th>\n"
+                      + "  </tr>\n"
+                      + "  <tr>\n"
+                      + "  <th>degrees_east</th>\n"
+                      + "  <th>micromoles L-1</th>\n"
+                      + "  <th>UTC</th>\n"
+                      + "  <th></th>\n"
+                      + "  </tr>\n"
+                      + "</thead>\n"
+                      + "<tbody>\n"
+                  : "<tr>\n"
+                      + "<th>longitude</th>\n"
+                      + "<th>NO3</th>\n"
+                      + "<th>time</th>\n"
+                      + "<th>ship</th>\n"
+                      + "</tr>\n"
+                      + "<tr>\n"
+                      + "<th>degrees_east</th>\n"
+                      + "<th>micromoles L-1</th>\n"
+                      + "<th>UTC</th>\n"
+                      + "<th></th>\n"
+                      + "</tr>\n")
               + "<tr>\n"
               + "<td class=\"R\">-124.4</td>\n"
               + "<td class=\"R\">35.7</td>\n"
@@ -13373,6 +13441,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
             eddGrid2.className() + "_Itself",
             ".xhtml");
     results = File2.directReadFromUtf8File(EDStatic.config.fullTestCacheDirectory + tName);
+    results = results.replaceAll("\r\n", "\n");
     // String2.log(results);
     expected =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -13390,20 +13459,38 @@ netcdf EDDTableFromNcFiles_Data.nc {
             + "\n"
             + "&nbsp;\n"
             + "<table class=\"erd commonBGColor nowrap\">\n"
-            + "<tr>\n"
-            + "<th>time</th>\n"
-            + "<th>depth</th>\n"
-            + "<th>latitude</th>\n"
-            + "<th>longitude</th>\n"
-            + "<th>salt</th>\n"
-            + "</tr>\n"
-            + "<tr>\n"
-            + "<th>UTC</th>\n"
-            + "<th>m</th>\n"
-            + "<th>degrees_north</th>\n"
-            + "<th>degrees_east</th>\n"
-            + "<th>PSU</th>\n"
-            + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates
+                ? "<thead>\n"
+                    + "  <tr>\n"
+                    + "  <th>time</th>\n"
+                    + "  <th>depth</th>\n"
+                    + "  <th>latitude</th>\n"
+                    + "  <th>longitude</th>\n"
+                    + "  <th>salt</th>\n"
+                    + "  </tr>\n"
+                    + "  <tr>\n"
+                    + "  <th>UTC</th>\n"
+                    + "  <th>m</th>\n"
+                    + "  <th>degrees_north</th>\n"
+                    + "  <th>degrees_east</th>\n"
+                    + "  <th>PSU</th>\n"
+                    + "  </tr>\n"
+                    + "</thead>\n"
+                    + "<tbody>\n"
+                : "<tr>\n"
+                    + "<th>time</th>\n"
+                    + "<th>depth</th>\n"
+                    + "<th>latitude</th>\n"
+                    + "<th>longitude</th>\n"
+                    + "<th>salt</th>\n"
+                    + "</tr>\n"
+                    + "<tr>\n"
+                    + "<th>UTC</th>\n"
+                    + "<th>m</th>\n"
+                    + "<th>degrees_north</th>\n"
+                    + "<th>degrees_east</th>\n"
+                    + "<th>PSU</th>\n"
+                    + "</tr>\n")
             + "<tr>\n"
             + "<td>1885-10-15T00:00:00Z</td>\n"
             + "<td class=\"R\">5.01</td>\n"
@@ -13418,7 +13505,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
             + "<td class=\"R\">175.25</td>\n"
             + "<td class=\"R\">34.12087</td>\n"
             + "</tr>\n"
+            + (EDStatic.config.useHtmlTemplates ? "</tbody>\n" : "")
             + "</table>\n"
+            + (EDStatic.config.useHtmlTemplates ? "\n" : "")
             + "</body>\n"
             + "</html>\n";
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
@@ -16545,7 +16634,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
     int bytes[] =
         new int[] {
           5875592, 23734053, 23734063, 23733974, 6006, 303, 2085486, 4701074, 60787, 60196,
-          11980027, 31827797, 28198736, 28198830, 54118736, 2085800, 2090600, 5285, 25961828, 5244,
+          16209911, 31827797, 28198736, 28198830, 54118736, 2085800, 2090600, 5285, 25961828, 5244,
           5877820, 26929890, 58, 23734053, 23734063, 23733974, 69372795, 523113, 3601, 478774,
           2189656, 2904880, 33930, 76777,
           277494, // small png flips between 26906 and 30764, updated to 33930

@@ -1,7 +1,9 @@
 package gov.noaa.pfel.erddap.filetypes;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.TableWriterHtmlTable;
+import gov.noaa.pfel.erddap.dataset.TableWriterJte;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
@@ -19,26 +21,49 @@ public class XhtmlTableFiles extends HtmlTableFiles {
 
   @Override
   public TableWriter generateTableWriter(DapRequestInfo requestInfo) {
-    return new TableWriterHtmlTable(
-        requestInfo.request(),
-        requestInfo.language(),
-        requestInfo.edd(),
-        requestInfo.newHistory(),
-        requestInfo.loggedInAs(),
-        requestInfo.endOfRequest(),
-        requestInfo.userDapQuery(),
-        requestInfo.outputStream(),
-        true,
-        requestInfo.fileName(),
-        true,
-        "",
-        "",
-        true,
-        true,
-        -1,
-        EDStatic.imageDirUrl(
-                requestInfo.request(), requestInfo.loggedInAs(), requestInfo.language())
-            + EDStatic.messages.questionMarkImageFile);
+    if (Erddap.useHtmlTemplates(requestInfo.request())) {
+      return new TableWriterJte(
+          requestInfo.request(),
+          requestInfo.language(),
+          requestInfo.edd(),
+          requestInfo.newHistory(),
+          requestInfo.loggedInAs(),
+          requestInfo.endOfRequest(),
+          requestInfo.userDapQuery(),
+          requestInfo.outputStream(),
+          true,
+          requestInfo.fileName(),
+          true,
+          "",
+          "",
+          true,
+          true,
+          -1,
+          EDStatic.imageDirUrl(
+                  requestInfo.request(), requestInfo.loggedInAs(), requestInfo.language())
+              + EDStatic.messages.questionMarkImageFile);
+    } else {
+      return new TableWriterHtmlTable(
+          requestInfo.request(),
+          requestInfo.language(),
+          requestInfo.edd(),
+          requestInfo.newHistory(),
+          requestInfo.loggedInAs(),
+          requestInfo.endOfRequest(),
+          requestInfo.userDapQuery(),
+          requestInfo.outputStream(),
+          true,
+          requestInfo.fileName(),
+          true,
+          "",
+          "",
+          true,
+          true,
+          -1,
+          EDStatic.imageDirUrl(
+                  requestInfo.request(), requestInfo.loggedInAs(), requestInfo.language())
+              + EDStatic.messages.questionMarkImageFile);
+    }
   }
 
   @Override
