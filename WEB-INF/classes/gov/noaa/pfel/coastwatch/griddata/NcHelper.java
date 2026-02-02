@@ -50,45 +50,55 @@ import ucar.nc2.write.Ncdump;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
- * This class has some static convenience methods related to NetCDF files and the other Data
+ * This class has some static convenience methods related to NetCDF files and
+ * the other Data
  * classes.
  *
- * <p>!!!netcdf classes use the Apache Jakarta Commons Logging project (Apache license). The files
- * are in the netcdfAll.jar. !!!The commons logging system and your logger must be initialized
- * before using this class. It is usually set by the main program (e.g., NetCheck). For a simple
+ * <p>
+ * !!!netcdf classes use the Apache Jakarta Commons Logging project (Apache
+ * license). The files
+ * are in the netcdfAll.jar. !!!The commons logging system and your logger must
+ * be initialized
+ * before using this class. It is usually set by the main program (e.g.,
+ * NetCheck). For a simple
  * solution, use String2.setupCommonsLogging(-1);
  *
- * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-12-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com)
+ *         2005-12-07
  */
 public class NcHelper {
 
   /**
-   * Set this to true (by calling verbose=true in your program, not by changing the code here) if
+   * Set this to true (by calling verbose=true in your program, not by changing
+   * the code here) if
    * you want lots of diagnostic messages sent to String2.log.
    */
   public static boolean verbose = false;
 
   /**
-   * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
+   * Set this to true (by calling reallyVerbose=true in your program, not by
+   * changing the code here)
    * if you want lots of diagnostic messages sent to String2.log.
    */
   public static boolean reallyVerbose = false;
 
   /**
-   * Set this to true (by calling debugMode=true in your program, not by changing the code here) if
+   * Set this to true (by calling debugMode=true in your program, not by changing
+   * the code here) if
    * you want lots and lots of diagnostic messages sent to String2.log.
    */
   public static boolean debugMode = false;
 
   /**
-   * varName + StringLengthSuffix is used to create the name for the char dimension of a String
+   * varName + StringLengthSuffix is used to create the name for the char
+   * dimension of a String
    * variable. "_strlen" is what netcdf-java uses.
    */
-  public static final String StringLengthSuffix =
-      "_strlen"; // pre 2012-06-05 was StringLength="StringLength";
+  public static final String StringLengthSuffix = "_strlen"; // pre 2012-06-05 was StringLength="StringLength";
 
   /**
-   * Since .nc files can't store 16bit char or longs, those data types are stored as shorts or
+   * Since .nc files can't store 16bit char or longs, those data types are stored
+   * as shorts or
    * doubles and these messages are added to the attributes.
    */
   public static final String originally_a_CharArray = "originally a CharArray";
@@ -102,13 +112,16 @@ public class NcHelper {
   public static final int LONG_MAXSTRINGLENGTH = 20;
 
   /**
-   * For my purposes (not part of NetCDF system), this is the character used to separate a
-   * structureName|memberName so that structure members can be handled like other variables.
+   * For my purposes (not part of NetCDF system), this is the character used to
+   * separate a
+   * structureName|memberName so that structure members can be handled like other
+   * variables.
    */
   public static final char STRUCTURE_MEMBER_SEPARATOR = '|';
 
   /**
-   * Tell netcdf-java to object if a file is truncated (e.g., didn't get completely copied over) See
+   * Tell netcdf-java to object if a file is truncated (e.g., didn't get
+   * completely copied over) See
    * email from Christian Ward-Garrison Nov 2, 2016 and new location in email from
    * support-netcdf-java (Sean Arms) 2021-01-07.
    */
@@ -120,9 +133,11 @@ public class NcHelper {
   /**
    * This is an ncdump-like method.
    *
-   * @param cmd Use just one option: "-h" (header), "-c" (coord. vars), "-vall" (default), "-v
-   *     var1;var2", "-v var1(0:1,:,12)" "-k" (type), "-t" (human-readable times) -- These 2 options
-   *     don't work.
+   * @param cmd Use just one option: "-h" (header), "-c" (coord. vars), "-vall"
+   *            (default), "-v
+   *            var1;var2", "-v var1(0:1,:,12)" "-k" (type), "-t" (human-readable
+   *            times) -- These 2 options
+   *            don't work.
    */
   public static String ncdump(String fileName, String cmd) throws Exception {
     try (NetcdfFile nc = openFile(fileName)) {
@@ -146,8 +161,10 @@ public class NcHelper {
   }
 
   /**
-   * This is like String2.fromJson, but does less decoding and is made specifically to fix up
-   * unnecessarily encoded attributes in NcDump String starting with netcdf-java 4.0. This is like
+   * This is like String2.fromJson, but does less decoding and is made
+   * specifically to fix up
+   * unnecessarily encoded attributes in NcDump String starting with netcdf-java
+   * 4.0. This is like
    * replaceAll, but smarter. null is returned as null.
    *
    * @param s
@@ -157,13 +174,15 @@ public class NcHelper {
     StringBuilder sb = new StringBuilder();
     int sLength = s.length();
 
-    // remove dir name from first line (since this is sometimes sent to ERDDAP users)
+    // remove dir name from first line (since this is sometimes sent to ERDDAP
+    // users)
     // "netcdf /erddapBPD/cache/_test/EDDGridFromDap_Axis.nc {\n" +
     int po = 0;
     int brPo = s.indexOf(" {");
     if (brPo >= 0) {
       int slPo = s.substring(0, brPo).lastIndexOf('/');
-      if (slPo < 0) slPo = s.substring(0, brPo).lastIndexOf('\\');
+      if (slPo < 0)
+        slPo = s.substring(0, brPo).lastIndexOf('\\');
       if (slPo >= 0) {
         sb.append("netcdf ");
         po = slPo + 1;
@@ -174,15 +193,18 @@ public class NcHelper {
     while (po < sLength) {
       char ch = s.charAt(po);
       if (ch == '\\') {
-        if (po == sLength - 1) po--; // so reread \ and treat as \\
+        if (po == sLength - 1)
+          po--; // so reread \ and treat as \\
         po++;
         ch = s.charAt(po);
-        if (ch == 'n') sb.append('\n');
+        if (ch == 'n')
+          sb.append('\n');
         else if (ch == 'r') {
-        } else if (ch == '\'') sb.append('\'');
-        else sb.append("\\" + ch); // leave as backslash encoded
-      } else if (ch
-          == '\r') { // 2013-09-03 netcdf-java 4.3 started using \r\n on non-data lines. Remove \r.
+        } else if (ch == '\'')
+          sb.append('\'');
+        else
+          sb.append("\\" + ch); // leave as backslash encoded
+      } else if (ch == '\r') { // 2013-09-03 netcdf-java 4.3 started using \r\n on non-data lines. Remove \r.
       } else {
         sb.append(ch);
       }
@@ -194,13 +216,17 @@ public class NcHelper {
   /**
    * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
    *
-   * <p>For StringArray, this is like fromJson, but specifically designed to decode an attribute,
-   * starting with netcdf-java 4.0 (which returns them in a backslash encoded form). null is
+   * <p>
+   * For StringArray, this is like fromJson, but specifically designed to decode
+   * an attribute,
+   * starting with netcdf-java 4.0 (which returns them in a backslash encoded
+   * form). null is
    * returned as null
    *
    * @param nc2Array an nc2Array
-   * @return Decoded StringArray (from ArrayChar.D1, split at \n), or other PrimitiveArray (from
-   *     numeric ArrayXxx.D1)
+   * @return Decoded StringArray (from ArrayChar.D1, split at \n), or other
+   *         PrimitiveArray (from
+   *         numeric ArrayXxx.D1)
    */
   private static PrimitiveArray decodeAttributeToPrimitive(Array nc2Array) {
     // String[] from ArrayChar.Dn
@@ -218,7 +244,8 @@ public class NcHelper {
       boolean boolAr[] = (boolean[]) nc2Array.copyTo1DJavaArray();
       int n = boolAr.length;
       byte byteAr[] = new byte[n];
-      for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
+      for (int i = 0; i < n; i++)
+        byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
       return PrimitiveArray.factory(byteAr, nc2Array.isUnsigned());
     }
 
@@ -227,7 +254,8 @@ public class NcHelper {
   }
 
   /**
-   * This mimics the old way of creating and adding a dimension. The implied isUnlimited and
+   * This mimics the old way of creating and adding a dimension. The implied
+   * isUnlimited and
    * variableLength are false.
    *
    * @param name
@@ -245,7 +273,7 @@ public class NcHelper {
    *
    * @param name
    * @param size
-   * @param isShared For me, usually true.
+   * @param isShared         For me, usually true.
    * @param isUnlimited
    * @param isVariableLength
    * @return the new dimension
@@ -265,9 +293,9 @@ public class NcHelper {
   /**
    * This mimics the pre-2021 way of creating a variable (if just one dimension).
    *
-   * @param group the Group.Builder
+   * @param group     the Group.Builder
    * @param shortName the short name for the var
-   * @param dataType the data type
+   * @param dataType  the data type
    * @param dim
    * @return the Variable.Builder
    */
@@ -279,27 +307,28 @@ public class NcHelper {
   /**
    * This mimics the pre-2021 way of creating a variable.
    *
-   * @param group the Group.Builder
+   * @param group     the Group.Builder
    * @param shortName the short name for the var
-   * @param dataType the data type
-   * @param dims the list of dimensions
+   * @param dataType  the data type
+   * @param dims      the list of dimensions
    * @return the Variable.Builder
    */
   public static Variable.Builder<?> addVariable(
       Group.Builder group, String shortName, DataType dataType, List<Dimension> dims) {
 
-    Variable.Builder<?> varBuilder =
-        Variable.builder().setName(shortName).setDataType(dataType).addDimensions(dims);
+    Variable.Builder<?> varBuilder = Variable.builder().setName(shortName).setDataType(dataType).addDimensions(dims);
     group.addVariable(varBuilder);
     return varBuilder;
   }
 
   /**
-   * This mimics the pre-2021 way of creating a String (actually char) variable in an .nc3 file.
+   * This mimics the pre-2021 way of creating a String (actually char) variable in
+   * an .nc3 file.
    *
-   * @param group the Group.Builder
-   * @param shortName the short name for the var
-   * @param dims the list of dimensions (not including a stringLength dim)
+   * @param group           the Group.Builder
+   * @param shortName       the short name for the var
+   * @param dims            the list of dimensions (not including a stringLength
+   *                        dim)
    * @param maxStringLength
    * @return the Variable.Builder
    */
@@ -312,8 +341,7 @@ public class NcHelper {
     ArrayList<Dimension> al = new ArrayList<>(dims);
     al.add(dim);
 
-    Variable.Builder<?> varBuilder =
-        Variable.builder().setName(shortName).setDataType(DataType.CHAR).addDimensions(al);
+    Variable.Builder<?> varBuilder = Variable.builder().setName(shortName).setDataType(DataType.CHAR).addDimensions(al);
     group.addVariable(varBuilder);
     return varBuilder;
   }
@@ -330,11 +358,13 @@ public class NcHelper {
   }
 
   /**
-   * This returns the size of the array. If n > Integer.MAX_VALUE, this throws an Exception.
+   * This returns the size of the array. If n > Integer.MAX_VALUE, this throws an
+   * Exception.
    *
    * @param array an ArrayChar.D2 or any ArrayXxx.D1
-   * @return the length of array (the number of Strings in the ArrayChar, or the number of elements
-   *     in any other array type)
+   * @return the length of array (the number of Strings in the ArrayChar, or the
+   *         number of elements
+   *         in any other array type)
    */
   public static int get1DArrayLength(Array array) {
     long n;
@@ -351,7 +381,7 @@ public class NcHelper {
    * This mimics the pre-2021 way of creating an attribute from a ucar Array.
    *
    * @param attName
-   * @param value WARNING: for nc3 files, Array MUSTN'T be an unsigned array.
+   * @param value   WARNING: for nc3 files, Array MUSTN'T be an unsigned array.
    * @return the new attribute
    */
   public static Attribute newAttribute(String attName, Array value) {
@@ -370,10 +400,11 @@ public class NcHelper {
       if (nc3Mode) {
         // String2.log("***getAttribute nStrings=" + pa.size());
         String ts = Attributes.valueToNcString(pa);
-        // int maxLength = 32000; //pre 2010-10-13 8000 ok; 9000 not; now >32K ok; unclear what new
+        // int maxLength = 32000; //pre 2010-10-13 8000 ok; 9000 not; now >32K ok;
+        // unclear what new
         // limit is
         // if (ts.length() > maxLength)
-        //    ts = ts.substring(0, maxLength - 3) + "...";
+        // ts = ts.substring(0, maxLength - 3) + "...";
         // String2.log("***getAttribute string=\"" + ts + "\"");
         return new Attribute(name, ts);
       } else {
@@ -382,17 +413,17 @@ public class NcHelper {
       }
     }
     Array ar = null;
-    if (pa
-        instanceof
-        CharArray) // pass all (Unicode) chars through unchanged (not limited to ISO_8859_1)
-    ar = Array.factory(DataType.CHAR, new int[] {pa.size()}, pa.toObjectArray());
+    if (pa instanceof CharArray) // pass all (Unicode) chars through unchanged (not limited to ISO_8859_1)
+      ar = Array.factory(DataType.CHAR, new int[] { pa.size() }, pa.toObjectArray());
     else if (nc3Mode && (pa.elementType() == PAType.LONG || pa.elementType() == PAType.ULONG))
       ar = get1DArray(PrimitiveArray.rawFactory(PAType.DOUBLE, pa));
     else if (nc3Mode && pa.isUnsigned())
       ar = get1DArray(pa.toObjectArray(), false); // 2020-04-10 attributes in nc3 can't be unsigned
-    else ar = get1DArray(pa);
+    else
+      ar = get1DArray(pa);
 
-    // String2.log(">> NcHelper.newAttribute(" + name + ", " + pa.elementType() + ", " + pa + ") ->
+    // String2.log(">> NcHelper.newAttribute(" + name + ", " + pa.elementType() + ",
+    // " + pa + ") ->
     // " + att.toString());
     return Attribute.builder().setName(name).setValues(ar).build();
   }
@@ -401,12 +432,14 @@ public class NcHelper {
   public static ArrayString.D1 getStringArrayD1(StringArray sa) {
     int n = sa.size();
     ArrayString.D1 asd1 = new ArrayString.D1(n);
-    for (int i = 0; i < n; i++) asd1.set(i, sa.get(i));
+    for (int i = 0; i < n; i++)
+      asd1.set(i, sa.get(i));
     return asd1;
   }
 
   /**
-   * This converts a String or array of primitives into a ucar.nc2.ArrayXxx.D1. The o array is used
+   * This converts a String or array of primitives into a ucar.nc2.ArrayXxx.D1.
+   * The o array is used
    * as the storage for the Array.
    *
    * @param pa a PrimitiveArray
@@ -416,13 +449,16 @@ public class NcHelper {
   }
 
   /**
-   * This converts a String or array of primitives into a ucar.nc2.ArrayXxx.D1. The o array is used
+   * This converts a String or array of primitives into a ucar.nc2.ArrayXxx.D1.
+   * The o array is used
    * as the storage for the Array.
    *
-   * @param o the String or array of primitives (e.g., int[])
-   * @param isUnsigned Only used for byte, short, int, long; ignored for other data types.
-   * @return an ArrayXxx.D1. A String is converted to a ArrayChar.D2. A long[] is converted to a
-   *     String[] and then to ArrayChar.D2 (nc3 files don't support longs).
+   * @param o          the String or array of primitives (e.g., int[])
+   * @param isUnsigned Only used for byte, short, int, long; ignored for other
+   *                   data types.
+   * @return an ArrayXxx.D1. A String is converted to a ArrayChar.D2. A long[] is
+   *         converted to a
+   *         String[] and then to ArrayChar.D2 (nc3 files don't support longs).
    */
   public static Array get1DArray(Object o, boolean isUnsigned) {
     if (o instanceof String) {
@@ -434,17 +470,18 @@ public class NcHelper {
       // netcdf-java just writes low byte, so use String2.toIso88591Chars()
       int n = car1.length;
       char[] car2 = new char[n];
-      for (int i = 0; i < n; i++) car2[i] = String2.toIso88591Char(car1[i]);
-      return Array.factory(DataType.CHAR, new int[] {n}, car2);
+      for (int i = 0; i < n; i++)
+        car2[i] = String2.toIso88591Char(car1[i]);
+      return Array.factory(DataType.CHAR, new int[] { n }, car2);
     }
 
     if (o instanceof byte[] ba)
-      return Array.factory(isUnsigned ? DataType.UBYTE : DataType.BYTE, new int[] {ba.length}, ba);
+      return Array.factory(isUnsigned ? DataType.UBYTE : DataType.BYTE, new int[] { ba.length }, ba);
     if (o instanceof short[] sa)
       return Array.factory(
-          isUnsigned ? DataType.USHORT : DataType.SHORT, new int[] {sa.length}, sa);
+          isUnsigned ? DataType.USHORT : DataType.SHORT, new int[] { sa.length }, sa);
     if (o instanceof int[] ia)
-      return Array.factory(isUnsigned ? DataType.UINT : DataType.INT, new int[] {ia.length}, ia);
+      return Array.factory(isUnsigned ? DataType.UINT : DataType.INT, new int[] { ia.length }, ia);
     if (o instanceof long[] lar) {
       // String2.log("\n>> long values=" + String2.toCSSVString((long[])o));
       o = null;
@@ -454,23 +491,26 @@ public class NcHelper {
         for (int i = 0; i < tSize; i++)
           dar[i] = Math2.ulongToDouble(lar[i]); // !!! possible loss of precision
       } else { // long
-        for (int i = 0; i < tSize; i++) dar[i] = lar[i]; // !!! possible loss of precision
+        for (int i = 0; i < tSize; i++)
+          dar[i] = lar[i]; // !!! possible loss of precision
       }
       o = dar;
       // then falls through to Double handling
       // String2.log(">> as doubles=" + String2.toCSSVString((double[])o));
     }
-    if (o instanceof float[] fa) return Array.factory(DataType.FLOAT, new int[] {fa.length}, fa);
+    if (o instanceof float[] fa)
+      return Array.factory(DataType.FLOAT, new int[] { fa.length }, fa);
     if (o instanceof double[] da) {
       // String2.log(">> double o = " + String2.toCSSVString((double[])o));
-      return Array.factory(DataType.DOUBLE, new int[] {da.length}, da);
+      return Array.factory(DataType.DOUBLE, new int[] { da.length }, da);
     }
     if (o instanceof String[] sar) {
       // make ArrayChar.D2
       // String2.log("NcHelper.get1DArray sar=" + String2.toCSSVString(sar));
       int max = 1; // nc wants at least 1
       for (String s : sar) {
-        // if (sar[i].length() > max) String2.log("new max=" + sar[i].length() + " s=\"" + sar[i] +
+        // if (sar[i].length() > max) String2.log("new max=" + sar[i].length() + " s=\""
+        // + sar[i] +
         // "\"");
         max = Math.max(max, s.length());
       }
@@ -482,9 +522,10 @@ public class NcHelper {
         // String s = sar[i];
         // int sLength = s.length();
         // for (int po = 0; po < sLength; po++)
-        //    ac.set(i, po, s.charAt(po));
-        // for (int po = sLength; po < max; po++)  //not necessary because filled with 0's?
-        //    ac.set(i, po, '\u0000');
+        // ac.set(i, po, s.charAt(po));
+        // for (int po = sLength; po < max; po++) //not necessary because filled with
+        // 0's?
+        // ac.set(i, po, '\u0000');
       }
       return ac;
     }
@@ -499,21 +540,25 @@ public class NcHelper {
   }
 
   /**
-   * This returns true if the variable's DataType isIntegral and isUnsigned. This works with nc3 and
+   * This returns true if the variable's DataType isIntegral and isUnsigned. This
+   * works with nc3 and
    * nc4 files. With nc3 files, this looks for the _Unsigned=true attribute
    *
    * @return true if the variable's DataType isIntegral and isUnsigned.
    */
   public static boolean isUnsigned(Variable variable) {
     DataType dt = variable.getDataType();
-    if (!dt.isIntegral()) return false;
-    if (dt.isUnsigned()) return true; // vars in nc4 files return correct isUnsigned status
+    if (!dt.isIntegral())
+      return false;
+    if (dt.isUnsigned())
+      return true; // vars in nc4 files return correct isUnsigned status
     PrimitiveArray pa = getVariableAttribute(variable, "_Unsigned");
     return pa != null && "true".equals(pa.toString());
   }
 
   /**
-   * This reads all of the values from an nDimensional variable. The variable can be any shape. This
+   * This reads all of the values from an nDimensional variable. The variable can
+   * be any shape. This
    * version uses buildStringsFromChars=true.
    *
    * @param variable
@@ -524,7 +569,8 @@ public class NcHelper {
   }
 
   /**
-   * This reads all of the values from an nDimensional variable. The variable can be any shape.
+   * This reads all of the values from an nDimensional variable. The variable can
+   * be any shape.
    *
    * @param variable
    * @param buildStringsFromChars only applies to source DataType=char variables.
@@ -539,22 +585,27 @@ public class NcHelper {
   /**
    * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
    *
-   * @param nc2Array an nc2Array
+   * @param nc2Array              an nc2Array
    * @param buildStringsFromChars only applies to source DataType=char variables.
-   * @param isUnsigned if true and if the object type isIntegerType, the resulting PrimitiveArray
-   *     will be an unsigned PAType. If false and object type isIntegerType, the resulting
-   *     PrimitiveArrray will match the signedness(?) of nc2Array.
+   * @param isUnsigned            if true and if the object type isIntegerType,
+   *                              the resulting PrimitiveArray
+   *                              will be an unsigned PAType. If false and object
+   *                              type isIntegerType, the resulting
+   *                              PrimitiveArrray will match the signedness(?) of
+   *                              nc2Array.
    * @return a PrimitiveArray
    */
   public static PrimitiveArray getPrimitiveArray(
       Array nc2Array, boolean buildStringsFromChars, boolean isUnsigned) {
-    // String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
+    // String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" +
+    // nc2Array.isUnsigned());
     // String[] from ArrayChar.Dn
     if (buildStringsFromChars && nc2Array instanceof ArrayChar na) {
       ArrayObject ao = na.make1DStringArray();
       Object[] oa = (Object[]) ao.copyTo1DJavaArray();
       StringArray sa = new StringArray(oa.length, false);
-      for (Object o : oa) sa.add(o == null ? null : String2.trimEnd(o.toString()));
+      for (Object o : oa)
+        sa.add(o == null ? null : String2.trimEnd(o.toString()));
       return sa;
     }
 
@@ -563,7 +614,8 @@ public class NcHelper {
       boolean boolAr[] = (boolean[]) ab.copyTo1DJavaArray();
       int n = boolAr.length;
       byte byteAr[] = new byte[n];
-      for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
+      for (int i = 0; i < n; i++)
+        byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
       return PrimitiveArray.factory(
           byteAr, false); // never unsigned (not needed, and unsigned is often trouble)
     }
@@ -574,70 +626,99 @@ public class NcHelper {
   }
 
   // was
-  //   * This converts a ucar.nc2 numeric ArrayXxx.D1, numeric ArrayXxx.D4,
-  //   *   ArrayChar.D2, or ArrayChar.D5 into an array of primitives.
+  // * This converts a ucar.nc2 numeric ArrayXxx.D1, numeric ArrayXxx.D4,
+  // * ArrayChar.D2, or ArrayChar.D5 into an array of primitives.
 
   /**
    * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
    *
-   * @param nc2Array an nc2Array
+   * @param nc2Array              an nc2Array
    * @param buildStringsFromChars only applies to source DataType=char variables.
-   * @param isUnsigned if true and if the object type isIntegerType, the resulting PrimitiveArray
-   *     will be an unsigned PAType. If false and object type isIntegerType, the resulting
-   *     PrimitiveArrray will match the signedness(?) of nc2Array.
-   * @return StringArray (from ArrayChar.D1, split at \n), or ByteArray (from numeric ArrayXxx.D1)
+   * @param isUnsigned            if true and if the object type isIntegerType,
+   *                              the resulting PrimitiveArray
+   *                              will be an unsigned PAType. If false and object
+   *                              type isIntegerType, the resulting
+   *                              PrimitiveArrray will match the signedness(?) of
+   *                              nc2Array.
+   * @return StringArray (from ArrayChar.D1, split at \n), or ByteArray (from
+   *         numeric ArrayXxx.D1)
    */
   public static PrimitiveArray getPrimitiveArray(Array nc2Array) {
     return getPrimitiveArray(nc2Array, true, false);
   }
 
   /**
-   * This converts an netcdf DataType into a PrimitiveArray elementType (e.g., Datatype.UINT becomes
-   * PAType.UINT). BEWARE: This returns the stated dataType (not overthinking it). .nc3 files store
-   * strings as char arrays, so if variable.getRank()==1 it is a char variable, but if
-   * variable.getRank()==2 it should later be converted to to a String variable. But .nc4 files have
+   * This converts an netcdf DataType into a PrimitiveArray elementType (e.g.,
+   * Datatype.UINT becomes
+   * PAType.UINT). BEWARE: This returns the stated dataType (not overthinking it).
+   * .nc3 files store
+   * strings as char arrays, so if variable.getRank()==1 it is a char variable,
+   * but if
+   * variable.getRank()==2 it should later be converted to to a String variable.
+   * But .nc4 files have
    * true String dataType.
    *
    * @param dataType the Netcdf dataType
-   * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for integer
-   *     primitives)
+   * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for
+   *         integer
+   *         primitives)
    * @throws RuntimeException if dataType is null or unexpected.
    */
   public static PAType getElementPAType(Variable var) {
     DataType dataType = var.getDataType(); // nc3 doesn't return signed types
     boolean unsigned = isUnsigned(var); // so ask separately
     if (unsigned) { // and deal with
-      if (dataType == DataType.BYTE) return PAType.UBYTE;
-      if (dataType == DataType.SHORT) return PAType.USHORT;
-      if (dataType == DataType.INT) return PAType.UINT;
-      if (dataType == DataType.LONG) return PAType.LONG;
+      if (dataType == DataType.BYTE)
+        return PAType.UBYTE;
+      if (dataType == DataType.SHORT)
+        return PAType.USHORT;
+      if (dataType == DataType.INT)
+        return PAType.UINT;
+      if (dataType == DataType.LONG)
+        return PAType.LONG;
     }
     return getElementPAType(dataType);
   }
 
   /**
-   * This SIMPLISTICALLY converts an netcdf DataType into a PAType (e.g., Datatype.UINT becomes
-   * PAType.UINT). See the variant above to deal with unsigned variables in .nc3 files.
+   * This SIMPLISTICALLY converts an netcdf DataType into a PAType (e.g.,
+   * Datatype.UINT becomes
+   * PAType.UINT). See the variant above to deal with unsigned variables in .nc3
+   * files.
    *
    * @param dataType the Netcdf dataType
-   * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for integer
-   *     primitives)
+   * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for
+   *         integer
+   *         primitives)
    * @throws RuntimeException if dataType is null or unexpected.
    */
   public static PAType getElementPAType(DataType dataType) {
-    if (dataType == DataType.BOOLEAN) return PAType.BOOLEAN;
-    if (dataType == DataType.BYTE) return PAType.BYTE;
-    if (dataType == DataType.UBYTE) return PAType.UBYTE;
-    if (dataType == DataType.CHAR) return PAType.CHAR;
-    if (dataType == DataType.DOUBLE) return PAType.DOUBLE;
-    if (dataType == DataType.FLOAT) return PAType.FLOAT;
-    if (dataType == DataType.INT) return PAType.INT;
-    if (dataType == DataType.UINT) return PAType.UINT;
-    if (dataType == DataType.LONG) return PAType.LONG;
-    if (dataType == DataType.ULONG) return PAType.ULONG;
-    if (dataType == DataType.SHORT) return PAType.SHORT;
-    if (dataType == DataType.USHORT) return PAType.USHORT;
-    if (dataType == DataType.STRING) return PAType.STRING;
+    if (dataType == DataType.BOOLEAN)
+      return PAType.BOOLEAN;
+    if (dataType == DataType.BYTE)
+      return PAType.BYTE;
+    if (dataType == DataType.UBYTE)
+      return PAType.UBYTE;
+    if (dataType == DataType.CHAR)
+      return PAType.CHAR;
+    if (dataType == DataType.DOUBLE)
+      return PAType.DOUBLE;
+    if (dataType == DataType.FLOAT)
+      return PAType.FLOAT;
+    if (dataType == DataType.INT)
+      return PAType.INT;
+    if (dataType == DataType.UINT)
+      return PAType.UINT;
+    if (dataType == DataType.LONG)
+      return PAType.LONG;
+    if (dataType == DataType.ULONG)
+      return PAType.ULONG;
+    if (dataType == DataType.SHORT)
+      return PAType.SHORT;
+    if (dataType == DataType.USHORT)
+      return PAType.USHORT;
+    if (dataType == DataType.STRING)
+      return PAType.STRING;
     // STRUCTURE not converted
     Test.error(
         String2.ERROR
@@ -656,35 +737,53 @@ public class NcHelper {
   }
 
   /**
-   * This converts an ElementType (e.g., PAType.INT for integer primitives) into an netcdf-3
-   * DataType (so PAType.LONG returns DataType.DOUBLE). BEWARE: .nc files store strings as char
-   * arrays, so if variable.getRank()==1 it is a char variable, but if variable.getRang()==2 it is a
-   * String variable. [It isn't that simple!] This throws Exception if elementPAType not found.
+   * This converts an ElementType (e.g., PAType.INT for integer primitives) into
+   * an netcdf-3
+   * DataType (so PAType.LONG returns DataType.DOUBLE). BEWARE: .nc files store
+   * strings as char
+   * arrays, so if variable.getRank()==1 it is a char variable, but if
+   * variable.getRang()==2 it is a
+   * String variable. [It isn't that simple!] This throws Exception if
+   * elementPAType not found.
    *
-   * @param elementPAType the PrimitiveArray elementPAType (e.g., PAType.INT for integer
-   *     primitives). longs are converted to doubles.
+   * @param elementPAType the PrimitiveArray elementPAType (e.g., PAType.INT for
+   *                      integer
+   *                      primitives). longs are converted to doubles.
    * @return the corresponding netcdf dataType
    */
   public static DataType getNc3DataType(PAType elementPAType) {
-    if (elementPAType == PAType.BOOLEAN) return DataType.BOOLEAN; // ?
-    if (elementPAType == PAType.BYTE) return DataType.BYTE;
-    if (elementPAType == PAType.CHAR) return DataType.CHAR;
-    if (elementPAType == PAType.DOUBLE) return DataType.DOUBLE;
-    if (elementPAType == PAType.FLOAT) return DataType.FLOAT;
-    if (elementPAType == PAType.INT) return DataType.INT;
-    if (elementPAType == PAType.LONG) return DataType.DOUBLE; // long -> double in .nc3
-    if (elementPAType == PAType.SHORT) return DataType.SHORT;
-    if (elementPAType == PAType.STRING) return DataType.STRING;
+    if (elementPAType == PAType.BOOLEAN)
+      return DataType.BOOLEAN; // ?
+    if (elementPAType == PAType.BYTE)
+      return DataType.BYTE;
+    if (elementPAType == PAType.CHAR)
+      return DataType.CHAR;
+    if (elementPAType == PAType.DOUBLE)
+      return DataType.DOUBLE;
+    if (elementPAType == PAType.FLOAT)
+      return DataType.FLOAT;
+    if (elementPAType == PAType.INT)
+      return DataType.INT;
+    if (elementPAType == PAType.LONG)
+      return DataType.DOUBLE; // long -> double in .nc3
+    if (elementPAType == PAType.SHORT)
+      return DataType.SHORT;
+    if (elementPAType == PAType.STRING)
+      return DataType.STRING;
 
-    // 2021-01-07 changed to signed for netcdf-java-5.4.1  (utypes worked in 5.3.3)
-    //         if (elementPAType == PAType.UBYTE)   return DataType.UBYTE;
-    //         if (elementPAType == PAType.USHORT)  return DataType.USHORT;
-    //         if (elementPAType == PAType.UINT)    return DataType.UINT;
-    if (elementPAType == PAType.UBYTE) return DataType.BYTE;
-    if (elementPAType == PAType.USHORT) return DataType.SHORT;
-    if (elementPAType == PAType.UINT) return DataType.INT;
+    // 2021-01-07 changed to signed for netcdf-java-5.4.1 (utypes worked in 5.3.3)
+    // if (elementPAType == PAType.UBYTE) return DataType.UBYTE;
+    // if (elementPAType == PAType.USHORT) return DataType.USHORT;
+    // if (elementPAType == PAType.UINT) return DataType.UINT;
+    if (elementPAType == PAType.UBYTE)
+      return DataType.BYTE;
+    if (elementPAType == PAType.USHORT)
+      return DataType.SHORT;
+    if (elementPAType == PAType.UINT)
+      return DataType.INT;
 
-    if (elementPAType == PAType.ULONG) return DataType.DOUBLE; // ulong -> double in .nc3
+    if (elementPAType == PAType.ULONG)
+      return DataType.DOUBLE; // ulong -> double in .nc3
     // STRUCTURE not converted
     Test.error(
         String2.ERROR
@@ -695,17 +794,21 @@ public class NcHelper {
   }
 
   /**
-   * This converts an ElementType (e.g., PAType.INT for integer primitives) into an netcdf-4
+   * This converts an ElementType (e.g., PAType.INT for integer primitives) into
+   * an netcdf-4
    * DataType. This throws Exception if elementPAType not found.
    *
-   * @param elementPAType the PrimitiveArray elementPAType (e.g., PAType.INT for integer
-   *     primitives). longs and ulongs are converted to doubles.
+   * @param elementPAType the PrimitiveArray elementPAType (e.g., PAType.INT for
+   *                      integer
+   *                      primitives). longs and ulongs are converted to doubles.
    * @return the corresponding netcdf dataType
    */
   public static DataType getNc4DataType(PAType elementPAType) {
     // just deal with things that are different than nc3
-    if (elementPAType == PAType.LONG) return DataType.LONG;
-    if (elementPAType == PAType.ULONG) return DataType.ULONG;
+    if (elementPAType == PAType.LONG)
+      return DataType.LONG;
+    if (elementPAType == PAType.ULONG)
+      return DataType.ULONG;
     return getNc3DataType(elementPAType);
   }
 
@@ -717,11 +820,15 @@ public class NcHelper {
   /**
    * This gets a string representation of the header of a .nc file.
    *
-   * <p>If the fullName is an http address, the name needs to start with "http:\\" (upper or lower
-   * case) and the server needs to support "byte ranges" (see ucar.nc2.NetcdfFile documentation).
+   * <p>
+   * If the fullName is an http address, the name needs to start with "http:\\"
+   * (upper or lower
+   * case) and the server needs to support "byte ranges" (see ucar.nc2.NetcdfFile
+   * documentation).
    *
-   * @param fullName This may be a local file name, an "http:" address of a .nc file, or an opendap
-   *     url.
+   * @param fullName This may be a local file name, an "http:" address of a .nc
+   *                 file, or an opendap
+   *                 url.
    * @return the string representation of a .nc file header
    * @throws Exception
    */
@@ -736,21 +843,43 @@ public class NcHelper {
   }
 
   /**
-   * This opens a local file name (or an "http:" address, but that is discouraged) of a .nc file.
-   * ALWAYS explicitly call netcdfFile.close() when you are finished with it, preferably in a
+   * This opens a local file name (or an "http:" address, but that is discouraged)
+   * of a .nc file.
+   * ALWAYS explicitly call netcdfFile.close() when you are finished with it,
+   * preferably in a
    * "finally" clause.
    *
-   * <p>This does not work for opendap urls. Use the opendap methods instead.
+   * <p>
+   * This does not work for opendap urls. Use the opendap methods instead.
    *
-   * <p>If the fullName is an http address, the name needs to start with "http://" (upper or lower
-   * case) and the server needs to support "byte ranges" (see ucar.nc2.NetcdfFile documentation).
+   * <p>
+   * If the fullName is an http address, the name needs to start with "http://"
+   * (upper or lower
+   * case) and the server needs to support "byte ranges" (see ucar.nc2.NetcdfFile
+   * documentation).
    *
-   * @param fullName This may be a local file name, an "http:" address of a .nc file (discouraged),
-   *     or an opendap url. If this is an .ncml file, the name must end in .ncml.
+   * @param fullName This may be a local file name, an "http:" address of a .nc
+   *                 file (discouraged),
+   *                 or an opendap url. If this is an .ncml file, the name must
+   *                 end in .ncml.
    * @return a NetcdfFile
    * @throws Exception if trouble
    */
   public static NetcdfFile openFile(String fullName) throws Exception {
+    // 2021-02-12 Bob Simons added support for Zarr v3
+    // If fullName ends in /zarr.json, use parent directory.
+    if (fullName.endsWith("/zarr.json") || fullName.endsWith("\\zarr.json")) {
+      String dir = File2.getDirectory(fullName);
+      if (dir.length() > 0) {
+        try {
+          return NetcdfFiles.open(File2.removeSlash(dir));
+        } catch (Exception e) {
+          // fall through to try opening full name
+          String2.log("Caught exception trying to open parent of zarr.json: " + e.toString());
+        }
+      }
+    }
+
     return fullName.endsWith(".ncml")
         ? NetcdfDatasets.openDataset(fullName)
         : // 's' is the new API
@@ -778,11 +907,13 @@ public class NcHelper {
   }
 
   /**
-   * Get the list of variables from a netcdf file's Structure or, if there is no structure, a list
+   * Get the list of variables from a netcdf file's Structure or, if there is no
+   * structure, a list
    * of variables using the largest dimension (a pseudo structure).
    *
    * @param netcdfFile
-   * @param variableNames if null, this will search for the variables in a (pseudo)structure.
+   * @param variableNames if null, this will search for the variables in a
+   *                      (pseudo)structure.
    * @return structure's variables
    */
   public static Variable[] findVariables(NetcdfFile netcdfFile, String variableNames[]) {
@@ -803,21 +934,23 @@ public class NcHelper {
     // if no structure found, it falls through the loop
     Group rootGroup = netcdfFile.getRootGroup();
     List<Variable> rootGroupVariables = rootGroup.getVariables();
-    // String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
+    // String2.log("rootGroup variables=" +
+    // String2.toNewlineString(rootGroupVariables.toArray()));
     for (Variable groupVariable : rootGroupVariables) {
       if (groupVariable instanceof Structure structure) {
-        if (reallyVerbose) String2.log("    NcHelper.findVariables found a Structure.");
+        if (reallyVerbose)
+          String2.log("    NcHelper.findVariables found a Structure.");
         return variableListToArray(structure.getVariables());
       }
     }
 
     // is there an "observationDimension" global attribute?
-    // observationDimension is from deprecated "Unidata Observation Dataset v1.0" conventions,
+    // observationDimension is from deprecated "Unidata Observation Dataset v1.0"
+    // conventions,
     // but if it exists, use it.
     Dimension mainDimension = null;
-    ucar.nc2.Attribute gAtt =
-        netcdfFile.findGlobalAttribute(
-            "observationDimension"); // there is also a dods.dap.Attribute
+    ucar.nc2.Attribute gAtt = netcdfFile.findGlobalAttribute(
+        "observationDimension"); // there is also a dods.dap.Attribute
     if (gAtt != null) {
       PrimitiveArray pa = getPrimitiveArray(gAtt.getValues());
       if (pa.size() > 0) {
@@ -830,8 +963,7 @@ public class NcHelper {
 
     // look for unlimited dimension
     if (mainDimension == null) {
-      List<Dimension> dimensions =
-          rootGroup.getDimensions(); // next nc version: getRootGroup().getDimensions();  //was
+      List<Dimension> dimensions = rootGroup.getDimensions(); // next nc version: getRootGroup().getDimensions(); //was
       // netcdfFile.getDimensions()
       if (dimensions.size() == 0)
         Test.error(String2.ERROR + " in NcHelper.findVariables: the file has no dimensions.");
@@ -866,7 +998,8 @@ public class NcHelper {
       }
     }
 
-    // use the first outer dimension  (look at last veriables first -- more likely to be the main
+    // use the first outer dimension (look at last veriables first -- more likely to
+    // be the main
     // data variables)
     if (mainDimension == null) {
       for (int v = rootGroupVariables.size() - 1; v >= 0; v--) {
@@ -877,7 +1010,7 @@ public class NcHelper {
           if (reallyVerbose) {
             String fName = mainDimension.getName(); // the full name
             if (!"row".equals(fName)) // may be null
-            String2.log("    NcHelper.findVariables found an outer dimension: " + fName);
+              String2.log("    NcHelper.findVariables found an outer dimension: " + fName);
           }
           break;
         }
@@ -890,11 +1023,13 @@ public class NcHelper {
     // get a list of all variables which use just mainDimension
     List<Variable> structureVariables = new ArrayList<>();
     for (Variable tVariable : rootGroupVariables) {
-      // if (reallyVerbose) String2.log("  get all variables which use mainDimension, check " + i);
+      // if (reallyVerbose) String2.log(" get all variables which use mainDimension,
+      // check " + i);
       List<Dimension> tDimensions = tVariable.getDimensions();
       int nDimensions = tDimensions.size();
-      // if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() +
-      //    " type=" + tVariable.getNc3DataType());
+      // if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName()
+      // +
+      // " type=" + tVariable.getNc3DataType());
       if ((nDimensions == 1 && tDimensions.getFirst().equals(mainDimension))
           || (nDimensions == 2
               && tDimensions.getFirst().equals(mainDimension)
@@ -906,13 +1041,16 @@ public class NcHelper {
   }
 
   /**
-   * This finds the highest dimension variable in the rootGroup, and then finds all similar
+   * This finds the highest dimension variable in the rootGroup, and then finds
+   * all similar
    * variables.
    *
-   * @param groupName the name of the group (e.g., "" for any group, "somegroup/someSubGroup", or
-   *     "[root]" if you want to limit the search to the root group).
+   * @param groupName the name of the group (e.g., "" for any group,
+   *                  "somegroup/someSubGroup", or
+   *                  "[root]" if you want to limit the search to the root group).
    * @return the similar variables
-   * @throws RuntimeException if trouble (e.g., group doesn't exist or no vars with dimensions)
+   * @throws RuntimeException if trouble (e.g., group doesn't exist or no vars
+   *                          with dimensions)
    */
   public static Variable[] findMaxDVariables(NetcdfFile netcdfFile, String groupName) {
 
@@ -920,8 +1058,7 @@ public class NcHelper {
     String dimNames[] = new String[0];
     List<Variable> allVariables;
     if (String2.isSomething(groupName)) {
-      Group group =
-          groupName.equals("[root]") ? netcdfFile.getRootGroup() : netcdfFile.findGroup(groupName);
+      Group group = groupName.equals("[root]") ? netcdfFile.getRootGroup() : netcdfFile.findGroup(groupName);
       if (group == null)
         throw new RuntimeException(
             String2.ERROR
@@ -943,28 +1080,27 @@ public class NcHelper {
         dimNames = new String[tnDim];
         for (int d = 0; d < tnDim; d++) {
           Dimension tDim = variable.getDimension(d);
-          dimNames[d] =
-              tDim == null || tDim.getName() == null
-                  ? // the full name
-                  "size=" + variable.getShape(d)
-                  : tDim.getName(); // the full name
+          dimNames[d] = tDim == null || tDim.getName() == null
+              ? // the full name
+              "size=" + variable.getShape(d)
+              : tDim.getName(); // the full name
         }
       } else if (tnDim > 0 && tnDim == dimNames.length) {
         // a similar variable?
         boolean ok = true;
         for (int d = 0; d < tnDim; d++) {
           Dimension tDim = variable.getDimension(d);
-          String tName =
-              tDim == null || tDim.getName() == null
-                  ? // the full name
-                  "size=" + variable.getShape(d)
-                  : tDim.getName(); // the full name
+          String tName = tDim == null || tDim.getName() == null
+              ? // the full name
+              "size=" + variable.getShape(d)
+              : tDim.getName(); // the full name
           if (!dimNames[d].equals(tName)) {
             ok = false;
             break;
           }
         }
-        if (ok) loadVariables.add(variable);
+        if (ok)
+          loadVariables.add(variable);
       }
     }
     if (loadVariables == null)
@@ -989,18 +1125,21 @@ public class NcHelper {
     for (Variable variable : rootGroupVariables) {
       boolean isChar = variable.getDataType() == DataType.CHAR;
       int tnDim = variable.getRank() - (isChar ? 1 : 0);
-      if (tnDim > 0) loadVariables.add(variable);
+      if (tnDim > 0)
+        loadVariables.add(variable);
     }
     return variableListToArray(loadVariables);
   }
 
   /**
-   * Get the list of 4D numeric (or 5D char) variables from a netcdf file. Currently this does no
+   * Get the list of 4D numeric (or 5D char) variables from a netcdf file.
+   * Currently this does no
    * verification that the dimensions are t,z,y,x, but it could in the future.
    *
    * @param netcdfFile
-   * @param variableNames if null, this will search for a 4D variable, then also include all other
-   *     variables using the same axes.
+   * @param variableNames if null, this will search for a 4D variable, then also
+   *                      include all other
+   *                      variables using the same axes.
    * @return the variables (list length 0 if none found)
    */
   public static Variable[] find4DVariables(NetcdfFile netcdfFile, String variableNames[]) {
@@ -1027,7 +1166,7 @@ public class NcHelper {
       if ((dimensions.size() == 4 && variable.getDataType() != DataType.CHAR)
           || (dimensions.size() == 5 && variable.getDataType() == DataType.CHAR)) {
 
-        // first found?    (future: check that axes are t,z,y,x?)
+        // first found? (future: check that axes are t,z,y,x?)
         if (foundDimensionNames == null) {
           foundDimensionNames = new String[4];
           for (int i = 0; i < 4; i++)
@@ -1042,7 +1181,8 @@ public class NcHelper {
             break;
           }
         }
-        if (matches) foundVariables.add(variable);
+        if (matches)
+          foundVariables.add(variable);
       }
     }
 
@@ -1068,7 +1208,7 @@ public class NcHelper {
    * This adds global (group) attributes to a netcdf file's group.
    *
    * @param groupBuilder usually the rootGroup Builder
-   * @param attributes the Attributes that will be set
+   * @param attributes   the Attributes that will be set
    */
   public static void setAttributes(
       boolean nc3Mode, Group.Builder groupBuilder, Attributes attributes) {
@@ -1090,17 +1230,19 @@ public class NcHelper {
    * This adds attributes to a variable in preparation for writing a .nc file.
    *
    * @param nc3Mode
-   * @param var e.g., from addVariable()
+   * @param var        e.g., from addVariable()
    * @param attributes the Attributes that will be set
-   * @param unsigned If nc3Mode and unsigned, this method adds an _Unsigned=true attribute
+   * @param unsigned   If nc3Mode and unsigned, this method adds an _Unsigned=true
+   *                   attribute
    */
   public static void setAttributes(
       boolean nc3Mode, Variable.Builder<?> var, Attributes attributes, boolean unsigned) {
     String names[] = attributes.getNames();
     if (nc3Mode && unsigned)
-      var.addAttribute(newAttribute(nc3Mode, "_Unsigned", new StringArray(new String[] {"true"})));
+      var.addAttribute(newAttribute(nc3Mode, "_Unsigned", new StringArray(new String[] { "true" })));
     for (String tName : names) {
-      if (!String2.isSomething(tName)) continue;
+      if (!String2.isSomething(tName))
+        continue;
       PrimitiveArray tValue = attributes.get(tName);
       if (tValue == null
           || tValue.size() == 0
@@ -1111,17 +1253,20 @@ public class NcHelper {
   }
 
   /**
-   * This gets the PA value from the attribute. If there is trouble, this lots a warning message and
+   * This gets the PA value from the attribute. If there is trouble, this lots a
+   * warning message and
    * returns null. This is low level and isn't usually called directly.
    *
-   * @param varName the variable's name (or "global"), used for diagnostic messages only
+   * @param varName the variable's name (or "global"), used for diagnostic
+   *                messages only
    * @param att
    * @return a PrimitiveArray or null if trouble
    */
   public static PrimitiveArray getAttributePA(String varName, ucar.nc2.Attribute att) {
     if (att == null) {
       // if (debugMode)
-      //    String2.log("Warning: NcHelper.getAttributePA varName=" + varName + " att=null"); // +
+      // String2.log("Warning: NcHelper.getAttributePA varName=" + varName + "
+      // att=null"); // +
       // MustBe.stackTrace());
       return null;
     } else if (String2.isSomething(att.getName())) { // the full name
@@ -1191,16 +1336,21 @@ public class NcHelper {
    */
   public static String getStringGroupAttribute(Group group, String attributeName) {
     PrimitiveArray pa = getGroupAttribute(group, attributeName);
-    if (pa == null || pa.size() == 0) return null;
+    if (pa == null || pa.size() == 0)
+      return null;
     return pa.getString(0);
   }
 
   /**
-   * Given an attribute, this adds the value to the attributes. If there is trouble, this logs a
-   * warning message and returns. This is low level and isn't usually called directly.
+   * Given an attribute, this adds the value to the attributes. If there is
+   * trouble, this logs a
+   * warning message and returns. This is low level and isn't usually called
+   * directly.
    *
-   * @param varName use "Global" for global attributes. This is just used for diagnostic messages.
-   * @param att an nc attribute. If the name is already present, this new att takes precedence.
+   * @param varName    use "Global" for global attributes. This is just used for
+   *                   diagnostic messages.
+   * @param att        an nc attribute. If the name is already present, this new
+   *                   att takes precedence.
    * @param attributes the Attributes that will be added to.
    */
   public static void addAttribute(String varName, ucar.nc2.Attribute att, Attributes attributes) {
@@ -1208,18 +1358,22 @@ public class NcHelper {
   }
 
   /**
-   * Given an attribute, this adds the value to the attributes. If there is trouble, this logs a
-   * warning message and returns. This is low level and isn't usually called directly.
+   * Given an attribute, this adds the value to the attributes. If there is
+   * trouble, this logs a
+   * warning message and returns. This is low level and isn't usually called
+   * directly.
    *
-   * @param varName use "Global" for global attributes. This is just used for diagnostic messages.
-   * @param att an nc attribute
-   * @param attributes the Attributes that will be added to.
+   * @param varName             use "Global" for global attributes. This is just
+   *                            used for diagnostic messages.
+   * @param att                 an nc attribute
+   * @param attributes          the Attributes that will be added to.
    * @param addIfAlreadyPresent
    */
   public static void addAttribute(
       String varName, ucar.nc2.Attribute att, Attributes attributes, boolean addIfAlreadyPresent) {
     if (att == null) {
-      if (reallyVerbose) String2.log("Warning: NcHelper.addAttribute " + varName + " att=null");
+      if (reallyVerbose)
+        String2.log("Warning: NcHelper.addAttribute " + varName + " att=null");
       return;
     }
     String tName = att.getName(); // It is the short name! It doesn't include the groupName.
@@ -1233,19 +1387,25 @@ public class NcHelper {
     } else if (!addIfAlreadyPresent && attributes.get(tName) != null) {
       // do nothing
     } else {
-      // attributes.set calls String2.canonical (useful since many names are in many datasets)
+      // attributes.set calls String2.canonical (useful since many names are in many
+      // datasets)
       attributes.set(tName, getAttributePA(varName, att));
     }
   }
 
   /**
-   * This reads the attributes for the group and all its parent groups in a netcdf file.
+   * This reads the attributes for the group and all its parent groups in a netcdf
+   * file.
    *
-   * @param group without trailing slash. Use "" for root group.
-   * @param attributes the Attributes that will be added to. If group was specified but found, this
-   *     just returns the root group atts. If group was specified, the group's (and parent groups)
-   *     global attributes are not marked with the name of the group -- it's as if all the global
-   *     atts from all levels were thrown in together (with preference for lower level).
+   * @param group      without trailing slash. Use "" for root group.
+   * @param attributes the Attributes that will be added to. If group was
+   *                   specified but found, this
+   *                   just returns the root group atts. If group was specified,
+   *                   the group's (and parent groups)
+   *                   global attributes are not marked with the name of the group
+   *                   -- it's as if all the global
+   *                   atts from all levels were thrown in together (with
+   *                   preference for lower level).
    */
   public static void getGroupAttributes(Group group, Attributes attributes) {
     while (group != null) {
@@ -1255,15 +1415,17 @@ public class NcHelper {
   }
 
   /**
-   * This is the low level method to add the attributes (as is) from ncAtts to attributes.
+   * This is the low level method to add the attributes (as is) from ncAtts to
+   * attributes.
    *
-   * @param ncAtts global or variable attributes from a nc file
+   * @param ncAtts     global or variable attributes from a nc file
    * @param attributes the attributes that will be added to.
    */
   public static void getAttributes(AttributeContainer ncAtts, Attributes attributes) {
 
     // read the sourcglobalAttributes
-    if (ncAtts == null) return;
+    if (ncAtts == null)
+      return;
     String ncAttsName = ncAtts.getName();
     for (Attribute att : ncAtts) { // there is also a dods.dap.Attribute
       String name = att.getName();
@@ -1279,70 +1441,82 @@ public class NcHelper {
    * @return the same attributes object, for convenience
    */
   public static Attributes getVariableAttributes(Variable variable, Attributes attributes) {
-    if (variable == null) return attributes;
+    if (variable == null)
+      return attributes;
     getAttributes(variable.attributes(), attributes);
 
-    // in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
-    // String2.log(">> getVariableAttributes var=" + variable.getFullName() + " _Unsigned=" +
+    // in nc3 files, if variables has _Unsigned=true, convert some signed attributes
+    // to unsigned
+    // String2.log(">> getVariableAttributes var=" + variable.getFullName() + "
+    // _Unsigned=" +
     // attributes.getString("_Unsigned"));
     PrimitiveArray us = attributes.remove("_Unsigned");
-    if (us != null && "true".equals(us.toString())) attributes.convertSomeSignedToUnsigned();
+    if (us != null && "true".equals(us.toString()))
+      attributes.convertSomeSignedToUnsigned();
     return attributes;
   }
 
   /**
-   * Given a ncFile and the name of the pseudo-data Variable with the projection information, this
+   * Given a ncFile and the name of the pseudo-data Variable with the projection
+   * information, this
    * tries to get the attributes and then gatherGridMappingAtts.
    * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections
    * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#rotated-pole-grid-ex
    *
    * @param gridMappingVarName eg from attributes.getString("grid_mapping")
-   * @return gridMappingAttributes in a form suitable for addition to the global addAttributes (or
-   *     null if trouble, e.g., varName is null).
+   * @return gridMappingAttributes in a form suitable for addition to the global
+   *         addAttributes (or
+   *         null if trouble, e.g., varName is null).
    */
   public static Attributes getGridMappingAtts(NetcdfFile ncFile, String gridMappingVarName) {
-    if (gridMappingVarName == null) return null;
+    if (gridMappingVarName == null)
+      return null;
     return getGridMappingAtts(ncFile.findVariable(gridMappingVarName));
   }
 
   /**
-   * Given what might be the netcdf pseudo-data Variable with the projection information, this tries
+   * Given what might be the netcdf pseudo-data Variable with the projection
+   * information, this tries
    * to get the attributes and then gatherGridMappingAtts.
    * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections
    * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#rotated-pole-grid-ex
    *
    * @param pseudoDataVariable
-   * @return gridMappingAttributes in a form suitable for addition to the global addAttributes (or
-   *     null if trouble, e.g., variable is null).
+   * @return gridMappingAttributes in a form suitable for addition to the global
+   *         addAttributes (or
+   *         null if trouble, e.g., variable is null).
    */
   public static Attributes getGridMappingAtts(Variable pseudoDataVariable) {
-    if (pseudoDataVariable == null) return null;
+    if (pseudoDataVariable == null)
+      return null;
     Attributes sourceAtts = new Attributes();
     getVariableAttributes(pseudoDataVariable, sourceAtts);
     return getGridMappingAtts(sourceAtts);
   }
 
   /**
-   * Call this with the sourceAtts that might be from the pseudo-variable with a grid_mapping_name
+   * Call this with the sourceAtts that might be from the pseudo-variable with a
+   * grid_mapping_name
    * attribute in order to collect the grid_mapping attributes.
    * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections
    * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#rotated-pole-grid-ex
    *
    * @param sourceAtts
-   * @return gridMappingAttributes in a form suitable for addition to the global addAttributes (or
-   *     null if trouble, e.g., sourceAtts is null)
+   * @return gridMappingAttributes in a form suitable for addition to the global
+   *         addAttributes (or
+   *         null if trouble, e.g., sourceAtts is null)
    */
   public static Attributes getGridMappingAtts(Attributes sourceAtts) {
     if (sourceAtts == null
         || sourceAtts.getString("grid_mapping_name") == null) // it's the one required att
-    return null;
+      return null;
     Attributes gridMappingAtts = new Attributes();
     String[] attNames = sourceAtts.getNames();
-    if (attNames.length == 0) return null;
+    if (attNames.length == 0)
+      return null;
     for (String attName : attNames) {
-      boolean keep =
-          !"comment".equals(attName)
-              || !sourceAtts.getString(attName).startsWith("This is a container variable");
+      boolean keep = !"comment".equals(attName)
+          || !sourceAtts.getString(attName).startsWith("This is a container variable");
       if (!"DODS_strlen".equals(attName) && keep)
         gridMappingAtts.add(
             "grid_mapping_name".equals(attName) ? attName : "grid_mapping_" + attName,
@@ -1352,30 +1526,39 @@ public class NcHelper {
   }
 
   /**
-   * If the var has time units, or scale_factor and add_offset, the values in the dataPa will be
-   * unpacked (numeric times will be epochSeconds). If missing_value and/or _FillValue are used,
+   * If the var has time units, or scale_factor and add_offset, the values in the
+   * dataPa will be
+   * unpacked (numeric times will be epochSeconds). If missing_value and/or
+   * _FillValue are used,
    * they are converted to PA standard mv.
    *
-   * @param var this method gets the info it needs (_Unsigned, scale_factor, add_offset, units,
-   *     _FillValue, missingvalue) from the var.
-   * @param dataPa A data pa or an attribute value pa. It isn't an error if dataPa = null.
-   * @param lookForUnsigned should be true for the main PA, but false when converting attribute
-   *     PA's.
-   * @return pa The same pa or a new pa or null (if the pa parameter = null). missing_value and
-   *     _FillValue will be converted to PA standard mv for the the unpacked datatype (or current
-   *     type if not packed).
+   * @param var             this method gets the info it needs (_Unsigned,
+   *                        scale_factor, add_offset, units,
+   *                        _FillValue, missingvalue) from the var.
+   * @param dataPa          A data pa or an attribute value pa. It isn't an error
+   *                        if dataPa = null.
+   * @param lookForUnsigned should be true for the main PA, but false when
+   *                        converting attribute
+   *                        PA's.
+   * @return pa The same pa or a new pa or null (if the pa parameter = null).
+   *         missing_value and
+   *         _FillValue will be converted to PA standard mv for the the unpacked
+   *         datatype (or current
+   *         type if not packed).
    */
   public static PrimitiveArray unpackPA(
       Variable var, PrimitiveArray dataPa, boolean lookForStringTimes, boolean lookForUnsigned) {
 
-    if (dataPa == null) return dataPa;
+    if (dataPa == null)
+      return dataPa;
     Attributes atts = new Attributes();
     getVariableAttributes(var, atts);
     return atts.unpackPA(var.getFullName(), dataPa, lookForStringTimes, lookForUnsigned);
   }
 
   /**
-   * This returns the double value of an attribute. If the attribute DataType is DataType.FLOAT,
+   * This returns the double value of an attribute. If the attribute DataType is
+   * DataType.FLOAT,
    * this nicely converts the float to a double.
    *
    * @param attribute
@@ -1383,49 +1566,64 @@ public class NcHelper {
    */
   public static double getNiceDouble(Attribute attribute) {
     double d = attribute.getNumericValue().doubleValue();
-    if (attribute.getDataType() == DataType.FLOAT) return Math2.floatToDouble(d);
+    if (attribute.getDataType() == DataType.FLOAT)
+      return Math2.floatToDouble(d);
     return d;
   }
 
   /**
-   * Given an ascending sorted .nc Variable, this finds the index of an instance of the value (not
-   * necessarily the first or last instance) (or -index-1 where it should be inserted).
+   * Given an ascending sorted .nc Variable, this finds the index of an instance
+   * of the value (not
+   * necessarily the first or last instance) (or -index-1 where it should be
+   * inserted).
    *
-   * @param variable an ascending sorted nc variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (size - 1)
-   * @param value the value you are searching for
-   * @return the index of an instance of the value (not necessarily the first or last instance) (or
-   *     -index-1 where it should be inserted, with extremes of -lowPo-1 and -(highPo+1)-1).
+   * @param variable an ascending sorted nc variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param lowPo    the low index to start with, usually 0
+   * @param highPo   the high index to start with, usually (size - 1)
+   * @param value    the value you are searching for
+   * @return the index of an instance of the value (not necessarily the first or
+   *         last instance) (or
+   *         -index-1 where it should be inserted, with extremes of -lowPo-1 and
+   *         -(highPo+1)-1).
    * @throws Exception if trouble
    */
   public static int binarySearch(Variable variable, int lowPo, int highPo, double value)
       throws Exception {
-    // String2.log("binSearch lowPo=" + lowPo + " highPo=" + highPo + " value=" + value);
+    // String2.log("binSearch lowPo=" + lowPo + " highPo=" + highPo + " value=" +
+    // value);
 
     // ensure lowPo <= highPo
     // lowPo == highPo is handled by the following two chunks of code
     Test.ensureTrue(lowPo <= highPo, String2.ERROR + "in NcHelper.binarySearch: lowPo > highPo.");
 
     double tValue = getDouble(variable, lowPo);
-    if (tValue == value) return lowPo;
-    if (tValue > value) return -lowPo - 1;
+    if (tValue == value)
+      return lowPo;
+    if (tValue > value)
+      return -lowPo - 1;
 
     tValue = getDouble(variable, highPo);
-    if (tValue == value) return highPo;
-    if (tValue < value) return -(highPo + 1) - 1;
+    if (tValue == value)
+      return highPo;
+    if (tValue < value)
+      return -(highPo + 1) - 1;
 
     // repeatedly look at midpoint
     // If no match, this always ends with highPo - lowPo = 1
-    //  and desired value would be in between them.
+    // and desired value would be in between them.
     while (highPo - lowPo > 1) {
       int midPo = (highPo + lowPo) / 2;
       tValue = getDouble(variable, midPo);
       // String2.log("binSearch midPo=" + midPo + " tValue=" + tValue);
-      if (tValue == value) return midPo;
-      if (tValue < value) lowPo = midPo;
-      else highPo = midPo;
+      if (tValue == value)
+        return midPo;
+      if (tValue < value)
+        lowPo = midPo;
+      else
+        highPo = midPo;
     }
 
     // no exact match
@@ -1433,57 +1631,71 @@ public class NcHelper {
   }
 
   /**
-   * Given an ascending sorted .nc variable and a row, this finds the first row that has that same
+   * Given an ascending sorted .nc variable and a row, this finds the first row
+   * that has that same
    * value (which may be different if there are ties).
    *
-   * @param variable an ascending sorted nc Variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param row the starting row
+   * @param variable an ascending sorted nc Variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param row      the starting row
    * @return the first row that has the same value
    */
   public static int findFirst(Variable variable, int row) throws Exception {
     // would be much more efficient if read several values at once
     double value = getDouble(variable, row);
-    while (row > 0 && getDouble(variable, row - 1) == value) row--;
+    while (row > 0 && getDouble(variable, row - 1) == value)
+      row--;
     return row;
   }
 
   /**
-   * Given an ascending sorted .nc variable and a row, this finds the last row that has that same
+   * Given an ascending sorted .nc variable and a row, this finds the last row
+   * that has that same
    * value (which may be different if there are ties).
    *
-   * @param variable an ascending sorted nc Variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param row the starting row
+   * @param variable an ascending sorted nc Variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param row      the starting row
    * @return the last row that has the same value
    */
   public static int findLast(Variable variable, int row) throws Exception {
     // would be much more efficient if read several values at once
     double value = getDouble(variable, row);
     int size1 = variable.getDimension(0).getLength() - 1;
-    while (row < size1 && getDouble(variable, row + 1) == value) row++;
+    while (row < size1 && getDouble(variable, row + 1) == value)
+      row++;
     return row;
   }
 
   /**
-   * Given an ascending sorted .nc Variable, this finds the index of the first element >= value.
+   * Given an ascending sorted .nc Variable, this finds the index of the first
+   * element >= value.
    *
-   * @param variable an ascending sorted nc Variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (size - 1)
-   * @param value the value you are searching for
-   * @return the index of the first element >= value (or highPo + 1, if there are none)
+   * @param variable an ascending sorted nc Variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param lowPo    the low index to start with, usually 0
+   * @param highPo   the high index to start with, usually (size - 1)
+   * @param value    the value you are searching for
+   * @return the index of the first element >= value (or highPo + 1, if there are
+   *         none)
    * @throws Exception if trouble
    */
   public static int binaryFindFirstGE(Variable variable, int lowPo, int highPo, double value)
       throws Exception {
-    if (lowPo > highPo) return highPo + 1;
+    if (lowPo > highPo)
+      return highPo + 1;
     int po = binarySearch(variable, lowPo, highPo, value);
 
     // an exact match? find the first exact match
     if (po >= 0) {
-      while (po > lowPo && getDouble(variable, po - 1) == value) po--;
+      while (po > lowPo && getDouble(variable, po - 1) == value)
+        po--;
       return po;
     }
 
@@ -1494,26 +1706,32 @@ public class NcHelper {
   }
 
   /**
-   * Given an ascending sorted .nc Variable, this finds the index of the last element <= value.
+   * Given an ascending sorted .nc Variable, this finds the index of the last
+   * element <= value.
    *
-   * @param variable an ascending sorted nc Variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with, usually (originalPrimitiveArray.size() - 1)
-   * @param value the value you are searching for
+   * @param variable an ascending sorted nc Variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param lowPo    the low index to start with, usually 0
+   * @param highPo   the high index to start with, usually
+   *                 (originalPrimitiveArray.size() - 1)
+   * @param value    the value you are searching for
    * @return the index of the first element <= value (or -1, if there are none)
    * @throws Exception if trouble
    */
   public static int binaryFindLastLE(Variable variable, int lowPo, int highPo, double value)
       throws Exception {
 
-    if (lowPo > highPo) return -1;
+    if (lowPo > highPo)
+      return -1;
 
     int po = binarySearch(variable, lowPo, highPo, value);
 
     // an exact match? find the last exact match
     if (po >= 0) {
-      while (po < highPo && getDouble(variable, po + 1) == value) po++;
+      while (po < highPo && getDouble(variable, po + 1) == value)
+        po++;
       return po;
     }
 
@@ -1524,13 +1742,17 @@ public class NcHelper {
   }
 
   /**
-   * Given an ascending sorted .nc Variable, this finds the index of the element closest to value.
+   * Given an ascending sorted .nc Variable, this finds the index of the element
+   * closest to value.
    *
-   * @param variable an ascending sorted nc Variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param value the value you are searching for
-   * @return the index of the first element found which is closest to value (there may be other
-   *     identical values)
+   * @param variable an ascending sorted nc Variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param value    the value you are searching for
+   * @return the index of the first element found which is closest to value (there
+   *         may be other
+   *         identical values)
    * @throws Exception if trouble
    */
   public static int binaryFindClosest(Variable variable, double value) throws Exception {
@@ -1538,15 +1760,19 @@ public class NcHelper {
   }
 
   /**
-   * Given an ascending sorted .nc Variable, this finds the index of the element closest to value.
+   * Given an ascending sorted .nc Variable, this finds the index of the element
+   * closest to value.
    *
-   * @param variable an ascending sorted nc Variable. The variable can have nDimensions, but the
-   *     size of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param lowPo the low index to start with, usually 0
-   * @param highPo the high index to start with (e.g., length-1)
-   * @param value the value you are searching for
-   * @return the index of the first element found which is closest to value (there may be other
-   *     identical values)
+   * @param variable an ascending sorted nc Variable. The variable can have
+   *                 nDimensions, but the
+   *                 size of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param lowPo    the low index to start with, usually 0
+   * @param highPo   the high index to start with (e.g., length-1)
+   * @param value    the value you are searching for
+   * @return the index of the first element found which is closest to value (there
+   *         may be other
+   *         identical values)
    * @throws Exception if trouble
    */
   public static int binaryFindClosest(Variable variable, int lowPo, int highPo, double value)
@@ -1557,40 +1783,48 @@ public class NcHelper {
     // an exact match? find the first exact match
     if (po >= 0) {
       // would be much more efficient if read several values at once
-      while (po > lowPo && getDouble(variable, po - 1) == value) po--;
+      while (po > lowPo && getDouble(variable, po - 1) == value)
+        po--;
       return po;
     }
 
     // insertionPoint at end point?
     int insertionPoint = -po - 1; // 0.. highPo
-    if (insertionPoint == 0) return 0;
-    if (insertionPoint >= highPo) return highPo;
+    if (insertionPoint == 0)
+      return 0;
+    if (insertionPoint >= highPo)
+      return highPo;
 
     // insertionPoint between 2 points
-    if (Math.abs(getDouble(variable, insertionPoint - 1) - value)
-        < Math.abs(getDouble(variable, insertionPoint) - value)) return insertionPoint - 1;
-    else return insertionPoint;
+    if (Math.abs(getDouble(variable, insertionPoint - 1) - value) < Math
+        .abs(getDouble(variable, insertionPoint) - value))
+      return insertionPoint - 1;
+    else
+      return insertionPoint;
   }
 
   /**
-   * This is like getPrimitiveArray, but converts it to DoubleArray. If it was FloatArray, this
+   * This is like getPrimitiveArray, but converts it to DoubleArray. If it was
+   * FloatArray, this
    * rounds the values nicely to doubles.
    *
-   * @param variable the variable to be read from. The variable can have nDimensions, but the size
-   *     of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+   * @param variable the variable to be read from. The variable can have
+   *                 nDimensions, but the size
+   *                 of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
    * @param firstRow the value of the leftmost dimension
-   * @param lastRow the last row to be read (inclusive). If lastRow = -1, firstRow is ignored and
-   *     the entire var is read.
+   * @param lastRow  the last row to be read (inclusive). If lastRow = -1,
+   *                 firstRow is ignored and
+   *                 the entire var is read.
    * @return the values in a DoubleArray
    * @throws Exception if trouble
    */
   public static DoubleArray getNiceDoubleArray(Variable variable, int firstRow, int lastRow)
       throws Exception {
 
-    PrimitiveArray pa =
-        lastRow == -1
-            ? getPrimitiveArray(variable)
-            : getPrimitiveArray(variable, firstRow, lastRow);
+    PrimitiveArray pa = lastRow == -1
+        ? getPrimitiveArray(variable)
+        : getPrimitiveArray(variable, firstRow, lastRow);
     if (pa instanceof DoubleArray dpa) {
       return dpa;
     }
@@ -1598,7 +1832,8 @@ public class NcHelper {
     DoubleArray da = new DoubleArray(pa);
     if (pa instanceof FloatArray) {
       int n = da.size();
-      for (int i = 0; i < n; i++) da.array[i] = Math2.floatToDouble(da.array[i]);
+      for (int i = 0; i < n; i++)
+        da.array[i] = Math2.floatToDouble(da.array[i]);
     }
     return da;
   }
@@ -1606,9 +1841,11 @@ public class NcHelper {
   /**
    * This reads the number at 'row' from a numeric variable and returns a double.
    *
-   * @param variable the variable to be read from. The variable can have nDimensions, but the size
-   *     of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param row the value of the leftmost dimension
+   * @param variable the variable to be read from. The variable can have
+   *                 nDimensions, but the size
+   *                 of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param row      the value of the leftmost dimension
    * @return the value at 'row'
    */
   public static double getDouble(Variable variable, int row) throws Exception {
@@ -1623,38 +1860,48 @@ public class NcHelper {
   }
 
   /**
-   * This reads the number at 'row' from a numeric variable and returns a nice double (floats are
+   * This reads the number at 'row' from a numeric variable and returns a nice
+   * double (floats are
    * converted with Math2.floatToDouble).
    *
-   * @param variable the variable to be read from. The variable can have nDimensions, but the size
-   *     of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
-   * @param row the value of the leftmost dimension
+   * @param variable the variable to be read from. The variable can have
+   *                 nDimensions, but the size
+   *                 of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1]
+   * @param row      the value of the leftmost dimension
    * @return the value at 'row'
    */
   public static double getNiceDouble(Variable variable, int row) throws Exception {
     double d = getDouble(variable, row);
-    if (variable.getDataType() == DataType.FLOAT) return Math2.floatToDouble(d);
+    if (variable.getDataType() == DataType.FLOAT)
+      return Math2.floatToDouble(d);
     return d;
   }
 
   /**
-   * This reads a range of values from an nDimensional variable in a NetcdfFile. Use
+   * This reads a range of values from an nDimensional variable in a NetcdfFile.
+   * Use
    * getPrimitiveArray(variable) if you need all of the data.
    *
-   * @param variable the variable to be read from. The variable can have nDimensions, but the size
-   *     of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1] (or non-leftmost and
-   *     non-rightmost (nChar/String) dimensions for char/String variables, e.g.,
-   *     [1047][1][1][1][20]).
+   * @param variable the variable to be read from. The variable can have
+   *                 nDimensions, but the size
+   *                 of the non-leftmost dimensions must be 1, e.g.,
+   *                 [1047][1][1][1] (or non-leftmost and
+   *                 non-rightmost (nChar/String) dimensions for char/String
+   *                 variables, e.g.,
+   *                 [1047][1][1][1][20]).
    * @param firstRow the first row to be read
-   * @param lastRow the last row to be read. (inclusive). If lastRow=-1, firstRow is ignored and the
-   *     entire variable is returned.
+   * @param lastRow  the last row to be read. (inclusive). If lastRow=-1, firstRow
+   *                 is ignored and the
+   *                 entire variable is returned.
    * @return the values in a PrimitiveArray
    * @throws Exception if trouble
    */
   public static PrimitiveArray getPrimitiveArray(Variable variable, int firstRow, int lastRow)
       throws Exception {
 
-    if (lastRow == -1) return getPrimitiveArray(variable);
+    if (lastRow == -1)
+      return getPrimitiveArray(variable);
 
     boolean isChar = variable.getDataType() == DataType.CHAR;
     int nDim = variable.getRank();
@@ -1666,11 +1913,12 @@ public class NcHelper {
     Arrays.fill(shape, 1);
     int nRows = lastRow - firstRow + 1;
     shape[0] = nRows;
-    if (isChar) shape[nDim - 1] = oShape[nDim - 1]; // nChars / String
+    if (isChar)
+      shape[nDim - 1] = oShape[nDim - 1]; // nChars / String
     PrimitiveArray pa = getPrimitiveArray(variable.read(origin, shape), true, isUnsigned(variable));
 
     // eek! opendap returns a full-sized array!
-    //     netcdf  returns a shape-sized array
+    // netcdf returns a shape-sized array
     if (pa.size() < nRows)
       Test.error(
           String2.ERROR
@@ -1694,15 +1942,16 @@ public class NcHelper {
   }
 
   /**
-   * This reads a 1D range of values from a 4D variable (or 5D if it holds strings, so 5th dimension
+   * This reads a 1D range of values from a 4D variable (or 5D if it holds
+   * strings, so 5th dimension
    * DataType is CHAR) in a NetcdfFile.
    *
    * @param variable the variable to be read from
-   * @param xIndex the first x index to be read
-   * @param yIndex the first y index to be read
-   * @param zIndex the first z index to be read
-   * @param firstT the first t index to be read
-   * @param lastT the last t index to be read
+   * @param xIndex   the first x index to be read
+   * @param yIndex   the first y index to be read
+   * @param zIndex   the first z index to be read
+   * @param firstT   the first t index to be read
+   * @param lastT    the last t index to be read
    * @return the values in a PrimitiveArray
    * @throws Exception if trouble
    */
@@ -1713,11 +1962,11 @@ public class NcHelper {
     int rowOrigin[] = null;
     int rowShape[] = null;
     if (variable.getRank() == 5 && variable.getDataType() == DataType.CHAR) {
-      rowOrigin = new int[] {firstT, zIndex, yIndex, xIndex, 0};
-      rowShape = new int[] {lastT - firstT + 1, 1, 1, 1, variable.getDimension(4).getLength()};
+      rowOrigin = new int[] { firstT, zIndex, yIndex, xIndex, 0 };
+      rowShape = new int[] { lastT - firstT + 1, 1, 1, 1, variable.getDimension(4).getLength() };
     } else { // numeric
-      rowOrigin = new int[] {firstT, zIndex, yIndex, xIndex};
-      rowShape = new int[] {lastT - firstT + 1, 1, 1, 1};
+      rowOrigin = new int[] { firstT, zIndex, yIndex, xIndex };
+      rowShape = new int[] { lastT - firstT + 1, 1, 1, 1 };
     }
     Array array = variable.read(rowOrigin, rowShape);
     PrimitiveArray pa = getPrimitiveArray(array);
@@ -1741,20 +1990,22 @@ public class NcHelper {
   }
 
   /**
-   * This reads a 4D range of values from a 4D variable (or 5D if it holds strings, so 5th dimension
+   * This reads a 4D range of values from a 4D variable (or 5D if it holds
+   * strings, so 5th dimension
    * DataType is CHAR) in a NetcdfFile.
    *
    * @param variable the variable to be read from
-   * @param firstX the first x index to be read
-   * @param nX the number of x indexes to be read
-   * @param firstY the first y index to be read
-   * @param nY the number of y indexes to be read
-   * @param firstZ the first z index to be read
-   * @param nZ the number of z indexes to be read
-   * @param firstT the first t index to be read
-   * @param nT the number of t indexes to be read
-   * @return the values in a PrimitiveArray (read from primitive array with loops: for t=... for
-   *     z=... for y=... for x=... pa.getDouble(po++))
+   * @param firstX   the first x index to be read
+   * @param nX       the number of x indexes to be read
+   * @param firstY   the first y index to be read
+   * @param nY       the number of y indexes to be read
+   * @param firstZ   the first z index to be read
+   * @param nZ       the number of z indexes to be read
+   * @param firstT   the first t index to be read
+   * @param nT       the number of t indexes to be read
+   * @return the values in a PrimitiveArray (read from primitive array with loops:
+   *         for t=... for
+   *         z=... for y=... for x=... pa.getDouble(po++))
    * @throws Exception if trouble
    */
   public static PrimitiveArray get4DValues(
@@ -1772,11 +2023,11 @@ public class NcHelper {
     int rowOrigin[] = null;
     int rowShape[] = null;
     if (variable.getRank() == 5 && variable.getDataType() == DataType.CHAR) {
-      rowOrigin = new int[] {firstT, firstZ, firstY, firstX, 0};
-      rowShape = new int[] {nT, nZ, nY, nX, variable.getDimension(4).getLength()};
+      rowOrigin = new int[] { firstT, firstZ, firstY, firstX, 0 };
+      rowShape = new int[] { nT, nZ, nY, nX, variable.getDimension(4).getLength() };
     } else { // numeric
-      rowOrigin = new int[] {firstT, firstZ, firstY, firstX};
-      rowShape = new int[] {nT, nZ, nY, nX};
+      rowOrigin = new int[] { firstT, firstZ, firstY, firstX };
+      rowShape = new int[] { nT, nZ, nY, nX };
     }
     Array array = variable.read(rowOrigin, rowShape);
     PrimitiveArray pa = getPrimitiveArray(array);
@@ -1826,7 +2077,8 @@ public class NcHelper {
   }
 
   /**
-   * This writes values to a 1D netcdf variable in a NetcdfFormatWriter. This works with all
+   * This writes values to a 1D netcdf variable in a NetcdfFormatWriter. This
+   * works with all
    * PrimitiveArray types, but in nc3mode: <br>
    * LongArray and ULongArray is stored as doubles, so retrieve with <br>
    * pa = new LongArray(pa) or new ULongArray(pa), and <br>
@@ -1834,9 +2086,10 @@ public class NcHelper {
    *
    * @param netcdfFileWriter
    * @param variableName
-   * @param firstRow This is the origin/where to write this chunk of data within the complete var in
-   *     the nc file.
-   * @param pa will be converted to the appropriate numeric type
+   * @param firstRow         This is the origin/where to write this chunk of data
+   *                         within the complete var in
+   *                         the nc file.
+   * @param pa               will be converted to the appropriate numeric type
    * @throws Exception if trouble
    */
   public static void write(
@@ -1847,23 +2100,28 @@ public class NcHelper {
       PrimitiveArray pa)
       throws Exception {
 
-    write(nc3Mode, netcdfFileWriter, var, new int[] {firstRow}, new int[] {pa.size()}, pa);
+    write(nc3Mode, netcdfFileWriter, var, new int[] { firstRow }, new int[] { pa.size() }, pa);
   }
 
   /**
-   * This is a thin wrapper to call netcdfFileWriter.writeStringDataToChar (for StringArray) or
+   * This is a thin wrapper to call netcdfFileWriter.writeStringDataToChar (for
+   * StringArray) or
    * netcdfFileWriter.write to write the pa to the file.
    *
-   * <p>This will convert CharArray to ShortArray and LongArray to StringArray, but it usually saves
+   * <p>
+   * This will convert CharArray to ShortArray and LongArray to StringArray, but
+   * it usually saves
    * memory if caller does it.
    *
    * @param netcdfFileWriter
    * @param var
-   * @param origin The start of where the data will be written in the var. Don't include the
-   *     StringLength dimension.
-   * @param shape The shape that the data will be arranged into in the var. Don't include
-   *     StringLength dimension.
-   * @param pa the data to be written
+   * @param origin           The start of where the data will be written in the
+   *                         var. Don't include the
+   *                         StringLength dimension.
+   * @param shape            The shape that the data will be arranged into in the
+   *                         var. Don't include
+   *                         StringLength dimension.
+   * @param pa               the data to be written
    */
   public static void write(
       boolean nc3Mode,
@@ -1880,7 +2138,8 @@ public class NcHelper {
       // (but nc4 will writes strings as utf-8 encoded
       pa = new CharArray(pa).toIso88591();
     } else if (nc3Mode) {
-      if (paType == PAType.LONG || paType == PAType.ULONG) pa = new DoubleArray(pa);
+      if (paType == PAType.LONG || paType == PAType.ULONG)
+        pa = new DoubleArray(pa);
       else if (paType == PAType.STRING)
         pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
     }
@@ -1897,14 +2156,18 @@ public class NcHelper {
   }
 
   /**
-   * This determines which rows of an .nc file have testVariables between min and max. This is
+   * This determines which rows of an .nc file have testVariables between min and
+   * max. This is
    * faster if the first testVariable(s) eliminate a lot of rows.
    *
-   * @param testVariables the variables to be tested. They must all be ArrayXxx.D1 or ArrayChar.D2
-   *     variables and use the same, one, dimension as the first dimension. This must not be null or
-   *     empty. If you have variable names, use ncFile.findVariable(name);
-   * @param min the minimum acceptable values for the testVariables
-   * @param max the maximum acceptable values for the testVariables
+   * @param testVariables the variables to be tested. They must all be ArrayXxx.D1
+   *                      or ArrayChar.D2
+   *                      variables and use the same, one, dimension as the first
+   *                      dimension. This must not be null or
+   *                      empty. If you have variable names, use
+   *                      ncFile.findVariable(name);
+   * @param min           the minimum acceptable values for the testVariables
+   * @param max           the maximum acceptable values for the testVariables
    * @return okRows
    * @throws Exception if trouble
    */
@@ -1934,11 +2197,14 @@ public class NcHelper {
       int lastSetBit = -1;
       while (row >= 0) {
         double d = pa.getDouble(row);
-        if (d < tMin || d > tMax || Double.isNaN(d)) okRows.clear(row);
-        else lastSetBit = row;
+        if (d < tMin || d > tMax || Double.isNaN(d))
+          okRows.clear(row);
+        else
+          lastSetBit = row;
         row = okRows.nextSetBit(row + 1);
       }
-      if (lastSetBit == -1) return okRows;
+      if (lastSetBit == -1)
+        return okRows;
     }
     String2.log(
         "testNcRows totalTime="
@@ -1949,15 +2215,20 @@ public class NcHelper {
   }
 
   /**
-   * This writes the PrimitiveArrays into an .nc file. This works with all PrimitiveArray types, but
-   * some datatypes (chars, longs, unsigned types) are specially encoded in the files and then
+   * This writes the PrimitiveArrays into an .nc file. This works with all
+   * PrimitiveArray types, but
+   * some datatypes (chars, longs, unsigned types) are specially encoded in the
+   * files and then
    * automatically decoded when read.
    *
-   * @param fullName for the file (This writes to an intermediate file then renames quickly.)
+   * @param fullName for the file (This writes to an intermediate file then
+   *                 renames quickly.)
    * @param varNames Names mustn't have internal spaces.
-   * @param pas Each may have a different size! (Which makes this method different than
-   *     Table.saveAsFlatNc.) In the .nc file, each will have a dimension with the same name as the
-   *     varName. All must have at least 1 value.
+   * @param pas      Each may have a different size! (Which makes this method
+   *                 different than
+   *                 Table.saveAsFlatNc.) In the .nc file, each will have a
+   *                 dimension with the same name as the
+   *                 varName. All must have at least 1 value.
    * @throws Exception if trouble
    */
   public static void writePAsInNc3(String fullName, StringArray varNames, PrimitiveArray pas[])
@@ -1969,7 +2240,8 @@ public class NcHelper {
     int randomInt = Math2.random(Integer.MAX_VALUE);
     File2.delete(fullName);
 
-    // tpas is same as pas, but with CharArray, LongArray and ULongArray converted to StringArray
+    // tpas is same as pas, but with CharArray, LongArray and ULongArray converted
+    // to StringArray
     int nVars = varNames.size();
     PrimitiveArray tpas[] = new PrimitiveArray[nVars];
 
@@ -1986,7 +2258,7 @@ public class NcHelper {
         String name = varNames.get(var);
         tpas[var] = pas[var];
         if (tpas[var].elementType() == PAType.CHAR) {
-          // nc 'char' is 1 byte!  So store java char (2 bytes) as shorts.
+          // nc 'char' is 1 byte! So store java char (2 bytes) as shorts.
           tpas[var] = new ShortArray(((CharArray) pas[var]).toArray());
         } else if (tpas[var].elementType() == PAType.LONG
             || tpas[var].elementType() == PAType.ULONG) {
@@ -1999,10 +2271,11 @@ public class NcHelper {
           StringArray newSa = new StringArray(tSize, false);
           tpas[var] = newSa;
           for (int i = 0; i < tSize; i++) {
-            // Only save json version if oldS part of it (inside enclosing "'s) is different.
+            // Only save json version if oldS part of it (inside enclosing "'s) is
+            // different.
             // This minimizes new Strings, memory usage, garbage collection, etc.
             // Note that oldS starting and ending with " will be changed when encoded
-            //  and so newS will be used.
+            // and so newS will be used.
             String oldS = oldSa.get(i);
             String newS = String2.toJson(oldS);
             newSa.add(newS.substring(1, newS.length() - 1).equals(oldS) ? oldS : newS);
@@ -2012,16 +2285,13 @@ public class NcHelper {
         PAType type = tpas[var].elementType();
         Dimension dimension = NcHelper.addDimension(rootGroup, name, tpas[var].size());
         if (type == PAType.STRING) {
-          int max =
-              Math.max(
-                  1,
-                  ((StringArray) tpas[var])
-                      .maxStringLength()); // nc libs want at least 1; 0 happens if no data
-          Dimension lengthDimension =
-              NcHelper.addDimension(rootGroup, name + StringLengthSuffix, max);
-          newVars[var] =
-              NcHelper.addVariable(
-                  rootGroup, name, DataType.CHAR, Arrays.asList(dimension, lengthDimension));
+          int max = Math.max(
+              1,
+              ((StringArray) tpas[var])
+                  .maxStringLength()); // nc libs want at least 1; 0 happens if no data
+          Dimension lengthDimension = NcHelper.addDimension(rootGroup, name + StringLengthSuffix, max);
+          newVars[var] = NcHelper.addVariable(
+              rootGroup, name, DataType.CHAR, Arrays.asList(dimension, lengthDimension));
           if (pas[var].elementType() == PAType.LONG)
             newVars[var].addAttribute(new Attribute("NcHelper", originally_a_LongArray));
           else if (pas[var].elementType() == PAType.ULONG)
@@ -2029,8 +2299,7 @@ public class NcHelper {
           else if (pas[var].elementType() == PAType.STRING)
             newVars[var].addAttribute(new Attribute("NcHelper", "JSON encoded"));
         } else {
-          newVars[var] =
-              NcHelper.addVariable(rootGroup, name, getNc3DataType(type), List.of(dimension));
+          newVars[var] = NcHelper.addVariable(rootGroup, name, getNc3DataType(type), List.of(dimension));
           if (pas[var].elementType() == PAType.CHAR)
             newVars[var].addAttribute(new Attribute("NcHelper", originally_a_CharArray));
         }
@@ -2066,21 +2335,25 @@ public class NcHelper {
         ncWriter = null;
       }
 
-      if (!reallyVerbose) String2.log(msg);
+      if (!reallyVerbose)
+        String2.log(msg);
 
       throw e;
     }
   }
 
   /**
-   * This reads the PAs in the .nc file. This works with all PrimitiveArray types, but some
-   * datatypes (char, long, unsigned, String) are specially encoded in the files and then
-   * automatically decoded when read, so that this fully supports 2byte chars, longs, and Unicode
+   * This reads the PAs in the .nc file. This works with all PrimitiveArray types,
+   * but some
+   * datatypes (char, long, unsigned, String) are specially encoded in the files
+   * and then
+   * automatically decoded when read, so that this fully supports 2byte chars,
+   * longs, and Unicode
    * Strings (by encoding as json in file).
    *
-   * @param fullName the name of the .nc file.
+   * @param fullName     the name of the .nc file.
    * @param loadVarNames the names of the variables to load (null to get all)
-   * @param varNames this will receive the varNames
+   * @param varNames     this will receive the varNames
    * @return PrimitiveArray[] paralleling the names in varNames
    * @throws Exception if trouble (e.g., one of the loadVarNames wasn't found)
    */
@@ -2088,8 +2361,8 @@ public class NcHelper {
       String fullName, String loadVarNames[], StringArray varNames) throws Exception {
 
     String msg = "  NcHelper.readPAsInNc3 " + fullName
-        // + " \n  loadVarNames=" + String2.toCSSVString(loadVarNames)
-        ;
+    // + " \n loadVarNames=" + String2.toCSSVString(loadVarNames)
+    ;
     varNames.clear();
     ArrayList<PrimitiveArray> pas = new ArrayList<>();
     long time = System.currentTimeMillis();
@@ -2103,10 +2376,9 @@ public class NcHelper {
       int n = loadVarNames == null ? rootGroupVariables.size() : loadVarNames.length;
 
       for (int v = 0; v < n; v++) {
-        Variable tVariable =
-            loadVarNames == null
-                ? rootGroupVariables.get(v)
-                : netcdfFile.findVariable(loadVarNames[v]);
+        Variable tVariable = loadVarNames == null
+            ? rootGroupVariables.get(v)
+            : netcdfFile.findVariable(loadVarNames[v]);
         if (tVariable == null)
           throw new RuntimeException(
               String2.ERROR
@@ -2119,8 +2391,9 @@ public class NcHelper {
                   + ").");
         List<Dimension> tDimensions = tVariable.getDimensions();
         int nDimensions = tDimensions.size();
-        // if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() +
-        //    " type=" + tVariable.getNc3DataType());
+        // if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName()
+        // +
+        // " type=" + tVariable.getNc3DataType());
         if (nDimensions == 1 || (nDimensions == 2 && tVariable.getDataType() == DataType.CHAR)) {
           varNames.add(tVariable.getFullName());
           PrimitiveArray pa = getPrimitiveArray(tVariable);
@@ -2129,7 +2402,8 @@ public class NcHelper {
           Attribute att = tVariable.findAttribute("NcHelper");
           if (att != null && att.isString()) {
             String ncHelper = att.getStringValue();
-            if (ncHelper == null) ncHelper = "";
+            if (ncHelper == null)
+              ncHelper = "";
             if (pa.elementType() == PAType.SHORT && ncHelper.indexOf(originally_a_CharArray) >= 0) {
               pa = new CharArray(((ShortArray) pa).toArray());
             } else if (pa.elementType() == PAType.STRING
@@ -2140,7 +2414,8 @@ public class NcHelper {
               pa = new ULongArray(pa);
             } else if (pa.elementType() == PAType.STRING && ncHelper.indexOf("JSON encoded") >= 0) {
               int tSize = pa.size();
-              for (int i = 0; i < tSize; i++) pa.setString(i, String2.fromJson(pa.getString(i)));
+              for (int i = 0; i < tSize; i++)
+                pa.setString(i, String2.fromJson(pa.getString(i)));
             }
           }
 
@@ -2152,7 +2427,8 @@ public class NcHelper {
 
     int pasSize = pas.size();
     PrimitiveArray paar[] = new PrimitiveArray[pasSize];
-    for (int i = 0; i < pasSize; i++) paar[i] = pas.get(i);
+    for (int i = 0; i < pasSize; i++)
+      paar[i] = pas.get(i);
     if (reallyVerbose)
       String2.log(
           msg + " done. nPAs=" + pasSize + " TIME=" + (System.currentTimeMillis() - time) + "ms");
@@ -2160,14 +2436,17 @@ public class NcHelper {
   }
 
   /**
-   * This writes the contents of Attributes to an .nc3 file, so the .nc file can be a key-value-pair
-   * (KVP) repository. This works with all PrimitiveArray types, but some datatypes are specially
+   * This writes the contents of Attributes to an .nc3 file, so the .nc file can
+   * be a key-value-pair
+   * (KVP) repository. This works with all PrimitiveArray types, but some
+   * datatypes are specially
    * encoded in the files and then automatically decoded when read.
    *
-   * @param fullName for the file (This doesn't write to an intermediate file.)
+   * @param fullName   for the file (This doesn't write to an intermediate file.)
    * @param attributes Names mustn't have internal spaces.
-   * @throws Exception if trouble (if an attribute's values are in a LongArray, ULongArray, unsigned
-   *     array)
+   * @throws Exception if trouble (if an attribute's values are in a LongArray,
+   *                   ULongArray, unsigned
+   *                   array)
    */
   public static void writeAttributesToNc3(String fullName, Attributes attributes) throws Exception {
 
@@ -2175,35 +2454,42 @@ public class NcHelper {
     String names[] = attributes.getNames();
     int nNames = names.length;
     PrimitiveArray pas[] = new PrimitiveArray[nNames];
-    for (int i = 0; i < nNames; i++) pas[i] = attributes.get(names[i]);
+    for (int i = 0; i < nNames; i++)
+      pas[i] = attributes.get(names[i]);
 
     // write to .nc
     writePAsInNc3(fullName, new StringArray(names), pas);
   }
 
   /**
-   * This reads the specified Attribute from an .nc file which was created by writeAttributesToNc.
-   * This works with all PrimitiveArray types, but some datatypes are specially encoded in the files
+   * This reads the specified Attribute from an .nc file which was created by
+   * writeAttributesToNc.
+   * This works with all PrimitiveArray types, but some datatypes are specially
+   * encoded in the files
    * and then automatically decoded when read.
    *
    * @param fullName for the file
-   * @return the PrimitiveArray corresponding to name (e.g., fullName file or variable name not
-   *     found)
+   * @return the PrimitiveArray corresponding to name (e.g., fullName file or
+   *         variable name not
+   *         found)
    * @throws exception if trouble (e.g., name not found)
    */
   public static PrimitiveArray readAttributeFromNc(String fullName, String name) throws Exception {
 
-    return readPAsInNc3(fullName, new String[] {name}, new StringArray())[0];
+    return readPAsInNc3(fullName, new String[] { name }, new StringArray())[0];
   }
 
   /**
-   * This reads the specified Attributes from an .nc3 file which was created by writeAttributesToNc.
-   * This works with all PrimitiveArray types, but some datatypes are specially encoded in the files
+   * This reads the specified Attributes from an .nc3 file which was created by
+   * writeAttributesToNc.
+   * This works with all PrimitiveArray types, but some datatypes are specially
+   * encoded in the files
    * and then automatically decoded when read.
    *
    * @param fullName for the file
    * @return PrimitiveArray[] which parallels names
-   * @throws exception if trouble (e.g., fullName file or one of the names not found)
+   * @throws exception if trouble (e.g., fullName file or one of the names not
+   *                   found)
    */
   public static PrimitiveArray[] readAttributesFromNc3(String fullName, String names[])
       throws Exception {
@@ -2212,8 +2498,10 @@ public class NcHelper {
   }
 
   /**
-   * This reads all Attributes from an .nc3 file which was created by writeAttributesToNc, and
-   * creates an Attributes object. This works with all PrimitiveArray types, but some datatypes are
+   * This reads all Attributes from an .nc3 file which was created by
+   * writeAttributesToNc, and
+   * creates an Attributes object. This works with all PrimitiveArray types, but
+   * some datatypes are
    * specially encoded in the files and then automatically decoded when read.
    *
    * @param fullName for the file
@@ -2226,23 +2514,31 @@ public class NcHelper {
     PrimitiveArray pas[] = readPAsInNc3(fullName, null, names);
     Attributes atts = new Attributes();
     int nNames = names.size();
-    for (int i = 0; i < nNames; i++) atts.add(names.get(i), pas[i]);
+    for (int i = 0; i < nNames; i++)
+      atts.add(names.get(i), pas[i]);
     return atts;
   }
 
   /**
    * This reads the specified data from a multidimensional structure.
    *
-   * @param nc the netcdfFile
+   * @param nc            the netcdfFile
    * @param structureName the name of the structure
-   * @param memberNames the name of the desired members of the structure). If a memberName isn't a
-   *     member in this file, the PA returned will be all CoHort mv
-   * @param tConstraints For each axis variable, there will be 3 numbers (startIndex, stride,
-   *     stopIndex). !!! If there is a special axis0, this will not include constraints for axis0.
-   * @return a PrimitiveArray[], with one for each varName. If a memberName wasn't found, its
-   *     PrimitiveArray will be null
-   * @throws Exception if trouble: IOError, structureName isn't found or isn't a structure,
-   *     unexpected nDimensions, or similar. MemberName not found isn't an error.
+   * @param memberNames   the name of the desired members of the structure). If a
+   *                      memberName isn't a
+   *                      member in this file, the PA returned will be all CoHort
+   *                      mv
+   * @param tConstraints  For each axis variable, there will be 3 numbers
+   *                      (startIndex, stride,
+   *                      stopIndex). !!! If there is a special axis0, this will
+   *                      not include constraints for axis0.
+   * @return a PrimitiveArray[], with one for each varName. If a memberName wasn't
+   *         found, its
+   *         PrimitiveArray will be null
+   * @throws Exception if trouble: IOError, structureName isn't found or isn't a
+   *                   structure,
+   *                   unexpected nDimensions, or similar. MemberName not found
+   *                   isn't an error.
    */
   public static PrimitiveArray[] readStructure(
       NetcdfFile nc, String structureName, String memberNames[], IntArray tConstraints)
@@ -2258,7 +2554,8 @@ public class NcHelper {
     List<Dimension> dims = s.getDimensions();
     int nDim = dims.size();
     int shape[] = new int[nDim];
-    for (int d = 0; d < nDim; d++) shape[d] = dims.get(d).getLength();
+    for (int d = 0; d < nDim; d++)
+      shape[d] = dims.get(d).getLength();
     NDimensionalIndex index = new NDimensionalIndex(shape);
     int currentIndex[] = index.getCurrent();
     int subsetIndex[] = index.makeSubsetIndex(structureName, tConstraints);
@@ -2272,9 +2569,8 @@ public class NcHelper {
     for (int m = 0; m < nMembers; m++) {
       StructureMembers.Member smm = sm.findMember(memberNames[m]);
       if (smm != null)
-        pa[m] =
-            PrimitiveArray.factory(
-                getElementPAType(smm.getDataType()), subsetSize, false); // active?
+        pa[m] = PrimitiveArray.factory(
+            getElementPAType(smm.getDataType()), subsetSize, false); // active?
     }
 
     // boolean buildStringsFromChars = false;
