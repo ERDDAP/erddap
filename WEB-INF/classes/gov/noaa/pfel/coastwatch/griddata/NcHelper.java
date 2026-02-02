@@ -866,20 +866,10 @@ public class NcHelper {
    * @throws Exception if trouble
    */
   public static NetcdfFile openFile(String fullName) throws Exception {
-    // 2021-02-12 Bob Simons added support for Zarr v3
     // If fullName ends in /zarr.json, use parent directory.
-    if (fullName.endsWith("/zarr.json") || fullName.endsWith("\\zarr.json")) {
-      String dir = File2.getDirectory(fullName);
-      if (dir.length() > 0) {
-        try {
-          return NetcdfFiles.open(File2.removeSlash(dir));
-        } catch (Exception e) {
-          // fall through to try opening full name
-          String2.log("Caught exception trying to open parent of zarr.json: " + e.toString());
-        }
+      if (fullName.endsWith("/zarr.json") || fullName.endsWith("\\zarr.json")) {
+          throw new Exception("Zarr v3 datasets are not supported by NetCDF-Java");
       }
-    }
-
     return fullName.endsWith(".ncml")
         ? NetcdfDatasets.openDataset(fullName)
         : // 's' is the new API
