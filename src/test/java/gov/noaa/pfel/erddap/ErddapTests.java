@@ -9,6 +9,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
+import gov.noaa.pfel.erddap.dataset.EDDTable;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,6 +34,59 @@ class ErddapTests {
     when(response.getOutputStream()).thenReturn(outStream);
     erddap.doSitemap(request, response);
     verify(response, times(1)).getOutputStream();
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoFilesManifest() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoFilesManifest()");
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    // use a real ByteArrayOutputStream to capture output
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ServletOutputStream outStream =
+        new ServletOutputStream() {
+          @Override
+          public boolean isReady() {
+            return true;
+          }
+
+          @Override
+          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+
+          @Override
+          public void write(int b) throws java.io.IOException {
+            baos.write(b);
+          }
+        };
+    when(response.getOutputStream()).thenReturn(outStream);
+
+    String datasetID = "testDataset";
+    when(request.getRequestURI()).thenReturn("/erddap/files/" + datasetID + ".manifest");
+
+    EDDTable edd = mock(EDDTable.class);
+    when(edd.datasetID()).thenReturn(datasetID);
+    when(edd.accessibleViaFiles()).thenReturn(true);
+    when(edd.isAccessibleTo(null)).thenReturn(true);
+
+    Table manifestTable = new Table();
+    manifestTable.addColumn("Name", new com.cohort.array.StringArray(new String[] {"file1.nc"}));
+    manifestTable.addColumn(
+        "URL", new com.cohort.array.StringArray(new String[] {"http://example.com/file1.nc"}));
+
+    when(edd.getFilesUrlList(request, null, 0)).thenReturn(manifestTable);
+
+    erddap.tableDatasetHashMap.put(datasetID, edd);
+    try {
+      erddap.doFiles(
+          0, 1, request, response, null, "/erddap/files/".length(), "testDataset.manifest", "");
+      String result = baos.toString();
+      Test.ensureTrue(result.contains("file1.nc"), "Result should contain file1.nc");
+      Test.ensureTrue(
+          result.contains("http://example.com/file1.nc"), "Result should contain the URL");
+    } finally {
+      erddap.tableDatasetHashMap.remove(datasetID);
+    }
   }
 
   /** Test Convert Nearest Data. */

@@ -6795,6 +6795,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         nextPath = "";
         nameAndExt = ts;
       }
+    } else {
+      // This is here to support the file manifest (used by croissant).
+      // Specifically "/files/datasetID.manifest" with no slash after datasetID.
+      int dotIndex = endOfRequestUrl.indexOf('.');
+      if (dotIndex > 0) {
+        id = endOfRequestUrl.substring(0, dotIndex);
+        nameAndExt = endOfRequestUrl.substring(dotIndex);
+      }
     }
 
     // catch pseudo filename that is just an extension
@@ -6979,6 +6987,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // get the dataset
     EDD edd = gridDatasetHashMap.get(id);
     if (edd == null) edd = tableDatasetHashMap.get(id);
+
     if (edd == null) {
       sendResourceNotFoundError(
           requestNumber,
@@ -7010,6 +7019,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "accessibleViaFilesDir=\"\"");
       sendResourceNotFoundError(
           requestNumber, request, response, "This dataset is not accessible via /files/ .");
+      return;
+    }
+
+    // handle .manifest request
+    if (".manifest".equals(nameAndExt) && (nextPath == null || nextPath.length() == 0)) {
+      Table fileTable = edd.getFilesUrlList(request, loggedInAs, language);
+      sendPlainTable(
+          language,
+          requestNumber,
+          loggedInAs,
+          request,
+          response,
+          endOfRequest,
+          queryString,
+          fileTable,
+          id + "_manifest",
+          ".csv");
       return;
     }
 
@@ -18386,51 +18412,33 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     if (useCroissant && edd.accessibleViaFiles()) {
       writer.write("  \"isLiveDataset\": true,\n");
-      try {
-        Table fileTable = edd.getFilesUrlList(request, loggedInAs, language);
-        if (fileTable != null) {
-          writer.write("  \"distribution\": [\n");
-          for (int i = 0; i < fileTable.nRows(); i++) {
-            String extension = File2.getExtension(fileTable.getStringData(1, i));
-            writer.write(
-                "  {\n"
-                    + "    \"@type\": \"cr:FileObject\",\n"
-                    + "    \"@id\": \""
-                    + fileTable.getStringData(0, i)
-                    + "\",\n"
-                    + "    \"contentSize\": \""
-                    + fileTable.getLongData(3, language)
-                    + " B\",\n"
-                    + "    \"contentUrl\": \""
-                    + fileTable.getStringData(1, i)
-                    + "\",\n"
-                    + "    \"encodingFormat\": \""
-                    + OutputStreamFromHttpResponse.getFileContentType(extension, extension)
-                    + "\"\n"
-                    + "  },\n");
-          }
-          writer.write(
-              "  {\n"
-                  + "    \"@type\": \"cr:FileSet\",\n"
-                  + "    \"@id\": \""
-                  + edd.datasetID()
-                  + "Files"
-                  + "\",\n"
-                  + "    \"description\": \"Files that contain the data.\",\n"
-                  + "    \"encodingFormat\": \"application/json\",\n"
-                  + "    \"includes\": \""
-                  + edd.getFilesetUrl(request, loggedInAs, language)
-                  + "*.*\"\n"
-                  + "  }\n");
-          writer.write("  ],\n");
-        }
-      } catch (Throwable e) {
-        String2.log(
-            "Error generating list of FileObject for dataset: "
-                + edd.datasetID()
-                + "\n"
-                + e.getMessage());
-      }
+      writer.write("  \"distribution\": [\n");
+      writer.write(
+          "  {\n"
+              + "    \"@type\": \"cr:FileObject\",\n"
+              + "    \"@id\": \"manifest\",\n"
+              + "    \"name\": \"manifest\",\n"
+              + "    \"description\": \"Manifest file containing the list of all data files.\",\n"
+              + "    \"contentUrl\": "
+              + String2.toJson65536(
+                  EDStatic.erddapUrl(request, loggedInAs, language)
+                      + "/files/"
+                      + edd.datasetID()
+                      + ".manifest")
+              + ",\n"
+              + "    \"encodingFormat\": \"text/csv\"\n"
+              + "  },\n");
+      writer.write(
+          "  {\n"
+              + "    \"@type\": \"cr:FileSet\",\n"
+              + "    \"@id\": \"files\",\n"
+              + "    \"name\": \"files\",\n"
+              + "    \"description\": \"The set of data files.\",\n"
+              + "    \"containedIn\": { \"@id\": \"manifest\" },\n"
+              + "    \"encodingFormat\": \"*/*\",\n"
+              + "    \"includes\": \"*\"\n"
+              + "  }\n");
+      writer.write("  ],\n");
     }
     if (useCroissant) {
       try {
@@ -18439,7 +18447,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "recordSet": [
               {
                 "@type": "cr:RecordSet",
-                "@id": "dataRecordSet",
+                "@id": "default",
+                "name": "default",
                 "field": [
           """);
         if (edd instanceof EDDGrid grid) {
@@ -18448,7 +18457,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             writer.write(
                 "        {\n"
                     + "          \"@type\": \"cr:Field\",\n"
-                    + "          \"@id\": \"dataRecordSet/"
+                    + "          \"@id\": \"default/"
                     + axisVariable.destinationName()
                     + "\",\n"
                     + "          \"description\": \""
@@ -18459,15 +18468,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + "\",\n"
                     + "          \"source\": {\n"
                     + "            \"fileSet\": {\n"
-                    + "              \"@id\": \""
-                    + edd.datasetID()
-                    + "Files"
-                    + "\"\n"
+                    + "              \"@id\": \"files\"\n"
                     + "            },\n"
                     + "            \"extract\": {\n"
-                    + "              \"column\": \""
-                    + axisVariable.destinationName()
-                    + "\"\n"
+                    + "              \"column\": "
+                    + String2.toJson65536(axisVariable.sourceName())
+                    + "\n"
                     + "            }\n"
                     + "          }\n"
                     + "        }"
@@ -18482,7 +18488,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           writer.write(
               "        {\n"
                   + "          \"@type\": \"cr:Field\",\n"
-                  + "          \"@id\": \"dataRecordSet/"
+                  + "          \"@id\": \"default/"
                   + dataVariable.destinationName()
                   + "\",\n"
                   + "          \"description\": \""
@@ -18493,15 +18499,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "\",\n"
                   + "          \"source\": {\n"
                   + "            \"fileSet\": {\n"
-                  + "              \"@id\": \""
-                  + edd.datasetID()
-                  + "Files"
-                  + "\"\n"
+                  + "              \"@id\": \"files\"\n"
                   + "            },\n"
                   + "            \"extract\": {\n"
-                  + "              \"column\": \""
-                  + dataVariable.destinationName()
-                  + "\"\n"
+                  + "              \"column\": "
+                  + String2.toJson65536(dataVariable.sourceName())
+                  + "\n"
                   + "            }\n"
                   + "          }\n"
                   + "        }"
