@@ -22,8 +22,9 @@ import tags.TagDisabledMissingDataset;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import testSupport.WireMockLifecycle;
 
-class EDDTableFromMultidimNcFilesTests {
+class EDDTableFromMultidimNcFilesTests extends WireMockLifecycle {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
@@ -1638,7 +1639,6 @@ class EDDTableFromMultidimNcFilesTests {
             "", // treatDimensionsAs
             null, // cacheFromUrl
             null);
-    String2.setClipboardString(results);
 
     String tDatasetID =
         EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + fileNameRegex + useDimensionsCSV);

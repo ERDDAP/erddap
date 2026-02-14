@@ -663,6 +663,10 @@ public class File2 {
 
       // make sure it is an existing directory
       if (!file.isDirectory()) {
+        // If directory doesn't exist, it's effectively already clean; return 0
+        if (!file.exists()) {
+          return 0;
+        }
         String2.log(String2.ERROR + " in File2.deleteIfOld: dir=" + dir + " isn't a directory.");
         return -1;
       }
@@ -2014,7 +2018,18 @@ public class File2 {
       throw new RuntimeException(
           "Unable to make directory=" + name + ". There is a file by that name!");
     } else if (!dir.isDirectory()) {
-      if (!dir.mkdirs()) throw new RuntimeException("Unable to make directory=" + name + ".");
+      // Retry loop for Windows resilience with exponential backoff
+      for (int i = 0; i < 10; i++) {
+        if (dir.mkdirs()) return;
+        // Wait briefly before retrying
+        try {
+          Thread.sleep(100 + (i * 100)); // Backoff: 100ms, 200ms, 300ms...up to 1000ms
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt(); // Restore interrupted status
+          throw new RuntimeException("Unable to make directory=" + name + ".");
+        }
+      }
+      throw new RuntimeException("Unable to make directory=" + name + ".");
     }
   }
 

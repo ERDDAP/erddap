@@ -44,12 +44,14 @@ import tags.TagImageComparison;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import testSupport.ExternalTestUrls;
+import testSupport.WireMockLifecycle;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 
-class EDDGridFromDapTests {
+class EDDGridFromDapTests extends WireMockLifecycle {
   @BeforeAll
   static void init() throws Exception {
     Initialization.edStatic();
@@ -2791,22 +2793,27 @@ class EDDGridFromDapTests {
   @org.junit.jupiter.api.Test
   void testGenerateDatasetsXml() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
+    String base = ExternalTestUrls.apdrcHawaiiBase();
     // testVerboseOn();
     // don't test local dataset because of dns/numericIP problems
     // this dataset is good test because it has 2 dimension combos
-    String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
+    String url = base + "/dods/public_data/SODA/soda_pop2.2.4";
     String suggDatasetID = EDDGridFromDap.suggestDatasetID(url + "?[time][lev][lat][lon]");
     String suggDatasetID2 = EDDGridFromDap.suggestDatasetID(url + "?[time][lat][lon]");
     String expected1 =
         "<dataset type=\"EDDGridFromDap\" datasetID=\""
             + suggDatasetID
             + "\" active=\"true\">\n"
-            + "    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
+            + "    <sourceUrl>"
+            + base
+            + "/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
             + "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n"
             + "    <!-- sourceAttributes>\n"
             + "        <att name=\"Conventions\">COARDS</att>\n"
             + "        <att name=\"dataType\">Grid</att>\n"
-            + "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
+            + "        <att name=\"documentation\">"
+            + base
+            + "/datadoc/soda_2.2.4.php</att>\n"
             + "        <att name=\"history\">DDD MMM dd hh:mm:ss HST yyyy : imported by GrADS Data Server 2.0</att>\n"
             + "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n"
             + "    </sourceAttributes -->\n"
@@ -2814,12 +2821,14 @@ class EDDGridFromDapTests {
             + "        <att name=\"cdm_data_type\">Grid</att>\n"
             + "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
             + "        <att name=\"creator_email\">chepurin@umd.edu</att>\n"
-            + "        <att name=\"creator_name\">HAWAII SOEST</att>\n"
+            + "        <att name=\"creator_name\">LOCALHOST</att>\n"
             + "        <att name=\"creator_type\">institution</att>\n"
             + "        <att name=\"creator_url\">https://www.atmos.umd.edu/~ocean/</att>\n"
-            + "        <att name=\"infoUrl\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
-            + "        <att name=\"institution\">HAWAII SOEST</att>\n"
-            + "        <att name=\"keywords\">assimilation, currents, data, degc, density, depth, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, hawaii, latitude, longitude, means, meridional, month, monthly, ocean, oceans, pop2.2.4, practical, psu, salinity, salt, school, science, sea, sea_water_practical_salinity, seawater, simple, soda, soest, technology, temperature, time, u, unit, v, v2.2.4, velocity, vertical, w, water, zonal</att>\n"
+            + "        <att name=\"infoUrl\">"
+            + base
+            + "/datadoc/soda_2.2.4.php</att>\n"
+            + "        <att name=\"institution\">LOCALHOST</att>\n"
+            + "        <att name=\"keywords\">assimilation, currents, data, degc, density, depth, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, latitude, localhost, longitude, means, meridional, month, monthly, ocean, oceans, pop2.2.4, practical, psu, salinity, salt, science, sea, sea_water_practical_salinity, seawater, simple, soda, temperature, time, u, unit, v, v2.2.4, velocity, vertical, w, water, zonal</att>\n"
             + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
             + "        <att name=\"license\">[standard]</att>\n"
             + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
@@ -3058,12 +3067,16 @@ class EDDGridFromDapTests {
           "<dataset type=\"EDDGridFromDap\" datasetID=\""
               + suggDatasetID
               + "\" active=\"true\">\n"
-              + "    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
+              + "    <sourceUrl>"
+              + base
+              + "/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
               + "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n"
               + "    <!-- sourceAttributes>\n"
               + "        <att name=\"Conventions\">COARDS</att>\n"
               + "        <att name=\"dataType\">Grid</att>\n"
-              + "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
+              + "        <att name=\"documentation\">"
+              + base
+              + "/datadoc/soda_2.2.4.php</att>\n"
               + "        <att name=\"history\">DDD MMM DD hh:mm:ss HST YYYY : imported by GrADS Data Server 2.0</att>\n"
               + "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n"
               + "    </sourceAttributes -->\n"
@@ -3071,21 +3084,15 @@ class EDDGridFromDapTests {
               + "        <att name=\"cdm_data_type\">Grid</att>\n"
               + "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n"
               + "        <att name=\"creator_email\">chepurin@umd.edu</att>\n"
-              + "        <att name=\"creator_name\">HAWAII SOEST</att>\n"
+              + "        <att name=\"creator_name\">LOCALHOST</att>\n"
               + "        <att name=\"creator_type\">institution</att>\n"
               + "        <att name=\"creator_url\">https://www.atmos.umd.edu/~ocean/</att>\n"
-              + "        <att name=\"infoUrl\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
-              + "        <att name=\"institution\">HAWAII SOEST</att>\n"
-              + // some changes to
-              // keywords in this
-              // test
-              // vs above
-              // test
-              "        <att name=\"keywords\">assimilation, currents, data, degc, depth, earth, hawaii, latitude, longitude, means, meridional, month, monthly, ocean, pop2.2.4, practical, psu, salinity, salt, school, science, simple, soda, soest, technology, temperature, time, u, unit, v, v2.2.4, velocity, vertical, w, zonal</att>\n"
-              +
-              // " <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
-              // //removed in this test
-              "        <att name=\"license\">[standard]</att>\n"
+              + "        <att name=\"infoUrl\">"
+              + base
+              + "/datadoc/soda_2.2.4.php</att>\n"
+              + "        <att name=\"institution\">LOCALHOST</att>\n"
+              + "        <att name=\"keywords\">assimilation, currents, data, degc, depth, latitude, localhost, longitude, means, meridional, month, monthly, ocean, pop2.2.4, practical, psu, salinity, salt, simple, soda, temperature, time, u, unit, v, v2.2.4, velocity, vertical, w, zonal</att>\n"
+              + "        <att name=\"license\">[standard]</att>\n"
               + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
               + "        <att name=\"summary\">Simple Ocean Data Assimilation (SODA) v2.2.4 monthly means (soda pop2.2.4)</att>\n"
               + "        <att name=\"title\">SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5°, 1871-2010</att>\n"

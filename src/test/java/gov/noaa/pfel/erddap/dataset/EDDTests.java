@@ -19,8 +19,9 @@ import java.io.File;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import testDataset.Initialization;
+import testSupport.WireMockLifecycle;
 
-class EDDTests {
+class EDDTests extends WireMockLifecycle {
   @BeforeAll
   static void init() {
     Initialization.edStatic();

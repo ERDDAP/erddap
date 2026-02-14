@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import testSupport.ExternalTestUrls;
+import testSupport.WireMockLifecycle;
 
 /**
  * This tests making an nc header file. This is supporting ncHeaderMakeFile true and false. There
@@ -16,7 +18,7 @@ import testDataset.Initialization;
  * range information geospatial_lat/lon_min/max, etc... In those tests we remove those lines as
  * well. Once we fully migrate to ncHeaderMakeFile false we can simplify these tests.
  */
-public class NcHeaderFilesTests {
+public class NcHeaderFilesTests extends WireMockLifecycle {
 
   @BeforeAll
   static void init() {
@@ -317,6 +319,8 @@ completeness, or usefulness, of this information.";
     int language = 0;
     String tName, results, expected;
 
+    String base = ExternalTestUrls.apdrcHawaiiBase();
+
     EDD edd = EDDTestDataset.gethawaii_d90f_20ee_c4cb();
     tName =
         edd.makeNewFileForDapQuery(
@@ -441,7 +445,7 @@ netcdf EDDGridFromDap.nc {
   :dataType = "Grid";
   :defaultDataQuery = "temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]";
   :defaultGraphQuery = "temp[last][0][0:last][0:last]&.draw=surface&.vars=longitude|latitude|temp";
-  :documentation = "http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php";
+  :documentation = "%s/datadoc/soda_2.2.4.php";
   :Easternmost_Easting = 185.25; // double
   :geospatial_lat_max = 23.25; // double
   :geospatial_lat_min = 23.25; // double
@@ -456,7 +460,7 @@ netcdf EDDGridFromDap.nc {
   :geospatial_vertical_positive = "down";
   :geospatial_vertical_units = "m";
   :history = "Fri Nov 07 05:28:17 HST 2025 : imported by GrADS Data Server 2.0
-YYYY-MM-DDTHH:mm:ssZ http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4
+YYYY-MM-DDTHH:mm:ssZ %s/dods/public_data/SODA/soda_pop2.2.4
 YYYY-MM-DDTHH:mm:ssZ http://localhost:8080/erddap/griddap/hawaii_d90f_20ee_c4cb.ncHeader?temp[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)],salt[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)],u[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)],v[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)],w[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)]";
   :infoUrl = "https://www.atmos.umd.edu/~ocean/";
   :institution = "TAMU/UMD";
@@ -470,34 +474,35 @@ implied, including warranties of merchantability and fitness for a
 particular purpose, or assumes any legal liability for the accuracy,
 completeness, or usefulness, of this information.";
   :Northernmost_Northing = 23.25; // double
-  :sourceUrl = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
+  :sourceUrl = "%s/dods/public_data/SODA/soda_pop2.2.4";
   :Southernmost_Northing = 23.25; // double
   :standard_name_vocabulary = "CF Standard Name Table v70";
-  :summary = "Simple Ocean Data Assimilation (SODA) version 2.2.4 - A reanalysis of ocean\s
-climate. SODA uses the GFDL modular ocean model version 2.2. The model is\s
-forced by observed surface wind stresses from the COADS data set (from 1958\s
-to 1992) and from NCEP (after 1992). Note that the wind stresses were\s
-detrended before use due to inconsistencies with observed sea level pressure\s
-trends. The model is also constrained by constant assimilation of observed\s
-temperatures, salinities, and altimetry using an optimal data assimilation\s
-technique. The observed data comes from: 1) The World Ocean Atlas 1994 which\s
-contains ocean temperatures and salinities from mechanical\s
+  :summary = "Simple Ocean Data Assimilation (SODA) version 2.2.4 - A reanalysis of ocean\\s
+climate. SODA uses the GFDL modular ocean model version 2.2. The model is\\s
+forced by observed surface wind stresses from the COADS data set (from 1958\\s
+to 1992) and from NCEP (after 1992). Note that the wind stresses were\\s
+detrended before use due to inconsistencies with observed sea level pressure\\s
+trends. The model is also constrained by constant assimilation of observed\\s
+temperatures, salinities, and altimetry using an optimal data assimilation\\s
+technique. The observed data comes from: 1) The World Ocean Atlas 1994 which\\s
+contains ocean temperatures and salinities from mechanical\\s
 bathythermographs, expendable bathythermographs and conductivity-temperature-
-depth probes. 2) The expendable bathythermograph archive 3) The TOGA-TAO\s
-thermistor array 4) The Soviet SECTIONS tropical program 5) Satellite\s
-altimetry from Geosat, ERS/1 and TOPEX/Poseidon.\s
-We are now exploring an eddy-permitting reanalysis based on the Parallel\s
-Ocean Program POP-1.4 model with 40 levels in the vertical and a 0.4x0.25\s
-degree displaced pole grid (25 km resolution in the western North\s
-Atlantic).  The first version of this we will release is SODA1.2, a\s
-reanalysis driven by ERA-40 winds covering the period 1958-2001 (extended to\s
+depth probes. 2) The expendable bathythermograph archive 3) The TOGA-TAO\\s
+thermistor array 4) The Soviet SECTIONS tropical program 5) Satellite\\s
+altimetry from Geosat, ERS/1 and TOPEX/Poseidon.\\s
+We are now exploring an eddy-permitting reanalysis based on the Parallel\\s
+Ocean Program POP-1.4 model with 40 levels in the vertical and a 0.4x0.25\\s
+degree displaced pole grid (25 km resolution in the western North\\s
+Atlantic).  The first version of this we will release is SODA1.2, a\\s
+reanalysis driven by ERA-40 winds covering the period 1958-2001 (extended to\\s
 the current year using available altimetry).";
   :time_coverage_end = "YYYY-MM-DDTHH:mm:ssZ";
   :time_coverage_start = "YYYY-MM-DDTHH:mm:ssZ";
   :title = "SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)";
   :Westernmost_Easting = 185.25; // double
 }
-            """;
+"""
+            .formatted(base, base, base);
     expected = expected.replaceAll("\r\n", "\n");
     results = results.replaceAll("\r\n", "\n");
     expected =

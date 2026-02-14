@@ -27,6 +27,20 @@ class EDDTableAggregateRowsTests {
     String results, query, tName, expected;
     // DasDds.main(new String[]{"miniNdbc410", "-verbose"});
     EDDTable tedd = (EDDTable) EDDTestDataset.getminiNdbc410();
+
+    // Wait for asynchronous dataset initialization (subset and distinct tables)
+    // to complete. There can be a race condition where TaskThread is still
+    // running background tasks when this test starts. Retry for up to 30 seconds.
+    int maxWaitSeconds = 30;
+    long startTime = System.currentTimeMillis();
+    while (tedd == null && System.currentTimeMillis() - startTime < maxWaitSeconds * 1000) {
+      Thread.sleep(100);
+      tedd = (EDDTable) EDDTestDataset.getminiNdbc410();
+    }
+    if (tedd == null) {
+      throw new RuntimeException(
+          "Failed to get miniNdbc410 dataset after " + maxWaitSeconds + " seconds");
+    }
     String dir = EDStatic.config.fullTestCacheDirectory;
     int tPo;
     int language = 0;

@@ -93,13 +93,15 @@ import tags.TagImageComparison;
 import tags.TagJetty;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import testSupport.ExternalTestUrls;
+import testSupport.WireMockLifecycle;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 @TagJetty
-class JettyTests {
+class JettyTests extends WireMockLifecycle {
 
   @TempDir private static Path TEMP_DIR;
 
@@ -4515,10 +4517,45 @@ class JettyTests {
       String content;
       String sa[];
       HashSet<String> hs;
-      try {
-        content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
-      } catch (Exception e) {
-        results.append("\n* Trouble: " + e.toString() + "\n");
+      String pageUrl = tErddapUrl + pages[i];
+      content = null;
+
+      // Retry logic for transient 503 errors (Service Unavailable)
+      // These can occur during graph generation or when server is under load
+      int maxRetries = 3;
+      int retryDelayMs = 1000;
+      for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          content = SSR.getUrlResponseStringUnchanged(pageUrl);
+          break; // Success, exit retry loop
+        } catch (Exception e) {
+          String errorMsg = e.toString();
+          boolean is503Error = errorMsg.contains("503") || errorMsg.contains("Service Unavailable");
+
+          if (is503Error && attempt < maxRetries) {
+            // Transient 503 error, retry after delay
+            String2.log(
+                "  Note: Got 503 on attempt "
+                    + attempt
+                    + "/"
+                    + maxRetries
+                    + " for "
+                    + pages[i]
+                    + ". Waiting "
+                    + retryDelayMs
+                    + "ms before retry...");
+            Thread.sleep(retryDelayMs);
+            retryDelayMs = Math.min(retryDelayMs * 2, 5000); // Exponential backoff, max 5s
+          } else if (attempt == maxRetries || !is503Error) {
+            // Final attempt failed or non-503 error, report it
+            results.append("\n* Trouble: " + errorMsg + "\n");
+            break;
+          }
+        }
+      }
+
+      if (content == null) {
+        // Failed after retries or caught non-retriable exception
         continue;
       }
 
@@ -12988,8 +13025,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
     // String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
     int language = 0;
 
+    String baseUrl = ExternalTestUrls.apdrcHawaiiBase();
     // get das and dds
-    String threddsUrl = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
+    String threddsUrl = baseUrl + "/dods/public_data/SODA/soda_pop2.2.4";
     String erddapUrl =
         EDStatic.erddapUrl + "/griddap/hawaii_d90f_20ee_c4cb"; // in tests, always non-https url
     DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
@@ -13212,7 +13250,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
               + "  :dataType = \"Grid\";\n"
               + "  :defaultDataQuery = \"temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]\";\n"
               + "  :defaultGraphQuery = \"temp[last][0][0:last][0:last]&.draw=surface&.vars=longitude|latitude|temp\";\n"
-              + "  :documentation = \"http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php\";\n"
+              + "  :documentation = \""
+              + baseUrl
+              + "/datadoc/soda_2.2.4.php\";\n"
               + "  :Easternmost_Easting = 359.75; // double\n"
               + "  :geospatial_lat_max = 89.25; // double\n"
               + "  :geospatial_lat_min = -75.25; // double\n"
@@ -13246,7 +13286,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
               + "particular purpose, or assumes any legal liability for the accuracy,\n"
               + "completeness, or usefulness, of this information.\";\n"
               + "  :Northernmost_Northing = 89.25; // double\n"
-              + "  :sourceUrl = \"http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4\";\n"
+              + "  :sourceUrl = \""
+              + baseUrl
+              + "/dods/public_data/SODA/soda_pop2.2.4\";\n"
               + "  :Southernmost_Northing = -75.25; // double\n"
               + "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n"
               + "  :summary = \"Simple Ocean Data Assimilation (SODA) version 2.2.4 - A reanalysis of ocean \n"
@@ -17801,7 +17843,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
     EDDGridFromDap eddGridFromDap =
         (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
     assertEquals(
-        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
+        ExternalTestUrls.apdrcHawaiiBase() + "/dods/public_data/SODA/soda_pop2.2.4",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
