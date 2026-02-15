@@ -11,6 +11,37 @@ A live ERDDAP&trade; installation can be seen at: https://coastwatch.pfeg.noaa.g
 *Example screenshot of ERDDAP&trade;'s web user interface 'Make-a-Graph' page*
 
 
+
+## Architecture
+
+ERDDAP supports both **standalone** and **containerized** deployments:
+
+| Module | Description |
+|--------|-------------|
+| `WEB-INF/classes` | Core ERDDAP engine with REST API, OPeNDAP/THREDDS support, and dataset management |
+| └─ `gov/noaa/pfel/erddap` | Main server logic, request handlers, and dataset factories |
+| └─ `gov/noaa/pfel/erddap/dataset` | Dataset implementations (Grid, Table, Aggregations) and TableWriters for output formats |
+| └─ `gov/noaa/pfel/erddap/util` | Core utilities, configuration (EDStatic), and resource management |
+| └─ `gov/noaa/pfel/coastwatch` | Data processing utilities for griddata, pointdata, and file operations |
+| `src/main/resources` | SGT (Scientific Graphics Toolkit) for visualization and plotting |
+| `development/` | Development tooling - Jetty setup, Docker configs, JMeter tests, and profiling guides |
+| `docker/` | Docker Compose configurations including Prometheus monitoring stack |
+| `translation/` | Internationalization system with automated translation scripts |
+
+**Deployment Modes:**
+
+* **Standalone (Tomcat)**: ERDDAP WAR + Apache Tomcat (recommended for production)
+* **Standalone (Jetty)**: ERDDAP + Jetty via Maven (optimized for rapid development)
+* **Containerized**: Docker/Docker Compose deployment with optional monitoring stack
+
+**Architecture Highlights:**
+
+* **Pluggable Datasets**: Support for 40+ dataset types (GridDAP, TableDAP, EDDGridFromDap, EDDTableFromAsciiFiles, etc.)
+* **Format Agnostic**: Reads from NetCDF, HDF5, OPeNDAP, databases, ASCII, and writes to JSON, CSV, NetCDF, GeoJSON, and 20+ formats
+* **Aggregation Support**: Side-by-side and sequential dataset aggregation with automatic metadata merging
+* **Caching Layer**: Intelligent caching for performance with configurable dataset reload intervals
+
+
 ## Developing with ERDDAP&trade;
 
 ERDDAP&trade; is a Java Servlet-based application and can be run in any compatible Java Servlet Container/Application Server, such as Apache Tomcat.
