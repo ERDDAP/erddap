@@ -1426,8 +1426,6 @@ class EDDTableFromColumnarAsciiFilesTests {
                   ""
                 }, // defaultStandardizeWhat, cacheFromUrl
                 false); // doIt loop?
-    String2.setClipboardString(results);
-    // String2.pressEnterToContinue(results);
 
     // one time for ice concentration
     results =
@@ -1456,8 +1454,6 @@ class EDDTableFromColumnarAsciiFilesTests {
                   ""
                 }, // defaultStandardizeWhat, cacheFromUrl
                 false); // doIt loop?
-    String2.setClipboardString(results);
-    // String2.pressEnterToContinue(results);
 
     // * make the temperature dataset
     String id = "glerlAvgTemp";
@@ -1579,8 +1575,6 @@ class EDDTableFromColumnarAsciiFilesTests {
                   ""
                 }, // defaultStandardizeWhat, cacheFromUrl
                 false); // doIt loop?
-    String2.setClipboardString(results);
-    // String2.pressEnterToContinue(results);
 
     // make the dataset
     String id = "glerlLTAvgTemp";

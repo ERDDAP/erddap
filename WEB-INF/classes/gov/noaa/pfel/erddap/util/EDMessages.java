@@ -65,7 +65,8 @@ public class EDMessages {
   public final String EDDSimilarDifferent;
   public final String[] extensionsNoRangeRequests; // an array of extensions (not translated)
   public final String inotifyFixCommands;
-  public final String sparqlP01toP02pre;
+  // Not final for testing, but should be set by messages.xml and not changed after that.
+  public String sparqlP01toP02pre;
   public final String sparqlP01toP02post;
 
   public String // the unencoded EDDGrid...Example attributes

@@ -9899,8 +9899,6 @@ class EDDGridFromNcFilesTests {
               -1,
               null,
               null); // dimensionsCSV, reloadMinutes, cacheFromUrl
-      // String2.log(results);
-      String2.setClipboardString(results);
 
       expected =
           "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"noaa_nodc_a2c2_29ed_1915\" active=\"true\">\n"

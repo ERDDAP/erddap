@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import testSupport.ExternalTestUrls;
 
 public class EDDTestDataset {
   public static void generateDatasetsXml() throws URISyntaxException, FileNotFoundException {
@@ -462,7 +463,9 @@ public class EDDTestDataset {
 
   private static String xmlFragment_hawaii_d90f_20ee_c4cb() {
     return "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_d90f_20ee_c4cb\" active=\"true\">\n"
-        + "    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
+        + "    <sourceUrl>"
+        + ExternalTestUrls.apdrcHawaiiBase()
+        + "/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
         + "    <accessibleViaWMS>false</accessibleViaWMS>\n"
         + "    <reloadEveryNMinutes>15000</reloadEveryNMinutes>\n"
         + "    <defaultDataQuery>temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]</defaultDataQuery>\n"
@@ -470,7 +473,9 @@ public class EDDTestDataset {
         + "    <!-- sourceAttributes>\n"
         + "        <att name=\"Conventions\">COARDS</att>\n"
         + "        <att name=\"dataType\">Grid</att>\n"
-        + "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
+        + "        <att name=\"documentation\">"
+        + ExternalTestUrls.apdrcHawaiiBase()
+        + "/datadoc/soda_2.2.4.php</att>\n"
         + "        <att name=\"history\">Tue Feb 22 14:37:08 HST 2011 : imported by GrADS Data Server 2.0</att>\n"
         + "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n"
         + "    </sourceAttributes -->\n"
