@@ -1033,7 +1033,7 @@
         <dependency>
             <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-metadata</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.sis.storage/sis-storage -->
         <dependency>
