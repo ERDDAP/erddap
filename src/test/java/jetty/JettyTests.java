@@ -16799,7 +16799,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
             + "<body>\n"
             + "<h2>HTTP ERROR 400 Ambiguous URI empty segment</h2>\n"
             + "<table>\n"
-            + "<tr><th>URI:</th><td>/erddap/files//.csv</td></tr>\n"
+            + "<tr><th>URI:</th><td>http://localhost:"
+            + PORT
+            + "/erddap/files//.csv</td></tr>\n"
             + "<tr><th>STATUS:</th><td>400</td></tr>\n"
             + "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n"
             + "</table>\n"
