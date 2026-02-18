@@ -17,16 +17,6 @@ import gov.noaa.pmel.util.Debug;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.beans.PropertyChangeListener;
-import javax.swing.SwingConstants;
-
-// import javax.swing.RepaintManager;
 
 /**
  * The <code>JPane</code> class is extended from <code>javax.swing.JLayeredPane</code> and is the
@@ -203,15 +193,9 @@ import javax.swing.SwingConstants;
  * @see Graph
  * @see java.awt.Graphics
  */
-public class JPane extends javax.swing.JLayeredPane
-    // public class JPane extends javax.swing.JComponent
-    implements AbstractPane, javax.swing.Scrollable, Printable {
+public class JPane extends javax.swing.JLayeredPane implements AbstractPane {
   //
   private PaneProxy proxy_;
-  private int horizBlockIncrement = -1;
-  private int vertBlockIncrement = -1;
-  private int horizUnitIncrement = 1;
-  private int vertUnitIncrement = 1;
 
   /** Don't set debug=true here. Only do it from within a test method. */
   public static boolean debug = false;
@@ -293,47 +277,14 @@ public class JPane extends javax.swing.JLayeredPane
   }
 
   @Override
-  public void draw() {
-    proxy_.setOpaque(isOpaque());
-    proxy_.draw();
-  }
-
-  /** No initialization required. */
-  @Override
-  public void init() {}
-
-  @Override
   public void draw(Graphics g) {
     proxy_.setOpaque(isOpaque());
     proxy_.draw(g);
   }
 
-  @Override
-  public void draw(Graphics g, int width, int height) {
-    proxy_.setOpaque(isOpaque());
-    proxy_.draw(g, width, height);
-  }
-
-  @Override
-  public boolean isPrinter() {
-    return proxy_.isPrinter();
-  }
-
   /** Internal method to access jdk1.1 or Java2D line drawing. */
   public static StrokeDrawer getStrokeDrawer() {
     return PaneProxy.strokeDrawer;
-  }
-
-  @Override
-  public Dimension getPageSize() {
-    return proxy_.getPageSize();
-  }
-
-  /** Override default painting by swing. */
-  @Override
-  public void paintComponent(Graphics g) {
-    super.paintComponent(g);
-    proxy_.paint(g);
   }
 
   /**
@@ -412,149 +363,16 @@ public class JPane extends javax.swing.JLayeredPane
     return super.add(name, comp);
   }
 
-  @Override
-  public String getId() {
-    return proxy_.getId();
-  }
-
-  @Override
-  public void setId(String id) {
-    proxy_.setId(id);
-  }
-
-  @Override
-  public void setPageAlign(int vert, int horz) {
-    proxy_.setPageAlign(vert, horz);
-  }
-
-  @Override
-  public void setPageVAlign(int vert) {
-    proxy_.setPageVAlign(vert);
-  }
-
-  @Override
-  public void setPageHAlign(int horz) {
-    proxy_.setPageHAlign(horz);
-  }
-
-  @Override
-  public int getPageVAlign() {
-    return proxy_.getPageVAlign();
-  }
-
-  @Override
-  public int getPageHAlign() {
-    return proxy_.getPageHAlign();
-  }
-
-  @Override
-  public void setPageOrigin(Point p) {
-    proxy_.setPageOrigin(p);
-  }
-
-  @Override
-  public Point getPageOrigin() {
-    return proxy_.getPageOrigin();
-  }
-
   /** Set the size. */
   @Override
   public void setSize(Dimension d) {
     super.setSize(d);
     if (Debug.DEBUG) System.out.println("JPane: setSize()");
-    proxy_.setSize(d);
-  }
-
-  @Override
-  public Layer getFirstLayer() {
-    return proxy_.getFirstLayer();
-  }
-
-  @Override
-  public Layer getLayer(String id) throws LayerNotFoundException {
-    return proxy_.getLayer(id);
-  }
-
-  @Override
-  public Layer getLayerFromDataId(String id) throws LayerNotFoundException {
-    return proxy_.getLayerFromDataId(id);
-  }
-
-  @Override
-  public Object getSelectedObject() {
-    return proxy_.getSelectedObject();
-  }
-
-  @Override
-  public void setSelectedObject(Object obj) {
-    proxy_.setSelectedObject(obj);
-  }
-
-  /** Overrides the default event methods. */
-  @Override
-  public void processMouseEvent(MouseEvent event) {
-    if (!proxy_.processMouseEvent(event)) super.processMouseEvent(event);
-  }
-
-  /** Used internally by sgt. */
-  @Override
-  public void processMouseMotionEvent(MouseEvent event) {
-    if (!proxy_.processMouseMotionEvent(event)) super.processMouseMotionEvent(event);
-  }
-
-  /** Get the current zoom bounding box. */
-  @Override
-  public Rectangle getZoomBounds() {
-    return proxy_.getZoomBounds();
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public Point getZoomStart() {
-    return proxy_.getZoomStart();
-  }
-
-  @Override
-  public Object getObjectAt(int x, int y) {
-    return proxy_.getObjectAt(x, y);
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public Object[] getObjectsAt(int x, int y) {
-    return proxy_.getObjectsAt(x, y);
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public Object[] getObjectsAt(Point pt) {
-    return proxy_.getObjectsAt(pt.x, pt.y);
   }
 
   @Override
   public Component getComponent() {
     return this;
-  }
-
-  @Override
-  public Dimension getMaximumSize() {
-    return proxy_.getMaximumSize();
-  }
-
-  @Override
-  public Dimension getMinimumSize() {
-    return proxy_.getMinimumSize();
-  }
-
-  @Override
-  public Dimension getPreferredSize() {
-    return proxy_.getPreferredSize();
   }
 
   /**
@@ -573,11 +391,6 @@ public class JPane extends javax.swing.JLayeredPane
   }
 
   @Override
-  public void setBatch(boolean batch) {
-    proxy_.setBatch(batch, "");
-  }
-
-  @Override
   public boolean isBatch() {
     return proxy_.isBatch();
   }
@@ -585,169 +398,5 @@ public class JPane extends javax.swing.JLayeredPane
   @Override
   public void setModified(boolean mod, String mess) {
     proxy_.setModified(mod, mess);
-  }
-
-  @Override
-  public boolean isModified() {
-    return proxy_.isModified();
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public void setMouseEventsEnabled(boolean enable) {
-    proxy_.setMouseEventsEnabled(enable);
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public boolean isMouseEventsEnabled() {
-    return proxy_.isMouseEventsEnabled();
-  }
-
-  @Override
-  public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-    if (orientation == SwingConstants.HORIZONTAL) {
-      if (horizBlockIncrement <= 0) {
-        return getVisibleRect().width;
-      } else {
-        return horizBlockIncrement;
-      }
-    } else {
-      if (vertBlockIncrement <= 0) {
-        return getVisibleRect().height;
-      } else {
-        return vertBlockIncrement;
-      }
-    }
-  }
-
-  @Override
-  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-    if (orientation == SwingConstants.HORIZONTAL) {
-      if (horizUnitIncrement <= 0) {
-        return 1;
-      } else {
-        return horizUnitIncrement;
-      }
-    } else {
-      if (vertUnitIncrement <= 0) {
-        return 1;
-      } else {
-        return vertUnitIncrement;
-      }
-    }
-  }
-
-  @Override
-  public Dimension getPreferredScrollableViewportSize() {
-    return getSize();
-  }
-
-  @Override
-  public boolean getScrollableTracksViewportHeight() {
-    return false;
-  }
-
-  @Override
-  public boolean getScrollableTracksViewportWidth() {
-    return false;
-  }
-
-  @Override
-  public int print(Graphics g, PageFormat pf, int pageIndex) {
-    if (pageIndex > 0) {
-      return NO_SUCH_PAGE;
-    } else {
-      drawPage(g, pf);
-      return PAGE_EXISTS;
-    }
-  }
-
-  @Override
-  public void setPageScaleMode(int mode) {
-    proxy_.setPageScaleMode(mode);
-  }
-
-  @Override
-  public int getPageScaleMode() {
-    return proxy_.getPageScaleMode();
-  }
-
-  /** Used by internally by sgt. */
-  protected void drawPage(Graphics g, PageFormat pf) {
-    Dimension d = getSize();
-    Point pageOrigin = proxy_.getPageOrigin();
-    if (pageOrigin == null) pageOrigin = new Point(0, 0);
-    Graphics2D g2 = (Graphics2D) g;
-
-    double scale = 1.0;
-    double dx = pf.getImageableX();
-    double dy = pf.getImageableY();
-    int scaleMode = proxy_.getPageScaleMode();
-    if (scaleMode == AbstractPane.TO_FIT || scaleMode == AbstractPane.SHRINK_TO_FIT) {
-      double yf = pf.getImageableHeight() / d.getHeight();
-      double xf = pf.getImageableWidth() / d.getWidth();
-      if (xf < yf) {
-        scale = xf;
-      } else if (xf > yf) {
-        scale = yf;
-      }
-      if (scaleMode == AbstractPane.SHRINK_TO_FIT && scale > 1.0) scale = 1.0;
-    }
-
-    switch (proxy_.getPageHAlign()) {
-      case AbstractPane.RIGHT:
-        dx += pf.getImageableWidth() - scale * d.getWidth();
-        break;
-      case AbstractPane.LEFT:
-        // do nothing
-        break;
-      case AbstractPane.SPECIFIED_LOCATION:
-        dx += pageOrigin.x;
-        break;
-      case AbstractPane.CENTER:
-      default:
-        dx += (pf.getImageableWidth() - scale * d.getWidth()) / 2.0;
-        break;
-    }
-
-    switch (proxy_.getPageVAlign()) {
-      case AbstractPane.BOTTOM:
-        dy += pf.getImageableHeight() - scale * d.getHeight();
-        break;
-      case AbstractPane.MIDDLE:
-        dy += (pf.getImageableHeight() - scale * d.getHeight()) / 2.0;
-        break;
-      case AbstractPane.SPECIFIED_LOCATION:
-        dy += pageOrigin.y;
-        break;
-      case AbstractPane.TOP:
-      default:
-        // do nothing
-        break;
-    }
-    g.clipRect(-1000, -1000, 2000, 2000);
-    //    g.clipRect(Integer.MIN_VALUE, Integer.MIN_VALUE,
-    //               Integer.MAX_VALUE, Integer.MAX_VALUE);
-    g2.translate(dx, dy);
-    g2.scale(scale, scale);
-    proxy_.drawPage(g, pf.getImageableWidth(), pf.getImageableHeight());
-  }
-
-  /*
-   * Pane PropertyChange methods
-   */
-  @Override
-  public void addPropertyChangeListener(PropertyChangeListener l) {
-    proxy_.addPropertyChangeListener(l);
-  }
-
-  @Override
-  public void removePropertyChangeListener(PropertyChangeListener l) {
-    proxy_.removePropertyChangeListener(l);
   }
 }

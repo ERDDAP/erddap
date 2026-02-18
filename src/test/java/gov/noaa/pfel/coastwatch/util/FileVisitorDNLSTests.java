@@ -1,15 +1,15 @@
 package gov.noaa.pfel.coastwatch.util;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.TestUtil;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;

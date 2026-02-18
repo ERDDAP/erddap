@@ -15,7 +15,6 @@ import gov.noaa.pmel.sgt.CartesianRenderer;
 import gov.noaa.pmel.sgt.ColorMap;
 import gov.noaa.pmel.sgt.JPane;
 import gov.noaa.pmel.sgt.LogTransform;
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -282,15 +281,6 @@ public class FilledMarkerRenderer extends CartesianRenderer {
   @Override
   public CartesianGraph getCartesianGraph() {
     return graph;
-  }
-
-  // Find data object.
-  // SGTData getDataAt(int x, int y)
-
-  /** NOT IMPLEMENTED. Find data object. Required to extend CartesianRenderer. */
-  @Override
-  public SGTData getDataAt(java.awt.Point pt) {
-    return null;
   }
 
   // Get parent pane.

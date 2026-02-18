@@ -11,7 +11,6 @@
  */
 package gov.noaa.pmel.sgt;
 
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.util.Range2D;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -252,11 +251,4 @@ public abstract class Graph implements PropertyChangeListener {
     String name = getClass().getName();
     return name.substring(name.lastIndexOf(".") + 1) + ": " + ident_;
   }
-
-  /**
-   * Find data at a <code>Point</code>
-   *
-   * @since 3.0
-   */
-  public abstract SGTData getDataAt(Point pt);
 }

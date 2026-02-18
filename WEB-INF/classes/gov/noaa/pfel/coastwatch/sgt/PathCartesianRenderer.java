@@ -10,7 +10,6 @@ import gov.noaa.pmel.sgt.Attribute;
 import gov.noaa.pmel.sgt.CartesianGraph;
 import gov.noaa.pmel.sgt.CartesianRenderer;
 import gov.noaa.pmel.sgt.JPane;
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.util.*;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -173,15 +172,6 @@ public class PathCartesianRenderer extends CartesianRenderer {
   @Override
   public CartesianGraph getCartesianGraph() {
     return graph;
-  }
-
-  // Find data object.
-  // SGTData getDataAt(int x, int y)
-
-  /** NOT IMPLEMENTED. Find data object. Required to extend CartesianRenderer. */
-  @Override
-  public SGTData getDataAt(java.awt.Point pt) {
-    return null;
   }
 
   // Get parent pane.

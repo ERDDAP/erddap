@@ -575,14 +575,4 @@ public class CartesianGraph extends Graph {
             + "]"
             + ")");
   }
-
-  /**
-   * Find data at point
-   *
-   * @since 3.0
-   */
-  @Override
-  public SGTData getDataAt(Point pt) {
-    return renderer_.getDataAt(pt);
-  }
 }

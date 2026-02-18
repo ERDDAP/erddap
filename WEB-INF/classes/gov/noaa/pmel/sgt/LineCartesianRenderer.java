@@ -14,10 +14,8 @@ package gov.noaa.pmel.sgt;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTLine;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 
@@ -325,13 +323,5 @@ public class LineCartesianRenderer extends CartesianRenderer {
             + evt.getPropertyName()
             + "]"
             + ")");
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public SGTData getDataAt(Point pt) {
-    return null;
   }
 }

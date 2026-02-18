@@ -7580,7 +7580,9 @@ public class TestUtil {
     Test.ensureTrue(File2.touch(utilDir + "temp.txt"), "a"); // touch the file
 
     // Now wait for the file's timestamp to be updated
-    await().atMost(5, SECONDS).until(() -> File2.getLastModified(utilDir + "temp.txt") > originalFileTime);
+    await()
+        .atMost(5, SECONDS)
+        .until(() -> File2.getLastModified(utilDir + "temp.txt") > originalFileTime);
 
     Test.ensureEqual(File2.touch(utilDir + "temp.gibberish"), false, "d");
 

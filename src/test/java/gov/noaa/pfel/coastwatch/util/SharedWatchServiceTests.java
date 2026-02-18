@@ -1,14 +1,12 @@
 package gov.noaa.pfel.coastwatch.util;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -72,14 +70,17 @@ class SharedWatchServiceTests {
     // programmatic test: copy files into dirs
     File2.copy(sourceDir + file1, watchDir + file1);
     File2.copy(sourceDir + file2, subDirNS + file2); // won't notice
-    await().atMost(5, SECONDS).until(() -> {
-        try {
-            SharedWatchService.processEvents();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        return eventHandler.contexts.size() >= 1;
-    });
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 1;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
@@ -94,14 +95,17 @@ class SharedWatchServiceTests {
     eventHandler.resetTest();
     // programmatic test: delete files
     RegexFilenameFilter.regexDelete(watchDir, ".*", true);
-    await().atMost(5, SECONDS).until(() -> {
-        try {
-            SharedWatchService.processEvents();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        return eventHandler.contexts.size() >= 1;
-    });
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 1;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
@@ -122,14 +126,17 @@ class SharedWatchServiceTests {
     // programmatic test: copy files into dirs
     File2.copy(sourceDir + file1, watchDir + file1);
     File2.copy(sourceDir + file2, subDirNS + file2);
-    await().atMost(5, SECONDS).until(() -> {
-        try {
-            SharedWatchService.processEvents();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        return eventHandler.contexts.size() >= 4;
-    });
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 4;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
@@ -146,14 +153,17 @@ class SharedWatchServiceTests {
 
     // programmatic test: delete files
     RegexFilenameFilter.regexDelete(watchDir, ".*", true);
-    await().atMost(5, SECONDS).until(() -> {
-        try {
-            SharedWatchService.processEvents();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        return eventHandler.contexts.size() >= 2;
-    });
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 2;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);

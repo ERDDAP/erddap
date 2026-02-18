@@ -50,7 +50,8 @@ class ArchiveADatasetTests {
     Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
     String results = ra[1];
     // In dryRun, no data files should be created
-    Test.ensureTrue(!results.contains("data/test_chars_e886_d14c_7d71.csv"), "results=\n" + results);
+    Test.ensureTrue(
+        !results.contains("data/test_chars_e886_d14c_7d71.csv"), "results=\n" + results);
 
     // cleanup
     File2.delete(targzName);
@@ -127,7 +128,9 @@ class ArchiveADatasetTests {
     // Actually ArchiveADataset.java says:
     // if (!bagitMode) { ... make .listOfFiles.txt ... }
 
-    Test.ensureTrue(!File2.isFile(targzName + ".listOfFiles.txt"), "listOfFiles.txt should not exist for BagIt");
+    Test.ensureTrue(
+        !File2.isFile(targzName + ".listOfFiles.txt"),
+        "listOfFiles.txt should not exist for BagIt");
     Test.ensureTrue(File2.isFile(targzName + ".sha256.txt"), "sha256.txt should exist");
 
     // cleanup

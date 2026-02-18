@@ -182,7 +182,6 @@ public class MakeErdJavaZip  {
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         baseDir + "classes/com/cohort/array/",".+"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         baseDir + "classes/com/cohort/util/", ".+"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir,                        "CWBrowser.properties"));
-        String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir,                        "BrowserDefault.properties"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir,                        "DataSet.properties"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir,                        "LICENSE\\.txt"));
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir,                        "OneOf.+"));
