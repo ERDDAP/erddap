@@ -44,13 +44,13 @@
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.9.1</netcdfJavaVersion>
         <test.resources.version>test1.06</test.resources.version>
-        <jettyVersion>12.1.5</jettyVersion>
+        <jettyVersion>12.1.6</jettyVersion>
         <error-prone.version>2.41.0</error-prone.version>
-        <prometheusVersion>1.4.3</prometheusVersion>
-        <parquetVersion>1.16.0</parquetVersion>
-        <awssdkVersion>2.41.3</awssdkVersion>
+        <prometheusVersion>1.5.0</prometheusVersion>
+        <parquetVersion>1.17.0</parquetVersion>
+        <awssdkVersion>2.41.31</awssdkVersion>
         <luceneVersion>10.3.2</luceneVersion>
-        <nettyVersion>4.2.9.Final</nettyVersion>
+        <nettyVersion>4.2.10.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.4</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.14</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
@@ -96,7 +96,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>2.21.0</version>
                 <configuration>
                     <!-- some location that makes sense for your company/project -->
                     <rulesUri>file:///${project.basedir}/versionrules.xml</rulesUri>
@@ -118,7 +118,7 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.15.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <source>25</source>   <!-- java version -->
@@ -589,7 +589,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.9.0</version>
+                    <version>3.10.0</version>
                     <executions>
                         <execution>
                             <goals>
@@ -606,7 +606,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.1</version>
+                    <version>3.15.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -736,7 +736,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>6.0.2</version>
+                <version>6.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -746,7 +746,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.33.2</version>
+                <version>4.33.5</version>
             </dependency>
 
             <!-- updating indirect dependencies from hivemq -->
@@ -754,7 +754,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>2.3.0</version>
+                <version>2.3.10</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
             <dependency>
@@ -766,7 +766,7 @@
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>1.5.25</version>
+                <version>1.5.32</version>
             </dependency>
 
             <!--
@@ -784,7 +784,7 @@
             <dependency>
                 <groupId>dnsjava</groupId>
                 <artifactId>dnsjava</artifactId>
-                <version>3.6.3</version>
+                <version>3.6.4</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
             <dependency>
@@ -802,7 +802,7 @@
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>10.6</version>
+                <version>10.7</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
             <dependency>
@@ -1046,7 +1046,7 @@
         <dependency>
             <groupId>org.apache.sis.storage</groupId>
             <artifactId>sis-storage</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
@@ -1081,7 +1081,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.6.1</version>
+            <version>3.6.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -1089,7 +1089,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.8</version>
+            <version>42.7.10</version>
         </dependency>
 
         <!-- CASSANDRA 
@@ -1115,7 +1115,7 @@
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.10.2</version>
+            <version>1.10.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
@@ -1123,7 +1123,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.37</version>
+            <version>4.2.38</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -1179,14 +1179,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.41.0</version>
+            <version>0.43.4</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.41.0</version>
+            <version>1.43.0</version>
         </dependency>
 
         <dependency>
