@@ -60,7 +60,8 @@ public class PaneProxy { // Bob Simons made public
 
   private void testJava2D() {
     @SuppressWarnings("unused")
-    Class unusedCl;
+    // This is just to test if Java2D is available.  If not, use the old StrokeDrawer1.
+    Class<?> unusedCl;
     boolean java2d = true;
     try {
       unusedCl = Class.forName("java.awt.Graphics2D");
