@@ -942,12 +942,12 @@ public class LongArray extends PrimitiveArray {
   @Override
   public void setString(final int index, final String s) {
     final long tl = String2.parseLong(s);
-    if (!maxIsMV && tl == Long.MAX_VALUE) {
-      if (s == null
-          || s.indexOf("223372036854775807")
-              < 0) // without leading 9 to allow for 9.2233...e18 etc //not perfect, but gets common
-        // cases
-        maxIsMV = true;
+    if (!maxIsMV
+        && tl == Long.MAX_VALUE
+        && (s == null
+            // without leading 9 to allow for 9.2233...e18 etc //not perfect, but gets common cases
+            || s.indexOf("223372036854775807") < 0)) {
+      maxIsMV = true;
     }
     set(index, tl);
   }

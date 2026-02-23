@@ -1742,9 +1742,10 @@ public class SSR {
             po < 0 ? urlString : urlString.substring(0, po),
             "application/x-www-form-urlencoded; charset=UTF-8",
             po < 0 ? "" : urlString.substring(po + 1));
-    BufferedReader bufReader =
-        new BufferedReader(new InputStreamReader((InputStream) ob3[1], (String) ob3[2]));
-    return readerToString(urlString, bufReader);
+    try (BufferedReader bufReader =
+        new BufferedReader(new InputStreamReader((InputStream) ob3[1], (String) ob3[2]))) {
+      return readerToString(urlString, bufReader);
+    }
   }
 
   /**

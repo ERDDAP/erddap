@@ -13583,59 +13583,6 @@ public class Table {
   }
 
   /**
-   * This reads data from the resultsSet from an sql query using jdbc. !!!WARNING - THIS APPROACH
-   * OFFERS NO PROTECTION FROM SQL INJECTION. ONLY USE THIS IF YOU, NOT SOME POSSIBLY MALICIOUS
-   * USER, SPECIFIED THE QUERY.
-   *
-   * <p>Examples of things done to prepare to use this method:
-   *
-   * <ul>
-   *   <li>Class.forName("org.postgresql.Driver");
-   *   <li>String url = "jdbc:postgresql://otter.pfeg.noaa.gov/posttest"; //database name
-   *   <li>String user = "postadmin";
-   *   <li>String password = String2.getPasswordFromSystemIn("Password for '" + user + "'? ");
-   *   <li>Connection con = DriverManager.getConnection(url, user, password);
-   * </ul>
-   *
-   * @param con a Connection (these are sometimes pooled to save time)
-   * @param query e.g., "SELECT * FROM names WHERE id = 3"
-   * @throws Exception if trouble
-   */
-  public void readSql(Connection con, String query) throws Exception {
-
-    String msg = "  Table.readSql " + query;
-    long time = System.currentTimeMillis();
-    clear();
-
-    // create the statement and execute the query
-    Statement statement = con.createStatement();
-    try {
-      readSqlResultSet(statement.executeQuery(query));
-      statement.close();
-      statement = null;
-      if (reallyVerbose)
-        String2.log(
-            msg
-                + " finished. nColumns="
-                + nColumns()
-                + " nRows="
-                + nRows()
-                + " TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms");
-
-    } catch (Throwable t) {
-      String2.log(msg);
-      if (statement != null)
-        try {
-          statement.close();
-        } catch (Throwable t9) {
-        }
-      throw t;
-    }
-  }
-
-  /**
    * This inserts the rows of data in this table to a sql table, using jdbc.
    *
    * <ul>

@@ -85,18 +85,6 @@ public class Attribute implements Cloneable {
   private AttributeTable attr;
 
   /**
-   * Construct a container attribute.
-   *
-   * @param container the <code>AttributeTable</code> container. @Deprecated Use the ctor with the
-   *     name.
-   */
-  public Attribute(AttributeTable container) {
-    type = CONTAINER;
-    is_alias = false;
-    attr = container;
-  }
-
-  /**
    * Construct an <code>Attribute</code> with the given type and initial value.
    *
    * @param type the type of attribute to create. Use one of the type constants defined by this

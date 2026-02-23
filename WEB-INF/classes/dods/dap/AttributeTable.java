@@ -74,11 +74,6 @@ public class AttributeTable implements Cloneable {
   /** What's the name of this table? */
   private String name;
 
-  /** Create a new empty <code>AttributeTable</code>. @Deprecated */
-  public AttributeTable() {
-    attr = new LinkedHashMap<>();
-  }
-
   /** Create a new empty <code>AttributeTable</code>. */
   public AttributeTable(String name) {
     this.name = name;

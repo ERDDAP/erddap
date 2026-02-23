@@ -1,11 +1,12 @@
 package gov.noaa.pfel.coastwatch.util;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,6 @@ class SharedWatchServiceTests {
     String file1 = "/columnarAsciiWithComments.txt";
     String file2 = "/csvAscii.txt";
     String results;
-    int sleep = 200;
 
     // delete all files in watchDir and subdir
     try {
@@ -64,15 +64,23 @@ class SharedWatchServiceTests {
     } catch (Exception e) {
 
     }
-    Math2.sleep(sleep);
     SharedWatchService.watchDirectory(
         watchDir, false, null, eventHandler, "basicTest"); // recursive, pathRegex
 
     // programmatic test: copy files into dirs
     File2.copy(sourceDir + file1, watchDir + file1);
     File2.copy(sourceDir + file2, subDirNS + file2); // won't notice
-    Math2.sleep(sleep);
-    SharedWatchService.processEvents();
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 1;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
@@ -87,8 +95,17 @@ class SharedWatchServiceTests {
     eventHandler.resetTest();
     // programmatic test: delete files
     RegexFilenameFilter.regexDelete(watchDir, ".*", true);
-    Math2.sleep(sleep);
-    SharedWatchService.processEvents();
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 1;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
@@ -103,15 +120,23 @@ class SharedWatchServiceTests {
 
     // *** test recursive
     RegexFilenameFilter.regexDelete(watchDir, ".*", true);
-    Math2.sleep(sleep);
     SharedWatchService.watchDirectory(
         watchDir, true, "", eventHandler, "basicTest"); // recursive, pathRegex
 
     // programmatic test: copy files into dirs
     File2.copy(sourceDir + file1, watchDir + file1);
     File2.copy(sourceDir + file2, subDirNS + file2);
-    Math2.sleep(sleep);
-    SharedWatchService.processEvents();
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 4;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
@@ -128,8 +153,17 @@ class SharedWatchServiceTests {
 
     // programmatic test: delete files
     RegexFilenameFilter.regexDelete(watchDir, ".*", true);
-    Math2.sleep(sleep);
-    SharedWatchService.processEvents();
+    await()
+        .atMost(5, SECONDS)
+        .until(
+            () -> {
+              try {
+                SharedWatchService.processEvents();
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
+              return eventHandler.contexts.size() >= 2;
+            });
     contexts = eventHandler.contexts;
     for (int i = 0; i < contexts.size(); i++) {
       results = contexts.get(i);
