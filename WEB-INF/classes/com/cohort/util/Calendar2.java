@@ -10,7 +10,6 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
 import com.google.common.collect.ImmutableList;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -4051,53 +4050,6 @@ public class Calendar2 {
   }
 
   /**
-   * This converts compact string (must be [-]uuuuMMdd, [-]uuuuMMddHH, [-]uuuuMMddHHmm, or
-   * [-]uuuuMMddHHmmss) into a ZonedDateTime object. It is lenient; so Jan 32 is converted to Feb 1.
-   * If the date is improperly formatted, it returns null.
-   *
-   * @param s dateTimeString in compact format (must be [-]uuuuMMdd, [-]uuuuMMddHH, [-]uuuuMMddHHmm,
-   *     or [-]uuuuMMddHHmmss)
-   * @return the same ZonedDateTime object, but with the date info
-   * @throws RuntimeException if trouble (e.g., gc is null or s is null or not at least YYYYMMDD)
-   */
-  public static ZonedDateTime parseCompactDateTime(String s) {
-
-    // ensure it has at least 8 characters, and all characters are digits
-    if (s == null) s = "";
-    boolean negative = s.startsWith("-");
-    if (negative) s = s.substring(1);
-    int sLength = s.length();
-    if (sLength < 8)
-      Test.error(String2.ERROR + " in parseCompactDateTime: s=" + s + " has an invalid format!");
-    for (int i = 0; i < sLength; i++)
-      if (!String2.isDigit(s.charAt(i)))
-        Test.error(String2.ERROR + " in parseCompactDateTime: s=" + s + " has an invalid format!");
-
-    s += String2.makeString('0', 14 - sLength);
-    try {
-      ZonedDateTime dateTime = ZonedDateTime.parse(s, FORMAT_COMPACT_DATE_TIME);
-      return dateTime;
-    } catch (Exception e) {
-      ZonedDateTime dt =
-          ZonedDateTime.of(
-              (negative ? -1 : 1) * String2.parseInt(s.substring(0, 4)),
-              1,
-              1,
-              0,
-              0,
-              0,
-              0,
-              ZoneOffset.UTC);
-      dt = dt.plusMonths(String2.parseInt(s.substring(4, 6)) - 1);
-      dt = dt.plusDays(String2.parseInt(s.substring(6, 8)) - 1);
-      dt = dt.plusHours(String2.parseInt(s.substring(8, 10)));
-      dt = dt.plusMinutes(String2.parseInt(s.substring(10, 12)));
-      dt = dt.plusSeconds(String2.parseInt(s.substring(12, 14)));
-      return dt;
-    }
-  }
-
-  /**
    * This converts a dd-MMM-[-]uuuu string e.g., "31-Jul-2004 00:00:00" into a ZonedDateTime object.
    * It is lenient; so day 0 is converted to Dec 31 of previous year. If the date is shortenend,
    * this does the best it can, or returns null. Ferret often uses this format.
@@ -4168,73 +4120,6 @@ public class Calendar2 {
             .plusMinutes(min)
             .plusSeconds(sec);
     return dt;
-  }
-
-  private static DateTimeFormatter YYYYDDDFormat = DateTimeFormatter.ofPattern("uuuuDDD");
-
-  /**
-   * This converts a [-]YYYYDDD string into a ZonedDateTime object. It is lenient; so day 0 is
-   * converted to Dec 31 of previous year. If the date is improperly formatted, this does the best
-   * it can, or returns null.
-   *
-   * @param s dateTimeString in YYYYDDD format
-   * @return a ZonedDateTime with the date info object, but with the date info
-   * @throws RuntimeException if trouble (e.g., gc is null or s is null or not YYYYDDDD)
-   */
-  public static ZonedDateTime parseYYYYDDD(String s) {
-    // ensure it is a string with 7 digits
-    if (s == null) s = "";
-
-    if (s.endsWith("000")) {
-      boolean negative = s.startsWith("-");
-      if (negative) s = s.substring(1);
-      int sLength = s.length();
-      if (sLength != 7)
-        Test.error(String2.ERROR + " in parseYYYYDDD: s=" + s + " has an invalid format!");
-      for (int i = 0; i < sLength; i++)
-        if (!String2.isDigit(s.charAt(i)))
-          Test.error(String2.ERROR + " in parseYYYYDDD: s=" + s + " has an invalid format!");
-      ZonedDateTime zd =
-          ZonedDateTime.of(
-              (negative ? -1 : 1) * String2.parseInt(s.substring(0, 4)),
-              1,
-              1,
-              0,
-              0,
-              0,
-              0,
-              ZoneOffset.UTC);
-      // day 000 is invalid in DateTimeFormatter, but we want to support it as the last day of the
-      // previous year,
-      // so do -1 day.
-      return zd.minusDays(1);
-    }
-
-    LocalDate ld = LocalDate.parse(s, YYYYDDDFormat);
-    ZonedDateTime zd = ld.atStartOfDay(ZoneOffset.UTC);
-
-    return zd;
-  }
-
-  /**
-   * This is like parseYYYYDDD, but assumes the time zone is Zulu.
-   *
-   * @throws RuntimeException if trouble (e.g., s is null or not YYYYDDD)
-   */
-  public static ZonedDateTime parseYYYYDDDZulu(String s) {
-    return parseYYYYDDD(s);
-  }
-
-  /**
-   * Convert a String with [-]uuuuDDD to a String with YYYY-mm-dd. This works the same for Local or
-   * Zulu or other time zones.
-   *
-   * @param s a String with a date in the form yyyyddd
-   * @return the date formatted as YYYY-mm-dd
-   * @throws RuntimeException if trouble (e.g., s is null or not YYYYDDD)
-   */
-  public static String yyyydddToIsoDate(String s) {
-    return formatAsISODate(parseYYYYDDD(s));
   }
 
   /**
@@ -4377,44 +4262,6 @@ public class Calendar2 {
    */
   public static String millisToIsoStringT9Z(long millis) {
     return formatAsISODateTimeT9Z(newZdtUtc(millis));
-  }
-
-  /**
-   * Remove any spaces, dashes (except optional initial dash), colons, and T's from s.
-   *
-   * @param s a string
-   * @return s with any spaces, dashes, colons removed (if s == null, this throws RuntimeException)
-   * @throws RuntimeException if trouble (e.g., s is null)
-   */
-  public static String removeSpacesDashesColons(String s) {
-    boolean negative = s.startsWith("-");
-    if (negative) s = s.substring(1);
-    s = String2.replaceAll(s, " ", "");
-    s = String2.replaceAll(s, "-", "");
-    s = String2.replaceAll(s, "T", "");
-    return (negative ? "-" : "") + String2.replaceAll(s, ":", "");
-  }
-
-  /**
-   * This adds the specified n field's to the isoDate, and returns the resulting ZonedDateTime
-   * object.
-   *
-   * <p>This correctly handles B.C. dates.
-   *
-   * @param isoDate an iso formatted date time string. This may include hours, minutes, seconds,
-   *     decimal, and Z or timezone offset (default=Zulu).
-   * @param n the number of 'units' to be added
-   * @param field one of the Calendar or Calendar2 constants for a field (e.g., Calendar2.YEAR).
-   * @return the ZonedDateTime for isoDate with the specified n field's added
-   * @throws Exception if trouble e.g., n is Integer.MAX_VALUE
-   */
-  public static ZonedDateTime isoDateTimeAdd(String isoDate, int n, int field) throws Exception {
-
-    if (n == Integer.MAX_VALUE)
-      Test.error(String2.ERROR + " in Calendar2.isoDateTimeAdd: invalid addN=" + n);
-    ZonedDateTime dt = parseISODateTimeUtc(isoDate);
-    dt = dt.plus(n, getChronoFieldFromCalendarField(field).getBaseUnit());
-    return dt;
   }
 
   /**

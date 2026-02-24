@@ -178,7 +178,7 @@ public class TestSSR {
     // make the zip file
     File2.delete(zipDir + zipName);
     long time1 = System.currentTimeMillis();
-    SSR.zip(zipDir + zipName, new String[] {zipDir + fileName}, 10);
+    SSR.zip(zipDir + zipName, new String[] {zipDir + fileName}, 10, "");
     time1 = System.currentTimeMillis() - time1;
     File2.delete(zipDir + fileName);
     // unzip the zip file

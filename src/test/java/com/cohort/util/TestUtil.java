@@ -6576,42 +6576,6 @@ public class TestUtil {
     } catch (Exception e) {
     }
 
-    try {
-      Calendar2.parseYYYYDDD(null);
-      throw new Throwable("Shouldn't get here.21");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseYYYYDDD("a");
-      throw new Throwable("Shouldn't get here.22");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseYYYYDDD("200600");
-      throw new Throwable("Shouldn't get here.23");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseYYYYDDD("200600a");
-      throw new Throwable("Shouldn't get here.24");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseYYYYDDD("20060011");
-      throw new Throwable("Shouldn't get here.25");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseYYYYDDDZulu(null);
-      throw new Throwable("Shouldn't get here.26");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseYYYYDDDZulu("a");
-      throw new Throwable("Shouldn't get here.27");
-    } catch (Exception e) {
-    }
-
     Test.ensureEqual(
         Calendar2.formatAsISODate(ZonedDateTime.of(2003, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC)),
         "2003-01-02",
@@ -6678,58 +6642,11 @@ public class TestUtil {
     }
 
     s = "19991231235904";
-    Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(s)), s, "rL");
-    Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(s)), s, "rZ");
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime("00011231235904")),
-        "00011231235904",
-        "rZ");
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime("00001231235904")),
-        "00001231235904",
-        "rZ");
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime("-00011231235904")),
-        "-00011231235904",
-        "rZ");
     try {
       Calendar2.formatAsCompactDateTime(nullZdt);
       throw new Throwable("Shouldn't get here.45");
     } catch (Exception e) {
     }
-    try {
-      Calendar2.parseCompactDateTime(null);
-      throw new Throwable("Shouldn't get here.47");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseCompactDateTime("");
-      throw new Throwable("Shouldn't get here.48");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseCompactDateTime("1999123");
-      throw new Throwable("Shouldn't get here.49");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseCompactDateTime("1999123a");
-      throw new Throwable("Shouldn't get here.50");
-    } catch (Exception e) {
-    }
-    Test.ensureEqual(
-        Calendar2.formatAsCompactDateTime(Calendar2.parseCompactDateTime(s)), s, "rL1");
-    try {
-      Calendar2.parseCompactDateTime(null);
-      throw new Throwable("Shouldn't get here.51");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.parseCompactDateTime("");
-      throw new Throwable("Shouldn't get here.52");
-    } catch (Exception e) {
-    }
-
     Test.ensureEqual(
         Calendar2.formatAsDDMonYYYY(ZonedDateTime.of(2003, 1, 2, 3, 4, 5, 6, ZoneOffset.UTC)),
         "02-Jan-2003 03:04:05",
@@ -6775,19 +6692,6 @@ public class TestUtil {
         "01-Jan-2004 04:05:06",
         "");
 
-    // Test.ensureEqual(Calendar2.utcToLocal(Calendar2.localToUtc(Calendar2.newGCalendar())),
-    // Calendar2.newGCalendar(), "s");
-    Test.ensureEqual(Calendar2.yyyydddToIsoDate("2003365"), "2003-12-31", "tL");
-    try {
-      Calendar2.yyyydddToIsoDate("200336a");
-      throw new Throwable("Shouldn't get here.57");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.yyyydddToIsoDate(null);
-      throw new Throwable("Shouldn't get here.58");
-    } catch (Exception e) {
-    }
     long spd = Calendar2.SECONDS_PER_DAY;
     // Test.ensureEqual(Calendar2.utcToMillis(Calendar2.newGCalendar(1970, 1, 1)),
     // 0, "v1970");
@@ -7084,93 +6988,6 @@ public class TestUtil {
     try {
       Calendar2.getTimeBaseAndFactor("seconds since a"); // 'a' isn't a valid iso datetime
       throw new Throwable("Shouldn't get here.74");
-    } catch (Exception e) {
-    }
-
-    // test removeSpacesDashesColons
-    Test.ensureEqual(
-        Calendar2.removeSpacesDashesColons("2000-05-01 23:00:00"), "20000501230000", "");
-    Test.ensureEqual(
-        Calendar2.removeSpacesDashesColons("2000-05-01T23:00:00"), "20000501230000", "");
-    Test.ensureEqual(
-        Calendar2.removeSpacesDashesColons("-0001-05-01T23:00:00"), "-00010501230000", "");
-    Test.ensureEqual(Calendar2.removeSpacesDashesColons(""), "", "");
-    try {
-      Calendar2.removeSpacesDashesColons(null);
-      throw new Throwable("Shouldn't get here.75");
-    } catch (Exception e) {
-    }
-
-    // test isoDateTimeAdd
-    String2.log("test isoDateTimeAdd");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("2001-02-03", 1, Calendar2.MONTH)),
-        "2001-03-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("2001-02-03", -1, Calendar2.MONTH)),
-        "2001-01-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("2001-02-03", 2, Calendar2.YEAR)),
-        "2003-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("2001-02-03", -2, Calendar2.YEAR)),
-        "1999-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("0001-02-03", -1, Calendar2.YEAR)),
-        "0000-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("0001-02-03", -2, Calendar2.YEAR)),
-        "-0001-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("0000-02-03", -1, Calendar2.YEAR)),
-        "-0001-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("0000-02-03", -2, Calendar2.YEAR)),
-        "-0002-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("-0001-02-03", 1, Calendar2.YEAR)),
-        "0000-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("-0001-02-03", 2, Calendar2.YEAR)),
-        "0001-02-03 00:00:00",
-        "");
-    Test.ensureEqual(
-        Calendar2.formatAsISODateTimeSpace(
-            Calendar2.isoDateTimeAdd("-0001-02-03", -3, Calendar2.MONTH)),
-        "-0002-11-03 00:00:00",
-        "");
-    try {
-      Calendar2.isoDateTimeAdd(null, -2, Calendar2.YEAR);
-      throw new Throwable("Shouldn't get here.76");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.isoDateTimeAdd("2001-02-03", Integer.MAX_VALUE, Calendar2.YEAR);
-      throw new Throwable("Shouldn't get here.77");
-    } catch (Exception e) {
-    }
-    try {
-      Calendar2.isoDateTimeAdd("2001-02-03", -2, Integer.MAX_VALUE);
-      throw new Throwable("Shouldn't get here.78");
     } catch (Exception e) {
     }
 

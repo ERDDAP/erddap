@@ -216,7 +216,7 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/FileVisitorDNLS.sh, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -547,7 +547,6 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Calendar2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/DoubleObject.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/File2.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/HashDigest.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Image2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/LRUCache.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/LICENSE.txt</file>

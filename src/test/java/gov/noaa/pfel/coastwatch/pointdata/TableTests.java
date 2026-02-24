@@ -22,14 +22,16 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -1022,111 +1024,6 @@ public class TableTests {
         "results=\n" + results);
   }
 
-  /** Test convert. */
-  @org.junit.jupiter.api.Test
-  @TagDisabledExternalOther
-  void testConvert() throws Exception {
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-    String url, fileName;
-    Table table = new Table();
-
-    // /*
-    // the original test from Roy
-    // This is used as an example in various documentation.
-    // If url changes, do search and replace to change all references to it.
-    url = "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"";
-    // String2.log("\ntesting Table.convert \n url=" + url);
-    fileName = TEMP_DIR.toAbsolutePath().toString() + "/convertOriginal.nc";
-    Table.convert(url, Table.READ_OPENDAP_SEQUENCE, fileName, Table.SAVE_AS_FLAT_NC, "row", false);
-    table.readFlatNc(fileName, null, 0); // standardizeWhat=0, should be already unpacked.
-    // String2.log(table.toString(3));
-    Test.ensureEqual(table.nColumns(), 2, "");
-    Test.ensureEqual(table.nRows(), 190, "");
-    Test.ensureEqual(table.getColumnName(0), "t0", "");
-    Test.ensureEqual(table.getColumnName(1), "oxygen", "");
-    Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Temperature T0", "");
-    Test.ensureEqual(table.columnAttributes(1).getString("long_name"), "Oxygen", "");
-    Test.ensureEqual(table.getFloatData(0, 0), 12.1185f, "");
-    Test.ensureEqual(table.getFloatData(0, 1), 12.1977f, "");
-    Test.ensureEqual(table.getFloatData(1, 0), 6.56105f, "");
-    Test.ensureEqual(table.getFloatData(1, 1), 6.95252f, "");
-    File2.delete(fileName);
-    // */
-
-    // /*
-    // The 8/16/06 test from osu
-    // Test values below from html ascii request (same as url below, but with .ascii
-    // before "?")
-    // adcp95.yearday, adcp95.depth, adcp95.x, adcp95.y, adcp95.eastv
-    // row0: 184.45120239257812, 22, -123.8656005859375, 48.287899017333984,
-    // -0.31200000643730164
-    // last row: 185.99949645996094, 22, -125.98069763183594, 42.844200134277344,
-    // -0.15399999916553497
-    url =
-        "http://nwioos.coas.oregonstate.edu:8080/dods/drds/1995%20Hake%20Survey%20ADCP?ADCP95.yearday,ADCP95.Z,ADCP95.x,ADCP95.y,ADCP95.EV&ADCP95.yearday<186&ADCP95.Z<25";
-    // String2.log("\ntesting Table.convert \n url=" + url);
-    fileName = TEMP_DIR.toAbsolutePath().toString() + "/convertOSU.nc";
-    Table.convert(url, Table.READ_OPENDAP_SEQUENCE, fileName, Table.SAVE_AS_FLAT_NC, "row", false);
-    table.readFlatNc(fileName, null, 0); // standardizeWhat=0, should be already unpacked.
-    // String2.log(table.toString(3));
-    Test.ensureEqual(table.nColumns(), 5, "");
-    Test.ensureEqual(table.nRows(), 446, "");
-    Test.ensureEqual(table.getColumnName(0), "yearday", "");
-    Test.ensureEqual(table.getColumnName(1), "Z", "");
-    Test.ensureEqual(table.getColumnName(2), "x", "");
-    Test.ensureEqual(table.getColumnName(3), "y", "");
-    Test.ensureEqual(table.getColumnName(4), "EV", "");
-    // no attributes
-    Test.ensureEqual(table.getDoubleData(0, 0), 184.45120239257812, "");
-    Test.ensureEqual(table.getDoubleData(1, 0), 22, "");
-    Test.ensureEqual(table.getDoubleData(2, 0), -123.8656005859375, "");
-    Test.ensureEqual(table.getDoubleData(3, 0), 48.287899017333984, "");
-    Test.ensureEqual(table.getDoubleData(4, 0), -0.31200000643730164, "");
-    Test.ensureEqual(table.getDoubleData(0, 445), 185.99949645996094, "");
-    Test.ensureEqual(table.getDoubleData(1, 445), 22, "");
-    Test.ensureEqual(table.getDoubleData(2, 445), -125.98069763183594, "");
-    Test.ensureEqual(table.getDoubleData(3, 445), 42.844200134277344, "");
-    Test.ensureEqual(table.getDoubleData(4, 445), -0.15399999916553497, "");
-    File2.delete(fileName);
-    // */
-
-    // /*
-    // The 8/17/06 test from cimt
-    // Test values below from html ascii request (same as url below, but with .ascii
-    // before "?")
-    // vCTD.latitude, vCTD.longitude, vCTD.station, vCTD.depth, vCTD.salinity
-    // first: 36.895, -122.082, "T101", 1.0, 33.9202
-    // last: 36.609, -121.989, "T702", 4.0, 33.4914
-    url =
-        "http://cimt.dyndns.org:8080/dods/drds/vCTD?vCTD.latitude,vCTD.longitude,vCTD.station,vCTD.depth,vCTD.salinity&vCTD.depth<5";
-    // String2.log("\ntesting Table.convert \n url=" + url);
-    fileName = TEMP_DIR.toAbsolutePath().toString() + "/convertCIMT.nc";
-    Table.convert(url, Table.READ_OPENDAP_SEQUENCE, fileName, Table.SAVE_AS_FLAT_NC, "row", false);
-    table.readFlatNc(fileName, null, 0); // standardizeWhat=0, should be already unpacked.
-    // String2.log(table.toString(3));
-    Test.ensureEqual(table.nColumns(), 5, "");
-    // Test.ensureEqual(table.nRows(), 1407, ""); //this changes; file is growing
-    Test.ensureEqual(table.getColumnName(0), "latitude", "");
-    Test.ensureEqual(table.getColumnName(1), "longitude", "");
-    Test.ensureEqual(table.getColumnName(2), "station", "");
-    Test.ensureEqual(table.getColumnName(3), "depth", "");
-    Test.ensureEqual(table.getColumnName(4), "salinity", "");
-    // no attributes
-    Test.ensureEqual(table.getFloatData(0, 0), 36.895f, "");
-    Test.ensureEqual(table.getFloatData(1, 0), -122.082f, "");
-    Test.ensureEqual(table.getStringData(2, 0), "T101", "");
-    Test.ensureEqual(table.getFloatData(3, 0), 1.0f, "");
-    Test.ensureEqual(table.getFloatData(4, 0), 33.9202f, "");
-    Test.ensureEqual(table.getFloatData(0, 1406), 36.609f, "");
-    Test.ensureEqual(table.getFloatData(1, 1406), -121.989f, "");
-    Test.ensureEqual(table.getStringData(2, 1406), "T702", "");
-    Test.ensureEqual(table.getFloatData(3, 1406), 4.0f, "");
-    Test.ensureEqual(table.getFloatData(4, 1406), 33.4914f, "");
-    File2.delete(fileName);
-    // */
-  }
-
   /**
    * Test the readASCII and saveAsASCII.
    *
@@ -1148,13 +1045,13 @@ public class TableTests {
 
     // write it to a file
     String fileName = TEMP_DIR.toAbsolutePath().toString() + "/tempTable.asc";
-    table.saveAsTabbedASCII(fileName);
+    table.saveAsTabbedASCII(fileName, File2.ISO_8859_1);
     // String2.log(fileName + "=\n" + File2.directReadFrom88591File(fileName));
 
     // read it from the file
     Table table2 = new Table();
     // // Table.debugMode = true;
-    table2.readASCII(fileName);
+    table2.readASCII(fileName, File2.ISO_8859_1, "", "", 0, 1, null, null, null, null, null, true);
     // // Table.debugMode = false;
 
     // check units on 1st data row
@@ -1588,82 +1485,6 @@ public class TableTests {
     Test.ensureEqual(table.getDoubleData(1, 0), 10212, ""); // still packed
   }
 
-  /**
-   * This is a test of read4DNc and saveAs4DNc.
-   *
-   * @throws Exception of trouble
-   */
-  @org.junit.jupiter.api.Test
-  void test4DNc() throws Exception {
-
-    // ********** test reading all data
-    // String2.log("\n*** Table.test4DNc write and then read all");
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-
-    // generate some data
-    Table table = new Table();
-    DoubleArray xCol = new DoubleArray();
-    DoubleArray yCol = new DoubleArray();
-    DoubleArray zCol = new DoubleArray();
-    DoubleArray tCol = new DoubleArray();
-    IntArray data1Col = new IntArray();
-    DoubleArray data2Col = new DoubleArray();
-    StringArray data3Col = new StringArray();
-    table.addColumn("X", xCol);
-    table.addColumn("Y", yCol);
-    table.addColumn("Z", zCol);
-    table.addColumn("T", tCol);
-    table.addColumn("data1", data1Col);
-    table.addColumn("data2", data2Col);
-    table.addColumn("data3", data3Col);
-    for (int t = 0; t < 2; t++) {
-      for (int z = 0; z < 3; z++) {
-        for (int y = 0; y < 3; y++) {
-          for (int x = 0; x < 4; x++) {
-            xCol.add(x + 1);
-            yCol.add(y + 1);
-            zCol.add(z + 1);
-            tCol.add(t + 1);
-            int fac = (x + 1) * (y + 1) * (z + 1) * (t + 1);
-            data1Col.add(fac);
-            data2Col.add(100 + (x + 1) * (y + 1) * (z + 1) * (t + 1));
-            data3Col.add("" + fac);
-          }
-        }
-      }
-    }
-    table.ensureValid(); // throws Exception if not
-    // String2.log(table.toString("obs", 10));
-
-    // write it to a file
-    String fileName = TEMP_DIR.toAbsolutePath().toString() + "/temp4DTable.nc";
-    Attributes idAttributes = new Attributes();
-    idAttributes.set("long_name", "The station's name.");
-    idAttributes.set("units", DataHelper.UNITLESS);
-    String stringVariableValue = "My Id Value";
-    table.saveAs4DNc(fileName, 0, 1, 2, 3, "ID", stringVariableValue, idAttributes);
-
-    // then insert col 4 filled with "My Id Value"
-    String sar[] = new String[table.nRows()];
-    Arrays.fill(sar, stringVariableValue);
-    table.addColumn(4, "ID", new StringArray(sar), idAttributes);
-
-    // get the header
-    // String2.log("table=" + String2.log(NcHelper.ncdump(fileName, "-h")));
-
-    // read from file
-    Table table2 = new Table();
-    table2.read4DNc(fileName, null, 1, "ID", 4); // standarizeWhat=1
-    // String2.log("col6=" + table2.getColumn(6));
-    // String2.log("\ntable2 after read4DNc: " + table2.toString("obs", 1000000));
-
-    // test equality
-    Test.ensureTrue(table.equals(table2), "test4DNc tables not equal!");
-
-    File2.delete(fileName);
-  }
-
   /** Test the speed of readASCII */
   @org.junit.jupiter.api.Test
   @TagSlowTests
@@ -1685,7 +1506,7 @@ public class TableTests {
       Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength);
       time = System.currentTimeMillis();
       Table table = new Table();
-      table.readASCII(fileName);
+      table.readASCII(fileName, File2.ISO_8859_1, "", "", 0, 1, null, null, null, null, null, true);
       time = System.currentTimeMillis() - time;
 
       String results = table.dataToString(3);
@@ -1712,11 +1533,11 @@ public class TableTests {
               + "  (was 101 Java 1.7M4700, was 422, java 1.5 was 719)");
       if (time <= 130) break;
     }
-    // TODO get a better system for time based performance tests
-    // if (time > 130)
-    //     throw new SimpleException(
-    //             "readASCII took too long (time=" + time + "ms > 130ms) (but often does when
-    // computer is busy).");
+    //   TODO get a better system for time based performance tests
+    //   if (time > 130)
+    //       throw new SimpleException(
+    //               "readASCII took too long (time=" + time + "ms > 130ms) (but often does when
+    //   computer is busy).");
   }
 
   /** Test the speed of readJson */
@@ -1900,7 +1721,7 @@ public class TableTests {
             .toString();
     String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
     Table table = new Table();
-    table.readASCII(sourceName);
+    table.readASCII(sourceName, File2.ISO_8859_1, "", "", 0, 1, null, null, null, null, null, true);
     Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns());
     Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows());
     table.saveAsCsvASCII(destName + ".csv");
@@ -4323,54 +4144,57 @@ public class TableTests {
     table.addColumn("doubles", new DoubleArray(new double[] {1.111, 2.222, 3.333}));
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     File2.delete(dir + "temp.mat");
-    table.saveAsMatlab(dir + "temp.mat", "sst"); // names of length 3,4,5 were a challenge
-    String mhd = File2.hexDump(dir + "temp.mat", 1000);
-    // String2.log(mhd);
-    // String2.log("\nsst.mat=\n" + File2.hexDump(dir + "sst.mat", 1000));
-    Test.ensureEqual(
-        mhd.substring(0, 71 * 4) + mhd.substring(71 * 7), // remove the creation dateTime
-        "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n"
-            + "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n"
-            + "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n"
-            + "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n"
-            +
-            // "2c 20 43 72 65 61 74 65 64 20 6f 6e 3a 20 4d 6f , Created on: Mo |\n" +
-            // "6e 20 46 65 62 20 31 31 20 30 39 3a 31 31 3a 30 n Feb 11 09:11:0 |\n" +
-            // "30 20 32 30 30 38 20 20 20 20 20 20 20 20 20 20 0 2008 |\n" +
-            "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n"
-            + "00 00 00 0e 00 00 01 e8   00 00 00 06 00 00 00 08                    |\n"
-            + "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
-            + "00 00 00 01 00 00 00 01   00 03 00 01 73 73 74 00               sst  |\n"
-            + "00 04 00 05 00 00 00 20   00 00 00 01 00 00 00 80                    |\n"
-            + "69 6e 74 73 00 00 00 00   00 00 00 00 00 00 00 00   ints             |\n"
-            + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
-            + "66 6c 6f 61 74 73 00 00   00 00 00 00 00 00 00 00   floats           |\n"
-            + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
-            + "53 74 72 69 6e 67 73 00   00 00 00 00 00 00 00 00   Strings          |\n"
-            + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
-            + "64 6f 75 62 6c 65 73 00   00 00 00 00 00 00 00 00   doubles          |\n"
-            + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
-            + "00 00 00 0e 00 00 00 40   00 00 00 06 00 00 00 08          @         |\n"
-            + "00 00 00 0c 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
-            + "00 00 00 03 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
-            + "00 00 00 05 00 00 00 0c   00 00 00 01 00 00 00 02                    |\n"
-            + "00 00 00 03 00 00 00 00   00 00 00 0e 00 00 00 40                  @ |\n"
-            + "00 00 00 06 00 00 00 08   00 00 00 07 00 00 00 00                    |\n"
-            + "00 00 00 05 00 00 00 08   00 00 00 03 00 00 00 01                    |\n"
-            + "00 00 00 01 00 00 00 00   00 00 00 07 00 00 00 0c                    |\n"
-            + "3f 8c cc cd 40 0c cc cd   40 53 33 33 00 00 00 00   ?   @   @S33     |\n"
-            + "00 00 00 0e 00 00 00 48   00 00 00 06 00 00 00 08          H         |\n"
-            + "00 00 00 04 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
-            + "00 00 00 03 00 00 00 03   00 00 00 01 00 00 00 00                    |\n"
-            + "00 00 00 04 00 00 00 12   00 61 00 62 00 63 00 20            a b c   |\n"
-            + "00 62 00 63 00 20 00 20   00 63 00 00 00 00 00 00    b c     c       |\n"
-            + "00 00 00 0e 00 00 00 48   00 00 00 06 00 00 00 08          H         |\n"
-            + "00 00 00 06 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
-            + "00 00 00 03 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
-            + "00 00 00 09 00 00 00 18   3f f1 c6 a7 ef 9d b2 2d           ?      - |\n"
-            + "40 01 c6 a7 ef 9d b2 2d   40 0a a9 fb e7 6c 8b 44   @      -@    l D |\n",
-        "mhd=" + mhd);
-    // File2.delete(dir + "temp.mat");
+    try (BufferedOutputStream bos =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(dir + "temp.mat")))) {
+      table.saveAsMatlab(bos, "sst"); // names of length 3,4,5 were a challenge
+      String mhd = File2.hexDump(dir + "temp.mat", 1000);
+      // String2.log(mhd);
+      // String2.log("\nsst.mat=\n" + File2.hexDump(dir + "sst.mat", 1000));
+      Test.ensureEqual(
+          mhd.substring(0, 71 * 4) + mhd.substring(71 * 7), // remove the creation dateTime
+          "4d 41 54 4c 41 42 20 35   2e 30 20 4d 41 54 2d 66   MATLAB 5.0 MAT-f |\n"
+              + "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n"
+              + "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n"
+              + "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n"
+              +
+              // "2c 20 43 72 65 61 74 65 64 20 6f 6e 3a 20 4d 6f , Created on: Mo |\n" +
+              // "6e 20 46 65 62 20 31 31 20 30 39 3a 31 31 3a 30 n Feb 11 09:11:0 |\n" +
+              // "30 20 32 30 30 38 20 20 20 20 20 20 20 20 20 20 0 2008 |\n" +
+              "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n"
+              + "00 00 00 0e 00 00 01 e8   00 00 00 06 00 00 00 08                    |\n"
+              + "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+              + "00 00 00 01 00 00 00 01   00 03 00 01 73 73 74 00               sst  |\n"
+              + "00 04 00 05 00 00 00 20   00 00 00 01 00 00 00 80                    |\n"
+              + "69 6e 74 73 00 00 00 00   00 00 00 00 00 00 00 00   ints             |\n"
+              + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+              + "66 6c 6f 61 74 73 00 00   00 00 00 00 00 00 00 00   floats           |\n"
+              + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+              + "53 74 72 69 6e 67 73 00   00 00 00 00 00 00 00 00   Strings          |\n"
+              + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+              + "64 6f 75 62 6c 65 73 00   00 00 00 00 00 00 00 00   doubles          |\n"
+              + "00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00                    |\n"
+              + "00 00 00 0e 00 00 00 40   00 00 00 06 00 00 00 08          @         |\n"
+              + "00 00 00 0c 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+              + "00 00 00 03 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
+              + "00 00 00 05 00 00 00 0c   00 00 00 01 00 00 00 02                    |\n"
+              + "00 00 00 03 00 00 00 00   00 00 00 0e 00 00 00 40                  @ |\n"
+              + "00 00 00 06 00 00 00 08   00 00 00 07 00 00 00 00                    |\n"
+              + "00 00 00 05 00 00 00 08   00 00 00 03 00 00 00 01                    |\n"
+              + "00 00 00 01 00 00 00 00   00 00 00 07 00 00 00 0c                    |\n"
+              + "3f 8c cc cd 40 0c cc cd   40 53 33 33 00 00 00 00   ?   @   @S33     |\n"
+              + "00 00 00 0e 00 00 00 48   00 00 00 06 00 00 00 08          H         |\n"
+              + "00 00 00 04 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+              + "00 00 00 03 00 00 00 03   00 00 00 01 00 00 00 00                    |\n"
+              + "00 00 00 04 00 00 00 12   00 61 00 62 00 63 00 20            a b c   |\n"
+              + "00 62 00 63 00 20 00 20   00 63 00 00 00 00 00 00    b c     c       |\n"
+              + "00 00 00 0e 00 00 00 48   00 00 00 06 00 00 00 08          H         |\n"
+              + "00 00 00 06 00 00 00 00   00 00 00 05 00 00 00 08                    |\n"
+              + "00 00 00 03 00 00 00 01   00 00 00 01 00 00 00 00                    |\n"
+              + "00 00 00 09 00 00 00 18   3f f1 c6 a7 ef 9d b2 2d           ?      - |\n"
+              + "40 01 c6 a7 ef 9d b2 2d   40 0a a9 fb e7 6c 8b 44   @      -@    l D |\n",
+          "mhd=" + mhd);
+    }
+    File2.delete(dir + "temp.mat");
   }
 
   /**
@@ -17755,7 +17579,18 @@ public class TableTests {
                 TableTests.class
                     .getResource("/largeFiles/biddle/3937_v1_CTD_Profiles.tsv.gz")
                     .toURI())
-            .toString());
+            .toString(),
+        File2.ISO_8859_1,
+        "",
+        "",
+        0,
+        1,
+        null,
+        null,
+        null,
+        null,
+        null,
+        true);
     time = System.currentTimeMillis() - time;
     Math2.gcAndWait("Table (between tests)");
     Math2.gcAndWait("Table (between tests)"); // in a test

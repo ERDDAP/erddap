@@ -710,35 +710,6 @@ public class GridTests {
         "");
     File2.delete(testDir + tName + ".grd");
 
-    // *save as netcdf
-    grid.saveAsNetCDF(testDir, tName, "data");
-
-    // readNetcdf tricky subset in pm180 units
-    grid2 = new Grid();
-    grid2.readNetCDF(
-        testDir + tName + ".nc", "data", -1, 2, 5, 6, Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Test.ensureEqual(grid2.lon, new double[] {-1, 0, 1, 2}, "");
-    Test.ensureEqual(grid2.lat, new double[] {5, 6}, "");
-    fa.clear();
-    fa.append(new DoubleArray(grid2.data));
-    Test.ensureEqual(
-        fa.toArray(),
-        new float[] {359.005f, 359.006f, 0.005f, 0.006f, 1.005f, 1.006f, 2.005f, 2.006f},
-        "");
-
-    // read whole grd as pm180, is last lon removed?
-    grid2 = new Grid();
-    grid2.readNetCDF(
-        testDir + tName + ".nc", "data", -180, 180, -90, 90, Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Test.ensureEqual(grid2.lon.length, 360, ""); // not 361 because last one remove
-    Test.ensureEqual(grid2.lat.length, 180, ""); // intact
-    Test.ensureEqual(grid2.lon[0], -180, "");
-    Test.ensureEqual(grid2.lon[grid2.lon.length - 1], 179, "");
-    Test.ensureEqual(grid2.getData(0, 90), 180, "");
-    Test.ensureEqual(grid2.getData(359, 90), 179, "");
-
-    File2.delete(testDir + tName + ".nc");
-
     // ****** make a pm180 grid
     grid.lon = DataHelper.getRegularArray(nLon, -180, 1); // with -180 and 180 (excess)
     for (int tLon = 0; tLon < nLon; tLon++)
@@ -764,39 +735,6 @@ public class GridTests {
         },
         "");
     File2.delete(testDir + tName + ".grd");
-
-    // save as netcdf
-    grid.saveAsNetCDF(testDir, tName, "data");
-
-    // readNetcdf tricky subset in 0..360 units
-    grid2 = new Grid();
-    grid2.readNetCDF(
-        testDir + tName + ".nc", "data", 179, 182, 5, 6, Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Test.ensureEqual(grid2.lon, new double[] {179, 180, 181, 182}, "");
-    Test.ensureEqual(grid2.lat, new double[] {5, 6}, "");
-    fa.clear();
-    fa.append(new DoubleArray(grid2.data));
-    Test.ensureEqual(
-        fa.toArray(),
-        new float[] {
-          // values are encoding: lon + lat/1000
-          // also ok -179.995f, -179.994f since orig array had -180 and 180
-          179.005f, 179.006f, 180.005f, 180.006f, -178.995f, -178.994f, -177.995f, -177.994f
-        },
-        "");
-
-    // read whole grd as 0..360, is last lon removed?
-    grid2 = new Grid();
-    grid2.readNetCDF(
-        testDir + tName + ".nc", "data", 0, 360, -90, 90, Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Test.ensureEqual(grid2.lon.length, 360, ""); // not 361 because last one remove
-    Test.ensureEqual(grid2.lat.length, 180, ""); // intact
-    Test.ensureEqual(grid2.lon[0], 0, "");
-    Test.ensureEqual(grid2.lon[grid2.lon.length - 1], 359, "");
-    Test.ensureEqual(grid2.getData(0, 90), 0, "");
-    Test.ensureEqual(grid2.getData(359, 90), -1, "");
-
-    File2.delete(testDir + tName + ".nc");
 
     // good test, but disabled while Grid makeLonPM180 requires evenly spaced on
     // values

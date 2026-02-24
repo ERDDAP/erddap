@@ -881,11 +881,9 @@ public class TestAll {
     FileVisitorSubdir fvsd;
     FilledMarkerRenderer fmr;
     FloatArray floata;
-    GenerateThreddsXml gtx;
     GraphDataLayer gdl;
     Grid grid;
     GSHHS gshhs;
-    HashDigest hd;
     Image2 i2;
     IntArray inta;
     JSONObject jo;
@@ -1026,7 +1024,6 @@ public class TestAll {
     EDVTimeStampGridAxis edvtsga;
     EmailThread et;
     Erddap erddap;
-    FindDuplicateTime findDuplicateTime;
     GenerateDatasetsXml gdx;
     GridDataAccessor gda;
     GridDataAllAccessor gdaacc;
@@ -1183,17 +1180,6 @@ public class TestAll {
 
     // Touch.thredds();  //run as needed to tell thredds to cache PISCO datasets?   or usually runs
     // really fast?
-
-    // INACTIVE make ErdJava.zip
-    // for distribution of GridSaveAs, NetCheck, ConvertTable, and GenerateThreddsXml
-    // see /classes/gov/noaa/pfel/coastwatch/pointData/MakeErdJavaZip
-    // MakeErdJavaZip.main(null); //see C:\programs\_tomcat\webapps\cwexperimental\ErdJava.zip
-    // and the smaller version
-    // MakeErdJavaZip.makeConvertTableJar("C:/pmelsvn/WebContent/WEB-INF/lib/"); //only do when
-    // working on LAS stuff
-
-    // INACTIVE because not needed, but works: make EMA.war
-    // MakeEmaWar.main(null);
 
     String2.log(
         """
