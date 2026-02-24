@@ -192,6 +192,7 @@ public class EDConfig {
 
   public long cacheMillis = DEFAULT_cacheMinutes * Calendar2.MILLIS_PER_MINUTE;
   public long cacheClearMillis = cacheMillis / 4;
+  public long requestCacheMillis = cacheMillis / 15;
   public int lowMemCacheGbLimit = DEFAULT_lowMemCacheGbLimit;
   public String drawLandMask = DEFAULT_drawLandMask;
   public boolean emailDiagnosticsToErdData = true;
@@ -629,6 +630,8 @@ public class EDConfig {
     cacheMillis = getSetupEVInt(setup, ev, "cacheMinutes", DEFAULT_cacheMinutes) * 60000L;
     cacheClearMillis =
         getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
+    requestCacheMillis =
+        getSetupEVInt(setup, ev, "requestCacheMinutes", DEFAULT_cacheMinutes / 15) * 60000L;
     touchThreadOnlyWhenItems = getSetupEVBoolean(setup, ev, "touchThreadOnlyWhenItems", true);
     taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
     useNcMetadataForFileTable = getSetupEVBoolean(setup, ev, "useNcMetadataForFileTable", true);
