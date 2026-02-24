@@ -64,9 +64,9 @@
               Browse either https://artifacts.unidata.ucar.edu/#browse/browse
              -->
         <repository>
-            <id>unidata-all</id>   
-            <name>UNIDATA All</name>
-            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+            <id>unidata-releases</id>
+            <name>NSF Unidata</name>
+            <url>https://artifacts.unidata.ucar.edu/releases</url>
         </repository>
     </repositories>
 
