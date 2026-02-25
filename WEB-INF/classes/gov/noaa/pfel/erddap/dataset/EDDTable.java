@@ -595,9 +595,6 @@ public abstract class EDDTable extends EDD {
       edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
       edv.setActualRangeFromDestinationMinMax(EDMessages.DEFAULT_LANGUAGE);
     }
-    // This is to make sure the cache clear happens. It might have been skipped due to
-    // processingSubset during Erddap.processDataset
-    File2.deleteAllFiles(cacheDirectory());
     processingSubset = false;
   }
 
