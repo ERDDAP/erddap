@@ -14390,4 +14390,6 @@ public abstract class EDD {
             + tnThreads);
     return tnThreads;
   }
+
+  public abstract boolean isProcessingSubset();
 }

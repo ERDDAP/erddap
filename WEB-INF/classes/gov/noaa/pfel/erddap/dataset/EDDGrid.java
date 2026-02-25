@@ -373,6 +373,11 @@ public abstract class EDDGrid extends EDD {
     return accessibleViaSubset;
   }
 
+  @Override
+  public boolean isProcessingSubset() {
+    return false;
+  }
+
   /** This indicates why the dataset isn't accessible via SOS (or "" if it is). */
   @Override
   public String accessibleViaSOS() {
