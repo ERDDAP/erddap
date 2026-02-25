@@ -132,7 +132,7 @@ class JettyTests extends WireMockLifecycle {
     // If the cache/data folder is cold some machines might need longer. If
     // all of the data is already loaded on the machine, this can probably be
     // shortened.
-    Thread.sleep(5 * 60 * 1000);
+    Thread.sleep(10 * 60 * 1000);
     initialCroissantSetting = EDStatic.config.generateCroissantSchema;
   }
 
