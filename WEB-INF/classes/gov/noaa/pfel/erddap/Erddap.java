@@ -71,6 +71,7 @@ import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import io.prometheus.metrics.model.snapshots.Unit;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -389,6 +390,14 @@ public class Erddap extends HttpServlet {
     public void run() {
       EDStatic.destroy();
     }
+  }
+
+  public static final String ERDDAP_CONTEXT_ATTRIBUTE = "ERDDAP";
+
+  @Override
+  public void init(ServletConfig servletConfig) {
+    // add servlet to context so other servlets can access ERDDAP datasets directly
+    servletConfig.getServletContext().setAttribute(ERDDAP_CONTEXT_ATTRIBUTE, this);
   }
 
   /**
