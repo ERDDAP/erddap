@@ -24973,9 +24973,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // add new info to categoryInfo
     addRemoveDatasetInfo(true, this.categoryInfo, dataset);
 
-    // clear the dataset's cache
-    // since axis values may have changed and "last" may have changed
-    File2.deleteAllFiles(dataset.cacheDirectory());
+    if (!dataset.isProcessingSubset()) {
+      // clear the dataset's cache
+      // since axis values may have changed and "last" may have changed
+      File2.deleteAllFiles(dataset.cacheDirectory());
+    }
 
     String change = dataset.changed(oldDataset);
     if (change.isEmpty() && dataset instanceof EDDTable) {

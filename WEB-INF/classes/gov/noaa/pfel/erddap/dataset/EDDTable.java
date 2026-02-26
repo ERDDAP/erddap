@@ -241,6 +241,7 @@ public abstract class EDDTable extends EDD {
       ImmutableList.of(".kml", ".pdf", ".png");
 
   protected Table minMaxTable;
+  private volatile boolean processingSubset;
 
   /**
    * When inactive, these will be null. addVariablesWhereAttValues parallels
@@ -558,6 +559,7 @@ public abstract class EDDTable extends EDD {
   }
 
   public void createSubsetVariablesTable() throws Throwable {
+    processingSubset = true;
     // If this throws exception, dataset initialization will fail.  That seems fair.
     Table table = distinctSubsetVariablesDataTable(0, null, null);
     // it calls subsetVariablesDataTable(0, null);
@@ -593,6 +595,7 @@ public abstract class EDDTable extends EDD {
       edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
       edv.setActualRangeFromDestinationMinMax(EDMessages.DEFAULT_LANGUAGE);
     }
+    processingSubset = false;
   }
 
   /**
@@ -12789,6 +12792,11 @@ public abstract class EDDTable extends EDD {
       subsetVariables(); // it sets accessibleViaSubset, so it can be returned below
 
     return accessibleViaSubset;
+  }
+
+  @Override
+  public boolean isProcessingSubset() {
+    return processingSubset;
   }
 
   /**
