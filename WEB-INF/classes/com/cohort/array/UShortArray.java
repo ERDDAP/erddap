@@ -301,7 +301,6 @@ public class UShortArray extends PrimitiveArray {
     int code = 0;
     for (int i = 0; i < size; i++) code = 31 * code + array[i];
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**

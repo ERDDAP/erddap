@@ -207,7 +207,6 @@ public class DoubleArray extends PrimitiveArray {
       code = 31 * code + Double.hashCode(array[i]);
     }
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**

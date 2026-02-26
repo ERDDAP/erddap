@@ -3363,9 +3363,9 @@ public class String2 {
 
   /**
    * This tells Commons Logging to use com.cohort.util.String2Log. I use this at the beginning of my
-   * programs (TestAll, NetCheck, Browser, ConvertTable, DoubleCenterGrids) to route Commons Logging
-   * requests through String2Log. !!!Don't use this in lower level methods as it will hijack the
-   * parent program's (e.g., Armstrong's) logger setup.
+   * programs (TestAll, NetCheck) to route Commons Logging requests through String2Log. !!!Don't use
+   * this in lower level methods as it will hijack the parent program's (e.g., Armstrong's) logger
+   * setup.
    *
    * <p>param level a String2Log.XXX_LEVEL constant (or -1 to leave unchanged,
    * default=String2Log.WARN_LEVEL)
