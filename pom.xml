@@ -48,10 +48,10 @@
         <error-prone.version>2.41.0</error-prone.version>
         <prometheusVersion>1.5.0</prometheusVersion>
         <parquetVersion>1.17.0</parquetVersion>
-        <awssdkVersion>2.41.31</awssdkVersion>
-        <luceneVersion>10.3.2</luceneVersion>
+        <awssdkVersion>2.42.2</awssdkVersion>
+        <luceneVersion>10.4.0</luceneVersion>
         <nettyVersion>4.2.10.Final</nettyVersion>
-        <mavenTestPluginVersion>3.5.4</mavenTestPluginVersion>
+        <mavenTestPluginVersion>3.5.5</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.14</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
     </properties>
@@ -801,13 +801,18 @@
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>10.7</version>
+                <version>10.8</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>1.11.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.airlift</groupId>
+                <artifactId>aircompressor</artifactId>
+                <version>2.0.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -873,7 +878,7 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
+            <version>4.3.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -881,7 +886,7 @@
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core 
@@ -1224,7 +1229,7 @@
          <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>3.4.2</version>
+            <version>3.4.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
