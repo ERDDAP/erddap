@@ -19,8 +19,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import ucar.ma2.StructureData;
-
-/**
+ * 
+ * WARNING:
+ * This class is NOT thread-safe.
+ * Instances must not be shared across threads without external synchronization.
+ * Internal mutable state includes: array, size, and maxIsMV.
+ *
+ * Reorders this array based on the provided rank array.
+ * The rank array must:/**
  * ULongArray is a thin shell over a long[] with methods like ArrayList's methods; it extends
  * PrimitiveArray.
  *
@@ -317,6 +323,10 @@ public class ULongArray extends PrimitiveArray {
   @Override
   public PrimitiveArray subset(
       final PrimitiveArray pa, final int startIndex, final int stride, int stopIndex) {
+    if (size == 0) {
+        if (pa != null) pa.clear();
+        return pa == null ? new ULongArray() : pa;
+    }
     if (pa != null) pa.clear();
     if (startIndex < 0)
       throw new IndexOutOfBoundsException(
@@ -1299,16 +1309,42 @@ public class ULongArray extends PrimitiveArray {
    *     a specific rank (e.g., rank[0] is the row number of the first item in the sorted list,
    *     rank[1] is the row number of the second item in the sorted list, ...).
    */
-  @Override
-  public void reorder(final int rank[]) {
-    final int n = rank.length;
-    // new length could be n, but I'll keep it the same array.length as before
-    Math2.ensureMemoryAvailable(8L * array.length, "ULongArray");
-    final long newArray[] = new long[array.length];
-    for (int i = 0; i < n; i++) newArray[i] = array[rank[i]];
-    array = newArray;
-  }
+  /**
+ * Reorders this array based on the provided rank array.
+ * The rank array must:
+ *  - Not be null
+ *  - Have length equal to current size
+ *  - Contain only indices in range [0, size-1]
+ *
+ * This method is not thread-safe.
+ */
+@Override
+public void reorder(final int[] rank) {
 
+    if (rank == null)
+        throw new IllegalArgumentException("rank array cannot be null.");
+
+    if (rank.length != size)
+        throw new IllegalArgumentException(
+            "rank length (" + rank.length +
+            ") must equal array size (" + size + ").");
+
+    Math2.ensureMemoryAvailable(8L * size, "ULongArray.reorder");
+
+    final long[] newArray = new long[array.length];
+
+    for (int i = 0; i < size; i++) {
+        final int r = rank[i];
+
+        if (r < 0 || r >= size)
+            throw new IllegalArgumentException(
+                "Invalid rank index at position " + i + ": " + r);
+
+        newArray[i] = array[r];
+    }
+
+    array = newArray;
+}
   /**
    * This reverses the order of the bytes in each value, e.g., if the data was read from a
    * little-endian source.
