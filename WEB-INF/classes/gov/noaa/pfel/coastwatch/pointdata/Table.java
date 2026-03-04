@@ -14074,19 +14074,38 @@ public class Table {
         String tFieldName = field.getName();
         tFieldName = tFieldName.equals("null") ? "" : tFieldName;
         PrimitiveArray pa = null;
+        boolean isParquetBoolean =
+            field.isPrimitive()
+                && field.asPrimitiveType().getPrimitiveTypeName() == PrimitiveTypeName.BOOLEAN;
+
         // POTENTIAL IMPROVEMENT Could this be more efficient if we used field type to make a
         // properly typed PrimitiveArray?
         if (colNames == null) {
-          pa = new StringArray();
+          if (isParquetBoolean) {
+            pa = new ByteArray();
+            pa.setMaxIsMV(true);
+            isBoolean[c] = true;
+          } else {
+            pa = new StringArray();
+          }
         } else {
           int which = colNames.indexOf(tFieldName);
           if (which >= 0) {
             if (colTypes == null) {
-              pa = new StringArray();
+              if (isParquetBoolean) {
+                pa = new ByteArray();
+                pa.setMaxIsMV(true);
+                isBoolean[c] = true;
+              } else {
+                pa = new StringArray();
+              }
             } else {
               PAType tPAType = PAType.fromCohortString(colTypes[which]); // it handles boolean
               pa = PrimitiveArray.factory(tPAType, 8, false);
-              isBoolean[c] = "boolean".equals(colTypes[which]);
+              isBoolean[c] = isParquetBoolean || "boolean".equals(colTypes[which]);
+              if (isBoolean[c]) {
+                pa.setMaxIsMV(true);
+              }
             }
           }
         }
@@ -14118,18 +14137,30 @@ public class Table {
               for (int index = 0; index < valueCount; index++) {
                 if (pas[field] != null) {
                   // POTENTIAL IMPROVEMENT use field types to avoid going to string and back?
-                  String tValue = g.getValueToString(field, index);
-                  if (tValue.equals("null")) tValue = "";
-                  else if (isBoolean[field]) tValue = "true".equals(tValue) ? "1" : "0";
-                  // else leave as is
-                  pas[field].addString(tValue);
+                  if (isBoolean[field]) {
+                    try {
+                      pas[field].addInt(g.getBoolean(field, index) ? 1 : 0);
+                    } catch (Exception e) {
+                      // Fallback if getBoolean fails for some reason
+                      String tValue = g.getValueToString(field, index);
+                      pas[field].addInt(String2.parseBooleanToInt(tValue));
+                    }
+                  } else {
+                    String tValue = g.getValueToString(field, index);
+                    if (tValue.equals("null")) tValue = "";
+                    pas[field].addString(tValue);
+                  }
                 }
               }
               // This is adding missing values to a column to ensure all columns have the
               // proper number of rows at the end.
               for (int index = valueCount; index < countInRow; index++) {
                 if (pas[field] != null) {
-                  pas[field].addString("");
+                  if (isBoolean[field]) {
+                    pas[field].addInt(Integer.MAX_VALUE);
+                  } else {
+                    pas[field].addString("");
+                  }
                 }
               }
             }
@@ -14151,6 +14182,9 @@ public class Table {
       String s;
       for (int c = 0; c < nc; c++) {
         PrimitiveArray pa = getColumn(c);
+        if (!(pa instanceof StringArray)) {
+          continue;
+        }
 
         // are they all quoted strings?
         boolean isString = true;
