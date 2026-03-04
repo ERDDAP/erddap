@@ -5328,6 +5328,12 @@ public abstract class EDDTable extends EDD {
     writeFunctionHtml(
         request, language, loggedInAs, queryParts, writer, widgets, formName, nOrderByComboBox);
 
+    /    writer.write(
+        "<p><strong>"
+            + EDStatic.messages.get(Message.EDD_FILE_TYPE, language)
+            + "</strong>\n"
+            + " (<a rel=\"help\" href=\""
+            + tErddapUrl
     // fileType
     writer.write(
         "<p><strong>"
@@ -5338,30 +5344,45 @@ public abstract class EDDTable extends EDD {
             + "/tabledap/documentation.html#fileType\">"
             + EDStatic.messages.get(Message.MORE_INFORMATION, language)
             + "</a>)\n");
-    List<EDDFileTypeInfo> availableFileTypes =
-        EDD.getFileTypeOptions(false /* isGrid */, FileCategory.BOTH);
-    List<String> fileTypeDescriptions =
-        availableFileTypes.stream()
-            .map(
-                fileTypeInfo ->
-                    fileTypeInfo.getFileTypeName()
-                        + " - "
-                        + fileTypeInfo.getTableDescription(language))
-            .toList();
-    int defaultIndex =
-        availableFileTypes.stream()
-            .map(fileTypeInfo -> fileTypeInfo.getFileTypeName())
-            .toList()
-            .indexOf(defaultFileTypeOption);
-    writer.write(
-        widgets.select(
-            "fileType",
-            EDStatic.messages.get(Message.EDD_SELECT_FILE_TYPE, language),
-            1,
-            fileTypeDescriptions,
-            defaultIndex,
-            ""));
 
+    List<EDDFileTypeInfo> dataFileTypes =
+        EDD.getFileTypeOptions(false /* isGrid */, FileCategory.DATA);
+
+    List<EDDFileTypeInfo> imageFileTypes =
+        EDD.getFileTypeOptions(false /* isGrid */, FileCategory.IMAGE);
+
+    writer.write(
+        "<select name=\"fileType\" title=\""
+            + EDStatic.messages.get(Message.EDD_SELECT_FILE_TYPE, language)
+            + "\">");
+
+    // Data group
+    writer.write("<optgroup label=\"Data File Types\">");
+    for (EDDFileTypeInfo f : dataFileTypes) {
+        boolean selected = f.getFileTypeName().equals(defaultFileTypeOption);
+        writer.write("<option value=\"" + f.getFileTypeName() + "\""
+            + (selected ? " selected" : "")
+            + ">"
+            + f.getFileTypeName() + " - "
+            + f.getTableDescription(language)
+            + "</option>");
+    }
+    writer.write("</optgroup>");
+
+    // Image group
+    writer.write("<optgroup label=\"Image File Types\">");
+    for (EDDFileTypeInfo f : imageFileTypes) {
+        boolean selected = f.getFileTypeName().equals(defaultFileTypeOption);
+        writer.write("<option value=\"" + f.getFileTypeName() + "\""
+            + (selected ? " selected" : "")
+            + ">"
+            + f.getFileTypeName() + " - "
+            + f.getTableDescription(language)
+            + "</option>");
+    }
+    writer.write("</optgroup>");
+
+    writer.write("</select>");
     // generate the javaScript
     String javaScript =
         "var result = \"\";\n"
