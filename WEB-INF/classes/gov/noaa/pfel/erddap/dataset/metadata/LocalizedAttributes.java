@@ -64,6 +64,27 @@ public class LocalizedAttributes {
     }
   }
 
+  public Map<String, PrimitiveArray> toMap(int language) {
+    Map<String, PrimitiveArray> attr = new HashMap<>();
+    Set<Entry<String, PrimitiveArray>> entries = map.entrySet();
+    for (Entry<String, PrimitiveArray> entry : entries) {
+      if (entry.getValue() != null) {
+        attr.put(entry.getKey(), entry.getValue());
+      }
+    }
+    Map<String, PrimitiveArray> langMap = safeGetLangMap(language);
+    if (langMap != null) {
+      Set<Entry<String, PrimitiveArray>> langEntries = langMap.entrySet();
+      for (Entry<String, PrimitiveArray> entry : langEntries) {
+        if (entry.getValue() != null) {
+          attr.put(entry.getKey(), entry.getValue());
+        }
+      }
+    }
+
+    return attr;
+  }
+
   public Attributes toAttributes(int language) {
     Attributes attr = new Attributes();
     Set<Entry<String, PrimitiveArray>> entries = map.entrySet();
@@ -396,10 +417,16 @@ public class LocalizedAttributes {
   private void updateUrls(Map<String, PrimitiveArray> map) {
     map.replaceAll(
         (k, v) -> {
+          if (v == null) {
+            return v;
+          }
           if (v != null && v.elementType() != PAType.STRING) {
             return v;
           }
           if (String2.indexOf(EDStatic.messages.updateUrlsSkipAttributes, k) >= 0) {
+            return v;
+          }
+          if (v.size() == 0) {
             return v;
           }
           String value = EDStatic.updateUrls(v.getString(0));

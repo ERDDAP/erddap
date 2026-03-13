@@ -206,7 +206,6 @@ public class IntArray extends PrimitiveArray {
     int code = 0;
     for (int i = 0; i < size; i++) code = 31 * code + array[i];
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**
@@ -275,16 +274,16 @@ public class IntArray extends PrimitiveArray {
   @Override
   public PAType needPAType(final PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case BYTE, UBYTE, SHORT, USHORT, INT -> PAType.INT;
 
-        // if sideways
+      // if sideways
       case CHAR -> PAType.STRING;
       case UINT -> PAType.LONG;
       case ULONG -> PAType.STRING;
       case FLOAT -> PAType.DOUBLE;
 
-        // if tPAType is bigger.  LONG, DOUBLE, STRING
+      // if tPAType is bigger.  LONG, DOUBLE, STRING
       default -> tPAType;
     };
   }

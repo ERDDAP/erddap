@@ -1,10 +1,12 @@
 package gov.noaa.pfel.coastwatch.util;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
-import com.cohort.util.Math2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.TestUtil;
@@ -12,18 +14,25 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.nio.file.Path;
-import tags.TagAWS;
-import tags.TagExternalOther;
-import tags.TagLargeFiles;
-import tags.TagMissingDataset;
-import tags.TagMissingFile;
+import org.junit.jupiter.api.BeforeAll;
+import tags.TagDisabledAWS;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledMissingFile;
+import tags.TagDisabledThredds;
 import tags.TagSlowTests;
-import tags.TagThredds;
+import testDataset.Initialization;
 
 class FileVisitorDNLSTests {
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
+
   /** This tests THREDDS-related methods. */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testThredds() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testThredds");
     // boolean oReallyVerbose = reallyVerbose;
@@ -74,7 +83,7 @@ class FileVisitorDNLSTests {
             lastModified,
             fSize);
     String expected = // fails very slowly!
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/testInvalidUrl/catalog.html\n";
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/testInvalidUrl/catalog.html\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // test addToThreddsUrlList
@@ -341,16 +350,13 @@ class FileVisitorDNLSTests {
   }
 
   /**
-   * This tests this class with Amazon AWS S3 file system. Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * This tests this class with Amazon AWS S3 file system. It can use anonymous credentials.
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html See
    * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testAWSS3");
 
@@ -520,7 +526,6 @@ class FileVisitorDNLSTests {
 
   /** This tests this class with Amazon AWS S3 file system using the */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testAWSS3WithS3URI() throws Throwable {
     // set region property
     System.setProperty("aws.region", "us-west-2");
@@ -676,17 +681,14 @@ class FileVisitorDNLSTests {
   }
 
   /**
-   * This tests this class with Amazon AWS S3 file system and reading all from a big directory. Your
-   * S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * This tests this class with Amazon AWS S3 file system and reading all from a big directory. It
+   * can use anonymous credtentials.
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html See
    * https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html See
    * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testBigAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testBigAWSS3");
 
@@ -755,7 +757,7 @@ class FileVisitorDNLSTests {
    * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-file-format
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
+  @TagDisabledAWS
   void testPrivateAWSS3() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testPrivateAWSS3");
 
@@ -888,7 +890,7 @@ class FileVisitorDNLSTests {
 
   /** This tests Hyrax-related methods. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testHyrax() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testHyrax()\n");
     // reallyVerbose = true;
@@ -928,7 +930,7 @@ class FileVisitorDNLSTests {
             lastModified,
             size);
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/testInvalidUrl/contents.html\n";
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/testInvalidUrl/contents.html\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // test addToHyraxUrlList
@@ -1089,7 +1091,7 @@ class FileVisitorDNLSTests {
 
   /** This tests Hyrax-related methods with the JPL MUR dataset. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testHyraxMUR() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testHyraxMUR()\n");
     // reallyVerbose = true;
@@ -1126,7 +1128,7 @@ class FileVisitorDNLSTests {
   /** This tests GPCP. */
   @org.junit.jupiter.api.Test
   @TagSlowTests
-  @TagMissingDataset // Data temporarily unavailable at NCEI due to Hurricane Helene impacts
+  @TagDisabledMissingDataset // Data temporarily unavailable at NCEI due to Hurricane Helene impacts
   void testGpcp() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testGpcp()\n");
 
@@ -1188,7 +1190,7 @@ class FileVisitorDNLSTests {
 
   /** This tests the ERSST directory. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testErsst() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testErsst()\n");
     Table table = FileVisitorDNLS.makeEmptyTable();
@@ -1326,7 +1328,7 @@ class FileVisitorDNLSTests {
    * ./FileVisitorDNLS.sh /u00/satellite/MUR41/anom/1day/ ....0401.\*
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testSymbolicLinks() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testSymbolicLinks()");
     // boolean oDebugMode = debugMode;
@@ -1446,7 +1448,7 @@ class FileVisitorDNLSTests {
 
   /** This tests a WAF-related (Web Accessible Folder) methods on an ERDDAP "files" directory. */
   @org.junit.jupiter.api.Test
-  @TagMissingFile // DNS Failure 503 (might come back)
+  @TagDisabledMissingFile // DNS Failure 503 (might come back)
   void testInteractiveErddapFilesWAF() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testInteractiveErddapFilesWAF()\n");
     // test with trailing /
@@ -1540,8 +1542,9 @@ class FileVisitorDNLSTests {
     File2.setLastModified(name22560, 100);
 
     // make 1 local file newer
+    long originalTime = File2.getLastModified(name22565);
     File2.setLastModified(name22565, System.currentTimeMillis() + 100);
-    Math2.sleep(500);
+    await().atMost(5, SECONDS).until(() -> File2.getLastModified(name22565) > originalTime);
 
     // test the sync
     Table table = FileVisitorDNLS.sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);

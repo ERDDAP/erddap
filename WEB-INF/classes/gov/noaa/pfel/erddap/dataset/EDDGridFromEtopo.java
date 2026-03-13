@@ -39,7 +39,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -389,7 +390,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         try {
           dos =
               new DataOutputStream(
-                  new BufferedOutputStream(new FileOutputStream(cacheName + random)));
+                  new BufferedOutputStream(Files.newOutputStream(Paths.get(cacheName + random))));
           for (int i = 0; i < nLatsLons; i++) {
             dos.writeShort(data[i]);
             // if (i < 10) String2.log(i + "=" + data[i]);

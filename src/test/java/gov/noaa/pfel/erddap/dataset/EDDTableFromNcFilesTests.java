@@ -50,11 +50,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
-import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -76,7 +76,7 @@ class EDDTableFromNcFilesTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testGenerateDatasetsXml() throws Throwable {
     // String2.pressEnterToContinue(
     //     "\nDownload NDBC_41004_met.nc from coastwatch\n"
@@ -798,7 +798,7 @@ class EDDTableFromNcFilesTests {
 
   /** testGenerateDatasetsXml2 */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateDatasetsXml2() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String results =
@@ -971,7 +971,6 @@ class EDDTableFromNcFilesTests {
             + "    String cf_role \"timeseries_id\";\n"
             + "    String ioos_category \"Identifier\";\n"
             + "    String long_name \"Station Identifier\";\n"
-            + (EDStatic.config.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  longitude {\n"
             + "    String _CoordinateAxisType \"Lon\";\n"
@@ -1023,12 +1022,10 @@ class EDDTableFromNcFilesTests {
             + "  common_name {\n"
             + "    String ioos_category \"Taxonomy\";\n"
             + "    String long_name \"Common Name\";\n"
-            + (EDStatic.config.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  species_name {\n"
             + "    String ioos_category \"Taxonomy\";\n"
             + "    String long_name \"Species Name\";\n"
-            + (EDStatic.config.useSaxParser ? "    String units \"unitless\";\n" : "")
             + "  }\n"
             + "  size {\n"
             + "    Int16 _FillValue 32767;\n"
@@ -1084,9 +1081,6 @@ class EDDTableFromNcFilesTests {
     // today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     expected =
         "/tabledap/erdCinpKfmSFNH.das\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    String id \"KFMSizeFrequencyNaturalHabitat\";\n"
-                : "")
             + "    String infoUrl \"https://www.nps.gov/chis/naturescience/index.htm\";\n"
             + "    String institution \"CINP\";\n"
             + "    String keywords \"aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, Earth Science > Biosphere > Aquatic Ecosystems > Coastal Habitat, Earth Science > Biosphere > Aquatic Ecosystems > Marine Habitat, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n"
@@ -1149,9 +1143,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.config.useSaxParser
-                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
-                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
+            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
@@ -1182,9 +1174,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.config.useSaxParser
-                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
-                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
+            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n"
             + "Santa Barbara (Webster's Arch),-119.05,33.4666666666667,14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
@@ -1209,9 +1199,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.config.useSaxParser
-                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
-                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
+            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
             + "San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n"
@@ -1238,9 +1226,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.config.useSaxParser
-                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
-                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
+            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n"
             + "San Miguel (Miracle Mile),-120.4,34.0166666666667,10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,193\n";
@@ -1267,9 +1253,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "id,longitude,latitude,depth,time,common_name,species_name,size\n"
-            + (EDStatic.config.useSaxParser
-                ? "unitless,degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
-                : ",degrees_east,degrees_north,m,UTC,,,mm\n")
+            + ",degrees_east,degrees_north,m,UTC,,,mm\n"
             + "San Miguel (Hare Rock),-120.35,34.05,5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1289,9 +1273,7 @@ class EDDTableFromNcFilesTests {
     // String2.log(results);
     expected =
         "longitude,latitude,depth,time,id,species_name,size\n"
-            + (EDStatic.config.useSaxParser
-                ? "degrees_east,degrees_north,m,UTC,unitless,unitless,mm\n"
-                : "degrees_east,degrees_north,m,UTC,,,mm\n")
+            + "degrees_east,degrees_north,m,UTC,,,mm\n"
             + "-120.35,34.05,5.0,2005-07-01T00:00:00Z,San Miguel (Hare Rock),Haliotis rufescens,13\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
@@ -1798,7 +1780,7 @@ class EDDTableFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void test4D(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.test4D()
     // *****************\n");
@@ -2082,8 +2064,8 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
-  @TagLargeFiles
+  @TagDisabledIncompleteTest
+  @TagDisabledLargeFiles
   void test24Hours() throws Throwable {
     String2.log("\n****************** EDDTableFromNcFiles.test24Hours() *****************\n");
     // testVerboseOn();
@@ -2113,7 +2095,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testDistinct() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testDistinct()
     // *****************\n");
@@ -2442,7 +2424,7 @@ class EDDTableFromNcFilesTests {
 
   /** This test getting just station ids. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testId() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testId()
     // *****************\n");
@@ -2512,7 +2494,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderBy() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderBy()
     // *****************\n");
@@ -2938,7 +2920,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByCount() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByCount()
     // *****************\n");
@@ -3370,7 +3352,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByMean() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean()
     // *****************\n");
@@ -3863,7 +3845,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderBySum() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderBySum()
     // *****************\n");
@@ -4274,7 +4256,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByMax() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMax()
     // *****************\n");
@@ -4770,7 +4752,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByMin() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMin()
     // *****************\n");
@@ -5136,7 +5118,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByMinMax() throws Throwable {
     int language = 0;
     String tName, results, expected, userDapQuery;
@@ -5409,7 +5391,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByClosest() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByClosest()
     // *****************\n");
@@ -5799,7 +5781,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testOrderByLimit() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByLimit()
     // *****************\n");
@@ -6080,7 +6062,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testStationLonLat() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testStationLonLat()
     // *****************\n");
@@ -6132,7 +6114,7 @@ class EDDTableFromNcFilesTests {
     EDDTable csub = (EDDTableFromNcFiles) EDDTestDataset.gettestGlobal();
     baseName = csub.className() + "Global";
     String csubDapQuery = "&longitude=-106.11667";
-
+    csub.createSubsetVariablesTable();
     // min max
     edv = csub.findDataVariableByDestinationName("longitude");
     Test.ensureEqual(edv.destinationMin(), -164.08333, "");
@@ -6159,7 +6141,7 @@ class EDDTableFromNcFilesTests {
   } // end of testGlobal
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateBreakUpPostDatasetsXml() throws Throwable {
     // String tFileDir, String tFileNameRegex, String sampleFileName,
     // int tReloadEveryNMinutes,
@@ -7014,17 +6996,20 @@ class EDDTableFromNcFilesTests {
     EDDTable eddTable;
 
     // lon shouldn't appear
-    eddTable = (EDDTable) EDDTestDataset.getfsuNoaaShipWTEPnrt();
-    start =
-        "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
-            + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
-    queries = new String[] {"2022-03-01T00:00:00Z", "2022-03", "1646092800"};
-    for (int i = 0; i < queries.length; i++) {
-      baseName = "EDDTableFromNcFiles_testLegendA" + i;
-      tName =
-          eddTable.makeNewFileForDapQuery(
-              language, null, null, start + queries[i], dir, baseName, ".png");
-      Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
+    // TODO fsu thredds server is down, disabled until its back up
+    if (false) {
+      eddTable = (EDDTable) EDDTestDataset.getfsuNoaaShipWTEPnrt();
+      start =
+          "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN"
+              + "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
+      queries = new String[] {"2022-03-01T00:00:00Z", "2022-03", "1646092800"};
+      for (int i = 0; i < queries.length; i++) {
+        baseName = "EDDTableFromNcFiles_testLegendA" + i;
+        tName =
+            eddTable.makeNewFileForDapQuery(
+                language, null, null, start + queries[i], dir, baseName, ".png");
+        Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
+      }
     }
 
     // time_precision
@@ -7049,7 +7034,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testBigRequest() throws Throwable {
     int firstTest = 0;
@@ -7210,7 +7195,7 @@ class EDDTableFromNcFilesTests {
           // Google Earth and Acrobat take long time to start up and penalize subsequent
           // tests,
           // so give them time
-          Math2.gc("EDDTableFromNcFiles (between tests)", test == kmli ? 60000 : 20000);
+          Math2.gcAndWait("EDDTableFromNcFiles (between tests)");
         }
       }
       if (resultLength < 0.9 * bytes[test]
@@ -7771,7 +7756,7 @@ class EDDTableFromNcFilesTests {
 
   /** Test ODV files created by ERDDAP. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testODV() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testODV");
 
@@ -8070,7 +8055,7 @@ class EDDTableFromNcFilesTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testNow() throws Throwable {
 
     String2.log("\n*** EDDTableFromNcFiles.testNow");
@@ -8886,7 +8871,7 @@ class EDDTableFromNcFilesTests {
             + "  <ScreenOverlay id=\"Logo\">\n"
             + "    <description>http://localhost:8080/erddap</description>\n"
             + "    <name>Logo</name>\n"
-            + "    <Icon><href>http://localhost:8080/erddap/images/nlogo.gif</href></Icon>\n"
+            + "    <Icon><href>http://localhost:8080/erddap/images/nlogo2.gif</href></Icon>\n"
             + "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
             + "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
             + "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n"
@@ -9434,7 +9419,7 @@ class EDDTableFromNcFilesTests {
             + "  <ScreenOverlay id=\"Logo\">\n"
             + "    <description>http://localhost:8080/erddap</description>\n"
             + "    <name>Logo</name>\n"
-            + "    <Icon><href>http://localhost:8080/erddap/images/nlogo.gif</href></Icon>\n"
+            + "    <Icon><href>http://localhost:8080/erddap/images/nlogo2.gif</href></Icon>\n"
             + "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
             + "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n"
             + "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n"
@@ -9790,7 +9775,7 @@ class EDDTableFromNcFilesTests {
         && File2.isFile(dataDir + "NDBC_41025_met.nc2")) {
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
       for (int i = 0; i < 3; i++) { // Windows is slow, give it a few tries
-        Math2.sleep(1000);
+        Math2.sleep(10);
         String2.log(
             "a) after rename .nc2 to .nc, call update() i=" + i + ": " + eddTable.update(language));
       }
@@ -9878,7 +9863,7 @@ class EDDTableFromNcFilesTests {
       String2.log("\n*** rename a data file so it doesn't match regex\n");
       File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
       for (int i = 0; i < 5; i++) { // Windows is slow, give it a few tries
-        Math2.sleep(1000);
+        Math2.sleep(10);
         String2.log(
             "b) after rename .nc to .nc2, call update() i=" + i + ": " + eddTable.update(language));
       }
@@ -9960,7 +9945,7 @@ class EDDTableFromNcFilesTests {
       String2.log("\n*** rename it back to original\n");
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
       for (int i = 0; i < 5; i++) { // Windows is slow, give it a few tries
-        Math2.sleep(1000);
+        Math2.sleep(10);
         String2.log(
             "c) after rename .nc2 to .nc, call update() i=" + i + ": " + eddTable.update(language));
       }
@@ -10077,7 +10062,7 @@ class EDDTableFromNcFilesTests {
       // rename it back to original
       String2.log("\n*** rename it back to original\n");
       File2.rename(dataDir, "NDBC_image_met.nc", "image.png");
-      Math2.sleep(1000);
+      Math2.sleep(10);
       String2.log("e) after rename .nc to .notnc, call update():\n" + eddTable.update(language));
     }
 
@@ -10145,7 +10130,7 @@ class EDDTableFromNcFilesTests {
     if (!File2.isFile(dataDir + "NDBC_41025_met.nc")
         && File2.isFile(dataDir + "NDBC_41025_met.nc2")) {
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
-      Math2.sleep(500);
+      Math2.sleep(50);
       SharedWatchService.processEvents();
     }
     Map<String, String> originalSnapshot = eddTable.snapshot();
@@ -10156,7 +10141,7 @@ class EDDTableFromNcFilesTests {
     // *** rename a data file so it doesn't match regex
     try {
       File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
-      Math2.sleep(500);
+      Math2.sleep(50);
       SharedWatchService.processEvents();
       snapshotDiff = eddTable.snapshot();
       expected =
@@ -10201,7 +10186,7 @@ class EDDTableFromNcFilesTests {
     } finally {
       // rename it back to original
       File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
-      Math2.sleep(500);
+      Math2.sleep(50);
       SharedWatchService.processEvents();
     }
     Map<String, String> snapshot2 = eddTable.snapshot();
@@ -10682,7 +10667,7 @@ class EDDTableFromNcFilesTests {
     try {
       String2.log("\n*** rename a data file so it doesn't match regex\n");
       File2.rename(dataDir, "NDBC_41025_met.nc", "NDBC_41025_met.nc2");
-      Math2.sleep(1000);
+      Math2.sleep(100);
       EDDTableFromFiles.testQuickRestart = true;
       eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
       timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -10849,7 +10834,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNewTime() throws Throwable {
 
     try {
@@ -10920,7 +10905,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testIgor()\n");
 
@@ -11072,7 +11057,7 @@ class EDDTableFromNcFilesTests {
 
   /** This tests hardFlag. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testHardFlag() throws Throwable {
     String2.log(
         "\n*** EDDTableFromNcFiles.testHardFlag()\n"
@@ -11138,7 +11123,7 @@ class EDDTableFromNcFilesTests {
 
   /** This tests connecting netcdf-java to localhost hosted .nc file to access via byte ranges. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testByteRange() throws Throwable {
     String2.log(
         "\n*** EDDTableFromNcFiles.testByteRange()\n"
@@ -11182,7 +11167,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNThreads() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNThreads()\n");
 
@@ -11322,7 +11307,7 @@ class EDDTableFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNThreads2() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNThreads2()\n");
 
@@ -11423,7 +11408,7 @@ class EDDTableFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCacheFiles(boolean deleteCachedInfo) throws Throwable {
     String2.log(
         "\n****************** testCacheFiles(" + deleteCachedInfo + ") *****************\n");
@@ -11741,7 +11726,7 @@ class EDDTableFromNcFilesTests {
     String2.log("\n****************** EDDTableCopyFiles make DATA FILES\n");
 
     // .csv
-    Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
+    Math2.gcAndWait("EDDTableFromNcFiles (between tests)");
     resultsSB.setLength(0);
     for (int thread = 1; thread <= 1; thread++) { // or -3 to 3
       if (thread == 0) continue;
@@ -11771,8 +11756,7 @@ class EDDTableFromNcFilesTests {
               + " time="
               + (System.currentTimeMillis() - time)
               + " ms\n");
-      Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
-      Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
+      Math2.gcAndWait("EDDTableFromNcFiles (between tests)");
     }
     // String2.log(resultsSB.toString());
     // With AV software on, Progressively slower! 110 -> 330 s !
@@ -11832,7 +11816,7 @@ class EDDTableFromNcFilesTests {
    * directories.
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testGtspp15FilesExist() throws Exception {
     int year1 = 1990;
     int year2 = 2021;
@@ -11866,7 +11850,7 @@ class EDDTableFromNcFilesTests {
    * directories.
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testGtsppabFilesExist() throws Exception {
     int year1 = 1990;
     int year2 = 2021;
@@ -11895,7 +11879,7 @@ class EDDTableFromNcFilesTests {
    * @param whichChunk -1 (all) or 0 - 4.
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
@@ -12178,7 +12162,7 @@ class EDDTableFromNcFilesTests {
 
   /** Test DAP errors. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testDapErrors() throws Throwable {
     String baseRequest = "http://localhost:8080/cwexperimental/tabledap/";
     String results, expected;
@@ -12402,8 +12386,8 @@ class EDDTableFromNcFilesTests {
    * it hadn't kept up with changes to orderBy options over the years.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
-  @TagLargeFiles
+  @TagDisabledLocalERDDAP
+  @TagDisabledLargeFiles
   void testMAGOrderByGraphs() throws Throwable {
 
     String2.log(
@@ -12466,7 +12450,7 @@ class EDDTableFromNcFilesTests {
    * crash.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testTooBigLocalhostRequest() throws Exception {
     String toName = File2.getSystemTempDirectory() + "testTooBigLocalhostRequest";
     String2.log(
@@ -12510,7 +12494,7 @@ class EDDTableFromNcFilesTests {
 
   /** This test making transparentPngs. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTransparentPng");
@@ -12770,7 +12754,7 @@ class EDDTableFromNcFilesTests {
    *     available.
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testSpeed(int firstTest, int lastTest) throws Throwable {
     String2.log(
         "\n*** EDDTableFromNcFiles.testSpeed\n"
@@ -12980,13 +12964,6 @@ class EDDTableFromNcFilesTests {
           } else {
             break;
           }
-        }
-
-        // display?
-        if (false) { // String2.indexOf(EDDTable.imageFileTypeNames, dotExt) >= 0
-          // TestUtil.displayInBrowser("file://" + outName);
-          Math2.gc("EDDTableFromNcFiles (between tests)", 5000); // in a test, pause for
-          // image display
         }
 
         // size test
@@ -13335,7 +13312,7 @@ class EDDTableFromNcFilesTests {
    * time data and units other than "seconds since 1970-01-01T00:00:00Z"
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testTimeSince19000101() throws Throwable {
 
     String results;
@@ -13366,7 +13343,7 @@ class EDDTableFromNcFilesTests {
 
   /** Test making an .ncCF Point file. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testNcCFPoint() throws Throwable {
 
     try {
@@ -13579,7 +13556,7 @@ class EDDTableFromNcFilesTests {
 
   /** Test making an .ncCF TimeSeries file. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNcCF1a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF1a");
 
@@ -13798,7 +13775,7 @@ class EDDTableFromNcFilesTests {
 
   /** Test making an .ncCFMA TimeSeries file. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNcCFMA1a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA1a");
 
@@ -15148,7 +15125,7 @@ class EDDTableFromNcFilesTests {
    * obs).
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNcCF2b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF2b");
 
@@ -15594,7 +15571,7 @@ class EDDTableFromNcFilesTests {
    * obs).
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testNcCFMA2b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2b");
 
@@ -16383,7 +16360,7 @@ class EDDTableFromNcFilesTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testSpeedDAF() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
@@ -16429,7 +16406,7 @@ class EDDTableFromNcFilesTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testSpeedMAG() throws Throwable {
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
@@ -16470,7 +16447,7 @@ class EDDTableFromNcFilesTests {
    * -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testSpeedSubset() throws Throwable {
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -16506,7 +16483,7 @@ class EDDTableFromNcFilesTests {
 
   /** Test requesting float=NaN. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testEqualsNaN() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testEqualsNaN");
 
@@ -16682,7 +16659,7 @@ class EDDTableFromNcFilesTests {
 
   /** These tests an odd response related to missing values. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testMV() throws Throwable {
     Test.ensureTrue(
         !PrimitiveArray.testValueOpValue(Double.NaN, "<=", -5), "!(NaN<=-5) should be true.");
@@ -16716,7 +16693,7 @@ class EDDTableFromNcFilesTests {
    * @param datasetID The datasetID to be tested: erdGtsppBestNc or erdGtsppBest (.ncCF)
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testErdGtsppBest() throws Throwable {
     // but
     // erdGtsppBestNc depends on large files
@@ -17220,121 +17197,73 @@ class EDDTableFromNcFilesTests {
     String results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     String expected =
         "Attributes {\n"
-            + //
-            " s {\n"
-            + //
-            "  dim0 {\n"
-            + //
-            "    Byte _FillValue 127;\n"
-            + //
-            "    String _Unsigned \"false\";\n"
-            + //
-            (results.indexOf("Byte actual_range 0, 19;") != -1
-                ? "    Byte actual_range 0, 19;\n"
-                : "")
-            + "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Dim0\";\n"
-            + //
-            "  }\n"
-            + //
-            "  dim1 {\n"
-            + //
-            "    Byte _FillValue 127;\n"
-            + //
-            "    String _Unsigned \"false\";\n"
+            + " s {\n"
+            + "  dim0 {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
             + (results.indexOf("Byte actual_range 0, 19;") != -1
                 ? "    Byte actual_range 0, 19;\n"
                 : "")
             + "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Dim1\";\n"
-            + //
-            "  }\n"
-            + //
-            "  dim2 {\n"
-            + //
-            "    Byte _FillValue 127;\n"
-            + //
-            "    String _Unsigned \"false\";\n"
+            + "    String long_name \"Dim0\";\n"
+            + "  }\n"
+            + "  dim1 {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
             + (results.indexOf("Byte actual_range 0, 19;") != -1
                 ? "    Byte actual_range 0, 19;\n"
                 : "")
             + "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Dim2\";\n"
-            + //
-            "  }\n"
-            + //
-            "  dim3 {\n"
-            + //
-            "    Byte _FillValue 127;\n"
-            + //
-            "    String _Unsigned \"false\";\n"
+            + "    String long_name \"Dim1\";\n"
+            + "  }\n"
+            + "  dim2 {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
             + (results.indexOf("Byte actual_range 0, 19;") != -1
                 ? "    Byte actual_range 0, 19;\n"
                 : "")
             + "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Dim3\";\n"
-            + //
-            "  }\n"
-            + //
-            "  group_with_dims_var4D {\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
+            + "    String long_name \"Dim2\";\n"
+            + "  }\n"
+            + "  dim3 {\n"
+            + "    Byte _FillValue 127;\n"
+            + "    String _Unsigned \"false\";\n"
+            + (results.indexOf("Byte actual_range 0, 19;") != -1
+                ? "    Byte actual_range 0, 19;\n"
+                : "")
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Dim3\";\n"
+            + "  }\n"
+            + "  group_with_dims_var4D {\n"
+            + "    Int32 _FillValue 2147483647;\n"
             + (results.indexOf("Int32 actual_range 0, 19;") != -1
                 ? "    Int32 actual_range 0, 19;\n"
                 : "")
             + "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Group With Dims/var4 D\";\n"
-            + //
-            "  }\n"
-            + //
-            " }\n"
-            + //
-            "  NC_GLOBAL {\n"
-            + //
-            "    String cdm_data_type \"Other\";\n"
-            + //
-            "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
-            + //
-            "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
-            + //
-            "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/tabledap/zarr_testData.das\";\n"
-            + //
-            "    String infoUrl \"???\";\n"
-            + //
-            "    String institution \"???\";\n"
-            + //
-            "    String keywords \"data, dim0, dim1, dim2, dim3, dims, dims/var4, group, group_with_dims_var4D, local, source, var4, with\";\n"
-            + //
-            "    String license \"The data may be used and redistributed for free but is not intended\n"
-            + //
-            "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + //
-            "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + //
-            "of their employees or contractors, makes any warranty, express or\n"
-            + //
-            "implied, including warranties of merchantability and fitness for a\n"
-            + //
-            "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + //
-            "completeness, or usefulness, of this information.\";\n"
-            + //
-            "    String sourceUrl \"(local files)\";\n"
-            + //
-            "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
-            + //
-            "    String summary \"Data from a local source.\";\n"
-            + //
-            "    String title \"Data from a local source.\";\n"
-            + //
-            "  }\n"
-            + //
-            "}\n";
+            + "    String long_name \"Group With Dims/var4 D\";\n"
+            + "  }\n"
+            + " }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Other\";\n"
+            + "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
+            + "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
+            + "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/tabledap/zarr_testData.das\";\n"
+            + "    String infoUrl \"???\";\n"
+            + "    String institution \"???\";\n"
+            + "    String keywords \"data, dim0, dim1, dim2, dim3, dims, dims/var4, group, group_with_dims_var4D, local, source, var4, with\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "    String sourceUrl \"(local files)\";\n"
+            + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + "    String summary \"Data from a local source.\";\n"
+            + "    String title \"Data from a local source.\";\n"
+            + "  }\n"
+            + "}\n";
     results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -18203,10 +18132,6 @@ class EDDTableFromNcFilesTests {
               // sourceFileName);
 
               if (nSourceFileNames % 10000 == 0) {
-                // if (sfi > 0) //2012-12-13 commented out. Let Java
-                // handle it.
-                // Math2.gc(3 * 1000); //gtspp: give OS time to settle
-                // high water mark is ~160 MB, so memory not a problem
                 String2.log("file #" + nSourceFileNames + " " + Math2.memoryString());
               }
 

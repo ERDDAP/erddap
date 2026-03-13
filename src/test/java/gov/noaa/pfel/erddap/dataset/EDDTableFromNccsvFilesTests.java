@@ -14,7 +14,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.Initialization;
 
 class EDDTableFromNccsvFilesTests {
@@ -312,7 +312,7 @@ class EDDTableFromNccsvFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // no definition for testNccsvScalar11
+  @TagDisabledMissingDataset // no definition for testNccsvScalar11
   void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromNccsvFiles.testBasic()
     // *****************\n");
@@ -1076,7 +1076,7 @@ class EDDTableFromNccsvFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // no definition for testNccsvScalar11
+  @TagDisabledMissingDataset // no definition for testNccsvScalar11
   void testChar() throws Throwable {
     // String2.log("\n****************** EDDTableFromNccsvFiles.testChar()
     // *****************\n");

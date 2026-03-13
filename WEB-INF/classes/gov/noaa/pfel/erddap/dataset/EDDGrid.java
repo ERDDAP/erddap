@@ -373,6 +373,11 @@ public abstract class EDDGrid extends EDD {
     return accessibleViaSubset;
   }
 
+  @Override
+  public boolean isProcessingSubset() {
+    return false;
+  }
+
   /** This indicates why the dataset isn't accessible via SOS (or "" if it is). */
   @Override
   public String accessibleViaSOS() {
@@ -3563,7 +3568,8 @@ public abstract class EDDGrid extends EDD {
                     MessageFormat.format(
                             EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP, language), varHelp[v])
                         + EDStatic.messages.get(Message.MAG_AXIS_VAR_HELP_GRID, language)));
-        writer.write("""
+        writer.write(
+            """
                   </td>
                 </tr>
                 """);
@@ -3910,7 +3916,8 @@ public abstract class EDDGrid extends EDD {
                 + ":&nbsp;</td>\n"
                 + "    <td colspan=\"5\">");
         writer.write(widgets.color17("", paramName, "", colori, ""));
-        writer.write("""
+        writer.write(
+            """
                 </td>
                   </tr>
                 """);
@@ -3989,7 +3996,8 @@ public abstract class EDDGrid extends EDD {
                 EDV.VALID_SCALES0,
                 scale,
                 ""));
-        writer.write("""
+        writer.write(
+            """
                 </td>
                   </tr>
                 """);
@@ -4049,7 +4057,8 @@ public abstract class EDDGrid extends EDD {
                 EDStatic.paletteSections,
                 pSections,
                 ""));
-        writer.write("""
+        writer.write(
+            """
                 </td>
                   </tr>
                 """);
@@ -4497,7 +4506,8 @@ public abstract class EDDGrid extends EDD {
               + "</a>\n"
               + EDStatic.htmlTooltipImage(request, language, loggedInAs, genViewHtml)
               + ")\n");
-      writer.write("""
+      writer.write(
+          """
               </td></tr>
               </table>
 
@@ -5279,7 +5289,8 @@ public abstract class EDDGrid extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("""
+      writer.write(
+          """
               <br>&nbsp;
               <hr>
               """);
@@ -10560,7 +10571,8 @@ public abstract class EDDGrid extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("""
+    writer.write(
+        """
                   </citeinfo>
                 </citation>
             """);
@@ -10981,7 +10993,8 @@ public abstract class EDDGrid extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("""
+    writer.write(
+        """
                 </lineage>
               </dataqual>
             """);

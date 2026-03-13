@@ -9,7 +9,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import testDataset.Initialization;
 
 class EDDTableFromOBISTests {
@@ -127,7 +127,7 @@ class EDDTableFromOBISTests {
 
   /** rutgers obis, failing since 2011-01 */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testRutgers() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -568,7 +568,7 @@ class EDDTableFromOBISTests {
 
   /** fishbase stopped working in 2009-01 */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testFishbase() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -651,7 +651,7 @@ class EDDTableFromOBISTests {
 
   /** This works but not useful. seamap is split into ~150 chunks. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testSeamap() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -770,7 +770,7 @@ class EDDTableFromOBISTests {
 
   /** I have never gotten argos or other aadc datasets to work. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testArgos() throws Throwable {
 
     // testVerboseOn();

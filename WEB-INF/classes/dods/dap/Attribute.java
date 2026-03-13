@@ -85,18 +85,6 @@ public class Attribute implements Cloneable {
   private AttributeTable attr;
 
   /**
-   * Construct a container attribute.
-   *
-   * @param container the <code>AttributeTable</code> container. @Deprecated Use the ctor with the
-   *     name.
-   */
-  public Attribute(AttributeTable container) {
-    type = CONTAINER;
-    is_alias = false;
-    attr = container;
-  }
-
-  /**
    * Construct an <code>Attribute</code> with the given type and initial value.
    *
    * @param type the type of attribute to create. Use one of the type constants defined by this
@@ -223,7 +211,7 @@ public class Attribute implements Cloneable {
       case FLOAT64 -> "Float64";
       case STRING -> "String";
       case URL -> "Url";
-        //    case BOOLEAN: return "Boolean";
+      //    case BOOLEAN: return "Boolean";
       default -> "";
     };
   }
@@ -360,10 +348,10 @@ public class Attribute implements Cloneable {
           throw new AttributeBadValueException("`" + value + "' is not a Float64 value.");
         break;
 
-        //    case BOOLEAN:
-        //      if(!checkBoolean(value))
-        //	throw new AttributeBadValueException("`" + value + "' is not a Boolean value.");
-        //      break;
+      //    case BOOLEAN:
+      //      if(!checkBoolean(value))
+      //	throw new AttributeBadValueException("`" + value + "' is not a Boolean value.");
+      //      break;
 
       default:
         // Assume UNKNOWN, CONTAINER, STRING, and URL are okay.

@@ -448,11 +448,11 @@ public class TimeAxis extends Axis implements Cloneable {
     double x;
     long t;
     if (tp.isXTime()) {
-      t = tp.getX().getLongTime();
-      x = ((SoTValue.Double) tp.getY()).getValue();
+      t = tp.x().getLongTime();
+      x = ((SoTValue.Double) tp.y()).getValue();
     } else {
-      t = tp.getY().getLongTime();
-      x = ((SoTValue.Double) tp.getX()).getValue();
+      t = tp.y().getLongTime();
+      x = ((SoTValue.Double) tp.x()).getValue();
     }
     setLocationU(new TimePoint(x, new GeoDate(t)));
   }

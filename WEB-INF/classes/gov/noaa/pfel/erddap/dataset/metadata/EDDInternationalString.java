@@ -4,18 +4,11 @@ import java.util.Locale;
 import java.util.Map;
 import org.opengis.util.InternationalString;
 
-public class EDDInternationalString implements InternationalString {
-
-  private String string;
-  Map<Locale, String> localized;
+public record EDDInternationalString(String string, Map<Locale, String> localized)
+    implements InternationalString {
 
   public EDDInternationalString(String string) {
-    this.string = string;
-  }
-
-  public EDDInternationalString(String string, Map<Locale, String> localized) {
-    this.string = string;
-    this.localized = localized;
+    this(string, null);
   }
 
   @Override

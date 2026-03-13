@@ -41,6 +41,7 @@ import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVAlt;
 import gov.noaa.pfel.erddap.variable.EDVDepth;
@@ -240,6 +241,7 @@ public abstract class EDDTable extends EDD {
       ImmutableList.of(".kml", ".pdf", ".png");
 
   protected Table minMaxTable;
+  private volatile boolean processingSubset;
 
   /**
    * When inactive, these will be null. addVariablesWhereAttValues parallels
@@ -556,6 +558,46 @@ public abstract class EDDTable extends EDD {
     }
   }
 
+  public void createSubsetVariablesTable() throws Throwable {
+    processingSubset = true;
+    // If this throws exception, dataset initialization will fail.  That seems fair.
+    Table table = distinctSubsetVariablesDataTable(0, null, null);
+    // it calls subsetVariablesDataTable(0, null);
+
+    // now go back and set destinationMin/Max
+    // see EDDTableFromDap.testSubsetVariablesRange()
+    int nCol = table.nColumns();
+    for (int col = 0; col < nCol; col++) {
+      String colName = table.getColumnName(col);
+      int which = String2.indexOf(dataVariableDestinationNames(), colName);
+      if (which < 0)
+        throw new SimpleException(
+            String2.ERROR
+                + ": column="
+                + colName
+                + " in subsetVariables isn't in dataVariables=\""
+                + String2.toCSSVString(dataVariableDestinationNames())
+                + "\".");
+      EDV edv = dataVariables[which];
+      PrimitiveArray pa = table.getColumn(col);
+      // note that time is stored as doubles in distinctValues table
+      // String2.log("distinct col=" + colName + " " + pa.elementTypeString());
+      if (pa instanceof StringArray) {
+        continue;
+      }
+      // If the destination has max is MV, this should also have it, otherwise the
+      // calculated max value will be wrong.
+      if (edv.destinationMaxIsMV()) {
+        pa.setMaxIsMV(true);
+      }
+      int nMinMax[] = pa.getNMinMaxIndex();
+      if (nMinMax[0] == 0) continue;
+      edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
+      edv.setActualRangeFromDestinationMinMax(EDMessages.DEFAULT_LANGUAGE);
+    }
+    processingSubset = false;
+  }
+
   /**
    * This MUST be used by all subclass constructors to ensure that all of the items common to all
    * EDDTables are properly set. This also does some actual work.
@@ -642,41 +684,14 @@ public abstract class EDDTable extends EDD {
     // This isn't required (ERDDAP was/could be lazy), but doing it makes initial access fast
     //  and makes it thread-safe (always done in constructor's thread).
     if (accessibleViaSubset().length() == 0 && accessibleTo == null) {
-
-      // If this throws exception, dataset initialization will fail.  That seems fair.
-      Table table = distinctSubsetVariablesDataTable(0, null, null);
-      // it calls subsetVariablesDataTable(0, null);
-
-      // now go back and set destinationMin/Max
-      // see EDDTableFromDap.testSubsetVariablesRange()
-      int nCol = table.nColumns();
-      for (int col = 0; col < nCol; col++) {
-        String colName = table.getColumnName(col);
-        int which = String2.indexOf(dataVariableDestinationNames(), colName);
-        if (which < 0)
-          throw new SimpleException(
-              String2.ERROR
-                  + ": column="
-                  + colName
-                  + " in subsetVariables isn't in dataVariables=\""
-                  + String2.toCSSVString(dataVariableDestinationNames())
-                  + "\".");
-        EDV edv = dataVariables[which];
-        PrimitiveArray pa = table.getColumn(col);
-        // note that time is stored as doubles in distinctValues table
-        // String2.log("distinct col=" + colName + " " + pa.elementTypeString());
-        if (pa instanceof StringArray) {
-          continue;
-        }
-        // If the destination has max is MV, this should also have it, otherwise the
-        // calculated max value will be wrong.
-        if (edv.destinationMaxIsMV()) {
-          pa.setMaxIsMV(true);
-        }
-        int nMinMax[] = pa.getNMinMaxIndex();
-        if (nMinMax[0] == 0) continue;
-        edv.setDestinationMinMax(new PAOne(pa, nMinMax[1]), new PAOne(pa, nMinMax[2]));
-        edv.setActualRangeFromDestinationMinMax(language);
+      if (EDStatic.config.backgroundCreateSubsetTables) {
+        Object taskOA[] = new Object[2];
+        taskOA[0] = TaskThread.TASK_CREATE_SUBSET_TABLE;
+        taskOA[1] = this;
+        EDStatic.addTask(taskOA);
+        EDStatic.ensureTaskThreadIsRunningIfNeeded();
+      } else {
+        createSubsetVariablesTable();
       }
     }
 
@@ -861,15 +876,6 @@ public abstract class EDDTable extends EDD {
     String2.replaceAll(sb, "\n    ", "\n"); // occurs for all attributes
     return sb.toString();
   }
-
-  /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  public abstract boolean knowsActualRange();
 
   /**
    * This returns 0=CONSTRAIN_NO (not at all), 1=CONSTRAIN_PARTIAL, or 2=CONSTRAIN_YES (completely),
@@ -8233,7 +8239,8 @@ public abstract class EDDTable extends EDD {
           writer.write(new StringArray(distinctOptions[sv]).toJsonCsvString());
           writer.write("]" + (sv == subsetVariables.length - 1 ? "" : ",") + "\n");
         }
-        writer.write("""
+        writer.write(
+            """
                 ];
                 </script>
                 """);
@@ -8478,7 +8485,8 @@ public abstract class EDDTable extends EDD {
                 "",
                 false,
                 "mySubmit(true);")); // was ""));
-        writer.write("""
+        writer.write(
+            """
                   </td>
                 </tr>
                 """);
@@ -9648,7 +9656,8 @@ public abstract class EDDTable extends EDD {
               + ")\n");
 
       if (debugMode) String2.log("respondToGraphQuery 8");
-      writer.write("""
+      writer.write(
+          """
               </td></tr>
               </table>
 
@@ -10325,7 +10334,8 @@ public abstract class EDDTable extends EDD {
       writer.write("</pre>\n");
 
       // then write DAP instructions
-      writer.write("""
+      writer.write(
+          """
               <br>&nbsp;
               <hr>
               """);
@@ -11059,7 +11069,8 @@ public abstract class EDDTable extends EDD {
                 + "</tr>\n");
       }
 
-      writer.write("""
+      writer.write(
+          """
               </table>
 
               """);
@@ -12247,8 +12258,7 @@ public abstract class EDDTable extends EDD {
    * column is sorted separately! NOTE: this fully supports all data types (including 2byte chars,
    * long, and Unicode Strings)
    *
-   * <p>This is thread-safe because the constructor (one thread) calls
-   * distinctSubsetVariablesDataTable() which calls this and makes .nc file.
+   * <p>This uses synchronized to ensure it's thread safe.
    *
    * @param language the index of the selected language
    * @param loggedInAs This is used, e.g., for POST data (where the distinct subsetVariables table
@@ -12258,8 +12268,8 @@ public abstract class EDDTable extends EDD {
    *     and have DIFFERENT SIZES! So it isn't a valid table! The table will have full metadata.
    * @throws Throwable if trouble (e.g., not accessibleViaSubset())
    */
-  public Table distinctSubsetVariablesDataTable(int language, String loggedInAs, String loadVars[])
-      throws Throwable {
+  public synchronized Table distinctSubsetVariablesDataTable(
+      int language, String loggedInAs, String loadVars[]) throws Throwable {
 
     String fullDistinctFileName = datasetDir() + distinctSubsetVariablesFileName(loggedInAs);
     Table distinctTable = null;
@@ -12782,6 +12792,11 @@ public abstract class EDDTable extends EDD {
       subsetVariables(); // it sets accessibleViaSubset, so it can be returned below
 
     return accessibleViaSubset;
+  }
+
+  @Override
+  public boolean isProcessingSubset() {
+    return processingSubset;
   }
 
   /**
@@ -16444,7 +16459,8 @@ public abstract class EDDTable extends EDD {
               + maxLon.getString()
               + "</gml:upperCorner>\n"
               + "    </gml:Envelope>\n");
-    writer.write("""
+    writer.write(
+        """
               </gml:location>
               <om:time>
             """);
@@ -17231,7 +17247,8 @@ public abstract class EDDTable extends EDD {
               + XML.encodeAsHTML(sosDataResponseFormats.get(f))
               + "</a>");
     writer.write(".\n");
-    writer.write("""
+    writer.write(
+        """
             <br>The image file formats are:
             <ul>
             """);
@@ -18000,7 +18017,8 @@ public abstract class EDDTable extends EDD {
               "          </citeinfo>\n"
               + "        </lworkcit>\n");
 
-    writer.write("""
+    writer.write(
+        """
                   </citeinfo>
                 </citation>
             """);
@@ -18410,7 +18428,8 @@ public abstract class EDDTable extends EDD {
               + "      </procstep>\n");
     }
 
-    writer.write("""
+    writer.write(
+        """
                 </lineage>
               </dataqual>
             """);

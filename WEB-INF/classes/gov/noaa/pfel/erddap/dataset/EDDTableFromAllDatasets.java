@@ -132,18 +132,6 @@ public class EDDTableFromAllDatasets extends EDDTable {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return true;
-  } // but irrelevant, because this will never be a child dataset
-
-  /**
    * This overwrites the superclass to give the on-the-fly subsetVariables table.
    *
    * @param language the index of the selected language
@@ -179,8 +167,8 @@ public class EDDTableFromAllDatasets extends EDDTable {
    *     and have DIFFERENT SIZES! So it isn't a valid table! The table will have full metadata.
    */
   @Override
-  public Table distinctSubsetVariablesDataTable(int language, String loggedInAs, String loadVars[])
-      throws Throwable {
+  public synchronized Table distinctSubsetVariablesDataTable(
+      int language, String loggedInAs, String loadVars[]) throws Throwable {
 
     // read the combinations table
     // this will throw exception if trouble

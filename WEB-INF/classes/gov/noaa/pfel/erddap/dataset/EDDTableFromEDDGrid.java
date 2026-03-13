@@ -142,10 +142,10 @@ public class EDDTableFromEDDGrid extends EDDTable {
         case "</accessibleViaFiles>" -> tAccessibleViaFiles = String2.parseBoolean(content);
         case "</reloadEveryNMinutes>" -> tReloadEveryNMinutes = String2.parseInt(content);
 
-          // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
-          //            else if (localTags.equals( "<updateEveryNMillis>")) {}
-          //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
-          // String2.parseInt(content);
+        // updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
+        //            else if (localTags.equals( "<updateEveryNMillis>")) {}
+        //            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis =
+        // String2.parseInt(content);
         case "<onChange>" -> {}
         case "</onChange>" -> tOnChange.add(content);
         case "</fgdcFile>" -> tFgdcFile = content;
@@ -372,18 +372,6 @@ public class EDDTableFromEDDGrid extends EDDTable {
               + (cTime >= 600000 ? "  (>10m!)" : cTime >= 10000 ? "  (>10s!)" : "")
               + "\n");
   }
-
-  /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return false;
-  } // because child EDDGrid usually doesn't know ranges of dataVariables
 
   /**
    * This returns the childDataset (if not null) or the localChildDataset.

@@ -362,9 +362,9 @@ or bmp.
 If you want to substitute other image files, it is best to make them 
 a similar number of pixels wide and high.
 -->
-<highResLogoImageFile>noaa_simple.gif</highResLogoImageFile>
-<lowResLogoImageFile>noaa20.gif</lowResLogoImageFile>
-<googleEarthLogoFile>nlogo.gif</googleEarthLogoFile>
+<highResLogoImageFile>noaa_otherName.gif</highResLogoImageFile>
+<lowResLogoImageFile>noaa2000.gif</lowResLogoImageFile>
+<googleEarthLogoFile>nlogo2.gif</googleEarthLogoFile>
 
 
 <!-- If variablesRequireIoosCategory is true, all variables for all datasets must

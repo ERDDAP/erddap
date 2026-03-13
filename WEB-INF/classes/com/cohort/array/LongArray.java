@@ -194,7 +194,6 @@ public class LongArray extends PrimitiveArray {
     int code = 0;
     for (int i = 0; i < size; i++) code = 31 * code + Long.hashCode(array[i]);
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**
@@ -263,10 +262,10 @@ public class LongArray extends PrimitiveArray {
   @Override
   public PAType needPAType(PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case BYTE, UBYTE, SHORT, USHORT, INT, UINT, LONG -> PAType.LONG;
 
-        // if sideways.   ULONG, FLOAT, DOUBLE, CHAR, STRING
+      // if sideways.   ULONG, FLOAT, DOUBLE, CHAR, STRING
       default -> PAType.STRING;
     };
   }
@@ -942,12 +941,12 @@ public class LongArray extends PrimitiveArray {
   @Override
   public void setString(final int index, final String s) {
     final long tl = String2.parseLong(s);
-    if (!maxIsMV && tl == Long.MAX_VALUE) {
-      if (s == null
-          || s.indexOf("223372036854775807")
-              < 0) // without leading 9 to allow for 9.2233...e18 etc //not perfect, but gets common
-        // cases
-        maxIsMV = true;
+    if (!maxIsMV
+        && tl == Long.MAX_VALUE
+        && (s == null
+            // without leading 9 to allow for 9.2233...e18 etc //not perfect, but gets common cases
+            || s.indexOf("223372036854775807") < 0)) {
+      maxIsMV = true;
     }
     set(index, tl);
   }

@@ -151,8 +151,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             "<matchAxisNDigits>" -> {}
         case "</sourceUrl>" -> tLocalSourceUrls.add(content);
 
-          // <sourceUrls serverType="thredds" regex=".*\\.nc" recursive="true"
-          //  >http://ourocean.jpl.nasa.gov:8080/thredds/dodsC/g1sst/catalog.xml</sourceUrl>
+        // <sourceUrls serverType="thredds" regex=".*\\.nc" recursive="true"
+        //  >http://ourocean.jpl.nasa.gov:8080/thredds/dodsC/g1sst/catalog.xml</sourceUrl>
         case "<sourceUrls>" -> {
           tSUServerType = xmlReader.attributeValue("serverType");
           tSURegex = xmlReader.attributeValue("regex");
@@ -826,7 +826,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             + "</sourceUrls>\n");
 
     // end
-    sb.append("""
+    sb.append(
+        """
 
             </dataset>
 

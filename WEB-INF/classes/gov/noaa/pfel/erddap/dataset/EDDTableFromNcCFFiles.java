@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2011-01-27
  */
-public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
+public class EDDTableFromNcCFFiles extends EDDTableFromFilesNcLow {
 
   /**
    * This returns the default value for standardizeWhat for this subclass. See
@@ -478,7 +478,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("""
+    sb.append(
+        """
             </dataset>
 
             """);

@@ -1,6 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -16,13 +17,14 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
-import tags.TagMissingDataset;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledMissingDataset;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import testSupport.WireMockLifecycle;
 
-class EDDTableFromMultidimNcFilesTests {
+class EDDTableFromMultidimNcFilesTests extends WireMockLifecycle {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
@@ -1637,7 +1639,6 @@ class EDDTableFromMultidimNcFilesTests {
             "", // treatDimensionsAs
             null, // cacheFromUrl
             null);
-    String2.setClipboardString(results);
 
     String tDatasetID =
         EDDTableFromMultidimNcFiles.suggestDatasetID(dataDir + fileNameRegex + useDimensionsCSV);
@@ -3483,7 +3484,7 @@ class EDDTableFromMultidimNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // nc4 support not complete
+  @TagDisabledIncompleteTest // nc4 support not complete
   void testLongAndNetcdf4() throws Throwable {
     // String2.log("\n******************
     // EDDTableFromMultidimNcFiles.testLongAndNetcdf4() *****************\n");
@@ -3990,7 +3991,7 @@ class EDDTableFromMultidimNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset // Errors loading dataset files, nothing valid?
+  @TagDisabledMissingDataset // Errors loading dataset files, nothing valid?
   void testW1M3A(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromMultidimNcFiles.testW1M3A()
     // *****************\n");
@@ -4820,6 +4821,13 @@ class EDDTableFromMultidimNcFilesTests {
             + "7900594,102,2\n";
     // String2.log(results);
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testAttributePromotion() throws Exception, Throwable {
+    EDDTable eddTable = (EDDTable) EDDTestDataset.getstringVarDataVariable();
+    // If the creeating the variable causes a problem, the dataset creation fails.
+    assertNotNull(eddTable);
   }
 
   @org.junit.jupiter.api.Test

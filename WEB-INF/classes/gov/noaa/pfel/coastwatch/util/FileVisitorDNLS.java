@@ -21,7 +21,6 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +29,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
@@ -860,7 +860,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         File2.decompressAllFiles(sourceFullName, cacheFullName);
       } else {
         try (InputStream is = File2.getDecompressedBufferedInputStream(sourceFullName);
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(cacheFullName))) {
+            OutputStream os =
+                new BufferedOutputStream(Files.newOutputStream(Paths.get(cacheFullName)))) {
           if (!File2.copy(is, os)) throw new IOException("Unable to decompress " + sourceFullName);
           if (verbose)
             String2.log(
@@ -2326,7 +2327,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     String outerDir = File2.getDirectory(tDir.substring(0, tDir.length() - 1));
     try (TarArchiveOutputStream tar =
         new TarArchiveOutputStream(
-            new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tResultName))))) {
+            new GZIPOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(Paths.get(tResultName)))))) {
 
       // Add data to out and flush stream
       Table filesTable =

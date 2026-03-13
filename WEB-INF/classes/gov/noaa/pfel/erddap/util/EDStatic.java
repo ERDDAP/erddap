@@ -60,7 +60,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -71,6 +70,9 @@ import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -203,7 +205,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.29.0-alpha");
+  public static final Semver erddapVersion = new Semver("2.30.0-alpha");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
@@ -751,37 +753,6 @@ public class EDStatic {
                 config.bigParentDirectory + "subscriptionsV1.txt",
                 48, // maxHoursPending,
                 preferredErddapUrl); // prefer https url
-      }
-
-      // ???if logoImgTag is needed, convert to method logoImgTag(loggedInAs)
-      // logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs, language) + lowResLogoImageFile
-      // + "\" " +
-      //    "alt=\"logo\" title=\"logo\">\n";
-
-      // copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and
-      // subdirectories)
-      String tFiles[] =
-          RegexFilenameFilter.recursiveFullNameList(
-              config.contentDirectory + "images/", ".+", false);
-      for (String file : tFiles) {
-        int tpo = file.indexOf("/images/");
-        if (tpo < 0) tpo = file.indexOf("\\images\\");
-        if (tpo < 0) {
-          String2.log("'/images/' not found in images/ file: " + file);
-          continue;
-        }
-        String tName = file.substring(tpo + 8);
-        if (verbose) String2.log("  copying images/ file: " + tName);
-        File2.copy(config.contentDirectory + "images/" + tName, config.imageDir + tName);
-      }
-      // copy all <contentDirectory>cptfiles/ files to cptfiles
-      tFiles =
-          RegexFilenameFilter.list(
-              config.contentDirectory + "cptfiles/", ".+\\.cpt"); // not recursive
-      for (String tFile : tFiles) {
-        if (verbose) String2.log("  copying cptfiles/ file: " + tFile);
-        File2.copy(
-            config.contentDirectory + "cptfiles/" + tFile, config.fullPaletteDirectory + tFile);
       }
 
       // try to create an nc4 file
@@ -1460,8 +1431,10 @@ public class EDStatic {
         // open a new file
         emailLogFile =
             File2.getBufferedWriterUtf8(
-                new FileOutputStream(
-                    config.fullLogsDirectory + "emailLog" + date + ".txt", true)); // true=append
+                Files.newOutputStream(
+                    Paths.get(config.fullLogsDirectory + "emailLog" + date + ".txt"),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND));
       }
 
       // write the email to the log
@@ -2770,7 +2743,12 @@ public class EDStatic {
       if (isTouchThreadRunning()) return;
 
       // touchThread isn't running
-      // always start a new touchThread
+      // are there touches?
+      if (config.touchThreadOnlyWhenItems) {
+        int nPending = touchList.size() - nextTouch.get();
+        if (nPending <= 0) return; // no need to start
+      }
+
       touchThread = new TouchThread(nextTouch.get());
       runningThreads.put(touchThread.getName(), touchThread);
       String2.log(
@@ -4281,31 +4259,16 @@ public class EDStatic {
     String2.log(source + " start");
     // If the system is low on disk space try a reduced time to clear additional files.
     long cacheTime = System.currentTimeMillis() - EDStatic.config.cacheMillis;
-    // delete old files in cache
-    int nCacheFiles =
-        File2.deleteIfOld(
-            EDStatic.config.fullCacheDirectory, // won't throw exception
-            cacheTime,
-            true,
-            false); // false: important not to delete empty dirs
-    int nPublicFiles =
-        File2.deleteIfOld(
-            EDStatic.config.fullPublicDirectory,
-            cacheTime,
-            true,
-            false); // false: important not to delete empty dirs
-    String2.log(
-        source
-            + " "
-            + nPublicFiles
-            + " files remain in "
-            + EDStatic.config.fullPublicDirectory
-            + "\n"
-            + nCacheFiles
-            + " files remain in "
-            + EDStatic.config.fullCacheDirectory
-            + " and subdirectories.");
 
+    // Phase 1: Delete short-term (temporary query-response) cache files first
+    // These are temporary files generated during query processing with pattern:
+    // *.randomInt.columnName.temp
+    // Only delete files older than requestCacheMillis to preserve files still being processed
+    long shortTermCutoffTime = System.currentTimeMillis() - config.requestCacheMillis;
+    int nShortTermCacheFiles =
+        deleteShortTermCacheFiles(EDStatic.config.fullCacheDirectory, true, shortTermCutoffTime);
+    int nShortTermPublicFiles =
+        deleteShortTermCacheFiles(EDStatic.config.fullPublicDirectory, true, shortTermCutoffTime);
     String2.log(
         "After deleting decompressed files not used in the last "
             + EDStatic.decompressedCacheMaxMinutesOld
@@ -4317,7 +4280,63 @@ public class EDStatic {
                 true,
                 false)); // recursive, deleteEmptySubdirectories
 
-    if (systemLowMemory) {
+    if (nShortTermCacheFiles > 0 || nShortTermPublicFiles > 0) {
+      String2.log(
+          source
+              + " Phase 1 (short-term cache): deleted "
+              + nShortTermCacheFiles
+              + " files in cache and "
+              + nShortTermPublicFiles
+              + " files in public directory.");
+    }
+
+    // Check if we still need to clean up more (only proceed to phase 2 if necessary)
+    File file = new File(EDStatic.config.fullCacheDirectory);
+    long usableSpace = file.getUsableSpace();
+    boolean stillNeedCleanup =
+        usableSpace < (EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB);
+    if (stillNeedCleanup) {
+      // Phase 2: Delete old files (both short-term and long-term cache)
+      // This catches any remaining temporary files and old permanent cached files (like subset.nc)
+      // Long-term cache files are only deleted if they exceed the configured age threshold
+      int nCacheFiles =
+          File2.deleteIfOld(
+              EDStatic.config.fullCacheDirectory, // won't throw exception
+              cacheTime,
+              true,
+              false); // false: important not to delete empty dirs
+      int nPublicFiles =
+          File2.deleteIfOld(
+              EDStatic.config.fullPublicDirectory,
+              cacheTime,
+              true,
+              false); // false: important not to delete empty dirs
+      String2.log(
+          source
+              + " Phase 2 (age-based cleanup): "
+              + nPublicFiles
+              + " files remain in "
+              + EDStatic.config.fullPublicDirectory
+              + "\n"
+              + nCacheFiles
+              + " files remain in "
+              + EDStatic.config.fullCacheDirectory
+              + " and subdirectories.");
+    } else {
+      String2.log(
+          source
+              + " Phase 2 skipped: memory use is acceptable ("
+              + (file.getUsableSpace() / Math2.BytesPerMB)
+              + "MB)");
+    }
+
+    usableSpace = file.getUsableSpace();
+    stillNeedCleanup = usableSpace < (EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB);
+    if (systemLowMemory || stillNeedCleanup) {
+      FileVisitorDNLS.pruneCache(
+          EDStatic.config.fullDecompressedDirectory,
+          decompressedCacheMaxGB * Math2.BytesPerGB,
+          FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION);
       FileVisitorDNLS.pruneCache(
           EDStatic.config.fullCacheDirectory,
           EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB,
@@ -4326,11 +4345,48 @@ public class EDStatic {
           EDStatic.config.fullPublicDirectory,
           EDStatic.config.lowMemCacheGbLimit * Math2.BytesPerGB,
           1.0);
-      FileVisitorDNLS.pruneCache(
-          EDStatic.config.fullDecompressedDirectory,
-          decompressedCacheMaxGB * Math2.BytesPerGB,
-          FileVisitorDNLS.PRUNE_CACHE_DEFAULT_FRACTION);
     }
     EDStatic.lastCacheClear = System.currentTimeMillis();
+  }
+
+  /**
+   * This deletes short-term (temporary) cache files generated during query processing. Short-term
+   * cache files have the pattern: *.randomInt.columnName.temp (e.g.,
+   * subset.nc.936576779.array.temp) These are deleted before long-term cache files to preserve
+   * pre-generated subset files and other long-term cached data.
+   *
+   * @param dir the directory to clean
+   * @param recursive whether to search subdirectories
+   * @param cutoffTime only delete files older than this timestamp (to preserve files still being
+   *     processed)
+   * @return the number of files deleted
+   */
+  private static int deleteShortTermCacheFiles(String dir, boolean recursive, long cutoffTime) {
+    // Pattern for temporary files: .\d+\..*\.temp (e.g., .936576779.array.temp)
+    int nDeleted = 0;
+    try {
+      String pattern = ".*\\.\\d+\\..+\\.temp$";
+      String[] filesToDelete =
+          recursive
+              ? RegexFilenameFilter.recursiveFullNameList(dir, pattern, false)
+              : RegexFilenameFilter.fullNameList(dir, pattern);
+
+      for (String fileName : filesToDelete) {
+        try {
+          File file = new File(fileName);
+          // Only delete if file is older than cutoff time (not recently created)
+          if (file.lastModified() < cutoffTime) {
+            if (File2.delete(fileName)) {
+              nDeleted++;
+            }
+          }
+        } catch (Exception e) {
+          // ignore errors for individual files
+        }
+      }
+    } catch (Exception e) {
+      // ignore if directory doesn't exist or can't be accessed
+    }
+    return nDeleted;
   }
 }

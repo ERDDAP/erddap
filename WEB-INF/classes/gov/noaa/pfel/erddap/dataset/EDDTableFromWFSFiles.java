@@ -174,14 +174,17 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
 
       // read the table
       Table table = new Table();
-      InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl);
-      BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-      table.readXml(
-          in,
-          false, // no validate since no .dtd
-          tRowElementXPath,
-          null,
-          false); // row attributes,  simplify=false
+      // use try-with-resources to ensure the InputStream and BufferedReader are closed
+      try (InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl);
+          BufferedReader in =
+              new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+        table.readXml(
+            in,
+            false, // no validate since no .dtd
+            tRowElementXPath,
+            null,
+            false); // row attributes,  simplify=false
+      }
 
       // save as UTF-8 ASCII TSV file
       // This writes to temp file first and throws Exception if trouble.

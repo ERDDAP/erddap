@@ -273,16 +273,16 @@ public abstract class SpaceAxis extends Axis {
     if (upt.isXTime() || upt.isYTime()) {
       long t;
       if (upt.isXTime()) {
-        t = upt.getX().getLongTime();
-        x = ((SoTValue.Double) upt.getY()).getValue();
+        t = upt.x().getLongTime();
+        x = ((SoTValue.Double) upt.y()).getValue();
       } else {
-        t = upt.getY().getLongTime();
-        x = ((SoTValue.Double) upt.getX()).getValue();
+        t = upt.y().getLongTime();
+        x = ((SoTValue.Double) upt.x()).getValue();
       }
       setLocationU(new TimePoint(x, new GeoDate(t)));
     } else {
-      x = ((SoTValue.Double) upt.getX()).getValue();
-      y = ((SoTValue.Double) upt.getY()).getValue();
+      x = ((SoTValue.Double) upt.x()).getValue();
+      y = ((SoTValue.Double) upt.y()).getValue();
       setLocationU(new Point2D.Double(x, y));
     }
   }

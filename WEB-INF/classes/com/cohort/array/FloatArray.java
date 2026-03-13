@@ -190,7 +190,6 @@ public class FloatArray extends PrimitiveArray {
     int code = 0;
     for (int i = 0; i < size; i++) code = 31 * code + Float.floatToIntBits(array[i]);
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**
@@ -256,13 +255,13 @@ public class FloatArray extends PrimitiveArray {
   @Override
   public PAType needPAType(final PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case BYTE, UBYTE, SHORT, USHORT, FLOAT -> PAType.FLOAT;
 
-        // if sideways
+      // if sideways
       case INT, UINT, DOUBLE -> PAType.DOUBLE;
 
-        // LONG, ULONG, CHAR, STRING
+      // LONG, ULONG, CHAR, STRING
       default -> PAType.STRING;
     };
   }

@@ -71,6 +71,7 @@ import gov.noaa.pfel.erddap.variable.EDVLatGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVLonGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import io.prometheus.metrics.model.snapshots.Unit;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -84,12 +85,13 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -388,6 +390,14 @@ public class Erddap extends HttpServlet {
     public void run() {
       EDStatic.destroy();
     }
+  }
+
+  public static final String ERDDAP_CONTEXT_ATTRIBUTE = "ERDDAP";
+
+  @Override
+  public void init(ServletConfig servletConfig) {
+    // add servlet to context so other servlets can access ERDDAP datasets directly
+    servletConfig.getServletContext().setAttribute(ERDDAP_CONTEXT_ATTRIBUTE, this);
   }
 
   /**
@@ -1428,7 +1438,8 @@ public class Erddap extends HttpServlet {
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      writer.write("""
+      writer.write(
+          """
               </table>
               &nbsp;
 
@@ -1470,7 +1481,8 @@ public class Erddap extends HttpServlet {
               + "\n");
 
       // end of search/protocol options list
-      writer.write("""
+      writer.write(
+          """
 
               </ul>
               <p>&nbsp;<hr>
@@ -4389,7 +4401,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "</att>\n"
                   + "        </addAttributes>\n"
                   + "    </dataVariable>\n");
-        content.append("""
+        content.append(
+            """
                 </dataset>
 
                 """);
@@ -6741,7 +6754,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 Message.EDD_FILES,
                 EDStatic.messages.get(Message.DOCUMENTATION, language)));
         writer.write(EDStatic.messages.filesDocumentation(language, tErddapUrl));
-        writer.write("""
+        writer.write(
+            """
 
                 </div>
                 """);
@@ -6749,7 +6763,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       } catch (Exception e) {
         EDStatic.rethrowClientAbortException(e); // first thing in catch{}
         writer.write(EDStatic.htmlForException(language, e));
-        writer.write("""
+        writer.write(
+            """
 
                 </div>
                 """);
@@ -6789,6 +6804,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         nextPath = "";
         nameAndExt = ts;
       }
+    } else {
+      // This is here to support the file manifest (used by croissant).
+      // Specifically "/files/datasetID.manifest" with no slash after datasetID.
+      int dotIndex = endOfRequestUrl.indexOf('.');
+      if (dotIndex > 0) {
+        id = endOfRequestUrl.substring(0, dotIndex);
+        nameAndExt = endOfRequestUrl.substring(dotIndex);
+      }
     }
 
     // catch pseudo filename that is just an extension
@@ -6799,9 +6822,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         justExtension = id;
         id = "";
       } else if (id.length() > 0) {
-        // id is something, but didn't end in slash
-        // presumably it is datasetID without slash
-        sendRedirect(response, id + "/");
+        if (gridDatasetHashMap.get(id) != null || tableDatasetHashMap.get(id) != null) {
+          // id is something, but didn't end in slash
+          // presumably it is datasetID without slash
+          sendRedirect(response, id + "/");
+        } else {
+          sendResourceNotFoundError(
+              requestNumber,
+              request,
+              response,
+              EDStatic.bilingual(
+                  language,
+                  MessageFormat.format(EDStatic.messages.get(Message.UNKNOWN_DATASET_ID, 0), id),
+                  MessageFormat.format(
+                      EDStatic.messages.get(Message.UNKNOWN_DATASET_ID, language), id)));
+        }
+
         return;
       }
     } else {
@@ -6960,6 +6996,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // get the dataset
     EDD edd = gridDatasetHashMap.get(id);
     if (edd == null) edd = tableDatasetHashMap.get(id);
+
     if (edd == null) {
       sendResourceNotFoundError(
           requestNumber,
@@ -6991,6 +7028,23 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "accessibleViaFilesDir=\"\"");
       sendResourceNotFoundError(
           requestNumber, request, response, "This dataset is not accessible via /files/ .");
+      return;
+    }
+
+    // handle .manifest request
+    if (".manifest".equals(nameAndExt) && (nextPath == null || nextPath.length() == 0)) {
+      Table fileTable = edd.getFilesUrlList(request, loggedInAs, language);
+      sendPlainTable(
+          language,
+          requestNumber,
+          loggedInAs,
+          request,
+          response,
+          endOfRequest,
+          queryString,
+          fileTable,
+          id + "_manifest",
+          ".csv");
       return;
     }
 
@@ -8667,7 +8721,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         return;
       }
 
-        // these 3 are demos.  Remove them (and links to them)?  add update(language)?
+      // these 3 are demos.  Remove them (and links to them)?  add update(language)?
       case "demo110.html" -> {
         doWmsDemo(
             language,
@@ -11324,7 +11378,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "\n");
       }
 
-      scripts.append("""
+      scripts.append(
+          """
                 }
 
                 var overlays = {
@@ -13183,7 +13238,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             } else {
               OutputStream out =
                   new BufferedOutputStream(
-                      new FileOutputStream(actualDir + virtualFileName + fileExtension));
+                      Files.newOutputStream(
+                          Paths.get(actualDir + virtualFileName + fileExtension)));
               OutputStreamSource oss = new OutputStreamSourceSimple(out);
 
               try { // most exceptions written to image.  some throw throwable.
@@ -13337,7 +13393,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           return;
         }
       }
-        // end of /exportImage[/fileName]
+      // end of /exportImage[/fileName]
 
       case "query" -> {
         // ...
@@ -14529,7 +14585,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "        setHidden(); "
                   + dFormName
                   + ".submit();}\">\n\n");
-        writer.write("""
+        writer.write(
+            """
                   </td>
                 </tr>
 
@@ -14703,7 +14760,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + ".scrollY.value=dd.getScrollY(); "
               + "\n} catch (ex) {if (typeof(console) != 'undefined') console.log(ex.toString());}\n"
               + "}\n");
-      writer.write("""
+      writer.write(
+          """
               //-->
               </script>\s
               """);
@@ -18213,7 +18271,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n");
     }
 
-    writer.write("""
+    writer.write(
+        """
               ]
             }
             </script>
@@ -18280,8 +18339,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       case "uint" -> "cr:UInt32";
       case "ushort" -> "cr:UInt16";
       case "ubyte" -> "cr:UInt8";
-        // Default to return "text", it hopefully should be the least likely to break with an
-        // unknown type.
+      // Default to return "text", it hopefully should be the least likely to break with an
+      // unknown type.
       default -> "sc:Text";
     };
   }
@@ -18362,51 +18421,33 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     if (useCroissant && edd.accessibleViaFiles()) {
       writer.write("  \"isLiveDataset\": true,\n");
-      try {
-        Table fileTable = edd.getFilesUrlList(request, loggedInAs, language);
-        if (fileTable != null) {
-          writer.write("  \"distribution\": [\n");
-          for (int i = 0; i < fileTable.nRows(); i++) {
-            String extension = File2.getExtension(fileTable.getStringData(1, i));
-            writer.write(
-                "  {\n"
-                    + "    \"@type\": \"cr:FileObject\",\n"
-                    + "    \"@id\": \""
-                    + fileTable.getStringData(0, i)
-                    + "\",\n"
-                    + "    \"contentSize\": \""
-                    + fileTable.getLongData(3, language)
-                    + " B\",\n"
-                    + "    \"contentUrl\": \""
-                    + fileTable.getStringData(1, i)
-                    + "\",\n"
-                    + "    \"encodingFormat\": \""
-                    + OutputStreamFromHttpResponse.getFileContentType(extension, extension)
-                    + "\"\n"
-                    + "  },\n");
-          }
-          writer.write(
-              "  {\n"
-                  + "    \"@type\": \"cr:FileSet\",\n"
-                  + "    \"@id\": \""
-                  + edd.datasetID()
-                  + "Files"
-                  + "\",\n"
-                  + "    \"description\": \"Files that contain the data.\",\n"
-                  + "    \"encodingFormat\": \"application/json\",\n"
-                  + "    \"includes\": \""
-                  + edd.getFilesetUrl(request, loggedInAs, language)
-                  + "*.*\"\n"
-                  + "  }\n");
-          writer.write("  ],\n");
-        }
-      } catch (Throwable e) {
-        String2.log(
-            "Error generating list of FileObject for dataset: "
-                + edd.datasetID()
-                + "\n"
-                + e.getMessage());
-      }
+      writer.write("  \"distribution\": [\n");
+      writer.write(
+          "  {\n"
+              + "    \"@type\": \"cr:FileObject\",\n"
+              + "    \"@id\": \"manifest\",\n"
+              + "    \"name\": \"manifest\",\n"
+              + "    \"description\": \"Manifest file containing the list of all data files.\",\n"
+              + "    \"contentUrl\": "
+              + String2.toJson65536(
+                  EDStatic.erddapUrl(request, loggedInAs, language)
+                      + "/files/"
+                      + edd.datasetID()
+                      + ".manifest")
+              + ",\n"
+              + "    \"encodingFormat\": \"text/csv\"\n"
+              + "  },\n");
+      writer.write(
+          "  {\n"
+              + "    \"@type\": \"cr:FileSet\",\n"
+              + "    \"@id\": \"files\",\n"
+              + "    \"name\": \"files\",\n"
+              + "    \"description\": \"The set of data files.\",\n"
+              + "    \"containedIn\": { \"@id\": \"manifest\" },\n"
+              + "    \"encodingFormat\": \"*/*\",\n"
+              + "    \"includes\": \"*\"\n"
+              + "  }\n");
+      writer.write("  ],\n");
     }
     if (useCroissant) {
       try {
@@ -18415,7 +18456,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "recordSet": [
               {
                 "@type": "cr:RecordSet",
-                "@id": "dataRecordSet",
+                "@id": "default",
+                "name": "default",
                 "field": [
           """);
         if (edd instanceof EDDGrid grid) {
@@ -18424,7 +18466,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             writer.write(
                 "        {\n"
                     + "          \"@type\": \"cr:Field\",\n"
-                    + "          \"@id\": \"dataRecordSet/"
+                    + "          \"@id\": \"default/"
                     + axisVariable.destinationName()
                     + "\",\n"
                     + "          \"description\": \""
@@ -18435,15 +18477,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + "\",\n"
                     + "          \"source\": {\n"
                     + "            \"fileSet\": {\n"
-                    + "              \"@id\": \""
-                    + edd.datasetID()
-                    + "Files"
-                    + "\"\n"
+                    + "              \"@id\": \"files\"\n"
                     + "            },\n"
                     + "            \"extract\": {\n"
-                    + "              \"column\": \""
-                    + axisVariable.destinationName()
-                    + "\"\n"
+                    + "              \"column\": "
+                    + String2.toJson65536(axisVariable.sourceName())
+                    + "\n"
                     + "            }\n"
                     + "          }\n"
                     + "        }"
@@ -18458,7 +18497,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           writer.write(
               "        {\n"
                   + "          \"@type\": \"cr:Field\",\n"
-                  + "          \"@id\": \"dataRecordSet/"
+                  + "          \"@id\": \"default/"
                   + dataVariable.destinationName()
                   + "\",\n"
                   + "          \"description\": \""
@@ -18469,15 +18508,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "\",\n"
                   + "          \"source\": {\n"
                   + "            \"fileSet\": {\n"
-                  + "              \"@id\": \""
-                  + edd.datasetID()
-                  + "Files"
-                  + "\"\n"
+                  + "              \"@id\": \"files\"\n"
                   + "            },\n"
                   + "            \"extract\": {\n"
-                  + "              \"column\": \""
-                  + dataVariable.destinationName()
-                  + "\"\n"
+                  + "              \"column\": "
+                  + String2.toJson65536(dataVariable.sourceName())
+                  + "\n"
                   + "            }\n"
                   + "          }\n"
                   + "        }"
@@ -24946,9 +24982,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // add new info to categoryInfo
     addRemoveDatasetInfo(true, this.categoryInfo, dataset);
 
-    // clear the dataset's cache
-    // since axis values may have changed and "last" may have changed
-    File2.deleteAllFiles(dataset.cacheDirectory());
+    if (!dataset.isProcessingSubset()) {
+      // clear the dataset's cache
+      // since axis values may have changed and "last" may have changed
+      File2.deleteAllFiles(dataset.cacheDirectory());
+    }
 
     String change = dataset.changed(oldDataset);
     if (change.isEmpty() && dataset instanceof EDDTable) {
@@ -25087,6 +25125,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     + MustBe.throwableToString(actionT));
           }
         }
+        EDStatic.ensureTouchThreadIsRunningIfNeeded();
 
         // trigger RSS action
         // (after new dataset is in place and if there is either a current or older dataset)

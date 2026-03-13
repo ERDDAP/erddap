@@ -7,8 +7,9 @@ import com.cohort.util.String2;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSourceSimple;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public abstract class ImageTypes extends CacheLockFiles {
 
@@ -32,7 +33,8 @@ public abstract class ImageTypes extends CacheLockFiles {
       throws Throwable {
     // create random file; and if error, only partial random file will be created
     int random = Math2.random(Integer.MAX_VALUE);
-    OutputStream fos = new BufferedOutputStream(new FileOutputStream(cacheFullName + random));
+    OutputStream fos =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(cacheFullName + random)));
     boolean ok;
     try {
       OutputStreamSourceSimple osss = new OutputStreamSourceSimple(fos);

@@ -640,7 +640,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("""
+    sb.append(
+        """
             </dataset>
 
             """);
@@ -2026,7 +2027,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "dataVariable",
             true,
             false)); // includeDataType, questionDestinationName
-    results.append("""
+    results.append(
+        """
             </dataset>
 
             """);
@@ -2865,7 +2867,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         // last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, "dataVariable", true, false));
-        sb.append("""
+        sb.append(
+            """
                 </dataset>
 
                 """);

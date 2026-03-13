@@ -6,8 +6,8 @@ import com.cohort.util.TestUtil;
 import com.cohort.util.XML;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagAWS;
-import tags.TagIncompleteTest;
+import tags.TagDisabledAWS;
+import tags.TagDisabledIncompleteTest;
 import testDataset.Initialization;
 
 class HtmlWidgetsTests {
@@ -540,8 +540,8 @@ class HtmlWidgetsTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagAWS
-  @TagIncompleteTest
+  @TagDisabledAWS
+  @TagDisabledIncompleteTest
   void testPublicAwsS3MediaFiles() {
     // String2.log("\n*** HtmlWidgets.testPublicAwsS3MediaFiles()\n" +
     // "Try viewing the images and videos to test range requests with public S3
@@ -554,8 +554,8 @@ class HtmlWidgetsTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagAWS
-  @TagIncompleteTest
+  @TagDisabledAWS
+  @TagDisabledIncompleteTest
   void testPrivateAwsS3MediaFiles() {
     // String2.log("\n*** HtmlWidgets.testPrivateAwsS3MediaFiles()\n" +
     // "Try viewing the images and videos to test range requests with private S3

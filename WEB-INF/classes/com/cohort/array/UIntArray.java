@@ -264,7 +264,6 @@ public class UIntArray extends PrimitiveArray {
     int code = 0;
     for (int i = 0; i < size; i++) code = 31 * code + array[i];
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**
@@ -333,15 +332,15 @@ public class UIntArray extends PrimitiveArray {
   @Override
   public PAType needPAType(final PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case UBYTE, USHORT, UINT -> PAType.UINT;
 
-        // if sideways
+      // if sideways
       case CHAR -> PAType.STRING;
       case BYTE, SHORT, INT -> PAType.LONG;
       case FLOAT -> PAType.DOUBLE; // better than String above
 
-        // if tPAType is bigger.    LONG, ULONG, DOUBLE, STRING
+      // if tPAType is bigger.    LONG, ULONG, DOUBLE, STRING
       default -> tPAType;
     };
   }

@@ -286,6 +286,32 @@ public abstract class PrimitiveArray {
   }
 
   /**
+   * This converts a PrimitiveArray into the specified elementType. This returns a new pa of a
+   * specified type.
+   *
+   * @param elementType desired class e.g., PAType.FLOAT
+   * @param pa the source PrimitiveArray
+   * @return a PrimitiveArray
+   */
+  public static PrimitiveArray copyFactory(PAType elementType, PrimitiveArray pa) {
+    if (elementType == PAType.DOUBLE) return new DoubleArray(pa);
+    if (elementType == PAType.FLOAT) return new FloatArray(pa);
+    if (elementType == PAType.LONG) return new LongArray(pa);
+    if (elementType == PAType.ULONG) return new ULongArray(pa);
+    if (elementType == PAType.INT) return new IntArray(pa);
+    if (elementType == PAType.UINT) return new UIntArray(pa);
+    if (elementType == PAType.SHORT) return new ShortArray(pa);
+    if (elementType == PAType.USHORT) return new UShortArray(pa);
+    if (elementType == PAType.BYTE) return new ByteArray(pa);
+    if (elementType == PAType.UBYTE) return new UByteArray(pa);
+    if (elementType == PAType.CHAR) return new CharArray(pa);
+    if (elementType == PAType.STRING) return new StringArray(pa);
+
+    throw new IllegalArgumentException(
+        String2.ERROR + " in PrimitiveArray.factory: unexpected elementType: " + elementType);
+  }
+
+  /**
    * If this is a signed integer type, this makes an unsigned variant (e.g., PAType.BYTE returns a
    * PAType.UBYTE). The values from pa are then treated as unsigned, e.g., -1 in ByteArray becomes
    * 255 in a UByteArray.

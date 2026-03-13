@@ -13,10 +13,10 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
-import tags.TagMissingDataset;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledThredds;
 import tags.TagSlowTests;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -34,7 +34,7 @@ class EDDTableFromThreddsFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   @TagSlowTests // Very slow
-  @TagIncompleteTest //  Also not consistent output
+  @TagDisabledIncompleteTest //  Also not consistent output
   void testShipWTEP(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP()
     // *****************\n");
@@ -800,7 +800,7 @@ class EDDTableFromThreddsFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGetThreddsFileInfo() throws Throwable {
     String2.log("\n*** EDDTableFromThredds.testGetThreddsFileInfo");
     String results, expected;
@@ -941,7 +941,7 @@ class EDDTableFromThreddsFilesTests {
    * doesn't suggest anything.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     String results =
@@ -1216,7 +1216,7 @@ class EDDTableFromThreddsFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testWcosTemp(boolean deleteCachedInfo) throws Throwable {
     // String2.log("\n****************** EDDTableFromThreddsFiles.testWcosTemp()
     // *****************\n");

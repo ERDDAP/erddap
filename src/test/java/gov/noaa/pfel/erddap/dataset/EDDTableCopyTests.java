@@ -9,7 +9,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -527,7 +527,7 @@ class EDDTableCopyTests {
   /** The tests testRepPostDet. */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testRepPostDet(boolean tCheckSourceData) throws Throwable {
     String2.log(
         "\n****************** EDDTableCopy.testRepPostDet(tCheckSourceData="

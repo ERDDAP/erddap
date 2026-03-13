@@ -24,11 +24,12 @@ import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -475,7 +476,9 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
         }
 
         try (BufferedOutputStream fos =
-            new BufferedOutputStream(new FileOutputStream(file, true))) {
+            new BufferedOutputStream(
+                Files.newOutputStream(
+                    file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND))) {
           fos.write(baos.toByteArray());
         }
 

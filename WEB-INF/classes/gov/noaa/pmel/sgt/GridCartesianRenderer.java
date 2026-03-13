@@ -16,14 +16,12 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pmel.sgt.contour.Contour;
 import gov.noaa.pmel.sgt.contour.ContourLine;
-import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTGrid;
 import gov.noaa.pmel.util.Debug;
 import gov.noaa.pmel.util.GeoDate;
 import gov.noaa.pmel.util.Range2D;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.Iterator;
@@ -693,13 +691,5 @@ public class GridCartesianRenderer extends CartesianRenderer {
             + evt.getPropertyName()
             + "]"
             + ")");
-  }
-
-  /**
-   * @since 3.0
-   */
-  @Override
-  public SGTData getDataAt(Point pt) {
-    return null;
   }
 }

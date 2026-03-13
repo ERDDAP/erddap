@@ -6,8 +6,8 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
+import tags.TagDisabledIncompleteTest;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -24,7 +24,7 @@ class EDDGridLon0360Tests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Flaky (wait then try again error)
+  @TagDisabledIncompleteTest // Flaky (wait then try again error)
   @TagImageComparison
   void testPM181() throws Throwable {
     // String2.log("\n****************** EDDGridLon0360.testPM181()

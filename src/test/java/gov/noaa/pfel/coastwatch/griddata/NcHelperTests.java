@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import org.junit.jupiter.api.io.TempDir;
-import tags.TagMissingFile;
+import tags.TagDisabledMissingFile;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayByte;
 import ucar.ma2.ArrayChar;
@@ -721,7 +721,7 @@ class NcHelperTests {
 
   /** Diagnose a problem */
   @org.junit.jupiter.api.Test
-  @TagMissingFile
+  @TagDisabledMissingFile
   void testJplG1SST() throws Exception {
     String dir = "c:/data/jplG1SST/";
     NetcdfFile fi;

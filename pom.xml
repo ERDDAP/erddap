@@ -32,7 +32,7 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.29.0-alpha</version>
+    <version>2.30.0-alpha</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -43,16 +43,16 @@
         <erddapcontent.download.version>content1.0.1</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.9.1</netcdfJavaVersion>
-        <test.resources.version>test1.04</test.resources.version>
-        <jettyVersion>12.1.1</jettyVersion>
+        <test.resources.version>test1.06</test.resources.version>
+        <jettyVersion>12.1.6</jettyVersion>
         <error-prone.version>2.41.0</error-prone.version>
-        <prometheusVersion>1.4.1</prometheusVersion>
-        <parquetVersion>1.16.0</parquetVersion>
-        <awssdkVersion>2.33.7</awssdkVersion>
-        <luceneVersion>10.2.2</luceneVersion>
-        <nettyVersion>4.2.6.Final</nettyVersion>
-        <mavenTestPluginVersion>3.5.3</mavenTestPluginVersion>
-        <jacocoMavenVersion>0.8.13</jacocoMavenVersion>
+        <prometheusVersion>1.5.0</prometheusVersion>
+        <parquetVersion>1.17.0</parquetVersion>
+        <awssdkVersion>2.42.2</awssdkVersion>
+        <luceneVersion>10.4.0</luceneVersion>
+        <nettyVersion>4.2.10.Final</nettyVersion>
+        <mavenTestPluginVersion>3.5.5</mavenTestPluginVersion>
+        <jacocoMavenVersion>0.8.14</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
     </properties>
 
@@ -64,9 +64,9 @@
               Browse either https://artifacts.unidata.ucar.edu/#browse/browse
              -->
         <repository>
-            <id>unidata-all</id>   
-            <name>UNIDATA All</name>
-            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+            <id>unidata-releases</id>
+            <name>NSF Unidata</name>
+            <url>https://artifacts.unidata.ucar.edu/releases</url>
         </repository>
     </repositories>
 
@@ -96,7 +96,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.19.0</version>
+                <version>2.21.0</version>
                 <configuration>
                     <!-- some location that makes sense for your company/project -->
                     <rulesUri>file:///${project.basedir}/versionrules.xml</rulesUri>
@@ -118,11 +118,11 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.15.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
-                    <source>21</source>   <!-- java version -->
-                    <target>21</target>
+                    <source>25</source>   <!-- java version -->
+                    <target>25</target>
                     <encoding>UTF-8</encoding>
                     <compilerArgs>
                         <arg>-XDcompilePolicy=simple</arg>
@@ -171,7 +171,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
@@ -212,17 +212,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/DoubleCenterGrids.sh, WEB-INF/FileVisitorDNLS.sh, WEB-INF/FindDuplicateTime.*, WEB-INF/GenerateO*, WEB-INF/GenerateT*, WEB-INF/GridSaveAs*, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/MapViewer.*, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/FileVisitorDNLS.sh, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -253,7 +253,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <!-- create data directory for testing -->
                     <execution>
@@ -371,47 +371,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${mavenTestPluginVersion}</version>
-                <configuration>
-                    <argLine>${surefire.jacoco.args}</argLine>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
-                    </additionalClasspathElements>
-                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${mavenTestPluginVersion}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <argLine>${failsafe.jacoco.args}</argLine>
-                            <additionalClasspathElements>
-                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
-                            </additionalClasspathElements>
-                            <groups>Jetty, Slow</groups>
-                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, RequiresContent, MissingDataset</excludedGroups>
-                            <includes>
-                                <include>**/IT*.java</include>
-                                <include>**/*IT.java</include>
-                                <include>**/*ITCase.java</include>
-                                <include>**/*Test*.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.9.4.2</version>
+                <version>4.9.8.2</version>
                 <configuration>
                     <effort>max</effort>
                     <maxHeap>2048</maxHeap>
@@ -522,7 +484,7 @@
             <plugin>
                 <groupId>com.cosium.code</groupId>
                 <artifactId>git-code-format-maven-plugin</artifactId>
-                <version>5.3</version>
+                <version>5.4</version>
                 <executions>
                     <!-- On commit, format the modified files -->
                     <execution>
@@ -546,7 +508,7 @@
                     <dependency>
                     <groupId>com.cosium.code</groupId>
                     <artifactId>google-java-format</artifactId>
-                    <version>5.3</version>
+                    <version>5.4</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -567,7 +529,7 @@
              <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
-                <version>2.0.0</version>
+                <version>2.1.0</version>
                 <executions>
                     <execution>
                         <phase>pre-site</phase>
@@ -585,7 +547,6 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Calendar2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/DoubleObject.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/File2.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/HashDigest.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Image2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/LRUCache.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/LICENSE.txt</file>
@@ -599,14 +560,11 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2Log.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogFactory.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/String2LogOutputStream.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolder.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparator.java</file>
-                        <file>${project.basedir}/WEB-INF/classes/com/cohort/util/StringHolderComparatorIgnoreCase.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Test.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Units2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/XML.java</file>
                     </suppressedFiles>
-                    <jdkVersion>17</jdkVersion>
+                    <jdkVersion>25</jdkVersion>
                     <noStdlibLink>true</noStdlibLink> <!-- This is the Kotlin stdlib -->
                     <dokkaPlugins>
                         <plugin>
@@ -624,13 +582,20 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-dependency-plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.10.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>properties</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-utils -->
                 <plugin>
@@ -640,11 +605,119 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.0</version>
+                    <version>3.15.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
+    <profiles>
+        <profile>
+        <id>default</id>
+        <activation>
+      <activeByDefault>true</activeByDefault>
+    </activation>
+        <build>
+        <plugins>
+        <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <configuration>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <environmentVariables>
+                        <temp>${project.basedir}/target/temp/</temp>
+                        <tmp>${project.basedir}/target/temp/</tmp>
+                        <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                    </environmentVariables>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External, SlowAWS</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>${failsafe.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                            <environmentVariables>
+                                <temp>${project.basedir}/target/temp/</temp>
+                                <tmp>${project.basedir}/target/temp/</tmp>
+                                <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                            </environmentVariables>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <groups>Jetty, Slow</groups>
+                            <excludedGroups>LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset, External, SlowAWS</excludedGroups>
+                            <includes>
+                                <include>**/IT*.java</include>
+                                <include>**/*IT.java</include>
+                                <include>**/*ITCase.java</include>
+                                <include>**/*Test*.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            </plugins>
+            </build>
+    </profile>
+    <profile>
+      <id>external</id>
+      <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <configuration>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <environmentVariables>
+                        <temp>${project.basedir}/target/temp/</temp>
+                        <tmp>${project.basedir}/target/temp/</tmp>
+                        <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                    </environmentVariables>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <groups>External</groups>
+                    <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
+                </configuration>
+            </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>slowAWS</id>
+      <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${mavenTestPluginVersion}</version>
+                <configuration>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <environmentVariables>
+                        <temp>${project.basedir}/target/temp/</temp>
+                        <tmp>${project.basedir}/target/temp/</tmp>
+                        <java.io.tmpdir>${project.basedir}/target/temp/</java.io.tmpdir>
+                    </environmentVariables>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/test-data</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <groups>SlowAWS</groups>
+                    <!-- <excludedGroups>Jetty, Slow, LargeFiles, Flaky, AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, ExternalOther, IncompleteTest, MissingDataset</excludedGroups> -->
+                </configuration>
+            </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -662,7 +735,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.13.4</version>
+                <version>6.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -672,7 +745,27 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.32.0</version>
+                <version>4.33.5</version>
+            </dependency>
+
+            <!-- updating indirect dependencies from hivemq -->
+            <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>2.3.10</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>1.83</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.5.32</version>
             </dependency>
 
             <!--
@@ -684,31 +777,31 @@
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.12.0</version>
+                <version>1.12.1</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/dnsjava/dnsjava -->
             <dependency>
                 <groupId>dnsjava</groupId>
                 <artifactId>dnsjava</artifactId>
-                <version>3.6.3</version>
+                <version>3.6.4</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.81</version>
+                <version>1.83</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-configuration2</artifactId>
-                <version>2.12.0</version>
+                <version>2.13.0</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>10.4.2</version>
+                <version>10.8</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
             <dependency>
@@ -716,10 +809,22 @@
                 <artifactId>commons-beanutils</artifactId>
                 <version>1.11.0</version>
             </dependency>
+            <dependency>
+                <groupId>io.airlift</groupId>
+                <artifactId>aircompressor</artifactId>
+                <version>2.0.3</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+        <!-- Source: https://mvnrepository.com/artifact/org.wiremock/wiremock -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.13.2</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api  -->
         <dependency>
@@ -765,7 +870,15 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.19.0</version>
+            <version>5.21.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.awaitility/awaitility -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.3.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -773,7 +886,7 @@
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core 
@@ -797,7 +910,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20250517</version>
+            <version>20251224</version>
         </dependency>
 
         <!-- I have private copy of source code in with my code.
@@ -939,18 +1052,18 @@
         <dependency>
             <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-metadata</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.sis.storage/sis-storage -->
         <dependency>
             <groupId>org.apache.sis.storage</groupId>
             <artifactId>sis-storage</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>4.0.5</version>
+            <version>4.0.6</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -980,7 +1093,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -988,7 +1101,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.7</version>
+            <version>42.7.10</version>
         </dependency>
 
         <!-- CASSANDRA 
@@ -1006,15 +1119,15 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.4.8-jre</version>
+            <version>33.5.0-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
              Cassandra uses this. C* still refers to this older version from older domain. -->
         <dependency>
-            <groupId>net.jpountz.lz4</groupId>
-            <artifactId>lz4</artifactId>
-            <version>1.3</version>
+            <groupId>at.yawk.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <version>1.10.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
@@ -1022,7 +1135,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.36</version>
+            <version>4.2.38</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -1078,14 +1191,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.38.12</version>
+            <version>0.43.4</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.39.0</version>
+            <version>1.43.0</version>
         </dependency>
 
         <dependency>
@@ -1111,12 +1224,12 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.181</version>
+            <version>4.8.184</version>
         </dependency>
          <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>3.4.2</version>
+            <version>3.4.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
@@ -1150,13 +1263,13 @@
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-community-edition-embedded</artifactId>
-            <version>2025.4</version>
+            <version>2025.5</version>
         </dependency>
 
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-mqtt-client</artifactId>
-            <version>1.3.7</version>
+            <version>1.3.12</version>
         </dependency>
     </dependencies>
 

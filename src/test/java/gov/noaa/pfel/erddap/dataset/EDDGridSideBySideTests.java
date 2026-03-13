@@ -11,9 +11,9 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledLocalERDDAP;
 import tags.TagImageComparison;
-import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -31,7 +31,7 @@ class EDDGridSideBySideTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testQSWind(boolean doGraphicsTests) throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
@@ -277,7 +277,7 @@ class EDDGridSideBySideTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testQSStress() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testQSWind");
     // testVerboseOn();
@@ -480,7 +480,7 @@ class EDDGridSideBySideTests {
    * This tests allowing datasets with duplicate sourceNames (they would be in different datasets).
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testDuplicateSourceNames() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testDuplicateSourceNames");
     // testVerboseOn();
@@ -522,7 +522,7 @@ class EDDGridSideBySideTests {
 
   /** This test making transparentPngs. */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   @TagImageComparison
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDGridSideBySide.testTransparentPng");
@@ -637,7 +637,7 @@ class EDDGridSideBySideTests {
 
   /** This tests the /files/ "files" system. This requires erdTAgeo1day in the localhost ERDDAP. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testFiles() throws Throwable {
     String results, expected;
 
@@ -688,7 +688,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/gibberish/\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Currently unknown datasetID=gibberish\";\n"
@@ -704,7 +704,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish/\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish/\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Resource not found: directory=gibberish/\";\n"
@@ -720,7 +720,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish.csv\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/gibberish.csv\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
@@ -736,7 +736,7 @@ class EDDGridSideBySideTests {
       results = e.toString();
     }
     expected =
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/subdir/gibberish.csv\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/files/erdTAgeo1day/subdir/gibberish.csv\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: File not found: gibberish.csv .\";\n"

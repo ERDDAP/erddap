@@ -28,14 +28,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagAWS;
+import tags.TagDisabledAWS;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledLargeFiles;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
+import tags.TagDisabledThredds;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
-import tags.TagLargeFiles;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
+import tags.TagSlowAWS;
 import tags.TagSlowTests;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import ucar.ma2.Array;
@@ -124,7 +125,7 @@ class EDDGridFromNcFilesTests {
 
   /** test reading an .ncml file */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
+  @TagDisabledIncompleteTest // https://github.com/ERDDAP/erddap/issues/148
   void testNcml() throws Throwable {
 
     // 2022-02-07 These were the simplest test I could create to demonstrate
@@ -1191,9 +1192,8 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
-  @TagLargeFiles
   @TagImageComparison
+  @TagSlowAWS
   void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
     int language = 0;
 
@@ -1468,7 +1468,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
+  @TagDisabledAWS
   void testPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testPrivateAwsS3(" +
     // deleteCachedFiles + ") *****************\n");
@@ -1810,17 +1810,7 @@ class EDDGridFromNcFilesTests {
             + "    String autonav_performed \"true\";\n"
             + "    Int32 autonav_quality 2;\n"
             + "    String cdm_data_type \"Grid\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 cols 1140;\n" : "")
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    String cwhdf_version \"3.4\";\n"
-                    + "    Float64 et_affine 0.0, -1470.0, 1470.0, 0.0, -9778346.500515733, 4398734.085407009;\n"
-                    + "    Int32 gctp_datum 12;\n"
-                    + "    Float64 gctp_parm 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;\n"
-                    + "    Int32 gctp_sys 5;\n"
-                    + "    Int32 gctp_zone 0;\n"
-                    + "    String HDF4_Version \"4.1.5 (NCSA HDF Version 4.1 Release 5, November 5, 2001)\";\n"
-                : "")
             + "    String history \"Direct read of HDF4 file through CDM library\n"
             + today;
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -1843,20 +1833,13 @@ class EDDGridFromNcFilesTests {
             + "particular purpose, or assumes any legal liability for the accuracy,\n"
             + "completeness, or usefulness, of this information.\";\n"
             + "    String origin \"USDOC/NOAA/NESDIS CoastWatch\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 pass_date 13990;\n" : "")
             + "    String pass_type \"day\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    Float64 polygon_latitude 36.89432948408865, 36.89432948408865, 36.89432948408865, 36.89432948408865, 36.89432948408865, 33.51643401115052, 29.999999999936534, 26.35308766180611, 22.586165505358508, 22.586165505358508, 22.586165505358508, 22.586165505358508, 22.586165505358508, 26.35308766180611, 29.999999999936534, 33.51643401115052, 36.89432948408865;\n"
-                    + "    Float64 polygon_longitude -87.8403811482992, -84.08019057414958, -80.32000000000001, -76.5598094258504, -72.79961885170081, -72.79961885170081, -72.79961885170081, -72.79961885170081, -72.79961885170081, -76.5598094258504, -80.32000000000001, -84.08019057414958, -87.8403811482992, -87.8403811482992, -87.8403811482992, -87.8403811482992, -87.8403811482992;\n"
-                : "")
             + "    String projection \"Mercator\";\n"
             + "    String projection_type \"mapped\";\n"
-            + (EDStatic.config.useSaxParser ? "    Int32 rows 1248;\n" : "")
             + "    String satellite \"noaa-18\";\n"
             + "    String sensor \"avhrr\";\n"
             + "    String sourceUrl \"(local files)\";\n"
             + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
-            + (EDStatic.config.useSaxParser ? "    Float64 start_time 65502.0;\n" : "")
             + "    String summary \"???\";\n"
             + "    String title \"Test of CoastWatch HDF files\";\n"
             + "  }\n"
@@ -2478,8 +2461,8 @@ class EDDGridFromNcFilesTests {
             "            <att name=\"Grib2_Generating_Process_Type\">Forecast</att>\n"
             + "            <att name=\"Grib2_Level_Desc\">Ordered Sequence of Data</att>\n"
             + //// changed in
-            //// netcdf-java
-            //// 4.6.4
+              //// netcdf-java
+              //// 4.6.4
             "            <att name=\"Grib2_Level_Type\" type=\"int\">241</att>\n"
             + // changed in
             // netcdf-java 4.6.4
@@ -3051,7 +3034,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testGenerateDatasetsXml4() throws Throwable {
     // takes a long time and no longer useful
     // String2.pressEnterToContinue(
@@ -4010,8 +3993,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
-  @TagLargeFiles
+  @TagSlowAWS
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -4021,12 +4003,7 @@ class EDDGridFromNcFilesTests {
     // trailing
     // /
     String regex = ".*_CESM1-CAM5_201.*\\.nc";
-    String dir =
-        Path.of(
-                EDDGridFromNcFilesTests.class
-                    .getResource("/veryLarge/points/testAwsS3NexDcp/")
-                    .toURI())
-            .toString();
+    String dir = EDStatic.config.fullTestCacheDirectory + "/points/testAwsS3NexDcp/";
     dir = dir.replace('\\', '/');
 
     String name = ""; // with cacheFromUrl, use nothing. Was: dir +
@@ -4052,7 +4029,7 @@ class EDDGridFromNcFilesTests {
                 cacheFromUrl,
                 null)
             + "\n"; // dimensionsCSV, reloadMinutes, cacheFromUrl
-    String suggDatasetID = EDDGridFromNcFiles.suggestDatasetID(dir + "/" + regex);
+    String suggDatasetID = EDDGridFromNcFiles.suggestDatasetID(dir + regex);
 
     // GenerateDatasetsXml
     String gdxResults =
@@ -4276,7 +4253,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagAWS
+  @TagDisabledAWS
   void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
@@ -8391,7 +8368,7 @@ class EDDGridFromNcFilesTests {
    * @param whichChunk -1 (all) or 0 - 4.
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   @TagImageComparison
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
@@ -9628,11 +9605,6 @@ class EDDGridFromNcFilesTests {
     // switch to testImagesIdentical
     // String tDir = EDStatic.config.fullTestCacheDirectory;
     Image2Tests.testImagesIdentical(tName, baseName + ".png", baseName + "_diff.png");
-
-    // TestUtil.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
-    // "See SgtGraph \"yIsTimeAxis = false;\".");
-    // Math2.sleep(10000);
-
   }
 
   /**
@@ -9899,7 +9871,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void testGenerateDatasetsXmlWithRemoteThreddsFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles()\n");
@@ -9927,8 +9899,6 @@ class EDDGridFromNcFilesTests {
               -1,
               null,
               null); // dimensionsCSV, reloadMinutes, cacheFromUrl
-      // String2.log(results);
-      String2.setClipboardString(results);
 
       expected =
           "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"noaa_nodc_a2c2_29ed_1915\" active=\"true\">\n"
@@ -10114,7 +10084,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagThredds
+  @TagDisabledThredds
   void testRemoteThreddsFiles(boolean deleteCachedInfo) throws Throwable {
     String tName, results, tResults, expected, userDapQuery;
     String today =
@@ -12613,7 +12583,6 @@ class EDDGridFromNcFilesTests {
             + "    Byte valid_min 0;\n"
             + "  }\n"
             + "  l2p_flags {\n"
-            + "    Int16 _FillValue 32767;\n"
             + "    Float64 colorBarMaximum 300.0;\n"
             + "    Float64 colorBarMinimum 0.0;\n"
             + "    String comment \"Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1.\";\n"
@@ -12873,7 +12842,7 @@ class EDDGridFromNcFilesTests {
 
   /** Test DAP errors. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testDapErrors() throws Throwable {
     String baseRequest = "http://localhost:8080/cwexperimental/griddap/";
     String results;
@@ -12956,7 +12925,7 @@ class EDDGridFromNcFilesTests {
     }
     Test.ensureEqual(
         results,
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/griddap/erdBAssta5dayzztop.html\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/griddap/erdBAssta5dayzztop.html\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Currently unknown datasetID=erdBAssta5dayzztop\";\n"
@@ -12973,7 +12942,7 @@ class EDDGridFromNcFilesTests {
     }
     Test.ensureEqual(
         results,
-        "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.csv?time%5B(2000-01-01):(2000-01-01)%5D\n"
+        "java.io.IOException: HTTP status code=404 java.nio.file.NoSuchFileException: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.csv?time%5B(2000-01-01):(2000-01-01)%5D\n"
             + "(Error {\n"
             + "    code=404;\n"
             + "    message=\"Not Found: Your query produced no matching results. Query error: For variable=time axis#0=time Constraint=\\\"[(2000-01-01):(2000-01-01)]\\\": Start=\\\"2000-01-01\\\" is less than the axis minimum=2002-07-06T12:00:00Z (and even 2002-07-05T22:49:16Z).\";\n"
@@ -13766,7 +13735,6 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(ints = {3})
-  @TagSlowTests
   void testNThreads(int maxNThreads) throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testNThreads()
     // *****************\n");
@@ -13781,7 +13749,7 @@ class EDDGridFromNcFilesTests {
       if (nt == 0) continue;
       // delete all files in .gz cache dir
       File2.deleteAllFiles(eddGrid.decompressedDirectory());
-      Math2.gc("EDDGridFromNcFiles (between tests)", 30000); // let system settle
+      Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); // let system settle
 
       long tTime = System.currentTimeMillis();
       eddGrid.nThreads = Math.abs(nt);
@@ -13816,9 +13784,6 @@ class EDDGridFromNcFilesTests {
       String2.log(msg);
       bigResults.append(msg);
     }
-    // String2.log(bigResults.toString());
-    String2.log("  (Lenovo: 2 cores: nThreads/s 3/4,2/3,1/3,1/4,2/3,3/3");
-    // Math2.gc("EDDGridFromNcFiles (between tests)", 10000);
   }
 
   /**
@@ -15055,7 +15020,6 @@ class EDDGridFromNcFilesTests {
    *
    * @throws Throwable if trouble
    */
-  @TagSlowTests
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testUpdate(boolean allowRssUpdates) throws Throwable {
@@ -15148,7 +15112,7 @@ class EDDGridFromNcFilesTests {
       for (int i = 0; i < 10; i++) {
         String2.log(
             "after rename .nc.gz to .nc.gz2, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
 
       tName =
@@ -15246,7 +15210,7 @@ class EDDGridFromNcFilesTests {
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc2 to .nc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
     }
 
@@ -15333,7 +15297,7 @@ class EDDGridFromNcFilesTests {
       }
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
 
       tName =
@@ -15388,7 +15352,7 @@ class EDDGridFromNcFilesTests {
 
       for (int i = 0; i < 10; i++) {
         String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update(language));
-        Math2.sleep(1000);
+        Math2.sleep(10);
       }
     }
 
@@ -15474,7 +15438,7 @@ class EDDGridFromNcFilesTests {
     // *** rename a data file so it doesn't match regex
     try {
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz", "erdQSwind1day_20080101_03.nc.gz2");
-      Math2.sleep(500);
+      Math2.sleep(100);
       SharedWatchService.processEvents();
 
       snapshotDiff = eddGrid.snapshot();
@@ -15533,7 +15497,7 @@ class EDDGridFromNcFilesTests {
     } finally {
       // rename it back to original
       File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
-      Math2.sleep(500);
+      Math2.sleep(100);
       SharedWatchService.processEvents();
     }
 
@@ -15847,7 +15811,7 @@ class EDDGridFromNcFilesTests {
       // if trouble
       File2.deleteAllFiles(
           EDDGridFromNcFiles.decompressedDirectory(tDatasetID)); // ensure cache is empty
-      Math2.sleep(1000);
+      Math2.sleep(100);
       EDDGridFromFiles.testQuickRestart = true;
       eddGrid = (EDDGridFromNcFiles) EDDTestDataset.gettestGriddedNcFiles();
 
@@ -15900,7 +15864,7 @@ class EDDGridFromNcFilesTests {
       }
       expected =
           "There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)\n"
-              + "(Cause: java.io.FileNotFoundException: "
+              + "(Cause: java.nio.file.NoSuchFileException: "
               + File2.forwardSlashDir(dataDir)
               + "erdQSwind1day_20080101_03.nc.gz";
       results = File2.forwardSlashDir(results);
@@ -15982,7 +15946,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGenerateDatasetsXmlWithRemoteHyraxFiles() throws Throwable {
     // String2.log("\n***
     // EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles()\n");
@@ -16206,7 +16170,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFiles
+  @TagDisabledLargeFiles
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testIgor()\n");
     // testVerboseOn();
@@ -16548,7 +16512,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testGroups() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFiles.testGroups()\n");
     // testVerboseOn();
@@ -16657,7 +16621,7 @@ class EDDGridFromNcFilesTests {
   /** This tests makeCopyFileTasks. */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagMissingDataset // source seems to not have data
+  @TagDisabledMissingDataset // source seems to not have data
   void testMakeCopyFileTasks(boolean deleteAllLocalFiles) throws Exception {
     boolean tRecursive = true;
     boolean tDirectoriesToo = false;
@@ -16757,7 +16721,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if touble
    */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testGenerateDatasetsXmlCopy() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String tSourceUrl =
@@ -17043,7 +17007,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCopyFiles(boolean deleteDataFiles) throws Throwable {
     int language = 0;
 
@@ -17284,7 +17248,7 @@ class EDDGridFromNcFilesTests {
    */
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testCacheFiles(boolean deleteDataFiles) throws Throwable {
     int language = 0;
     String tName, results, tResults, expected, userDapQuery;
@@ -18052,194 +18016,100 @@ class EDDGridFromNcFilesTests {
     String results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     String expected =
         "Attributes {\n"
-            + //
-            "  dim0 {\n"
-            + //
-            "    Int32 actual_range 0, 199;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Dim0\";\n"
-            + //
-            "    String units \"count\";\n"
-            + //
-            "  }\n"
-            + //
-            "  dim1 {\n"
-            + //
-            "    Int16 actual_range 0, 199;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Dim1\";\n"
-            + //
-            "    String units \"count\";\n"
-            + //
-            "  }\n"
-            + //
-            "  null_compressor {\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Null Compressor\";\n"
-            + //
-            "  }\n"
-            + //
-            "  comp_filt_Adler_shuffle_deflate {\n"
-            + //
-            "    String _Compressor \"zlib\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Comp Filt/Adler Shuffle Deflate\";\n"
-            + //
-            "  }\n"
-            + //
-            "  comp_filt_shuffle_deflate {\n"
-            + //
-            "    String _Compressor \"zlib\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Comp Filt/shuffle Deflate\";\n"
-            + //
-            "  }\n"
-            + //
-            "  compressed_adler32 {\n"
-            + //
-            "    String _Compressor \"adler32\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Compressed/adler32\";\n"
-            + //
-            "  }\n"
-            + //
-            "  compressed_crc32 {\n"
-            + //
-            "    String _Compressor \"crc32\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Compressed/crc32\";\n"
-            + //
-            "  }\n"
-            + //
-            "  compressed_deflate1 {\n"
-            + //
-            "    String _Compressor \"zlib\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Compressed/deflate1\";\n"
-            + //
-            "  }\n"
-            + //
-            "  compressed_deflate9 {\n"
-            + //
-            "    String _Compressor \"zlib\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Compressed/deflate9\";\n"
-            + //
-            "  }\n"
-            + //
-            "  compressed_scaleOffset {\n"
-            + //
-            "    String _Compressor \"fixedscaleoffset\";\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Compressed/scale Offset\";\n"
-            + //
-            "  }\n"
-            + //
-            "  compressed_shuffle {\n"
-            + //
-            "    String _Compressor \"shuffle\";\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Compressed/shuffle\";\n"
-            + //
-            "  }\n"
-            + //
-            "  filtered_adler32 {\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Filtered/adler32\";\n"
-            + //
-            "  }\n"
-            + //
-            "  filtered_adler_shuffle {\n"
-            + //
-            "    Int32 _FillValue 2147483647;\n"
-            + //
-            "    String ioos_category \"Unknown\";\n"
-            + //
-            "    String long_name \"Filtered/adler Shuffle\";\n"
-            + //
-            "  }\n"
-            + //
-            "  NC_GLOBAL {\n"
-            + //
-            "    String cdm_data_type \"Grid\";\n"
-            + //
-            "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
-            + //
-            "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
-            + //
-            "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/griddap/zarr_gridCompressedData.das\";\n"
-            + //
-            "    String infoUrl \"???\";\n"
-            + //
-            "    String institution \"???\";\n"
-            + //
-            "    String keywords \"adler, adler32, comp, comp_filt/Adler_shuffle_deflate, comp_filt/shuffle_deflate, compressed, compressed/adler32, compressed/crc32, compressed/deflate1, compressed/deflate9, compressed/scale, compressed/scaleOffset, compressed/shuffle, compressor, crc32, data, deflate, deflate1, deflate9, dim0, dim1, filt, filt/adler, filt/shuffle, filtered, filtered/adler, filtered/adler32, filtered/adler_shuffle, local, null_compressor, offset, scale, shuffle, source\";\n"
-            + //
-            "    String license \"The data may be used and redistributed for free but is not intended\n"
-            + //
-            "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + //
-            "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + //
-            "of their employees or contractors, makes any warranty, express or\n"
-            + //
-            "implied, including warranties of merchantability and fitness for a\n"
-            + //
-            "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + //
-            "completeness, or usefulness, of this information.\";\n"
-            + //
-            "    String sourceUrl \"(local files)\";\n"
-            + //
-            "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
-            + //
-            "    String summary \"Data from a local source.\";\n"
-            + //
-            "    String title \"Data from a local source.\";\n"
-            + //
-            "  }\n"
-            + //
-            "}\n";
+            + "  dim0 {\n"
+            + "    Int32 actual_range 0, 199;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Dim0\";\n"
+            + "    String units \"count\";\n"
+            + "  }\n"
+            + "  dim1 {\n"
+            + "    Int16 actual_range 0, 199;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Dim1\";\n"
+            + "    String units \"count\";\n"
+            + "  }\n"
+            + "  null_compressor {\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Null Compressor\";\n"
+            + "  }\n"
+            + "  comp_filt_Adler_shuffle_deflate {\n"
+            + "    String _Compressor \"zlib\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Comp Filt/Adler Shuffle Deflate\";\n"
+            + "  }\n"
+            + "  comp_filt_shuffle_deflate {\n"
+            + "    String _Compressor \"zlib\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Comp Filt/shuffle Deflate\";\n"
+            + "  }\n"
+            + "  compressed_adler32 {\n"
+            + "    String _Compressor \"adler32\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Compressed/adler32\";\n"
+            + "  }\n"
+            + "  compressed_crc32 {\n"
+            + "    String _Compressor \"crc32\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Compressed/crc32\";\n"
+            + "  }\n"
+            + "  compressed_deflate1 {\n"
+            + "    String _Compressor \"zlib\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Compressed/deflate1\";\n"
+            + "  }\n"
+            + "  compressed_deflate9 {\n"
+            + "    String _Compressor \"zlib\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Compressed/deflate9\";\n"
+            + "  }\n"
+            + "  compressed_scaleOffset {\n"
+            + "    String _Compressor \"fixedscaleoffset\";\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Compressed/scale Offset\";\n"
+            + "  }\n"
+            + "  compressed_shuffle {\n"
+            + "    String _Compressor \"shuffle\";\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Compressed/shuffle\";\n"
+            + "  }\n"
+            + "  filtered_adler32 {\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Filtered/adler32\";\n"
+            + "  }\n"
+            + "  filtered_adler_shuffle {\n"
+            + "    Int32 _FillValue 2147483647;\n"
+            + "    String ioos_category \"Unknown\";\n"
+            + "    String long_name \"Filtered/adler Shuffle\";\n"
+            + "  }\n"
+            + "  NC_GLOBAL {\n"
+            + "    String cdm_data_type \"Grid\";\n"
+            + "    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n"
+            + "    String history \"YYYY-MM-DDThh:mm:ssZ (local files)\n"
+            + "YYYY-MM-DDThh:mm:ssZ http://localhost:8080/erddap/griddap/zarr_gridCompressedData.das\";\n"
+            + "    String infoUrl \"???\";\n"
+            + "    String institution \"???\";\n"
+            + "    String keywords \"adler, adler32, comp, comp_filt/Adler_shuffle_deflate, comp_filt/shuffle_deflate, compressed, compressed/adler32, compressed/crc32, compressed/deflate1, compressed/deflate9, compressed/scale, compressed/scaleOffset, compressed/shuffle, compressor, crc32, data, deflate, deflate1, deflate9, dim0, dim1, filt, filt/adler, filt/shuffle, filtered, filtered/adler, filtered/adler32, filtered/adler_shuffle, local, null_compressor, offset, scale, shuffle, source\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended\n"
+            + "for legal use, since it may contain inaccuracies. Neither the data\n"
+            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
+            + "of their employees or contractors, makes any warranty, express or\n"
+            + "implied, including warranties of merchantability and fitness for a\n"
+            + "particular purpose, or assumes any legal liability for the accuracy,\n"
+            + "completeness, or usefulness, of this information.\";\n"
+            + "    String sourceUrl \"(local files)\";\n"
+            + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
+            + "    String summary \"Data from a local source.\";\n"
+            + "    String title \"Data from a local source.\";\n"
+            + "  }\n"
+            + "}\n";
     results = results.replaceAll("....-..-..T..:..:..Z", "YYYY-MM-DDThh:mm:ssZ");
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -18255,408 +18125,207 @@ class EDDGridFromNcFilesTests {
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected =
         "dim0,dim1,null_compressor,comp_filt_Adler_shuffle_deflate,comp_filt_shuffle_deflate,compressed_adler32,compressed_crc32,compressed_deflate1,compressed_deflate9,compressed_scaleOffset,compressed_shuffle,filtered_adler32,filtered_adler_shuffle\n"
-            + //
-            "count,count,,,,,,,,,,,\n"
-            + //
-            "0,0,0.0,0,0,0,0,0,0,1000.0,0,0,0\n"
-            + //
-            "0,1,1.0,1,1,1,1,1,1,1000.1,1,1,1\n"
-            + //
-            "0,2,2.0,2,2,2,2,2,2,1000.2,2,2,2\n"
-            + //
-            "0,3,3.0,3,3,3,3,3,3,1000.3,3,3,3\n"
-            + //
-            "0,4,4.0,4,4,4,4,4,4,1000.4,4,4,4\n"
-            + //
-            "0,5,5.0,5,5,5,5,5,5,1000.5,5,5,5\n"
-            + //
-            "0,6,6.0,6,6,6,6,6,6,1000.6,6,6,6\n"
-            + //
-            "0,7,7.0,7,7,7,7,7,7,1000.7,7,7,7\n"
-            + //
-            "0,8,8.0,8,8,8,8,8,8,1000.8,8,8,8\n"
-            + //
-            "0,9,9.0,9,9,9,9,9,9,1000.9,9,9,9\n"
-            + //
-            "0,10,10.0,10,10,10,10,10,10,1001.0,10,10,10\n"
-            + //
-            "0,11,11.0,11,11,11,11,11,11,1001.1,11,11,11\n"
-            + //
-            "0,12,12.0,12,12,12,12,12,12,1001.2,12,12,12\n"
-            + //
-            "0,13,13.0,13,13,13,13,13,13,1001.3,13,13,13\n"
-            + //
-            "0,14,14.0,14,14,14,14,14,14,1001.4,14,14,14\n"
-            + //
-            "0,15,15.0,15,15,15,15,15,15,1001.5,15,15,15\n"
-            + //
-            "0,16,16.0,16,16,16,16,16,16,1001.6,16,16,16\n"
-            + //
-            "0,17,17.0,17,17,17,17,17,17,1001.7,17,17,17\n"
-            + //
-            "0,18,18.0,18,18,18,18,18,18,1001.8,18,18,18\n"
-            + //
-            "0,19,19.0,19,19,19,19,19,19,1001.9,19,19,19\n"
-            + //
-            "0,20,20.0,20,20,20,20,20,20,1002.0,20,20,20\n"
-            + //
-            "0,21,21.0,21,21,21,21,21,21,1002.1,21,21,21\n"
-            + //
-            "0,22,22.0,22,22,22,22,22,22,1002.2,22,22,22\n"
-            + //
-            "0,23,23.0,23,23,23,23,23,23,1002.3,23,23,23\n"
-            + //
-            "0,24,24.0,24,24,24,24,24,24,1002.4,24,24,24\n"
-            + //
-            "0,25,25.0,25,25,25,25,25,25,1002.5,25,25,25\n"
-            + //
-            "0,26,26.0,26,26,26,26,26,26,1002.6,26,26,26\n"
-            + //
-            "0,27,27.0,27,27,27,27,27,27,1002.7,27,27,27\n"
-            + //
-            "0,28,28.0,28,28,28,28,28,28,1002.8,28,28,28\n"
-            + //
-            "0,29,29.0,29,29,29,29,29,29,1002.9,29,29,29\n"
-            + //
-            "0,30,30.0,30,30,30,30,30,30,1003.0,30,30,30\n"
-            + //
-            "0,31,31.0,31,31,31,31,31,31,1003.1,31,31,31\n"
-            + //
-            "0,32,32.0,32,32,32,32,32,32,1003.2,32,32,32\n"
-            + //
-            "0,33,33.0,33,33,33,33,33,33,1003.3,33,33,33\n"
-            + //
-            "0,34,34.0,34,34,34,34,34,34,1003.4,34,34,34\n"
-            + //
-            "0,35,35.0,35,35,35,35,35,35,1003.5,35,35,35\n"
-            + //
-            "0,36,36.0,36,36,36,36,36,36,1003.6,36,36,36\n"
-            + //
-            "0,37,37.0,37,37,37,37,37,37,1003.7,37,37,37\n"
-            + //
-            "0,38,38.0,38,38,38,38,38,38,1003.8,38,38,38\n"
-            + //
-            "0,39,39.0,39,39,39,39,39,39,1003.9,39,39,39\n"
-            + //
-            "0,40,40.0,40,40,40,40,40,40,1004.0,40,40,40\n"
-            + //
-            "0,41,41.0,41,41,41,41,41,41,1004.1,41,41,41\n"
-            + //
-            "0,42,42.0,42,42,42,42,42,42,1004.2,42,42,42\n"
-            + //
-            "0,43,43.0,43,43,43,43,43,43,1004.3,43,43,43\n"
-            + //
-            "0,44,44.0,44,44,44,44,44,44,1004.4,44,44,44\n"
-            + //
-            "0,45,45.0,45,45,45,45,45,45,1004.5,45,45,45\n"
-            + //
-            "0,46,46.0,46,46,46,46,46,46,1004.6,46,46,46\n"
-            + //
-            "0,47,47.0,47,47,47,47,47,47,1004.7,47,47,47\n"
-            + //
-            "0,48,48.0,48,48,48,48,48,48,1004.8,48,48,48\n"
-            + //
-            "0,49,49.0,49,49,49,49,49,49,1004.9,49,49,49\n"
-            + //
-            "0,50,50.0,50,50,50,50,50,50,1005.0,50,50,50\n"
-            + //
-            "0,51,51.0,51,51,51,51,51,51,1005.1,51,51,51\n"
-            + //
-            "0,52,52.0,52,52,52,52,52,52,1005.2,52,52,52\n"
-            + //
-            "0,53,53.0,53,53,53,53,53,53,1005.3,53,53,53\n"
-            + //
-            "0,54,54.0,54,54,54,54,54,54,1005.4,54,54,54\n"
-            + //
-            "0,55,55.0,55,55,55,55,55,55,1005.5,55,55,55\n"
-            + //
-            "0,56,56.0,56,56,56,56,56,56,1005.6,56,56,56\n"
-            + //
-            "0,57,57.0,57,57,57,57,57,57,1005.7,57,57,57\n"
-            + //
-            "0,58,58.0,58,58,58,58,58,58,1005.8,58,58,58\n"
-            + //
-            "0,59,59.0,59,59,59,59,59,59,1005.9,59,59,59\n"
-            + //
-            "0,60,60.0,60,60,60,60,60,60,1006.0,60,60,60\n"
-            + //
-            "0,61,61.0,61,61,61,61,61,61,1006.1,61,61,61\n"
-            + //
-            "0,62,62.0,62,62,62,62,62,62,1006.2,62,62,62\n"
-            + //
-            "0,63,63.0,63,63,63,63,63,63,1006.3,63,63,63\n"
-            + //
-            "0,64,64.0,64,64,64,64,64,64,1006.4,64,64,64\n"
-            + //
-            "0,65,65.0,65,65,65,65,65,65,1006.5,65,65,65\n"
-            + //
-            "0,66,66.0,66,66,66,66,66,66,1006.6,66,66,66\n"
-            + //
-            "0,67,67.0,67,67,67,67,67,67,1006.7,67,67,67\n"
-            + //
-            "0,68,68.0,68,68,68,68,68,68,1006.8,68,68,68\n"
-            + //
-            "0,69,69.0,69,69,69,69,69,69,1006.9,69,69,69\n"
-            + //
-            "0,70,70.0,70,70,70,70,70,70,1007.0,70,70,70\n"
-            + //
-            "0,71,71.0,71,71,71,71,71,71,1007.1,71,71,71\n"
-            + //
-            "0,72,72.0,72,72,72,72,72,72,1007.2,72,72,72\n"
-            + //
-            "0,73,73.0,73,73,73,73,73,73,1007.3,73,73,73\n"
-            + //
-            "0,74,74.0,74,74,74,74,74,74,1007.4,74,74,74\n"
-            + //
-            "0,75,75.0,75,75,75,75,75,75,1007.5,75,75,75\n"
-            + //
-            "0,76,76.0,76,76,76,76,76,76,1007.6,76,76,76\n"
-            + //
-            "0,77,77.0,77,77,77,77,77,77,1007.7,77,77,77\n"
-            + //
-            "0,78,78.0,78,78,78,78,78,78,1007.8,78,78,78\n"
-            + //
-            "0,79,79.0,79,79,79,79,79,79,1007.9,79,79,79\n"
-            + //
-            "0,80,80.0,80,80,80,80,80,80,1008.0,80,80,80\n"
-            + //
-            "0,81,81.0,81,81,81,81,81,81,1008.1,81,81,81\n"
-            + //
-            "0,82,82.0,82,82,82,82,82,82,1008.2,82,82,82\n"
-            + //
-            "0,83,83.0,83,83,83,83,83,83,1008.3,83,83,83\n"
-            + //
-            "0,84,84.0,84,84,84,84,84,84,1008.4,84,84,84\n"
-            + //
-            "0,85,85.0,85,85,85,85,85,85,1008.5,85,85,85\n"
-            + //
-            "0,86,86.0,86,86,86,86,86,86,1008.6,86,86,86\n"
-            + //
-            "0,87,87.0,87,87,87,87,87,87,1008.7,87,87,87\n"
-            + //
-            "0,88,88.0,88,88,88,88,88,88,1008.8,88,88,88\n"
-            + //
-            "0,89,89.0,89,89,89,89,89,89,1008.9,89,89,89\n"
-            + //
-            "0,90,90.0,90,90,90,90,90,90,1009.0,90,90,90\n"
-            + //
-            "0,91,91.0,91,91,91,91,91,91,1009.1,91,91,91\n"
-            + //
-            "0,92,92.0,92,92,92,92,92,92,1009.2,92,92,92\n"
-            + //
-            "0,93,93.0,93,93,93,93,93,93,1009.3,93,93,93\n"
-            + //
-            "0,94,94.0,94,94,94,94,94,94,1009.4,94,94,94\n"
-            + //
-            "0,95,95.0,95,95,95,95,95,95,1009.5,95,95,95\n"
-            + //
-            "0,96,96.0,96,96,96,96,96,96,1009.6,96,96,96\n"
-            + //
-            "0,97,97.0,97,97,97,97,97,97,1009.7,97,97,97\n"
-            + //
-            "0,98,98.0,98,98,98,98,98,98,1009.8,98,98,98\n"
-            + //
-            "0,99,99.0,99,99,99,99,99,99,1009.9,99,99,99\n"
-            + //
-            "0,100,100.0,100,100,100,100,100,100,1010.0,100,100,100\n"
-            + //
-            "0,101,101.0,101,101,101,101,101,101,1010.1,101,101,101\n"
-            + //
-            "0,102,102.0,102,102,102,102,102,102,1010.2,102,102,102\n"
-            + //
-            "0,103,103.0,103,103,103,103,103,103,1010.3,103,103,103\n"
-            + //
-            "0,104,104.0,104,104,104,104,104,104,1010.4,104,104,104\n"
-            + //
-            "0,105,105.0,105,105,105,105,105,105,1010.5,105,105,105\n"
-            + //
-            "0,106,106.0,106,106,106,106,106,106,1010.6,106,106,106\n"
-            + //
-            "0,107,107.0,107,107,107,107,107,107,1010.7,107,107,107\n"
-            + //
-            "0,108,108.0,108,108,108,108,108,108,1010.8,108,108,108\n"
-            + //
-            "0,109,109.0,109,109,109,109,109,109,1010.9,109,109,109\n"
-            + //
-            "0,110,110.0,110,110,110,110,110,110,1011.0,110,110,110\n"
-            + //
-            "0,111,111.0,111,111,111,111,111,111,1011.1,111,111,111\n"
-            + //
-            "0,112,112.0,112,112,112,112,112,112,1011.2,112,112,112\n"
-            + //
-            "0,113,113.0,113,113,113,113,113,113,1011.3,113,113,113\n"
-            + //
-            "0,114,114.0,114,114,114,114,114,114,1011.4,114,114,114\n"
-            + //
-            "0,115,115.0,115,115,115,115,115,115,1011.5,115,115,115\n"
-            + //
-            "0,116,116.0,116,116,116,116,116,116,1011.6,116,116,116\n"
-            + //
-            "0,117,117.0,117,117,117,117,117,117,1011.7,117,117,117\n"
-            + //
-            "0,118,118.0,118,118,118,118,118,118,1011.8,118,118,118\n"
-            + //
-            "0,119,119.0,119,119,119,119,119,119,1011.9,119,119,119\n"
-            + //
-            "0,120,120.0,120,120,120,120,120,120,1012.0,120,120,120\n"
-            + //
-            "0,121,121.0,121,121,121,121,121,121,1012.1,121,121,121\n"
-            + //
-            "0,122,122.0,122,122,122,122,122,122,1012.2,122,122,122\n"
-            + //
-            "0,123,123.0,123,123,123,123,123,123,1012.3,123,123,123\n"
-            + //
-            "0,124,124.0,124,124,124,124,124,124,1012.4,124,124,124\n"
-            + //
-            "0,125,125.0,125,125,125,125,125,125,1012.5,125,125,125\n"
-            + //
-            "0,126,126.0,126,126,126,126,126,126,1012.6,126,126,126\n"
-            + //
-            "0,127,127.0,127,127,127,127,127,127,1012.7,127,127,127\n"
-            + //
-            "0,128,128.0,128,128,128,128,128,128,1012.8,128,128,128\n"
-            + //
-            "0,129,129.0,129,129,129,129,129,129,1012.9,129,129,129\n"
-            + //
-            "0,130,130.0,130,130,130,130,130,130,1013.0,130,130,130\n"
-            + //
-            "0,131,131.0,131,131,131,131,131,131,1013.1,131,131,131\n"
-            + //
-            "0,132,132.0,132,132,132,132,132,132,1013.2,132,132,132\n"
-            + //
-            "0,133,133.0,133,133,133,133,133,133,1013.3,133,133,133\n"
-            + //
-            "0,134,134.0,134,134,134,134,134,134,1013.4,134,134,134\n"
-            + //
-            "0,135,135.0,135,135,135,135,135,135,1013.5,135,135,135\n"
-            + //
-            "0,136,136.0,136,136,136,136,136,136,1013.6,136,136,136\n"
-            + //
-            "0,137,137.0,137,137,137,137,137,137,1013.7,137,137,137\n"
-            + //
-            "0,138,138.0,138,138,138,138,138,138,1013.8,138,138,138\n"
-            + //
-            "0,139,139.0,139,139,139,139,139,139,1013.9,139,139,139\n"
-            + //
-            "0,140,140.0,140,140,140,140,140,140,1014.0,140,140,140\n"
-            + //
-            "0,141,141.0,141,141,141,141,141,141,1014.1,141,141,141\n"
-            + //
-            "0,142,142.0,142,142,142,142,142,142,1014.2,142,142,142\n"
-            + //
-            "0,143,143.0,143,143,143,143,143,143,1014.3,143,143,143\n"
-            + //
-            "0,144,144.0,144,144,144,144,144,144,1014.4,144,144,144\n"
-            + //
-            "0,145,145.0,145,145,145,145,145,145,1014.5,145,145,145\n"
-            + //
-            "0,146,146.0,146,146,146,146,146,146,1014.6,146,146,146\n"
-            + //
-            "0,147,147.0,147,147,147,147,147,147,1014.7,147,147,147\n"
-            + //
-            "0,148,148.0,148,148,148,148,148,148,1014.8,148,148,148\n"
-            + //
-            "0,149,149.0,149,149,149,149,149,149,1014.9,149,149,149\n"
-            + //
-            "0,150,150.0,150,150,150,150,150,150,1015.0,150,150,150\n"
-            + //
-            "0,151,151.0,151,151,151,151,151,151,1015.1,151,151,151\n"
-            + //
-            "0,152,152.0,152,152,152,152,152,152,1015.2,152,152,152\n"
-            + //
-            "0,153,153.0,153,153,153,153,153,153,1015.3,153,153,153\n"
-            + //
-            "0,154,154.0,154,154,154,154,154,154,1015.4,154,154,154\n"
-            + //
-            "0,155,155.0,155,155,155,155,155,155,1015.5,155,155,155\n"
-            + //
-            "0,156,156.0,156,156,156,156,156,156,1015.6,156,156,156\n"
-            + //
-            "0,157,157.0,157,157,157,157,157,157,1015.7,157,157,157\n"
-            + //
-            "0,158,158.0,158,158,158,158,158,158,1015.8,158,158,158\n"
-            + //
-            "0,159,159.0,159,159,159,159,159,159,1015.9,159,159,159\n"
-            + //
-            "0,160,160.0,160,160,160,160,160,160,1016.0,160,160,160\n"
-            + //
-            "0,161,161.0,161,161,161,161,161,161,1016.1,161,161,161\n"
-            + //
-            "0,162,162.0,162,162,162,162,162,162,1016.2,162,162,162\n"
-            + //
-            "0,163,163.0,163,163,163,163,163,163,1016.3,163,163,163\n"
-            + //
-            "0,164,164.0,164,164,164,164,164,164,1016.4,164,164,164\n"
-            + //
-            "0,165,165.0,165,165,165,165,165,165,1016.5,165,165,165\n"
-            + //
-            "0,166,166.0,166,166,166,166,166,166,1016.6,166,166,166\n"
-            + //
-            "0,167,167.0,167,167,167,167,167,167,1016.7,167,167,167\n"
-            + //
-            "0,168,168.0,168,168,168,168,168,168,1016.8,168,168,168\n"
-            + //
-            "0,169,169.0,169,169,169,169,169,169,1016.9,169,169,169\n"
-            + //
-            "0,170,170.0,170,170,170,170,170,170,1017.0,170,170,170\n"
-            + //
-            "0,171,171.0,171,171,171,171,171,171,1017.1,171,171,171\n"
-            + //
-            "0,172,172.0,172,172,172,172,172,172,1017.2,172,172,172\n"
-            + //
-            "0,173,173.0,173,173,173,173,173,173,1017.3,173,173,173\n"
-            + //
-            "0,174,174.0,174,174,174,174,174,174,1017.4,174,174,174\n"
-            + //
-            "0,175,175.0,175,175,175,175,175,175,1017.5,175,175,175\n"
-            + //
-            "0,176,176.0,176,176,176,176,176,176,1017.6,176,176,176\n"
-            + //
-            "0,177,177.0,177,177,177,177,177,177,1017.7,177,177,177\n"
-            + //
-            "0,178,178.0,178,178,178,178,178,178,1017.8,178,178,178\n"
-            + //
-            "0,179,179.0,179,179,179,179,179,179,1017.9,179,179,179\n"
-            + //
-            "0,180,180.0,180,180,180,180,180,180,1018.0,180,180,180\n"
-            + //
-            "0,181,181.0,181,181,181,181,181,181,1018.1,181,181,181\n"
-            + //
-            "0,182,182.0,182,182,182,182,182,182,1018.2,182,182,182\n"
-            + //
-            "0,183,183.0,183,183,183,183,183,183,1018.3,183,183,183\n"
-            + //
-            "0,184,184.0,184,184,184,184,184,184,1018.4,184,184,184\n"
-            + //
-            "0,185,185.0,185,185,185,185,185,185,1018.5,185,185,185\n"
-            + //
-            "0,186,186.0,186,186,186,186,186,186,1018.6,186,186,186\n"
-            + //
-            "0,187,187.0,187,187,187,187,187,187,1018.7,187,187,187\n"
-            + //
-            "0,188,188.0,188,188,188,188,188,188,1018.8,188,188,188\n"
-            + //
-            "0,189,189.0,189,189,189,189,189,189,1018.9,189,189,189\n"
-            + //
-            "0,190,190.0,190,190,190,190,190,190,1019.0,190,190,190\n"
-            + //
-            "0,191,191.0,191,191,191,191,191,191,1019.1,191,191,191\n"
-            + //
-            "0,192,192.0,192,192,192,192,192,192,1019.2,192,192,192\n"
-            + //
-            "0,193,193.0,193,193,193,193,193,193,1019.3,193,193,193\n"
-            + //
-            "0,194,194.0,194,194,194,194,194,194,1019.4,194,194,194\n"
-            + //
-            "0,195,195.0,195,195,195,195,195,195,1019.5,195,195,195\n"
-            + //
-            "0,196,196.0,196,196,196,196,196,196,1019.6,196,196,196\n"
-            + //
-            "0,197,197.0,197,197,197,197,197,197,1019.7,197,197,197\n"
-            + //
-            "0,198,198.0,198,198,198,198,198,198,1019.8,198,198,198\n"
-            + //
-            "0,199,199.0,199,199,199,199,199,199,1019.9,199,199,199\n";
+            + "count,count,,,,,,,,,,,\n"
+            + "0,0,0.0,0,0,0,0,0,0,1000.0,0,0,0\n"
+            + "0,1,1.0,1,1,1,1,1,1,1000.1,1,1,1\n"
+            + "0,2,2.0,2,2,2,2,2,2,1000.2,2,2,2\n"
+            + "0,3,3.0,3,3,3,3,3,3,1000.3,3,3,3\n"
+            + "0,4,4.0,4,4,4,4,4,4,1000.4,4,4,4\n"
+            + "0,5,5.0,5,5,5,5,5,5,1000.5,5,5,5\n"
+            + "0,6,6.0,6,6,6,6,6,6,1000.6,6,6,6\n"
+            + "0,7,7.0,7,7,7,7,7,7,1000.7,7,7,7\n"
+            + "0,8,8.0,8,8,8,8,8,8,1000.8,8,8,8\n"
+            + "0,9,9.0,9,9,9,9,9,9,1000.9,9,9,9\n"
+            + "0,10,10.0,10,10,10,10,10,10,1001.0,10,10,10\n"
+            + "0,11,11.0,11,11,11,11,11,11,1001.1,11,11,11\n"
+            + "0,12,12.0,12,12,12,12,12,12,1001.2,12,12,12\n"
+            + "0,13,13.0,13,13,13,13,13,13,1001.3,13,13,13\n"
+            + "0,14,14.0,14,14,14,14,14,14,1001.4,14,14,14\n"
+            + "0,15,15.0,15,15,15,15,15,15,1001.5,15,15,15\n"
+            + "0,16,16.0,16,16,16,16,16,16,1001.6,16,16,16\n"
+            + "0,17,17.0,17,17,17,17,17,17,1001.7,17,17,17\n"
+            + "0,18,18.0,18,18,18,18,18,18,1001.8,18,18,18\n"
+            + "0,19,19.0,19,19,19,19,19,19,1001.9,19,19,19\n"
+            + "0,20,20.0,20,20,20,20,20,20,1002.0,20,20,20\n"
+            + "0,21,21.0,21,21,21,21,21,21,1002.1,21,21,21\n"
+            + "0,22,22.0,22,22,22,22,22,22,1002.2,22,22,22\n"
+            + "0,23,23.0,23,23,23,23,23,23,1002.3,23,23,23\n"
+            + "0,24,24.0,24,24,24,24,24,24,1002.4,24,24,24\n"
+            + "0,25,25.0,25,25,25,25,25,25,1002.5,25,25,25\n"
+            + "0,26,26.0,26,26,26,26,26,26,1002.6,26,26,26\n"
+            + "0,27,27.0,27,27,27,27,27,27,1002.7,27,27,27\n"
+            + "0,28,28.0,28,28,28,28,28,28,1002.8,28,28,28\n"
+            + "0,29,29.0,29,29,29,29,29,29,1002.9,29,29,29\n"
+            + "0,30,30.0,30,30,30,30,30,30,1003.0,30,30,30\n"
+            + "0,31,31.0,31,31,31,31,31,31,1003.1,31,31,31\n"
+            + "0,32,32.0,32,32,32,32,32,32,1003.2,32,32,32\n"
+            + "0,33,33.0,33,33,33,33,33,33,1003.3,33,33,33\n"
+            + "0,34,34.0,34,34,34,34,34,34,1003.4,34,34,34\n"
+            + "0,35,35.0,35,35,35,35,35,35,1003.5,35,35,35\n"
+            + "0,36,36.0,36,36,36,36,36,36,1003.6,36,36,36\n"
+            + "0,37,37.0,37,37,37,37,37,37,1003.7,37,37,37\n"
+            + "0,38,38.0,38,38,38,38,38,38,1003.8,38,38,38\n"
+            + "0,39,39.0,39,39,39,39,39,39,1003.9,39,39,39\n"
+            + "0,40,40.0,40,40,40,40,40,40,1004.0,40,40,40\n"
+            + "0,41,41.0,41,41,41,41,41,41,1004.1,41,41,41\n"
+            + "0,42,42.0,42,42,42,42,42,42,1004.2,42,42,42\n"
+            + "0,43,43.0,43,43,43,43,43,43,1004.3,43,43,43\n"
+            + "0,44,44.0,44,44,44,44,44,44,1004.4,44,44,44\n"
+            + "0,45,45.0,45,45,45,45,45,45,1004.5,45,45,45\n"
+            + "0,46,46.0,46,46,46,46,46,46,1004.6,46,46,46\n"
+            + "0,47,47.0,47,47,47,47,47,47,1004.7,47,47,47\n"
+            + "0,48,48.0,48,48,48,48,48,48,1004.8,48,48,48\n"
+            + "0,49,49.0,49,49,49,49,49,49,1004.9,49,49,49\n"
+            + "0,50,50.0,50,50,50,50,50,50,1005.0,50,50,50\n"
+            + "0,51,51.0,51,51,51,51,51,51,1005.1,51,51,51\n"
+            + "0,52,52.0,52,52,52,52,52,52,1005.2,52,52,52\n"
+            + "0,53,53.0,53,53,53,53,53,53,1005.3,53,53,53\n"
+            + "0,54,54.0,54,54,54,54,54,54,1005.4,54,54,54\n"
+            + "0,55,55.0,55,55,55,55,55,55,1005.5,55,55,55\n"
+            + "0,56,56.0,56,56,56,56,56,56,1005.6,56,56,56\n"
+            + "0,57,57.0,57,57,57,57,57,57,1005.7,57,57,57\n"
+            + "0,58,58.0,58,58,58,58,58,58,1005.8,58,58,58\n"
+            + "0,59,59.0,59,59,59,59,59,59,1005.9,59,59,59\n"
+            + "0,60,60.0,60,60,60,60,60,60,1006.0,60,60,60\n"
+            + "0,61,61.0,61,61,61,61,61,61,1006.1,61,61,61\n"
+            + "0,62,62.0,62,62,62,62,62,62,1006.2,62,62,62\n"
+            + "0,63,63.0,63,63,63,63,63,63,1006.3,63,63,63\n"
+            + "0,64,64.0,64,64,64,64,64,64,1006.4,64,64,64\n"
+            + "0,65,65.0,65,65,65,65,65,65,1006.5,65,65,65\n"
+            + "0,66,66.0,66,66,66,66,66,66,1006.6,66,66,66\n"
+            + "0,67,67.0,67,67,67,67,67,67,1006.7,67,67,67\n"
+            + "0,68,68.0,68,68,68,68,68,68,1006.8,68,68,68\n"
+            + "0,69,69.0,69,69,69,69,69,69,1006.9,69,69,69\n"
+            + "0,70,70.0,70,70,70,70,70,70,1007.0,70,70,70\n"
+            + "0,71,71.0,71,71,71,71,71,71,1007.1,71,71,71\n"
+            + "0,72,72.0,72,72,72,72,72,72,1007.2,72,72,72\n"
+            + "0,73,73.0,73,73,73,73,73,73,1007.3,73,73,73\n"
+            + "0,74,74.0,74,74,74,74,74,74,1007.4,74,74,74\n"
+            + "0,75,75.0,75,75,75,75,75,75,1007.5,75,75,75\n"
+            + "0,76,76.0,76,76,76,76,76,76,1007.6,76,76,76\n"
+            + "0,77,77.0,77,77,77,77,77,77,1007.7,77,77,77\n"
+            + "0,78,78.0,78,78,78,78,78,78,1007.8,78,78,78\n"
+            + "0,79,79.0,79,79,79,79,79,79,1007.9,79,79,79\n"
+            + "0,80,80.0,80,80,80,80,80,80,1008.0,80,80,80\n"
+            + "0,81,81.0,81,81,81,81,81,81,1008.1,81,81,81\n"
+            + "0,82,82.0,82,82,82,82,82,82,1008.2,82,82,82\n"
+            + "0,83,83.0,83,83,83,83,83,83,1008.3,83,83,83\n"
+            + "0,84,84.0,84,84,84,84,84,84,1008.4,84,84,84\n"
+            + "0,85,85.0,85,85,85,85,85,85,1008.5,85,85,85\n"
+            + "0,86,86.0,86,86,86,86,86,86,1008.6,86,86,86\n"
+            + "0,87,87.0,87,87,87,87,87,87,1008.7,87,87,87\n"
+            + "0,88,88.0,88,88,88,88,88,88,1008.8,88,88,88\n"
+            + "0,89,89.0,89,89,89,89,89,89,1008.9,89,89,89\n"
+            + "0,90,90.0,90,90,90,90,90,90,1009.0,90,90,90\n"
+            + "0,91,91.0,91,91,91,91,91,91,1009.1,91,91,91\n"
+            + "0,92,92.0,92,92,92,92,92,92,1009.2,92,92,92\n"
+            + "0,93,93.0,93,93,93,93,93,93,1009.3,93,93,93\n"
+            + "0,94,94.0,94,94,94,94,94,94,1009.4,94,94,94\n"
+            + "0,95,95.0,95,95,95,95,95,95,1009.5,95,95,95\n"
+            + "0,96,96.0,96,96,96,96,96,96,1009.6,96,96,96\n"
+            + "0,97,97.0,97,97,97,97,97,97,1009.7,97,97,97\n"
+            + "0,98,98.0,98,98,98,98,98,98,1009.8,98,98,98\n"
+            + "0,99,99.0,99,99,99,99,99,99,1009.9,99,99,99\n"
+            + "0,100,100.0,100,100,100,100,100,100,1010.0,100,100,100\n"
+            + "0,101,101.0,101,101,101,101,101,101,1010.1,101,101,101\n"
+            + "0,102,102.0,102,102,102,102,102,102,1010.2,102,102,102\n"
+            + "0,103,103.0,103,103,103,103,103,103,1010.3,103,103,103\n"
+            + "0,104,104.0,104,104,104,104,104,104,1010.4,104,104,104\n"
+            + "0,105,105.0,105,105,105,105,105,105,1010.5,105,105,105\n"
+            + "0,106,106.0,106,106,106,106,106,106,1010.6,106,106,106\n"
+            + "0,107,107.0,107,107,107,107,107,107,1010.7,107,107,107\n"
+            + "0,108,108.0,108,108,108,108,108,108,1010.8,108,108,108\n"
+            + "0,109,109.0,109,109,109,109,109,109,1010.9,109,109,109\n"
+            + "0,110,110.0,110,110,110,110,110,110,1011.0,110,110,110\n"
+            + "0,111,111.0,111,111,111,111,111,111,1011.1,111,111,111\n"
+            + "0,112,112.0,112,112,112,112,112,112,1011.2,112,112,112\n"
+            + "0,113,113.0,113,113,113,113,113,113,1011.3,113,113,113\n"
+            + "0,114,114.0,114,114,114,114,114,114,1011.4,114,114,114\n"
+            + "0,115,115.0,115,115,115,115,115,115,1011.5,115,115,115\n"
+            + "0,116,116.0,116,116,116,116,116,116,1011.6,116,116,116\n"
+            + "0,117,117.0,117,117,117,117,117,117,1011.7,117,117,117\n"
+            + "0,118,118.0,118,118,118,118,118,118,1011.8,118,118,118\n"
+            + "0,119,119.0,119,119,119,119,119,119,1011.9,119,119,119\n"
+            + "0,120,120.0,120,120,120,120,120,120,1012.0,120,120,120\n"
+            + "0,121,121.0,121,121,121,121,121,121,1012.1,121,121,121\n"
+            + "0,122,122.0,122,122,122,122,122,122,1012.2,122,122,122\n"
+            + "0,123,123.0,123,123,123,123,123,123,1012.3,123,123,123\n"
+            + "0,124,124.0,124,124,124,124,124,124,1012.4,124,124,124\n"
+            + "0,125,125.0,125,125,125,125,125,125,1012.5,125,125,125\n"
+            + "0,126,126.0,126,126,126,126,126,126,1012.6,126,126,126\n"
+            + "0,127,127.0,127,127,127,127,127,127,1012.7,127,127,127\n"
+            + "0,128,128.0,128,128,128,128,128,128,1012.8,128,128,128\n"
+            + "0,129,129.0,129,129,129,129,129,129,1012.9,129,129,129\n"
+            + "0,130,130.0,130,130,130,130,130,130,1013.0,130,130,130\n"
+            + "0,131,131.0,131,131,131,131,131,131,1013.1,131,131,131\n"
+            + "0,132,132.0,132,132,132,132,132,132,1013.2,132,132,132\n"
+            + "0,133,133.0,133,133,133,133,133,133,1013.3,133,133,133\n"
+            + "0,134,134.0,134,134,134,134,134,134,1013.4,134,134,134\n"
+            + "0,135,135.0,135,135,135,135,135,135,1013.5,135,135,135\n"
+            + "0,136,136.0,136,136,136,136,136,136,1013.6,136,136,136\n"
+            + "0,137,137.0,137,137,137,137,137,137,1013.7,137,137,137\n"
+            + "0,138,138.0,138,138,138,138,138,138,1013.8,138,138,138\n"
+            + "0,139,139.0,139,139,139,139,139,139,1013.9,139,139,139\n"
+            + "0,140,140.0,140,140,140,140,140,140,1014.0,140,140,140\n"
+            + "0,141,141.0,141,141,141,141,141,141,1014.1,141,141,141\n"
+            + "0,142,142.0,142,142,142,142,142,142,1014.2,142,142,142\n"
+            + "0,143,143.0,143,143,143,143,143,143,1014.3,143,143,143\n"
+            + "0,144,144.0,144,144,144,144,144,144,1014.4,144,144,144\n"
+            + "0,145,145.0,145,145,145,145,145,145,1014.5,145,145,145\n"
+            + "0,146,146.0,146,146,146,146,146,146,1014.6,146,146,146\n"
+            + "0,147,147.0,147,147,147,147,147,147,1014.7,147,147,147\n"
+            + "0,148,148.0,148,148,148,148,148,148,1014.8,148,148,148\n"
+            + "0,149,149.0,149,149,149,149,149,149,1014.9,149,149,149\n"
+            + "0,150,150.0,150,150,150,150,150,150,1015.0,150,150,150\n"
+            + "0,151,151.0,151,151,151,151,151,151,1015.1,151,151,151\n"
+            + "0,152,152.0,152,152,152,152,152,152,1015.2,152,152,152\n"
+            + "0,153,153.0,153,153,153,153,153,153,1015.3,153,153,153\n"
+            + "0,154,154.0,154,154,154,154,154,154,1015.4,154,154,154\n"
+            + "0,155,155.0,155,155,155,155,155,155,1015.5,155,155,155\n"
+            + "0,156,156.0,156,156,156,156,156,156,1015.6,156,156,156\n"
+            + "0,157,157.0,157,157,157,157,157,157,1015.7,157,157,157\n"
+            + "0,158,158.0,158,158,158,158,158,158,1015.8,158,158,158\n"
+            + "0,159,159.0,159,159,159,159,159,159,1015.9,159,159,159\n"
+            + "0,160,160.0,160,160,160,160,160,160,1016.0,160,160,160\n"
+            + "0,161,161.0,161,161,161,161,161,161,1016.1,161,161,161\n"
+            + "0,162,162.0,162,162,162,162,162,162,1016.2,162,162,162\n"
+            + "0,163,163.0,163,163,163,163,163,163,1016.3,163,163,163\n"
+            + "0,164,164.0,164,164,164,164,164,164,1016.4,164,164,164\n"
+            + "0,165,165.0,165,165,165,165,165,165,1016.5,165,165,165\n"
+            + "0,166,166.0,166,166,166,166,166,166,1016.6,166,166,166\n"
+            + "0,167,167.0,167,167,167,167,167,167,1016.7,167,167,167\n"
+            + "0,168,168.0,168,168,168,168,168,168,1016.8,168,168,168\n"
+            + "0,169,169.0,169,169,169,169,169,169,1016.9,169,169,169\n"
+            + "0,170,170.0,170,170,170,170,170,170,1017.0,170,170,170\n"
+            + "0,171,171.0,171,171,171,171,171,171,1017.1,171,171,171\n"
+            + "0,172,172.0,172,172,172,172,172,172,1017.2,172,172,172\n"
+            + "0,173,173.0,173,173,173,173,173,173,1017.3,173,173,173\n"
+            + "0,174,174.0,174,174,174,174,174,174,1017.4,174,174,174\n"
+            + "0,175,175.0,175,175,175,175,175,175,1017.5,175,175,175\n"
+            + "0,176,176.0,176,176,176,176,176,176,1017.6,176,176,176\n"
+            + "0,177,177.0,177,177,177,177,177,177,1017.7,177,177,177\n"
+            + "0,178,178.0,178,178,178,178,178,178,1017.8,178,178,178\n"
+            + "0,179,179.0,179,179,179,179,179,179,1017.9,179,179,179\n"
+            + "0,180,180.0,180,180,180,180,180,180,1018.0,180,180,180\n"
+            + "0,181,181.0,181,181,181,181,181,181,1018.1,181,181,181\n"
+            + "0,182,182.0,182,182,182,182,182,182,1018.2,182,182,182\n"
+            + "0,183,183.0,183,183,183,183,183,183,1018.3,183,183,183\n"
+            + "0,184,184.0,184,184,184,184,184,184,1018.4,184,184,184\n"
+            + "0,185,185.0,185,185,185,185,185,185,1018.5,185,185,185\n"
+            + "0,186,186.0,186,186,186,186,186,186,1018.6,186,186,186\n"
+            + "0,187,187.0,187,187,187,187,187,187,1018.7,187,187,187\n"
+            + "0,188,188.0,188,188,188,188,188,188,1018.8,188,188,188\n"
+            + "0,189,189.0,189,189,189,189,189,189,1018.9,189,189,189\n"
+            + "0,190,190.0,190,190,190,190,190,190,1019.0,190,190,190\n"
+            + "0,191,191.0,191,191,191,191,191,191,1019.1,191,191,191\n"
+            + "0,192,192.0,192,192,192,192,192,192,1019.2,192,192,192\n"
+            + "0,193,193.0,193,193,193,193,193,193,1019.3,193,193,193\n"
+            + "0,194,194.0,194,194,194,194,194,194,1019.4,194,194,194\n"
+            + "0,195,195.0,195,195,195,195,195,195,1019.5,195,195,195\n"
+            + "0,196,196.0,196,196,196,196,196,196,1019.6,196,196,196\n"
+            + "0,197,197.0,197,197,197,197,197,197,1019.7,197,197,197\n"
+            + "0,198,198.0,198,198,198,198,198,198,1019.8,198,198,198\n"
+            + "0,199,199.0,199,199,199,199,199,199,1019.9,199,199,199\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
@@ -23876,7 +23545,7 @@ class EDDGridFromNcFilesTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testBufrTemp() throws Throwable {
     // String2.log("\n****************** EDDGridFromNcFiles.testBufrTemp()
     // *****************\n");
@@ -23894,5 +23563,1736 @@ class EDDGridFromNcFilesTests {
     // 2021-12-14: "Unable to open file or file not .nc-compatible."
     expected = "zztop";
     Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagSlowTests
+  void testAwsPublicBucket() throws Throwable {
+    EDD eddGrid = EDDTestDataset.getpublicAWSGridFromFiles();
+    String tDir = EDStatic.config.fullTestCacheDirectory;
+    String fName = "publicAwsTest";
+    String userDapQuery = "radiance[(2019-01-01T00:48:37Z):(2019-01-01T00:53:37Z)][0:1:5][60:1:65]";
+    String tName = eddGrid.makeNewFileForDapQuery(0, null, null, userDapQuery, tDir, fName, ".csv");
+    String results = File2.directReadFrom88591File(tDir + tName);
+    String expected =
+"""
+time,y,x,radiance
+UTC,rad,rad,W m-2 sr-1 um-1
+2019-01-01T00:48:37Z,0.128226,-0.068306,86.94614
+2019-01-01T00:48:37Z,0.128226,-0.068278,84.50982
+2019-01-01T00:48:37Z,0.128226,-0.06825,86.13403
+2019-01-01T00:48:37Z,0.128226,-0.068222,86.13403
+2019-01-01T00:48:37Z,0.128226,-0.068194,83.697716
+2019-01-01T00:48:37Z,0.128226,-0.068166,102.37616
+2019-01-01T00:48:37Z,0.128198,-0.068306,99.12774
+2019-01-01T00:48:37Z,0.128198,-0.068278,110.49722
+2019-01-01T00:48:37Z,0.128198,-0.06825,104.81248
+2019-01-01T00:48:37Z,0.128198,-0.068222,91.81878
+2019-01-01T00:48:37Z,0.128198,-0.068194,86.94614
+2019-01-01T00:48:37Z,0.128198,-0.068166,111.30933
+2019-01-01T00:48:37Z,0.12817,-0.068306,111.30933
+2019-01-01T00:48:37Z,0.12817,-0.068278,97.503525
+2019-01-01T00:48:37Z,0.12817,-0.06825,87.75825
+2019-01-01T00:48:37Z,0.12817,-0.068222,89.38246
+2019-01-01T00:48:37Z,0.12817,-0.068194,91.00667
+2019-01-01T00:48:37Z,0.12817,-0.068166,97.503525
+2019-01-01T00:48:37Z,0.128142,-0.068306,86.13403
+2019-01-01T00:48:37Z,0.128142,-0.068278,86.13403
+2019-01-01T00:48:37Z,0.128142,-0.06825,85.32193
+2019-01-01T00:48:37Z,0.128142,-0.068222,86.94614
+2019-01-01T00:48:37Z,0.128142,-0.068194,88.57035
+2019-01-01T00:48:37Z,0.128142,-0.068166,83.697716
+2019-01-01T00:48:37Z,0.128114,-0.068306,82.885605
+2019-01-01T00:48:37Z,0.128114,-0.068278,82.0735
+2019-01-01T00:48:37Z,0.128114,-0.06825,82.0735
+2019-01-01T00:48:37Z,0.128114,-0.068222,82.885605
+2019-01-01T00:48:37Z,0.128114,-0.068194,84.50982
+2019-01-01T00:48:37Z,0.128114,-0.068166,83.697716
+2019-01-01T00:48:37Z,0.128086,-0.068306,82.0735
+2019-01-01T00:48:37Z,0.128086,-0.068278,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.06825,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.068222,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.068194,82.885605
+2019-01-01T00:48:37Z,0.128086,-0.068166,82.885605
+2019-01-01T00:53:37Z,0.128226,-0.068306,89.38246
+2019-01-01T00:53:37Z,0.128226,-0.068278,86.13403
+2019-01-01T00:53:37Z,0.128226,-0.06825,91.81878
+2019-01-01T00:53:37Z,0.128226,-0.068222,86.94614
+2019-01-01T00:53:37Z,0.128226,-0.068194,95.87931
+2019-01-01T00:53:37Z,0.128226,-0.068166,106.43669
+2019-01-01T00:53:37Z,0.128198,-0.068306,87.75825
+2019-01-01T00:53:37Z,0.128198,-0.068278,86.94614
+2019-01-01T00:53:37Z,0.128198,-0.06825,86.13403
+2019-01-01T00:53:37Z,0.128198,-0.068222,82.885605
+2019-01-01T00:53:37Z,0.128198,-0.068194,114.557755
+2019-01-01T00:53:37Z,0.128198,-0.068166,115.369865
+2019-01-01T00:53:37Z,0.12817,-0.068306,112.93355
+2019-01-01T00:53:37Z,0.12817,-0.068278,96.691414
+2019-01-01T00:53:37Z,0.12817,-0.06825,83.697716
+2019-01-01T00:53:37Z,0.12817,-0.068222,96.691414
+2019-01-01T00:53:37Z,0.12817,-0.068194,112.12144
+2019-01-01T00:53:37Z,0.12817,-0.068166,93.44299
+2019-01-01T00:53:37Z,0.128142,-0.068306,88.57035
+2019-01-01T00:53:37Z,0.128142,-0.068278,84.50982
+2019-01-01T00:53:37Z,0.128142,-0.06825,87.75825
+2019-01-01T00:53:37Z,0.128142,-0.068222,93.44299
+2019-01-01T00:53:37Z,0.128142,-0.068194,95.06721
+2019-01-01T00:53:37Z,0.128142,-0.068166,82.0735
+2019-01-01T00:53:37Z,0.128114,-0.068306,84.50982
+2019-01-01T00:53:37Z,0.128114,-0.068278,82.0735
+2019-01-01T00:53:37Z,0.128114,-0.06825,88.57035
+2019-01-01T00:53:37Z,0.128114,-0.068222,86.94614
+2019-01-01T00:53:37Z,0.128114,-0.068194,82.0735
+2019-01-01T00:53:37Z,0.128114,-0.068166,82.885605
+2019-01-01T00:53:37Z,0.128086,-0.068306,83.697716
+2019-01-01T00:53:37Z,0.128086,-0.068278,81.2614
+2019-01-01T00:53:37Z,0.128086,-0.06825,82.885605
+2019-01-01T00:53:37Z,0.128086,-0.068222,85.32193
+2019-01-01T00:53:37Z,0.128086,-0.068194,82.0735
+2019-01-01T00:53:37Z,0.128086,-0.068166,82.0735
+""";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+  }
+
+  /**
+   * This tests reading NetCDF .nc files with variables with varying dimensions.
+   *
+   * @throws Throwable if trouble
+   */
+  @org.junit.jupiter.api.Test
+  void testNcMultidimGrid() throws Throwable {
+    String tName, results, expected, userDapQuery;
+    int language = 0;
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getGrid_NC_1D_2D();
+
+    // *** test getting dds for entire dataset
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_Entire",
+            ".dds");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+Dataset {
+  Float64 depth[depth = 110];
+  Float64 time[time = 1017];
+  GRID {
+    ARRAY:
+      Float64 heading[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } heading;
+  GRID {
+    ARRAY:
+      Float64 pitch[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } pitch;
+  GRID {
+    ARRAY:
+      Float64 roll[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } roll;
+  GRID {
+    ARRAY:
+      Float64 waypoint_latitude[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } waypoint_latitude;
+  GRID {
+    ARRAY:
+      Float64 waypoint_longitude[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } waypoint_longitude;
+  GRID {
+    ARRAY:
+      Float64 conductivity[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } conductivity;
+  GRID {
+    ARRAY:
+      Float64 temperature[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } temperature;
+  GRID {
+    ARRAY:
+      Float64 pressure[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } pressure;
+  GRID {
+    ARRAY:
+      Float64 chlorophyll[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } chlorophyll;
+  GRID {
+    ARRAY:
+      Float64 cdom[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } cdom;
+  GRID {
+    ARRAY:
+      Float64 backscatter_700[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } backscatter_700;
+  GRID {
+    ARRAY:
+      Float64 distance_over_ground[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } distance_over_ground;
+  GRID {
+    ARRAY:
+      Float64 salinity[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } salinity;
+  GRID {
+    ARRAY:
+      Float64 potential_density[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } potential_density;
+  GRID {
+    ARRAY:
+      Float64 density[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } density;
+  GRID {
+    ARRAY:
+      Float64 potential_temperature[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } potential_temperature;
+  GRID {
+    ARRAY:
+      Float64 profile_index[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } profile_index;
+  GRID {
+    ARRAY:
+      Float64 profile_direction[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } profile_direction;
+  GRID {
+    ARRAY:
+      Float64 profile[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } profile;
+  GRID {
+    ARRAY:
+      Float64 longitude[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } longitude;
+  GRID {
+    ARRAY:
+      Float64 latitude[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } latitude;
+  GRID {
+    ARRAY:
+      Float64 profile_time_start[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } profile_time_start;
+  GRID {
+    ARRAY:
+      Float64 profile_time_end[depth = 110][time = 1017];
+    MAPS:
+      Float64 depth[depth = 110];
+      Float64 time[time = 1017];
+  } profile_time_end;
+} Grid_NC_1D_2D;
+""";
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    userDapQuery =
+        "depth%5B(5.0):1:(1095)%5D,time%5B(2025-09-25T20:56:41Z):1:(2025-11-27T23:54:18Z)%5D";
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            userDapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_Data1",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+depth,time
+m,UTC
+5.0,2025-09-25T20:56:41Z
+15.0,2025-09-25T21:09:47Z
+25.0,2025-09-25T21:14:51Z
+35.0,2025-09-25T21:24:48Z
+45.0,2025-09-25T21:32:56Z
+55.0,2025-09-25T21:44:34Z
+65.0,2025-09-25T21:55:22Z
+75.0,2025-09-25T22:14:50Z
+85.0,2025-09-25T22:22:58Z
+95.0,2025-09-25T22:30:05Z
+105.0,2025-09-25T22:36:11Z
+115.0,2025-09-25T22:42:17Z
+125.0,2025-09-25T22:48:23Z
+135.0,2025-09-25T22:54:29Z
+145.0,2025-09-25T23:00:35Z
+155.0,2025-09-25T23:07:42Z
+165.0,2025-09-25T23:14:49Z
+175.0,2025-09-25T23:20:55Z
+185.0,2025-09-25T23:27:01Z
+195.0,2025-09-25T23:33:07Z
+205.0,2025-09-25T23:39:13Z
+215.0,2025-09-25T23:45:19Z
+225.0,2025-09-25T23:52:26Z
+235.0,2025-09-25T23:59:33Z
+245.0,2025-09-26T00:06:40Z
+255.0,2025-09-26T00:13:47Z
+265.0,2025-09-26T00:20:54Z
+275.0,2025-09-26T00:30:01Z
+285.0,2025-09-26T00:38:09Z
+295.0,2025-09-26T00:45:16Z
+305.0,2025-09-26T00:53:24Z
+315.0,2025-09-26T01:01:32Z
+325.0,2025-09-26T01:08:39Z
+335.0,2025-09-26T01:15:46Z
+345.0,2025-09-26T01:23:54Z
+355.0,2025-09-26T01:32:02Z
+365.0,2025-09-26T01:40:10Z
+375.0,2025-09-26T01:48:18Z
+385.0,2025-09-26T01:56:26Z
+395.0,2025-09-26T02:03:33Z
+405.0,2025-09-26T02:10:40Z
+415.0,2025-09-26T02:18:48Z
+425.0,2025-09-26T02:26:56Z
+435.0,2025-09-26T02:35:04Z
+445.0,2025-09-26T02:43:11Z
+455.0,2025-09-26T02:51:19Z
+465.0,2025-09-26T03:01:29Z
+475.0,2025-09-26T03:12:39Z
+485.0,2025-09-26T03:21:48Z
+495.0,2025-09-26T03:30:57Z
+505.0,2025-09-26T03:40:06Z
+515.0,2025-09-26T03:48:14Z
+525.0,2025-09-26T03:56:22Z
+535.0,2025-09-26T04:04:30Z
+545.0,2025-09-26T04:13:39Z
+555.0,2025-09-26T04:22:48Z
+565.0,2025-09-26T04:30:56Z
+575.0,2025-09-26T04:40:05Z
+585.0,2025-09-26T04:49:14Z
+595.0,2025-09-26T04:58:23Z
+605.0,2025-09-26T05:07:32Z
+615.0,2025-09-26T05:16:41Z
+625.0,2025-09-26T05:25:50Z
+635.0,2025-09-26T05:34:59Z
+645.0,2025-09-26T05:45:09Z
+655.0,2025-09-26T05:54:18Z
+665.0,2025-09-26T06:05:29Z
+675.0,2025-09-26T06:17:40Z
+685.0,2025-09-26T06:27:50Z
+695.0,2025-09-26T06:36:59Z
+705.0,2025-09-26T06:46:08Z
+715.0,2025-09-26T06:56:18Z
+725.0,2025-09-26T07:06:28Z
+735.0,2025-09-26T07:16:38Z
+745.0,2025-09-26T07:26:48Z
+755.0,2025-09-26T07:36:58Z
+765.0,2025-09-26T07:47:08Z
+775.0,2025-09-26T07:57:18Z
+785.0,2025-09-26T08:07:28Z
+795.0,2025-09-26T08:17:38Z
+805.0,2025-09-26T08:27:48Z
+815.0,2025-09-26T08:37:58Z
+825.0,2025-09-26T08:48:07Z
+835.0,2025-09-26T08:58:17Z
+845.0,2025-09-26T09:08:27Z
+855.0,2025-09-26T09:19:38Z
+865.0,2025-09-26T09:32:51Z
+875.0,2025-09-26T09:46:04Z
+885.0,2025-09-26T09:57:15Z
+895.0,2025-09-26T10:08:26Z
+905.0,2025-09-26T10:19:37Z
+915.0,2025-09-26T10:30:48Z
+925.0,2025-09-26T10:41:59Z
+935.0,2025-09-26T10:53:10Z
+945.0,2025-09-26T11:05:22Z
+955.0,2025-09-26T11:16:33Z
+965.0,2025-09-26T11:27:44Z
+975.0,2025-09-26T11:38:55Z
+985.0,2025-09-26T11:50:06Z
+995.0,2025-09-26T12:02:18Z
+1005.0,2025-09-26T12:13:29Z
+1015.0,2025-09-26T12:24:40Z
+1025.0,2025-09-26T12:36:52Z
+1035.0,2025-09-26T12:48:02Z
+1045.0,2025-09-26T12:59:13Z
+1055.0,2025-09-26T13:11:25Z
+1065.0,2025-09-26T13:23:37Z
+1075.0,2025-09-26T13:37:50Z
+1085.0,2025-09-26T13:51:03Z
+1095.0,2025-09-26T14:02:14Z
+NaN,2025-09-26T14:14:26Z
+NaN,2025-09-26T14:27:39Z
+NaN,2025-09-26T14:40:52Z
+NaN,2025-09-26T14:53:04Z
+NaN,2025-09-26T15:04:15Z
+NaN,2025-09-26T15:11:22Z
+NaN,2025-09-26T15:18:29Z
+NaN,2025-09-26T15:38:53Z
+NaN,2025-09-26T15:53:57Z
+NaN,2025-09-26T16:06:09Z
+NaN,2025-09-26T16:18:21Z
+NaN,2025-09-26T16:30:33Z
+NaN,2025-09-26T16:42:45Z
+NaN,2025-09-26T16:55:58Z
+NaN,2025-09-26T17:09:11Z
+NaN,2025-09-26T17:21:22Z
+NaN,2025-09-26T17:34:35Z
+NaN,2025-09-26T18:05:50Z
+NaN,2025-09-26T18:20:04Z
+NaN,2025-09-26T18:33:17Z
+NaN,2025-09-26T18:46:30Z
+NaN,2025-09-26T18:59:43Z
+NaN,2025-09-26T19:12:56Z
+NaN,2025-09-26T19:26:09Z
+NaN,2025-09-26T19:39:22Z
+NaN,2025-09-26T19:52:35Z
+NaN,2025-09-26T20:08:51Z
+NaN,2025-09-26T20:26:09Z
+NaN,2025-09-26T20:41:24Z
+NaN,2025-09-26T20:56:39Z
+NaN,2025-09-26T21:12:55Z
+NaN,2025-09-26T21:29:10Z
+NaN,2025-09-26T21:45:26Z
+NaN,2025-09-26T22:02:42Z
+NaN,2025-09-26T22:21:00Z
+NaN,2025-09-26T22:39:18Z
+NaN,2025-09-26T22:57:36Z
+NaN,2025-09-26T23:17:56Z
+NaN,2025-09-26T23:38:16Z
+NaN,2025-09-26T23:58:35Z
+NaN,2025-09-27T00:20:57Z
+NaN,2025-09-27T00:44:20Z
+NaN,2025-09-27T01:07:43Z
+NaN,2025-09-27T01:32:07Z
+NaN,2025-09-27T01:59:34Z
+NaN,2025-09-27T02:29:03Z
+NaN,2025-09-27T03:00:34Z
+NaN,2025-09-27T03:35:11Z
+NaN,2025-09-27T04:11:46Z
+NaN,2025-09-27T04:51:25Z
+NaN,2025-09-27T05:35:08Z
+NaN,2025-09-27T06:10:43Z
+NaN,2025-09-27T06:37:09Z
+NaN,2025-09-27T07:31:02Z
+NaN,2025-09-27T08:51:21Z
+NaN,2025-09-27T10:10:38Z
+NaN,2025-09-27T11:30:57Z
+NaN,2025-09-27T12:21:46Z
+NaN,2025-09-27T12:40:04Z
+NaN,2025-09-27T13:11:35Z
+NaN,2025-09-27T13:57:20Z
+NaN,2025-09-27T15:00:21Z
+NaN,2025-09-27T16:19:39Z
+NaN,2025-09-27T17:37:56Z
+NaN,2025-09-27T18:55:12Z
+NaN,2025-09-27T20:12:27Z
+NaN,2025-09-27T21:31:44Z
+NaN,2025-09-27T23:10:15Z
+NaN,2025-09-28T00:32:09Z
+NaN,2025-09-28T01:52:27Z
+NaN,2025-09-28T03:15:49Z
+NaN,2025-09-28T04:40:12Z
+NaN,2025-09-28T06:07:38Z
+NaN,2025-09-28T07:45:19Z
+NaN,2025-09-28T09:14:57Z
+NaN,2025-09-28T10:44:25Z
+NaN,2025-09-28T12:18:58Z
+NaN,2025-09-28T13:55:33Z
+NaN,2025-09-28T15:35:11Z
+NaN,2025-09-28T17:27:46Z
+NaN,2025-09-28T19:12:37Z
+NaN,2025-09-28T20:56:19Z
+NaN,2025-09-28T22:41:02Z
+NaN,2025-09-29T00:27:47Z
+NaN,2025-09-29T02:15:33Z
+NaN,2025-09-29T04:11:15Z
+NaN,2025-09-29T05:57:12Z
+NaN,2025-09-29T07:38:52Z
+NaN,2025-09-29T09:20:32Z
+NaN,2025-09-29T11:01:11Z
+NaN,2025-09-29T12:43:51Z
+NaN,2025-09-29T14:35:34Z
+NaN,2025-09-29T16:18:24Z
+NaN,2025-09-29T17:58:01Z
+NaN,2025-09-29T19:37:39Z
+NaN,2025-09-29T21:20:20Z
+NaN,2025-09-29T23:05:03Z
+NaN,2025-09-30T00:58:55Z
+NaN,2025-09-30T02:42:37Z
+NaN,2025-09-30T04:22:15Z
+NaN,2025-09-30T06:01:53Z
+NaN,2025-09-30T07:43:33Z
+NaN,2025-09-30T09:27:15Z
+NaN,2025-09-30T11:24:54Z
+NaN,2025-09-30T13:05:56Z
+NaN,2025-09-30T14:51:17Z
+NaN,2025-09-30T16:31:37Z
+NaN,2025-09-30T18:11:57Z
+NaN,2025-09-30T19:57:17Z
+NaN,2025-09-30T21:49:05Z
+NaN,2025-09-30T23:29:43Z
+NaN,2025-10-01T01:10:03Z
+NaN,2025-10-01T02:55:24Z
+NaN,2025-10-01T04:35:44Z
+NaN,2025-10-01T06:21:05Z
+NaN,2025-10-01T08:11:29Z
+NaN,2025-10-01T09:56:50Z
+NaN,2025-10-01T11:37:10Z
+NaN,2025-10-01T13:17:30Z
+NaN,2025-10-01T15:07:57Z
+NaN,2025-10-01T16:58:50Z
+NaN,2025-10-01T18:49:10Z
+NaN,2025-10-01T20:34:31Z
+NaN,2025-10-01T22:14:51Z
+NaN,2025-10-02T00:00:12Z
+NaN,2025-10-02T01:45:33Z
+NaN,2025-10-02T03:30:54Z
+NaN,2025-10-02T05:28:23Z
+NaN,2025-10-02T07:14:04Z
+NaN,2025-10-02T08:54:24Z
+NaN,2025-10-02T10:39:45Z
+NaN,2025-10-02T12:25:06Z
+NaN,2025-10-02T14:10:27Z
+NaN,2025-10-02T15:55:48Z
+NaN,2025-10-02T17:36:08Z
+NaN,2025-10-02T19:21:29Z
+NaN,2025-10-02T21:01:49Z
+NaN,2025-10-02T22:42:09Z
+NaN,2025-10-03T00:27:30Z
+NaN,2025-10-03T02:18:45Z
+NaN,2025-10-03T04:04:22Z
+NaN,2025-10-03T05:49:43Z
+NaN,2025-10-03T07:35:04Z
+NaN,2025-10-03T09:15:24Z
+NaN,2025-10-03T11:00:45Z
+NaN,2025-10-03T12:54:57Z
+NaN,2025-10-03T14:40:41Z
+NaN,2025-10-03T16:21:01Z
+NaN,2025-10-03T18:01:21Z
+NaN,2025-10-03T19:46:42Z
+NaN,2025-10-03T21:32:03Z
+NaN,2025-10-03T23:17:24Z
+NaN,2025-10-04T01:02:45Z
+NaN,2025-10-04T02:43:05Z
+NaN,2025-10-04T04:23:25Z
+NaN,2025-10-04T06:12:39Z
+NaN,2025-10-04T08:03:24Z
+NaN,2025-10-04T09:50:24Z
+NaN,2025-10-04T11:35:50Z
+NaN,2025-10-04T13:21:11Z
+NaN,2025-10-04T15:01:31Z
+NaN,2025-10-04T16:46:52Z
+NaN,2025-10-04T18:37:14Z
+NaN,2025-10-04T20:33:34Z
+NaN,2025-10-04T22:19:12Z
+NaN,2025-10-05T00:04:33Z
+NaN,2025-10-05T01:49:54Z
+NaN,2025-10-05T03:30:14Z
+NaN,2025-10-05T05:15:35Z
+NaN,2025-10-05T07:07:17Z
+NaN,2025-10-05T08:52:58Z
+NaN,2025-10-05T10:38:19Z
+NaN,2025-10-05T12:18:39Z
+NaN,2025-10-05T14:04:00Z
+NaN,2025-10-05T15:49:21Z
+NaN,2025-10-05T17:34:41Z
+NaN,2025-10-05T19:25:03Z
+NaN,2025-10-05T21:10:24Z
+NaN,2025-10-05T22:50:44Z
+NaN,2025-10-06T00:36:05Z
+NaN,2025-10-06T02:26:27Z
+NaN,2025-10-06T04:22:40Z
+NaN,2025-10-06T06:08:18Z
+NaN,2025-10-06T07:53:39Z
+NaN,2025-10-06T09:39:00Z
+NaN,2025-10-06T11:24:21Z
+NaN,2025-10-06T13:14:43Z
+NaN,2025-10-06T15:07:45Z
+NaN,2025-10-06T16:48:29Z
+NaN,2025-10-06T18:28:49Z
+NaN,2025-10-06T20:09:09Z
+NaN,2025-10-06T21:54:30Z
+NaN,2025-10-06T23:39:51Z
+NaN,2025-10-07T01:28:54Z
+NaN,2025-10-07T03:09:24Z
+NaN,2025-10-07T04:49:44Z
+NaN,2025-10-07T06:35:05Z
+NaN,2025-10-07T08:15:25Z
+NaN,2025-10-07T09:55:45Z
+NaN,2025-10-07T11:47:51Z
+NaN,2025-10-07T13:33:52Z
+NaN,2025-10-07T15:19:13Z
+NaN,2025-10-07T17:04:34Z
+NaN,2025-10-07T18:49:55Z
+NaN,2025-10-07T20:40:17Z
+NaN,2025-10-07T22:29:42Z
+NaN,2025-10-08T00:15:16Z
+NaN,2025-10-08T02:00:37Z
+NaN,2025-10-08T03:40:57Z
+NaN,2025-10-08T05:26:17Z
+NaN,2025-10-08T07:16:39Z
+NaN,2025-10-08T09:07:01Z
+NaN,2025-10-08T10:52:22Z
+NaN,2025-10-08T12:32:42Z
+NaN,2025-10-08T14:18:03Z
+NaN,2025-10-08T16:03:24Z
+NaN,2025-10-08T17:48:45Z
+NaN,2025-10-08T19:42:10Z
+NaN,2025-10-08T21:27:56Z
+NaN,2025-10-08T23:13:17Z
+NaN,2025-10-09T00:53:37Z
+NaN,2025-10-09T02:38:58Z
+NaN,2025-10-09T04:29:20Z
+NaN,2025-10-09T06:18:03Z
+NaN,2025-10-09T07:58:34Z
+NaN,2025-10-09T09:43:55Z
+NaN,2025-10-09T11:29:16Z
+NaN,2025-10-09T13:09:36Z
+NaN,2025-10-09T14:54:57Z
+NaN,2025-10-09T16:48:58Z
+NaN,2025-10-09T18:29:28Z
+NaN,2025-10-09T20:09:48Z
+NaN,2025-10-09T21:55:09Z
+NaN,2025-10-09T23:35:29Z
+NaN,2025-10-10T01:15:49Z
+NaN,2025-10-10T03:08:06Z
+NaN,2025-10-10T04:54:09Z
+NaN,2025-10-10T06:34:29Z
+NaN,2025-10-10T08:14:49Z
+NaN,2025-10-10T10:00:10Z
+NaN,2025-10-10T11:45:31Z
+NaN,2025-10-10T13:34:50Z
+NaN,2025-10-10T15:20:35Z
+NaN,2025-10-10T17:00:55Z
+NaN,2025-10-10T18:41:15Z
+NaN,2025-10-10T20:26:36Z
+NaN,2025-10-10T22:11:57Z
+NaN,2025-10-10T23:57:27Z
+NaN,2025-10-11T01:43:04Z
+NaN,2025-10-11T03:28:25Z
+NaN,2025-10-11T05:13:46Z
+NaN,2025-10-11T06:59:07Z
+NaN,2025-10-11T08:44:28Z
+NaN,2025-10-11T10:34:51Z
+NaN,2025-10-11T12:20:12Z
+NaN,2025-10-11T14:05:33Z
+NaN,2025-10-11T15:45:53Z
+NaN,2025-10-11T17:26:13Z
+NaN,2025-10-11T19:21:36Z
+NaN,2025-10-11T21:11:58Z
+NaN,2025-10-11T22:52:18Z
+NaN,2025-10-12T00:37:39Z
+NaN,2025-10-12T02:23:00Z
+NaN,2025-10-12T04:03:20Z
+NaN,2025-10-12T05:48:41Z
+NaN,2025-10-12T07:39:02Z
+NaN,2025-10-12T09:14:21Z
+NaN,2025-10-12T10:54:15Z
+NaN,2025-10-12T12:45:04Z
+NaN,2025-10-12T14:30:25Z
+NaN,2025-10-12T16:15:46Z
+NaN,2025-10-12T18:12:46Z
+NaN,2025-10-12T19:58:46Z
+NaN,2025-10-12T21:44:07Z
+NaN,2025-10-12T23:29:28Z
+NaN,2025-10-13T01:14:49Z
+NaN,2025-10-13T03:00:10Z
+NaN,2025-10-13T04:51:39Z
+NaN,2025-10-13T06:37:37Z
+NaN,2025-10-13T08:17:57Z
+NaN,2025-10-13T09:58:17Z
+NaN,2025-10-13T11:38:37Z
+NaN,2025-10-13T13:23:58Z
+NaN,2025-10-13T15:17:22Z
+NaN,2025-10-13T17:03:01Z
+NaN,2025-10-13T18:43:21Z
+NaN,2025-10-13T20:23:41Z
+NaN,2025-10-13T22:04:01Z
+NaN,2025-10-13T23:49:22Z
+NaN,2025-10-14T01:39:43Z
+NaN,2025-10-14T03:25:04Z
+NaN,2025-10-14T05:05:24Z
+NaN,2025-10-14T06:45:44Z
+NaN,2025-10-14T08:26:04Z
+NaN,2025-10-14T10:11:25Z
+NaN,2025-10-14T12:03:13Z
+NaN,2025-10-14T13:43:53Z
+NaN,2025-10-14T15:29:14Z
+NaN,2025-10-14T17:14:35Z
+NaN,2025-10-14T18:54:55Z
+NaN,2025-10-14T20:40:16Z
+NaN,2025-10-14T22:25:38Z
+NaN,2025-10-15T00:05:58Z
+NaN,2025-10-15T01:51:19Z
+NaN,2025-10-15T03:36:40Z
+NaN,2025-10-15T05:17:00Z
+NaN,2025-10-15T07:02:21Z
+NaN,2025-10-15T08:53:32Z
+NaN,2025-10-15T10:34:10Z
+NaN,2025-10-15T12:19:31Z
+NaN,2025-10-15T14:04:52Z
+NaN,2025-10-15T15:50:13Z
+NaN,2025-10-15T17:35:34Z
+NaN,2025-10-15T19:25:40Z
+NaN,2025-10-15T21:06:28Z
+NaN,2025-10-15T22:46:48Z
+NaN,2025-10-16T00:32:09Z
+NaN,2025-10-16T02:12:29Z
+NaN,2025-10-16T03:57:50Z
+NaN,2025-10-16T05:48:12Z
+NaN,2025-10-16T07:33:33Z
+NaN,2025-10-16T09:13:53Z
+NaN,2025-10-16T10:54:13Z
+NaN,2025-10-16T12:39:34Z
+NaN,2025-10-16T14:24:55Z
+NaN,2025-10-16T16:16:02Z
+NaN,2025-10-16T18:01:58Z
+NaN,2025-10-16T19:42:18Z
+NaN,2025-10-16T21:22:38Z
+NaN,2025-10-16T23:02:58Z
+NaN,2025-10-17T00:48:19Z
+NaN,2025-10-17T02:38:42Z
+NaN,2025-10-17T04:24:03Z
+NaN,2025-10-17T06:04:23Z
+NaN,2025-10-17T07:44:43Z
+NaN,2025-10-17T09:25:03Z
+NaN,2025-10-17T11:05:23Z
+NaN,2025-10-17T12:58:59Z
+NaN,2025-10-17T14:45:09Z
+NaN,2025-10-17T16:30:30Z
+NaN,2025-10-17T18:15:51Z
+NaN,2025-10-17T19:56:11Z
+NaN,2025-10-17T21:41:32Z
+NaN,2025-10-17T23:31:55Z
+NaN,2025-10-18T01:17:16Z
+NaN,2025-10-18T02:57:36Z
+NaN,2025-10-18T04:37:56Z
+NaN,2025-10-18T06:23:17Z
+NaN,2025-10-18T08:08:38Z
+NaN,2025-10-18T10:01:52Z
+NaN,2025-10-18T11:42:35Z
+NaN,2025-10-18T13:22:55Z
+NaN,2025-10-18T15:08:16Z
+NaN,2025-10-18T16:48:36Z
+NaN,2025-10-18T18:28:56Z
+NaN,2025-10-18T20:21:37Z
+NaN,2025-10-18T22:07:42Z
+NaN,2025-10-18T23:48:02Z
+NaN,2025-10-19T01:28:22Z
+NaN,2025-10-19T03:13:43Z
+NaN,2025-10-19T04:59:04Z
+NaN,2025-10-19T06:48:42Z
+NaN,2025-10-19T08:34:15Z
+NaN,2025-10-19T10:14:35Z
+NaN,2025-10-19T11:54:55Z
+NaN,2025-10-19T13:35:15Z
+NaN,2025-10-19T15:15:35Z
+NaN,2025-10-19T17:07:57Z
+NaN,2025-10-19T18:54:00Z
+NaN,2025-10-19T20:34:20Z
+NaN,2025-10-19T22:14:40Z
+NaN,2025-10-19T23:55:00Z
+NaN,2025-10-20T01:40:21Z
+NaN,2025-10-20T03:28:40Z
+NaN,2025-10-20T05:09:09Z
+NaN,2025-10-20T06:54:30Z
+NaN,2025-10-20T08:39:51Z
+NaN,2025-10-20T10:20:11Z
+NaN,2025-10-20T12:00:31Z
+NaN,2025-10-20T13:50:07Z
+NaN,2025-10-20T15:35:53Z
+NaN,2025-10-20T17:21:14Z
+NaN,2025-10-20T19:01:34Z
+NaN,2025-10-20T20:41:54Z
+NaN,2025-10-20T22:27:15Z
+NaN,2025-10-21T00:15:21Z
+NaN,2025-10-21T01:56:06Z
+NaN,2025-10-21T03:36:26Z
+NaN,2025-10-21T05:16:46Z
+NaN,2025-10-21T07:02:07Z
+NaN,2025-10-21T08:47:28Z
+NaN,2025-10-21T10:38:58Z
+NaN,2025-10-21T12:19:53Z
+NaN,2025-10-21T14:05:14Z
+NaN,2025-10-21T15:50:35Z
+NaN,2025-10-21T17:30:55Z
+NaN,2025-10-21T19:11:15Z
+NaN,2025-10-21T20:59:15Z
+NaN,2025-10-21T22:44:51Z
+NaN,2025-10-22T00:25:11Z
+NaN,2025-10-22T02:10:32Z
+NaN,2025-10-22T03:55:53Z
+NaN,2025-10-22T05:41:14Z
+NaN,2025-10-22T07:36:01Z
+NaN,2025-10-22T09:21:49Z
+NaN,2025-10-22T11:07:10Z
+NaN,2025-10-22T12:52:31Z
+NaN,2025-10-22T14:37:52Z
+NaN,2025-10-22T16:28:14Z
+NaN,2025-10-22T18:19:36Z
+NaN,2025-10-22T20:04:57Z
+NaN,2025-10-22T21:50:18Z
+NaN,2025-10-22T23:35:39Z
+NaN,2025-10-23T01:21:00Z
+NaN,2025-10-23T03:01:20Z
+NaN,2025-10-23T04:54:49Z
+NaN,2025-10-23T06:46:00Z
+NaN,2025-10-23T08:31:21Z
+NaN,2025-10-23T10:11:41Z
+NaN,2025-10-23T11:57:02Z
+NaN,2025-10-23T13:42:23Z
+NaN,2025-10-23T15:34:18Z
+NaN,2025-10-23T17:20:18Z
+NaN,2025-10-23T19:00:38Z
+NaN,2025-10-23T20:40:58Z
+NaN,2025-10-23T22:26:19Z
+NaN,2025-10-24T00:11:40Z
+NaN,2025-10-24T01:57:01Z
+NaN,2025-10-24T03:42:22Z
+NaN,2025-10-24T05:27:43Z
+NaN,2025-10-24T07:08:03Z
+NaN,2025-10-24T08:48:23Z
+NaN,2025-10-24T10:33:44Z
+NaN,2025-10-24T12:16:09Z
+NaN,2025-10-24T14:01:37Z
+NaN,2025-10-24T15:51:59Z
+NaN,2025-10-24T17:37:20Z
+NaN,2025-10-24T19:22:41Z
+NaN,2025-10-24T21:08:02Z
+NaN,2025-10-24T23:00:16Z
+NaN,2025-10-25T00:46:18Z
+NaN,2025-10-25T02:31:39Z
+NaN,2025-10-25T04:17:00Z
+NaN,2025-10-25T05:57:20Z
+NaN,2025-10-25T07:42:41Z
+NaN,2025-10-25T09:37:57Z
+NaN,2025-10-25T11:23:32Z
+NaN,2025-10-25T13:03:52Z
+NaN,2025-10-25T14:49:13Z
+NaN,2025-10-25T16:34:34Z
+NaN,2025-10-25T18:19:55Z
+NaN,2025-10-25T20:16:02Z
+NaN,2025-10-25T22:01:39Z
+NaN,2025-10-25T23:41:59Z
+NaN,2025-10-26T01:27:20Z
+NaN,2025-10-26T03:17:42Z
+NaN,2025-10-26T05:08:04Z
+NaN,2025-10-26T06:58:26Z
+NaN,2025-10-26T08:43:47Z
+NaN,2025-10-26T10:29:08Z
+NaN,2025-10-26T12:14:29Z
+NaN,2025-10-26T13:54:49Z
+NaN,2025-10-26T15:40:10Z
+NaN,2025-10-26T17:32:10Z
+NaN,2025-10-26T19:17:52Z
+NaN,2025-10-26T21:08:14Z
+NaN,2025-10-26T22:53:35Z
+NaN,2025-10-27T00:33:55Z
+NaN,2025-10-27T02:19:16Z
+NaN,2025-10-27T04:13:18Z
+NaN,2025-10-27T05:59:01Z
+NaN,2025-10-27T07:44:22Z
+NaN,2025-10-27T09:29:43Z
+NaN,2025-10-27T11:15:04Z
+NaN,2025-10-27T13:05:26Z
+NaN,2025-10-27T15:01:03Z
+NaN,2025-10-27T16:46:39Z
+NaN,2025-10-27T18:32:00Z
+NaN,2025-10-27T20:17:21Z
+NaN,2025-10-27T22:02:42Z
+NaN,2025-10-27T23:53:04Z
+NaN,2025-10-28T01:56:43Z
+NaN,2025-10-28T03:42:04Z
+NaN,2025-10-28T05:27:25Z
+NaN,2025-10-28T07:12:46Z
+NaN,2025-10-28T08:58:07Z
+NaN,2025-10-28T10:48:29Z
+NaN,2025-10-28T12:37:06Z
+NaN,2025-10-28T14:22:37Z
+NaN,2025-10-28T16:07:58Z
+NaN,2025-10-28T17:48:18Z
+NaN,2025-10-28T19:33:39Z
+NaN,2025-10-28T21:19:00Z
+NaN,2025-10-28T23:08:12Z
+NaN,2025-10-29T00:53:56Z
+NaN,2025-10-29T02:39:17Z
+NaN,2025-10-29T04:24:38Z
+NaN,2025-10-29T06:04:58Z
+NaN,2025-10-29T07:50:19Z
+NaN,2025-10-29T09:40:40Z
+NaN,2025-10-29T11:26:01Z
+NaN,2025-10-29T13:11:22Z
+NaN,2025-10-29T14:56:43Z
+NaN,2025-10-29T16:37:03Z
+NaN,2025-10-29T18:17:23Z
+NaN,2025-10-29T20:09:09Z
+NaN,2025-10-29T21:55:08Z
+NaN,2025-10-29T23:40:29Z
+NaN,2025-10-30T01:25:50Z
+NaN,2025-10-30T03:06:10Z
+NaN,2025-10-30T04:51:31Z
+NaN,2025-10-30T06:45:06Z
+NaN,2025-10-30T08:25:35Z
+NaN,2025-10-30T10:05:55Z
+NaN,2025-10-30T11:51:16Z
+NaN,2025-10-30T13:31:36Z
+NaN,2025-10-30T15:16:57Z
+NaN,2025-10-30T17:10:36Z
+NaN,2025-10-30T18:51:05Z
+NaN,2025-10-30T20:31:25Z
+NaN,2025-10-30T22:16:46Z
+NaN,2025-10-30T23:57:06Z
+NaN,2025-10-31T01:37:26Z
+NaN,2025-10-31T03:24:47Z
+NaN,2025-10-31T05:10:20Z
+NaN,2025-10-31T06:50:40Z
+NaN,2025-10-31T08:31:00Z
+NaN,2025-10-31T10:11:20Z
+NaN,2025-10-31T11:56:41Z
+NaN,2025-10-31T13:42:01Z
+NaN,2025-10-31T15:22:21Z
+NaN,2025-10-31T17:02:41Z
+NaN,2025-10-31T18:43:01Z
+NaN,2025-10-31T20:23:21Z
+NaN,2025-10-31T22:03:41Z
+NaN,2025-10-31T23:49:03Z
+NaN,2025-11-01T01:34:24Z
+NaN,2025-11-01T03:14:44Z
+NaN,2025-11-01T04:55:04Z
+NaN,2025-11-01T05:50:15Z
+NaN,2025-11-01T06:00:17Z
+NaN,2025-11-01T07:03:15Z
+NaN,2025-11-01T08:53:45Z
+NaN,2025-11-01T10:44:07Z
+NaN,2025-11-01T12:29:28Z
+NaN,2025-11-01T14:14:49Z
+NaN,2025-11-01T16:00:10Z
+NaN,2025-11-01T17:45:31Z
+NaN,2025-11-01T19:35:53Z
+NaN,2025-11-01T21:26:16Z
+NaN,2025-11-01T23:06:36Z
+NaN,2025-11-02T00:46:53Z
+NaN,2025-11-02T02:32:14Z
+NaN,2025-11-02T04:12:34Z
+NaN,2025-11-02T05:57:55Z
+NaN,2025-11-02T07:48:17Z
+NaN,2025-11-02T09:38:38Z
+NaN,2025-11-02T11:23:59Z
+NaN,2025-11-02T13:04:19Z
+NaN,2025-11-02T14:49:40Z
+NaN,2025-11-02T16:30:00Z
+NaN,2025-11-02T18:12:29Z
+NaN,2025-11-02T19:52:55Z
+NaN,2025-11-02T21:33:15Z
+NaN,2025-11-02T23:13:35Z
+NaN,2025-11-03T00:53:55Z
+NaN,2025-11-03T02:39:16Z
+NaN,2025-11-03T04:25:59Z
+NaN,2025-11-03T06:06:39Z
+NaN,2025-11-03T07:52:00Z
+NaN,2025-11-03T09:32:20Z
+NaN,2025-11-03T11:12:40Z
+NaN,2025-11-03T12:58:01Z
+NaN,2025-11-03T14:47:33Z
+NaN,2025-11-03T16:33:19Z
+NaN,2025-11-03T18:13:39Z
+NaN,2025-11-03T19:53:59Z
+NaN,2025-11-03T21:39:20Z
+NaN,2025-11-03T23:24:41Z
+NaN,2025-11-04T01:10:02Z
+NaN,2025-11-04T02:55:23Z
+NaN,2025-11-04T04:35:43Z
+NaN,2025-11-04T06:16:03Z
+NaN,2025-11-04T08:01:24Z
+NaN,2025-11-04T09:46:45Z
+NaN,2025-11-04T11:33:37Z
+NaN,2025-11-04T13:14:18Z
+NaN,2025-11-04T14:59:39Z
+NaN,2025-11-04T16:39:59Z
+NaN,2025-11-04T18:20:19Z
+NaN,2025-11-04T20:10:41Z
+NaN,2025-11-04T22:04:38Z
+NaN,2025-11-04T23:50:09Z
+NaN,2025-11-05T01:35:30Z
+NaN,2025-11-05T03:20:51Z
+NaN,2025-11-05T05:06:12Z
+NaN,2025-11-05T06:51:33Z
+NaN,2025-11-05T08:41:50Z
+NaN,2025-11-05T10:32:42Z
+NaN,2025-11-05T12:23:04Z
+NaN,2025-11-05T14:08:25Z
+NaN,2025-11-05T15:48:45Z
+NaN,2025-11-05T17:34:06Z
+NaN,2025-11-05T19:27:55Z
+NaN,2025-11-05T21:13:36Z
+NaN,2025-11-05T22:58:57Z
+NaN,2025-11-06T00:44:18Z
+NaN,2025-11-06T02:29:39Z
+NaN,2025-11-06T04:15:00Z
+NaN,2025-11-06T06:06:08Z
+NaN,2025-11-06T07:57:05Z
+NaN,2025-11-06T09:42:26Z
+NaN,2025-11-06T11:22:46Z
+NaN,2025-11-06T13:08:07Z
+NaN,2025-11-06T14:58:29Z
+NaN,2025-11-06T16:49:24Z
+NaN,2025-11-06T18:35:03Z
+NaN,2025-11-06T20:20:24Z
+NaN,2025-11-06T22:00:44Z
+NaN,2025-11-06T23:46:05Z
+NaN,2025-11-07T01:36:27Z
+NaN,2025-11-07T03:25:47Z
+NaN,2025-11-07T05:11:21Z
+NaN,2025-11-07T06:56:42Z
+NaN,2025-11-07T08:37:02Z
+NaN,2025-11-07T10:22:23Z
+NaN,2025-11-07T12:12:45Z
+NaN,2025-11-07T14:01:26Z
+NaN,2025-11-07T15:41:57Z
+NaN,2025-11-07T17:27:18Z
+NaN,2025-11-07T19:12:39Z
+NaN,2025-11-07T20:52:59Z
+NaN,2025-11-07T22:38:20Z
+NaN,2025-11-08T00:28:42Z
+NaN,2025-11-08T02:14:03Z
+NaN,2025-11-08T03:54:23Z
+NaN,2025-11-08T05:34:43Z
+NaN,2025-11-08T07:20:04Z
+NaN,2025-11-08T09:05:25Z
+NaN,2025-11-08T10:52:04Z
+NaN,2025-11-08T12:32:44Z
+NaN,2025-11-08T14:13:04Z
+NaN,2025-11-08T15:53:24Z
+NaN,2025-11-08T17:33:44Z
+NaN,2025-11-08T19:19:05Z
+NaN,2025-11-08T21:07:54Z
+NaN,2025-11-08T22:48:25Z
+NaN,2025-11-09T00:28:45Z
+NaN,2025-11-09T02:09:05Z
+NaN,2025-11-09T03:54:26Z
+NaN,2025-11-09T05:44:48Z
+NaN,2025-11-09T07:40:34Z
+NaN,2025-11-09T09:26:10Z
+NaN,2025-11-09T11:11:31Z
+NaN,2025-11-09T12:56:52Z
+NaN,2025-11-09T14:37:12Z
+NaN,2025-11-09T16:22:33Z
+NaN,2025-11-09T18:15:21Z
+NaN,2025-11-09T20:00:57Z
+NaN,2025-11-09T21:46:18Z
+NaN,2025-11-09T23:31:39Z
+NaN,2025-11-10T01:17:00Z
+NaN,2025-11-10T03:07:22Z
+NaN,2025-11-10T04:57:28Z
+NaN,2025-11-10T06:43:04Z
+NaN,2025-11-10T08:28:25Z
+NaN,2025-11-10T10:13:46Z
+NaN,2025-11-10T11:59:07Z
+NaN,2025-11-10T13:44:28Z
+NaN,2025-11-10T15:36:57Z
+NaN,2025-11-10T17:22:31Z
+NaN,2025-11-10T19:07:52Z
+NaN,2025-11-10T20:53:13Z
+NaN,2025-11-10T22:33:33Z
+NaN,2025-11-11T00:18:54Z
+NaN,2025-11-11T02:07:19Z
+NaN,2025-11-11T03:47:49Z
+NaN,2025-11-11T05:28:09Z
+NaN,2025-11-11T07:13:30Z
+NaN,2025-11-11T08:58:51Z
+NaN,2025-11-11T10:44:12Z
+NaN,2025-11-11T12:33:41Z
+NaN,2025-11-11T14:19:15Z
+NaN,2025-11-11T16:09:37Z
+NaN,2025-11-11T17:54:58Z
+NaN,2025-11-11T19:40:19Z
+NaN,2025-11-11T21:30:41Z
+NaN,2025-11-11T23:20:20Z
+NaN,2025-11-12T01:05:54Z
+NaN,2025-11-12T02:51:15Z
+NaN,2025-11-12T04:36:36Z
+NaN,2025-11-12T06:26:58Z
+NaN,2025-11-12T08:12:19Z
+NaN,2025-11-12T10:01:52Z
+NaN,2025-11-12T11:47:38Z
+NaN,2025-11-12T13:27:58Z
+NaN,2025-11-12T15:13:19Z
+NaN,2025-11-12T16:58:40Z
+NaN,2025-11-12T18:39:00Z
+NaN,2025-11-12T20:31:04Z
+NaN,2025-11-12T22:17:05Z
+NaN,2025-11-12T23:57:25Z
+NaN,2025-11-13T01:37:45Z
+NaN,2025-11-13T03:18:05Z
+NaN,2025-11-13T05:03:26Z
+NaN,2025-11-13T07:00:24Z
+NaN,2025-11-13T08:46:04Z
+NaN,2025-11-13T10:31:25Z
+NaN,2025-11-13T12:16:46Z
+NaN,2025-11-13T13:57:06Z
+NaN,2025-11-13T15:47:28Z
+NaN,2025-11-13T17:37:50Z
+NaN,2025-11-13T19:23:11Z
+NaN,2025-11-13T21:08:32Z
+NaN,2025-11-13T22:53:53Z
+NaN,2025-11-14T00:39:14Z
+NaN,2025-11-14T02:24:35Z
+NaN,2025-11-14T04:15:41Z
+NaN,2025-11-14T06:01:04Z
+NaN,2025-11-14T07:41:24Z
+NaN,2025-11-14T09:26:45Z
+NaN,2025-11-14T11:12:06Z
+NaN,2025-11-14T12:52:26Z
+NaN,2025-11-14T14:43:09Z
+NaN,2025-11-14T16:29:02Z
+NaN,2025-11-14T18:09:22Z
+NaN,2025-11-14T19:49:42Z
+NaN,2025-11-14T21:30:02Z
+NaN,2025-11-14T23:15:23Z
+NaN,2025-11-15T01:10:40Z
+NaN,2025-11-15T02:51:14Z
+NaN,2025-11-15T04:31:34Z
+NaN,2025-11-15T06:16:55Z
+NaN,2025-11-15T08:02:16Z
+NaN,2025-11-15T09:52:38Z
+NaN,2025-11-15T11:41:54Z
+NaN,2025-11-15T13:27:27Z
+NaN,2025-11-15T15:17:49Z
+NaN,2025-11-15T17:03:10Z
+NaN,2025-11-15T18:48:31Z
+NaN,2025-11-15T20:33:52Z
+NaN,2025-11-15T22:21:12Z
+NaN,2025-11-16T00:06:55Z
+NaN,2025-11-16T01:52:16Z
+NaN,2025-11-16T03:32:36Z
+NaN,2025-11-16T05:17:57Z
+NaN,2025-11-16T07:03:18Z
+NaN,2025-11-16T08:52:04Z
+NaN,2025-11-16T10:37:45Z
+NaN,2025-11-16T12:18:05Z
+NaN,2025-11-16T13:58:25Z
+NaN,2025-11-16T15:43:46Z
+NaN,2025-11-16T17:29:07Z
+NaN,2025-11-16T19:15:08Z
+NaN,2025-11-16T20:55:46Z
+NaN,2025-11-16T22:41:07Z
+NaN,2025-11-17T00:26:28Z
+NaN,2025-11-17T02:11:49Z
+NaN,2025-11-17T04:02:11Z
+NaN,2025-11-17T05:50:23Z
+NaN,2025-11-17T07:35:53Z
+NaN,2025-11-17T09:21:14Z
+NaN,2025-11-17T11:06:35Z
+NaN,2025-11-17T12:51:56Z
+NaN,2025-11-17T14:37:17Z
+NaN,2025-11-17T16:25:44Z
+NaN,2025-11-17T18:06:14Z
+NaN,2025-11-17T19:51:35Z
+NaN,2025-11-17T21:36:56Z
+NaN,2025-11-17T23:17:16Z
+NaN,2025-11-18T00:57:36Z
+NaN,2025-11-18T02:51:11Z
+NaN,2025-11-18T04:39:35Z
+NaN,2025-11-18T06:19:55Z
+NaN,2025-11-18T08:00:15Z
+NaN,2025-11-18T09:40:35Z
+NaN,2025-11-18T11:20:55Z
+NaN,2025-11-18T13:12:49Z
+NaN,2025-11-18T14:58:29Z
+NaN,2025-11-18T16:43:50Z
+NaN,2025-11-18T18:29:11Z
+NaN,2025-11-18T20:14:32Z
+NaN,2025-11-18T21:59:53Z
+NaN,2025-11-18T23:51:07Z
+NaN,2025-11-19T01:42:04Z
+NaN,2025-11-19T03:27:25Z
+NaN,2025-11-19T05:12:46Z
+NaN,2025-11-19T06:58:07Z
+NaN,2025-11-19T08:43:28Z
+NaN,2025-11-19T10:33:24Z
+NaN,2025-11-19T12:19:00Z
+NaN,2025-11-19T14:04:21Z
+NaN,2025-11-19T15:49:42Z
+NaN,2025-11-19T17:35:03Z
+NaN,2025-11-19T19:20:24Z
+NaN,2025-11-19T21:14:18Z
+NaN,2025-11-19T22:59:49Z
+NaN,2025-11-20T00:45:10Z
+NaN,2025-11-20T02:30:31Z
+NaN,2025-11-20T04:15:52Z
+NaN,2025-11-20T06:06:14Z
+NaN,2025-11-20T07:51:35Z
+NaN,2025-11-20T09:36:56Z
+NaN,2025-11-20T11:22:17Z
+NaN,2025-11-20T13:07:38Z
+NaN,2025-11-20T14:52:59Z
+NaN,2025-11-20T16:38:20Z
+NaN,2025-11-20T18:33:24Z
+NaN,2025-11-20T20:18:58Z
+NaN,2025-11-20T22:04:19Z
+NaN,2025-11-20T23:49:40Z
+NaN,2025-11-21T01:35:01Z
+NaN,2025-11-21T03:20:22Z
+NaN,2025-11-21T05:10:25Z
+NaN,2025-11-21T06:56:14Z
+NaN,2025-11-21T08:41:35Z
+NaN,2025-11-21T10:31:57Z
+NaN,2025-11-21T12:17:18Z
+NaN,2025-11-21T14:02:39Z
+NaN,2025-11-21T15:53:01Z
+NaN,2025-11-21T17:58:26Z
+NaN,2025-11-21T20:03:51Z
+NaN,2025-11-21T21:54:13Z
+NaN,2025-11-21T23:44:35Z
+NaN,2025-11-22T01:29:56Z
+NaN,2025-11-22T03:22:46Z
+NaN,2025-11-22T05:08:28Z
+NaN,2025-11-22T06:53:49Z
+NaN,2025-11-22T08:39:10Z
+NaN,2025-11-22T10:24:31Z
+NaN,2025-11-22T12:14:53Z
+NaN,2025-11-22T14:03:16Z
+NaN,2025-11-22T15:48:47Z
+NaN,2025-11-22T17:34:08Z
+NaN,2025-11-22T19:19:29Z
+NaN,2025-11-22T21:04:50Z
+NaN,2025-11-22T22:50:11Z
+NaN,2025-11-23T00:40:05Z
+NaN,2025-11-23T02:20:39Z
+NaN,2025-11-23T04:06:00Z
+NaN,2025-11-23T05:51:21Z
+NaN,2025-11-23T07:36:42Z
+NaN,2025-11-23T09:22:03Z
+NaN,2025-11-23T11:07:50Z
+NaN,2025-11-23T12:48:28Z
+NaN,2025-11-23T14:33:49Z
+NaN,2025-11-23T16:14:09Z
+NaN,2025-11-23T17:54:29Z
+NaN,2025-11-23T19:39:50Z
+NaN,2025-11-23T21:24:15Z
+NaN,2025-11-23T23:05:02Z
+NaN,2025-11-24T00:50:23Z
+NaN,2025-11-24T02:35:44Z
+NaN,2025-11-24T04:21:05Z
+NaN,2025-11-24T06:06:26Z
+NaN,2025-11-24T07:57:15Z
+NaN,2025-11-24T09:48:10Z
+NaN,2025-11-24T11:33:31Z
+NaN,2025-11-24T13:18:52Z
+NaN,2025-11-24T15:04:13Z
+NaN,2025-11-24T16:49:34Z
+NaN,2025-11-24T18:39:56Z
+NaN,2025-11-24T20:25:17Z
+NaN,2025-11-24T22:10:38Z
+NaN,2025-11-24T23:50:58Z
+NaN,2025-11-25T01:36:34Z
+NaN,2025-11-25T03:27:27Z
+NaN,2025-11-25T05:17:22Z
+NaN,2025-11-25T07:02:57Z
+NaN,2025-11-25T08:48:18Z
+NaN,2025-11-25T10:28:38Z
+NaN,2025-11-25T12:13:59Z
+NaN,2025-11-25T13:59:20Z
+NaN,2025-11-25T15:50:01Z
+NaN,2025-11-25T17:35:54Z
+NaN,2025-11-25T19:16:14Z
+NaN,2025-11-25T20:56:34Z
+NaN,2025-11-25T22:41:55Z
+NaN,2025-11-26T00:27:16Z
+NaN,2025-11-26T02:19:48Z
+NaN,2025-11-26T04:00:28Z
+NaN,2025-11-26T05:40:48Z
+NaN,2025-11-26T07:26:09Z
+NaN,2025-11-26T09:06:29Z
+NaN,2025-11-26T10:46:49Z
+NaN,2025-11-26T12:37:09Z
+NaN,2025-11-26T14:23:00Z
+NaN,2025-11-26T16:03:20Z
+NaN,2025-11-26T17:43:40Z
+NaN,2025-11-26T19:29:01Z
+NaN,2025-11-26T21:14:22Z
+NaN,2025-11-26T22:59:42Z
+NaN,2025-11-27T00:45:03Z
+NaN,2025-11-27T02:25:23Z
+NaN,2025-11-27T03:20:34Z
+NaN,2025-11-27T05:03:20Z
+NaN,2025-11-27T06:43:40Z
+NaN,2025-11-27T08:24:00Z
+NaN,2025-11-27T10:04:20Z
+NaN,2025-11-27T11:44:40Z
+NaN,2025-11-27T13:25:00Z
+NaN,2025-11-27T15:14:38Z
+NaN,2025-11-27T17:00:25Z
+NaN,2025-11-27T18:40:45Z
+NaN,2025-11-27T20:21:05Z
+NaN,2025-11-27T22:06:26Z
+NaN,2025-11-27T23:54:18Z
+                """;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    userDapQuery =
+        "profile%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,longitude%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,latitude%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile_time_start%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile_time_end%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D";
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            userDapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_Data1",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+depth,time,profile,longitude,latitude,profile_time_start,profile_time_end
+m,UTC,,degrees_east,degrees_north,UTC,UTC
+5.0,2025-11-26T12:37:09Z,996.0,-126.76124405832194,48.617126481729,2025-11-26T11:39:30Z,2025-11-26T13:30:20Z
+5.0,2025-11-26T14:23:00Z,997.0,-126.73713609010197,48.61532125192833,2025-11-26T13:35:21Z,2025-11-26T15:10:40Z
+5.0,2025-11-26T16:03:20Z,998.0,-126.71413468758155,48.61353626302052,2025-11-26T15:15:41Z,2025-11-26T16:51:00Z
+5.0,2025-11-26T17:43:40Z,999.0,-126.69113328849964,48.61175127437956,2025-11-26T16:56:01Z,2025-11-26T18:31:20Z
+5.0,2025-11-26T19:29:01Z,1000.0,-126.66698181946363,48.609877036306536,2025-11-26T18:36:21Z,2025-11-26T20:21:42Z
+5.0,2025-11-26T21:14:22Z,1001.0,-126.64283035042763,48.60800279823352,2025-11-26T20:26:43Z,2025-11-26T22:02:02Z
+5.0,2025-11-26T22:59:42Z,1002.0,-126.62889599388328,48.59932254885236,2025-11-26T22:07:03Z,2025-11-26T23:52:23Z
+5.0,2025-11-27T00:45:03Z,1003.0,-126.62469301071947,48.579976936074694,2025-11-26T23:57:24Z,2025-11-27T01:32:43Z
+15.0,2025-11-26T12:37:09Z,NaN,NaN,NaN,,
+15.0,2025-11-26T14:23:00Z,NaN,NaN,NaN,,
+15.0,2025-11-26T16:03:20Z,NaN,NaN,NaN,,
+15.0,2025-11-26T17:43:40Z,NaN,NaN,NaN,,
+15.0,2025-11-26T19:29:01Z,NaN,NaN,NaN,,
+15.0,2025-11-26T21:14:22Z,NaN,NaN,NaN,,
+15.0,2025-11-26T22:59:42Z,NaN,NaN,NaN,,
+15.0,2025-11-27T00:45:03Z,NaN,NaN,NaN,,
+                """;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    userDapQuery =
+        "heading%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,pitch%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,roll%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,waypoint_latitude%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,waypoint_longitude%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,conductivity%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,temperature%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,pressure%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,chlorophyll%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,cdom%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,backscatter_700%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,distance_over_ground%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,salinity%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,potential_density%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,density%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,potential_temperature%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile_index%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile_direction%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,longitude%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,latitude%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile_time_start%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D,profile_time_end%5B(5.0):1:(15)%5D%5B(2025-11-26T12:37:09Z):1:(2025-11-27T00:45:03Z)%5D";
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            userDapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_Data1",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+depth,time,heading,pitch,roll,waypoint_latitude,waypoint_longitude,conductivity,temperature,pressure,chlorophyll,cdom,backscatter_700,distance_over_ground,salinity,potential_density,density,potential_temperature,profile_index,profile_direction,profile,longitude,latitude,profile_time_start,profile_time_end
+m,UTC,rad,rad,rad,degrees_north,degrees_east,S m-1,degree_C,dbar,mg m-3,ppb,1,km,1e-3,kg m-3,kg m-3,degree_C,1,1,,degrees_east,degrees_north,UTC,UTC
+5.0,2025-11-26T12:37:09Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,996.0,-126.76124405832194,48.617126481729,2025-11-26T11:39:30Z,2025-11-26T13:30:20Z
+5.0,2025-11-26T14:23:00Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,997.0,-126.73713609010197,48.61532125192833,2025-11-26T13:35:21Z,2025-11-26T15:10:40Z
+5.0,2025-11-26T16:03:20Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,998.0,-126.71413468758155,48.61353626302052,2025-11-26T15:15:41Z,2025-11-26T16:51:00Z
+5.0,2025-11-26T17:43:40Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,999.0,-126.69113328849964,48.61175127437956,2025-11-26T16:56:01Z,2025-11-26T18:31:20Z
+5.0,2025-11-26T19:29:01Z,0.7824843349114188,-0.045511060029923556,-0.03353268873546507,48.26913768363337,-126.63719280324315,3.65024995803833,11.383600234985352,8.496000170707703,NaN,NaN,NaN,1574.331896898886,32.135017188321804,1024.4827314199144,1024.4105129782542,11.382573428517329,1000.0,1.0,1000.0,-126.66698181946363,48.609877036306536,2025-11-26T18:36:21Z,2025-11-26T20:21:42Z
+5.0,2025-11-26T21:14:22Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,1001.0,-126.64283035042763,48.60800279823352,2025-11-26T20:26:43Z,2025-11-26T22:02:02Z
+5.0,2025-11-26T22:59:42Z,2.9939294994159567,0.44426693316645177,-0.01065052500923868,48.25221666666666,-126.63588333333333,3.648163398106893,11.3599001566569,2.4715000585032008,0.6179450569207984,2.459700107574463,1.816534157327681E-4,1577.843150566178,32.13771982912523,1024.489030277056,1024.3896966982809,11.359601894937683,1002.0,1.0,1002.0,-126.62889599388328,48.59932254885236,2025-11-26T22:07:03Z,2025-11-26T23:52:23Z
+5.0,2025-11-27T00:45:03Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,1003.0,-126.62469301071947,48.579976936074694,2025-11-26T23:57:24Z,2025-11-27T01:32:43Z
+15.0,2025-11-26T12:37:09Z,0.9603844799067527,0.438414221815016,-0.003645957758887732,48.42395495376065,-126.64917367632837,3.642519950866699,11.294099807739258,18.701000213623047,NaN,NaN,NaN,1567.2671751687158,32.13294125232407,1024.4972364754071,1024.4706846955266,11.291850878382617,996.0,1.0,NaN,NaN,NaN,,
+15.0,2025-11-26T14:23:00Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,
+15.0,2025-11-26T16:03:20Z,0.781979881187501,0.4088207352784031,-0.01950625590165061,48.344619668705086,-126.64303414176192,3.6494200229644775,11.3681001663208,14.84570026397705,NaN,NaN,NaN,1570.8415971153856,32.13773718463135,1024.487709207802,1024.4439194820052,11.36630703947057,998.0,1.0,NaN,NaN,NaN,,
+15.0,2025-11-26T17:43:40Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,
+15.0,2025-11-26T19:29:01Z,0.7847676959938636,0.10084423709701448,-0.031491908194296606,48.269751358308746,-126.63724029380022,3.6503732999165854,11.381800015767416,16.118300358454388,NaN,NaN,NaN,1574.3035194883382,32.13462148459861,1024.4828675519045,1024.44480520243,11.379851057164053,1000.0,1.0,NaN,NaN,NaN,,
+15.0,2025-11-26T21:14:22Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,
+15.0,2025-11-26T22:59:42Z,2.999996276285387,0.35714096960257224,-0.009340467389870538,48.25221666666666,-126.63588333333333,3.6160978343751697,10.909116797977024,13.630049741542383,NaN,NaN,NaN,1577.8583455485164,32.211821323088714,1024.6214871285986,1024.5716915953285,10.907692861939445,1002.0,1.0,NaN,NaN,NaN,,
+15.0,2025-11-27T00:45:03Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,
+            """;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    eddGrid = (EDDGrid) EDDTestDataset.getbinnedCUGN90();
+
+    // *** test getting dds for entire dataset
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            "",
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_BINNED_Entire",
+            ".dds");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+Dataset {
+  Int32 depth[depth = 50];
+  Int32 profile[profile = 61305];
+  GRID {
+    ARRAY:
+      Float64 time_column[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } time_column;
+  GRID {
+    ARRAY:
+      Int32 mission[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } mission;
+  GRID {
+    ARRAY:
+      Float64 latitude[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } latitude;
+  GRID {
+    ARRAY:
+      Float64 longitude[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } longitude;
+  GRID {
+    ARRAY:
+      Float64 temperature[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } temperature;
+  GRID {
+    ARRAY:
+      Float64 salinity[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } salinity;
+  GRID {
+    ARRAY:
+      Float64 chlorophyll[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } chlorophyll;
+  GRID {
+    ARRAY:
+      Float64 doxy[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } doxy;
+  GRID {
+    ARRAY:
+      Float64 acoustic_backscatter[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } acoustic_backscatter;
+  GRID {
+    ARRAY:
+      Float64 acoustic_backscatter_flag[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } acoustic_backscatter_flag;
+  GRID {
+    ARRAY:
+      Float64 u[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } u;
+  GRID {
+    ARRAY:
+      Float64 v[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } v;
+  GRID {
+    ARRAY:
+      Float64 time_uv[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } time_uv;
+  GRID {
+    ARRAY:
+      Float64 lat_uv[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } lat_uv;
+  GRID {
+    ARRAY:
+      Float64 lon_uv[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } lon_uv;
+  GRID {
+    ARRAY:
+      Float64 u_depth_mean[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } u_depth_mean;
+  GRID {
+    ARRAY:
+      Float64 v_depth_mean[depth = 50][profile = 61305];
+    MAPS:
+      Int32 depth[depth = 50];
+      Int32 profile[profile = 61305];
+  } v_depth_mean;
+} binnedCUGN90;
+""";
+    ;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    userDapQuery = "depth%5B(10.0):1:(500.0)%5D,profile%5B(33400):1:(33500)%5D";
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            userDapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_BINNED_Data1",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+depth,profile
+m,
+10,33400
+20,33401
+30,33402
+40,33403
+50,33404
+60,33405
+70,33406
+80,33407
+90,33408
+100,33409
+110,33410
+120,33411
+130,33412
+140,33413
+150,33414
+160,33415
+170,33416
+180,33417
+190,33418
+200,33419
+210,33420
+220,33421
+230,33422
+240,33423
+250,33424
+260,33425
+270,33426
+280,33427
+290,33428
+300,33429
+310,33430
+320,33431
+330,33432
+340,33433
+350,33434
+360,33435
+370,33436
+380,33437
+390,33438
+400,33439
+410,33440
+420,33441
+430,33442
+440,33443
+450,33444
+460,33445
+470,33446
+480,33447
+490,33448
+500,33449
+NaN,33450
+NaN,33451
+NaN,33452
+NaN,33453
+NaN,33454
+NaN,33455
+NaN,33456
+NaN,33457
+NaN,33458
+NaN,33459
+NaN,33460
+NaN,33461
+NaN,33462
+NaN,33463
+NaN,33464
+NaN,33465
+NaN,33466
+NaN,33467
+NaN,33468
+NaN,33469
+NaN,33470
+NaN,33471
+NaN,33472
+NaN,33473
+NaN,33474
+NaN,33475
+NaN,33476
+NaN,33477
+NaN,33478
+NaN,33479
+NaN,33480
+NaN,33481
+NaN,33482
+NaN,33483
+NaN,33484
+NaN,33485
+NaN,33486
+NaN,33487
+NaN,33488
+NaN,33489
+NaN,33490
+NaN,33491
+NaN,33492
+NaN,33493
+NaN,33494
+NaN,33495
+NaN,33496
+NaN,33497
+NaN,33498
+NaN,33499
+NaN,33500
+                """;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    userDapQuery =
+        "time_column%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,mission%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,latitude%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,longitude%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,time_uv%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,lat_uv%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,lon_uv%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,u_depth_mean%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,v_depth_mean%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D";
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            userDapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_BINNED_Data1",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+depth,profile,time_column,mission,latitude,longitude,time_uv,lat_uv,lon_uv,u_depth_mean,v_depth_mean
+m,,UTC,,degrees_north,degrees_east,UTC,degrees_north,degrees_east,m s-1,m s-1
+10,33490,2017-05-20T12:15:55Z,43,32.512955000000005,-119.63327,2017-05-20T11:34:40Z,32.5086,-119.63542,-0.03206891941184341,-0.04349959071933791
+10,33491,2017-05-20T15:17:47Z,43,32.527992499999996,-119.61837750000001,2017-05-20T14:34:04Z,32.524175,-119.622625,-0.007037644331198292,-0.044792960561126416
+10,33492,2017-05-20T18:14:50Z,43,32.5444975,-119.60252750000001,2017-05-20T17:31:56Z,32.540065,-119.605975,0.014234868481062661,-0.034139441208194586
+10,33493,2017-05-20T21:08:23Z,43,32.560415,-119.5917725,2017-05-20T20:26:22Z,32.555930000000004,-119.59391500000001,0.006762008855396907,-0.028364576339620654
+10,33494,2017-05-20T23:58:21Z,43,32.5749925,-119.58758,2017-05-20T23:16:57Z,32.571175,-119.58814,-0.06881383716259214,-0.0564056728805038
+10,33495,2017-05-21T02:44:38Z,43,32.58895750000001,-119.57937,2017-05-21T02:04:04Z,32.585185,-119.58197,-0.06117929072555283,-0.027162370246794198
+10,33496,2017-05-21T05:31:32Z,43,32.602945,-119.567525,2017-05-21T04:50:32Z,32.599270000000004,-119.57072,-0.05581133874286994,-0.020192212572642174
+10,33497,2017-05-21T08:08:33Z,43,32.611737500000004,-119.5519875,2017-05-21T07:32:48Z,32.609705000000005,-119.556345,-0.017082248168141946,-0.03481536192460433
+10,33498,2017-05-21T10:56:38Z,43,32.6240325,-119.53391500000001,2017-05-21T10:13:35Z,32.620495,-119.53849,-0.021440157731995712,-0.02985286450122003
+10,33499,2017-05-21T13:45:57Z,43,32.63722,-119.51559750000001,2017-05-21T13:05:27Z,32.63401,-119.520205,-0.03324010208694092,-0.037871540851972335
+10,33500,2017-05-21T16:38:28Z,43,32.650752499999996,-119.4977275,2017-05-21T15:57:32Z,32.647115,-119.502235,-0.03308678551452424,-0.002597188736094276
+20,33490,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33491,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33492,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33493,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33494,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33495,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33496,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33497,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33498,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33499,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+20,33500,,2147483647,NaN,NaN,,NaN,NaN,NaN,NaN
+                """;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    userDapQuery =
+        "time_column%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,mission%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,latitude%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,longitude%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,temperature%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,salinity%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,chlorophyll%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,doxy%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,acoustic_backscatter%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,acoustic_backscatter_flag%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,u%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,v%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,time_uv%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,lat_uv%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,lon_uv%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,u_depth_mean%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D,v_depth_mean%5B(10.0):1:(20)%5D%5B(33490):1:(33500)%5D";
+    tName =
+        eddGrid.makeNewFileForDapQuery(
+            language,
+            null,
+            null,
+            userDapQuery,
+            EDStatic.config.fullTestCacheDirectory,
+            eddGrid.className() + "_BINNED_Data1",
+            ".csv");
+    results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+    expected =
+"""
+depth,profile,time_column,mission,latitude,longitude,temperature,salinity,chlorophyll,doxy,acoustic_backscatter,acoustic_backscatter_flag,u,v,time_uv,lat_uv,lon_uv,u_depth_mean,v_depth_mean
+m,,UTC,,degrees_north,degrees_east,degree_C,1,mg m-3,micromol kg-1,dB,,m s-1,m s-1,UTC,degrees_north,degrees_east,m s-1,m s-1
+10,33490,2017-05-20T12:15:55Z,43,32.512955000000005,-119.63327,14.504818181818179,33.52063636363636,0.7658227922754075,251.89549043987535,76.8958737954893,1.0,0.09833576639254202,-0.019085685218998463,2017-05-20T11:34:40Z,32.5086,-119.63542,-0.03206891941184341,-0.04349959071933791
+10,33491,2017-05-20T15:17:47Z,43,32.527992499999996,-119.61837750000001,14.680800000000001,33.5195,0.696319788878198,253.08949136898485,76.76483739398073,1.0,0.2327242712938018,-0.14141115227865894,2017-05-20T14:34:04Z,32.524175,-119.622625,-0.007037644331198292,-0.044792960561126416
+10,33492,2017-05-20T18:14:50Z,43,32.5444975,-119.60252750000001,14.629333333333332,33.514,0.5872805781235153,257.4754860971322,78.287638459482,1.0,0.24257882900701663,-0.29389332121341316,2017-05-20T17:31:56Z,32.540065,-119.605975,0.014234868481062661,-0.034139441208194586
+10,33493,2017-05-20T21:08:23Z,43,32.560415,-119.5917725,14.859888888888893,33.51322222222222,0.8375252712865331,263.15831667474333,78.62648079786419,1.0,0.04543969325598961,-0.39289428196923093,2017-05-20T20:26:22Z,32.555930000000004,-119.59391500000001,0.006762008855396907,-0.028364576339620654
+10,33494,2017-05-20T23:58:21Z,43,32.5749925,-119.58758,14.779818181818182,33.52977777777778,1.8977830428583473,264.4926607340789,80.71281299006296,1.0,-0.19855806338768162,-0.4869272199133772,2017-05-20T23:16:57Z,32.571175,-119.58814,-0.06881383716259214,-0.0564056728805038
+10,33495,2017-05-21T02:44:38Z,43,32.58895750000001,-119.57937,14.550833333333335,33.54116666666667,1.8240059924386556,260.81182324686205,NaN,1.0,-0.14242431939220374,-0.2682413700456722,2017-05-21T02:04:04Z,32.585185,-119.58197,-0.06117929072555283,-0.027162370246794198
+10,33496,2017-05-21T05:31:32Z,43,32.602945,-119.567525,14.984,33.51350000000001,0.9378255783631891,254.04729298319995,76.26811867422727,1.0,-0.13789561649770565,-0.12312164526134897,2017-05-21T04:50:32Z,32.599270000000004,-119.57072,-0.05581133874286994,-0.020192212572642174
+10,33497,2017-05-21T08:08:33Z,43,32.611737500000004,-119.5519875,15.237200000000001,33.481700000000004,0.9955832099151116,256.2274094775991,NaN,1.0,-0.062147188226229416,-0.008405503575321743,2017-05-21T07:32:48Z,32.609705000000005,-119.556345,-0.017082248168141946,-0.03481536192460433
+10,33498,2017-05-21T10:56:38Z,43,32.6240325,-119.53391500000001,15.227090909090911,33.4800909090909,0.8178641655129468,252.8151065894969,73.65397318912727,1.0,-0.02594927457642392,0.07571137848676565,2017-05-21T10:13:35Z,32.620495,-119.53849,-0.021440157731995712,-0.02985286450122003
+10,33499,2017-05-21T13:45:57Z,43,32.63722,-119.51559750000001,15.021666666666668,33.510444444444445,0.5617792566666749,250.6972748533616,73.81154349053112,1.0,0.04423309786016795,0.0022151487531942085,2017-05-21T13:05:27Z,32.63401,-119.520205,-0.03324010208694092,-0.037871540851972335
+10,33500,2017-05-21T16:38:28Z,43,32.650752499999996,-119.4977275,14.932750000000002,33.524625,0.36644869805004204,253.80656017330438,73.13030129939803,1.0,0.14989316336902844,-0.002650263139479731,2017-05-21T15:57:32Z,32.647115,-119.502235,-0.03308678551452424,-0.002597188736094276
+20,33490,,2147483647,NaN,NaN,14.050909090909094,33.50845454545455,1.2818367013663166,250.42054768624766,78.04777909024305,1.0,0.11471167059715227,-0.02167542855641772,,NaN,NaN,NaN,NaN
+20,33491,,2147483647,NaN,NaN,14.459666666666669,33.519416666666665,0.6404366888781979,254.35485777081135,74.99512161226994,1.0,0.24350961705383117,-0.1335800113430226,,NaN,NaN,NaN,NaN
+20,33492,,2147483647,NaN,NaN,14.237416666666668,33.514083333333325,2.236569244790182,257.0073270037834,78.95053075867267,1.0,0.14899835580671217,-0.2607374786980359,,NaN,NaN,NaN,NaN
+20,33493,,2147483647,NaN,NaN,14.2429,33.5104,2.7109278046198666,255.4187424721912,78.73496175463215,1.0,0.05064762918486037,-0.3016332597998584,,NaN,NaN,NaN,NaN
+20,33494,,2147483647,NaN,NaN,14.039363636363635,33.54490909090909,2.860148133767438,256.7689632332348,80.6729153761968,1.0,-0.181139189161171,-0.3477669998350658,,NaN,NaN,NaN,NaN
+20,33495,,2147483647,NaN,NaN,14.512200000000002,33.53900000000001,1.5499171424386557,259.62492689503216,78.21561919122088,1.0,-0.1280558840721935,-0.23721406854742338,,NaN,NaN,NaN,NaN
+20,33496,,2147483647,NaN,NaN,14.9535,33.5133,0.8630655783631891,253.60135013401091,77.50658098239707,1.0,-0.18397172246594914,-0.10971218143833489,,NaN,NaN,NaN,NaN
+20,33497,,2147483647,NaN,NaN,14.3847,33.4862,1.1043590099151117,249.05357470067557,76.91097396301693,1.0,-0.03166368941611913,-0.018448150725391327,,NaN,NaN,NaN,NaN
+20,33498,,2147483647,NaN,NaN,14.485750000000001,33.485166666666665,0.9863998246038562,247.1304781290071,77.00547151366962,1.0,-0.0250434664253219,0.06530984334856509,,NaN,NaN,NaN,NaN
+20,33499,,2147483647,NaN,NaN,14.961181818181819,33.508,0.5957988324242507,248.85756536951604,75.74141983363387,1.0,-0.02430323176656768,-0.0157950656645654,,NaN,NaN,NaN,NaN
+20,33500,,2147483647,NaN,NaN,14.905916666666664,33.523250000000004,0.439573323050042,252.89512484848524,75.20584671264554,1.0,0.14234735661168763,0.011912184060236804,,NaN,NaN,NaN,NaN
+            """;
+    Test.ensureEqual(results, expected, "\nresults=\n" + results);
   }
 }

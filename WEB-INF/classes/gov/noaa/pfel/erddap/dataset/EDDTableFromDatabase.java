@@ -665,18 +665,6 @@ public class EDDTableFromDatabase extends EDDTable {
   }
 
   /**
-   * This returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles)
-   * or false if it doesn't (e.g., EDDTableFromDatabase).
-   *
-   * @returns true if this EDDTable knows each variable's actual_range (e.g., EDDTableFromFiles) or
-   *     false if it doesn't (e.g., EDDTableFromDatabase).
-   */
-  @Override
-  public boolean knowsActualRange() {
-    return false;
-  } // because this gets info from a database
-
-  /**
    * This makes a new database Connection. If dataSource != null, it will be used to get the
    * connection; else via DriverManager. See the connectionProperties documentation for the class
    * constructor.
@@ -1707,7 +1695,8 @@ public class EDDTableFromDatabase extends EDDTable {
     // last 2 params: includeDataType, questionDestinationName
     sb.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-    sb.append("""
+    sb.append(
+        """
             </dataset>
 
             """);

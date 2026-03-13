@@ -5,8 +5,8 @@ import com.cohort.util.Test;
 import dods.dap.DConnect;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
-import tags.TagThredds;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledThredds;
 import testDataset.Initialization;
 
 class OpendapTests {
@@ -17,7 +17,7 @@ class OpendapTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagThredds
+  @TagDisabledThredds
   void basicTest() throws Exception {
 
     Grid.verbose = true;
@@ -200,7 +200,7 @@ class OpendapTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Connection cannot be opened
+  @TagDisabledIncompleteTest // Connection cannot be opened
   void doOceanWatchSpeedTests() throws Exception {
     boolean doDotTestToo = false;
     boolean doAsciiTestToo = false;
@@ -223,7 +223,7 @@ class OpendapTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest //  Connection cannot be opened
+  @TagDisabledIncompleteTest //  Connection cannot be opened
   void doThredds1_8081SpeedTests() throws Exception {
     boolean doDotTestToo = false;
     boolean doAsciiTestToo = true;
@@ -249,7 +249,7 @@ class OpendapTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Connection cannot be opened
+  @TagDisabledIncompleteTest // Connection cannot be opened
   void doErddapSpeedTests() throws Exception {
     boolean doAsciiTestToo = false;
     // System.out.println("\nOpendap.doErddapSpeedTests");
@@ -296,7 +296,7 @@ class OpendapTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Connection cannot be opened
+  @TagDisabledIncompleteTest // Connection cannot be opened
   void threddsTunnelTest() throws Exception {
     int nTimes = 10; // 200 for a good test
     String baseUrl = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdCMsfc";
@@ -336,7 +336,7 @@ class OpendapTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // Connection cannot be opened
+  @TagDisabledIncompleteTest // Connection cannot be opened
   void doOtterSpeedTests() throws Exception {
     boolean doDotTestToo = false;
     boolean doAsciiTestToo = false;

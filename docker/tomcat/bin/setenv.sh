@@ -13,7 +13,7 @@ if [ -f "${CATALINA_HOME}/bin/config.sh" ]; then
 fi
 
 # JAVA_OPTS
-NORMAL="-server -Djava.awt.headless=true"
+NORMAL="-server -Djava.awt.headless=true -XX:+UseCompactObjectHeaders"
 HEAP_DUMP="-XX:+HeapDumpOnOutOfMemoryError"
 
 # Memory

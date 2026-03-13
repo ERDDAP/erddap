@@ -2,22 +2,29 @@ package com.cohort.util;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.Initialization;
 import ucar.units.Unit;
 
 class Units2Tests {
-  private static String testResources = Units2Tests.class.getResource("/data/").getPath();
-  private static String cfUnique = testResources + "/uniqueCFUnits.txt";
+  private static String testResources;
+  private static String cfUnique;
 
   @BeforeAll
-  static void init() {
+  static void init() throws URISyntaxException {
     Initialization.edStatic();
+    testResources =
+        Path.of(Units2Tests.class.getResource("/data/").toURI()).toString() + File.separatorChar;
+    cfUnique = testResources + "/uniqueCFUnits.txt";
   }
 
   /**
@@ -57,7 +64,7 @@ class Units2Tests {
     StringArray sa = new StringArray(set.toArray(new String[0]));
     set = null;
     sa.sortIgnoreCase();
-    sa.toFile(cfUnique, File2.UTF_8, "\n");
+    sa.toFile(cfUnique, StandardCharsets.UTF_8, "\n");
     String2.log(sa.toNewlineString());
     sa = new StringArray(reject.toArray(new String[0]));
     sa.sortIgnoreCase();
@@ -919,7 +926,8 @@ class Units2Tests {
   @org.junit.jupiter.api.Test
   void testIfCFCanonicalUnitsUnique() throws Throwable {
     gatherUniqueCFUnits(
-        Units2Tests.class.getResource("/data/cf-standard-name-table.xml").getPath());
+        Path.of(Units2Tests.class.getResource("/data/cf-standard-name-table.xml").toURI())
+            .toString());
     generateTests();
     StringArray sa = StringArray.fromFileUtf8(cfUnique);
     Attributes atts = new Attributes(); // use it as a hashmap: canon -> source
@@ -2366,7 +2374,7 @@ class Units2Tests {
 
   /** This is used by Bob as a one time test. No one else will need to use this. */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // doesn't pass, need to investigate mismatches for problems
+  @TagDisabledIncompleteTest // doesn't pass, need to investigate mismatches for problems
   void testRoundTripConversions() throws Exception {
     // uc -> ud -> uc is more likely to work cleanly because it starts with acronym
     String2.log("\n*** Units2.testRoundTripConversions");

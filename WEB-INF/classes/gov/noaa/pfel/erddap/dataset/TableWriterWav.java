@@ -17,9 +17,10 @@ import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * TableWriterWav provides a way to write a table to a .wav file (see Table.writeWav()) in chunks so
@@ -105,7 +106,9 @@ public class TableWriterWav extends TableWriter {
       }
 
       // create the dos
-      dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullDosName)));
+      dos =
+          new DataOutputStream(
+              new BufferedOutputStream(Files.newOutputStream(Paths.get(fullDosName))));
     }
 
     // *** do everyTime stuff

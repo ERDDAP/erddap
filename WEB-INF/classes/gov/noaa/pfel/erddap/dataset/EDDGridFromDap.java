@@ -1694,7 +1694,8 @@ public class EDDGridFromDap extends EDDGrid {
         writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
     results.append(
         writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false));
-    results.append("""
+    results.append(
+        """
             </dataset>
 
             """);

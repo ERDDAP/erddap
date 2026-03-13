@@ -12,8 +12,8 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagExternalOther;
-import tags.TagMissingDataset;
+import tags.TagDisabledExternalOther;
+import tags.TagDisabledMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -25,7 +25,7 @@ class EDDTableFromWFSFilesTests {
 
   /** testGenerateDatasetsXml See response from URL at /data/wfs/wfs.xml */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testGenerateDatasetsXml() throws Throwable {
     // testVerboseOn();
     // boolean oDevelopmentMode = developmentMode;
@@ -860,7 +860,7 @@ class EDDTableFromWFSFilesTests {
 
   /** Basic tests of this class. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBasic() throws Throwable {
     // String2.log("\n*** EDDTableFromWFSFiles.testBasic");
     int language = 0;

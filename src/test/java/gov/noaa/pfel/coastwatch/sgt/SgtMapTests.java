@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeAll;
@@ -462,9 +463,7 @@ class SgtMapTests {
 
     if (true) {
       // make a regionsMap
-      ResourceBundle2 classRB2 =
-          new ResourceBundle2(
-              "gov.noaa.pfel.coastwatch.TimePeriods", "gov.noaa.pfel.coastwatch.BrowserDefault");
+      ResourceBundle2 classRB2 = new ResourceBundle2("gov.noaa.pfel.coastwatch.TimePeriods");
       String tRegionInfo[] = String2.split(classRB2.getString("regionInfo", null), '\f');
       String regionInfo[][] = new String[tRegionInfo.length][];
       for (int region = 0; region < tRegionInfo.length; region++) {
@@ -1014,7 +1013,9 @@ class SgtMapTests {
 
     // describe grid vectors
     ArrayList<GraphDataLayer> pointDataList = new ArrayList<>();
-    String griddataDir = SgtMapTests.class.getResource("/data/gridTests/").getPath();
+    String griddataDir =
+        Path.of(SgtMapTests.class.getResource("/data/gridTests/").toURI()).toString()
+            + File.separatorChar;
     /*
      * String fullResultCpt = griddataDir + "TestMakeMap.cpt";
      * File2.delete(fullResultCpt);

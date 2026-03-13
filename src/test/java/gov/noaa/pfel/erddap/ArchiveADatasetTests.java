@@ -11,17 +11,136 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagMissingDataset;
+import tags.TagDisabledMissingDataset;
+import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
 class ArchiveADatasetTests {
   @BeforeAll
-  static void init() {
+  static void init() throws Throwable {
     Initialization.edStatic();
+    EDDTestDataset.generateDatasetsXml();
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset //  All of these require the datasets to be defined in the loaded datasets.xml
+  void testDryRun() throws Throwable {
+    String2.log("*** ArchiveADataset.testDryRun()");
+    int language = 0;
+
+    // make the targz
+    String targzName =
+        new ArchiveADataset()
+            .doIt(
+                language,
+                new String[] {
+                  "-dryRun",
+                  "original",
+                  "tar.gz",
+                  "nobody@example.com",
+                  "test_chars_e886_d14c_7d71",
+                  "default", // all data vars
+                  "", // extra constraints
+                  "nothing", // subsetBy
+                  ".csv", // fileType
+                  "MD5"
+                });
+    Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
+
+    String ra[] = File2.readFromFileUtf8(targzName + ".listOfFiles.txt");
+    Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
+    String results = ra[1];
+    // In dryRun, no data files should be created
+    Test.ensureTrue(
+        !results.contains("data/test_chars_e886_d14c_7d71.csv"), "results=\n" + results);
+
+    // cleanup
+    File2.delete(targzName);
+    File2.delete(targzName + ".md5.txt");
+    File2.delete(targzName + ".listOfFiles.txt");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testOriginalTable() throws Throwable {
+    String2.log("*** ArchiveADataset.testOriginalTable()");
+    int language = 0;
+
+    // make the targz
+    String targzName =
+        new ArchiveADataset()
+            .doIt(
+                language,
+                new String[] {
+                  "-verbose",
+                  "original",
+                  "tar.gz",
+                  "nobody@example.com",
+                  "test_chars_e886_d14c_7d71",
+                  "default", // all data vars
+                  "", // extra constraints
+                  "nothing", // subsetBy
+                  ".csv", // fileType
+                  "MD5"
+                });
+    Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
+
+    String ra[] = File2.readFromFileUtf8(targzName + ".listOfFiles.txt");
+    Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
+    String results = ra[1];
+    // We expect the files to be in the archive
+    Test.ensureTrue(results.contains("test_chars_e886_d14c_7d71.das"), "results=\n" + results);
+    Test.ensureTrue(results.contains("test_chars_e886_d14c_7d71.dds"), "results=\n" + results);
+    Test.ensureTrue(results.contains("READ_ME.txt"), "results=\n" + results);
+    Test.ensureTrue(results.contains("test_chars_e886_d14c_7d71.csv"), "results=\n" + results);
+    Test.ensureTrue(results.contains("test_chars_e886_d14c_7d71.csv.md5"), "results=\n" + results);
+
+    // cleanup
+    File2.delete(targzName);
+    File2.delete(targzName + ".md5.txt");
+    File2.delete(targzName + ".listOfFiles.txt");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testBagItTable() throws Throwable {
+    String2.log("*** ArchiveADataset.testBagItTable()");
+    int language = 0;
+
+    // make the targz
+    String targzName =
+        new ArchiveADataset()
+            .doIt(
+                language,
+                new String[] {
+                  "-verbose",
+                  "BagIt",
+                  "tar.gz",
+                  "nobody@example.com",
+                  "test_chars_e886_d14c_7d71",
+                  "default", // all data vars
+                  "", // extra constraints
+                  "nothing", // subsetBy
+                  ".csv", // fileType
+                  "SHA-256"
+                });
+    Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
+    Test.ensureTrue(File2.isFile(targzName), "targzName=" + targzName);
+
+    // For BagIt, there is no listOfFiles.txt created by ArchiveADataset, but we can check the targz
+    // Actually ArchiveADataset.java says:
+    // if (!bagitMode) { ... make .listOfFiles.txt ... }
+
+    Test.ensureTrue(
+        !File2.isFile(targzName + ".listOfFiles.txt"),
+        "listOfFiles.txt should not exist for BagIt");
+    Test.ensureTrue(File2.isFile(targzName + ".sha256.txt"), "sha256.txt should exist");
+
+    // cleanup
+    File2.delete(targzName);
+    File2.delete(targzName + ".sha256.txt");
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagDisabledMissingDataset //  All of these require the datasets to be defined in the loaded
+  // datasets.xml
   void testOriginalNcCF() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalNcCF()");
     int language = 0;
@@ -84,7 +203,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItNcCF() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItNcCF()");
     int language = 0;
@@ -187,7 +306,7 @@ class ArchiveADatasetTests {
 
   /** A test of NCEI-preferences */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItNcCFMA() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItNcCFMA()");
     int language = 0;
@@ -288,7 +407,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOriginalTrajectoryProfile() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalTrajectoryProfile()");
     int language = 0;
@@ -358,7 +477,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItTrajectoryProfile() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItTrajectoryProfile()");
     int language = 0;
@@ -461,7 +580,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOriginalGridAll() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalGridAll()");
     int language = 0;
@@ -528,7 +647,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItGridAll() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItGridAll()");
     int language = 0;
@@ -627,7 +746,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testOriginalGridSubset() throws Throwable {
     String2.log("*** ArchiveADataset.testOriginalGridSubset()");
     int language = 0;
@@ -688,7 +807,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItGridSubset() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItGridSubset()");
     int language = 0;
@@ -785,7 +904,7 @@ class ArchiveADatasetTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset
+  @TagDisabledMissingDataset
   void testBagItGridSubset2() throws Throwable {
     String2.log("*** ArchiveADataset.testBagItGridSubset2()");
     int language = 0;

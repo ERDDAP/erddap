@@ -314,7 +314,6 @@ public class ByteArray extends PrimitiveArray {
     int code = 0;
     for (int i = 0; i < size; i++) code = 31 * code + array[i];
     return code;
-    // return HashDigest.murmur32(array, size);
   }
 
   /**
@@ -383,17 +382,17 @@ public class ByteArray extends PrimitiveArray {
   @Override
   public PAType needPAType(PAType tPAType) {
     return switch (tPAType) {
-        // if tPAType is smaller or same, return this.PAType
+      // if tPAType is smaller or same, return this.PAType
       case BYTE -> PAType.BYTE;
 
-        // if sideways
+      // if sideways
       case CHAR -> PAType.STRING;
       case UBYTE -> PAType.SHORT;
       case USHORT -> PAType.INT;
       case UINT -> PAType.LONG;
       case ULONG -> PAType.STRING;
 
-        // if tPAType is bigger.  SHORT, INT, LONG, FLOAT, DOUBLE, STRING
+      // if tPAType is bigger.  SHORT, INT, LONG, FLOAT, DOUBLE, STRING
       default -> tPAType;
     };
   }

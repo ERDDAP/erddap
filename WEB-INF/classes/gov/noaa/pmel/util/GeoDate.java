@@ -360,44 +360,24 @@ public class GeoDate implements java.io.Serializable, Comparable<GeoDate> {
     return year_;
   }
 
-  /** Get month @Deprecated Overrides a deprecated method, replaced by {@link #getGMTMonth}. */
-  // public int getMonth() {
-  //  splitTimeFormat();
-  //  return month_;
-  // }
   /** Get month */
   public int getGMTMonth() {
     splitTimeFormat();
     return month_;
   }
 
-  /** Get day @Deprecated Overrides a deprecated method, replaced by {@link #getGMTDay}. */
-  // public int getDay() {
-  //  splitTimeFormat();
-  //  return day_;
-  // }
   /** Get day */
   public int getGMTDay() {
     splitTimeFormat();
     return day_;
   }
 
-  /** Get hours @Deprecated Overrides a deprecated method, replaced by {@link #getGMTHours}. */
-  // public int getHours() {
-  //  splitTimeFormat();
-  // return hour_;
-  // }
   /** Get hours */
   public int getGMTHours() {
     splitTimeFormat();
     return hour_;
   }
 
-  /** Get minutes @Deprecated Overrides a deprecated method, replaced by {@link #getGMTMinutes}. */
-  // public int getMinutes() {
-  //  splitTimeFormat();
-  //  return minute_;
-  // }
   /** Get minutes */
   public int getGMTMinutes() {
     splitTimeFormat();

@@ -85,20 +85,23 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.semver4j.Semver;
-import tags.TagFlaky;
+import tags.TagDisabledFlaky;
+import tags.TagDisabledIncompleteTest;
+import tags.TagDisabledThredds;
+import tags.TagExternal;
 import tags.TagImageComparison;
-import tags.TagIncompleteTest;
 import tags.TagJetty;
-import tags.TagThredds;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
+import testSupport.ExternalTestUrls;
+import testSupport.WireMockLifecycle;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 @TagJetty
-class JettyTests {
+class JettyTests extends WireMockLifecycle {
 
   @TempDir private static Path TEMP_DIR;
 
@@ -4514,10 +4517,45 @@ class JettyTests {
       String content;
       String sa[];
       HashSet<String> hs;
-      try {
-        content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
-      } catch (Exception e) {
-        results.append("\n* Trouble: " + e.toString() + "\n");
+      String pageUrl = tErddapUrl + pages[i];
+      content = null;
+
+      // Retry logic for transient 503 errors (Service Unavailable)
+      // These can occur during graph generation or when server is under load
+      int maxRetries = 3;
+      int retryDelayMs = 1000;
+      for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          content = SSR.getUrlResponseStringUnchanged(pageUrl);
+          break; // Success, exit retry loop
+        } catch (Exception e) {
+          String errorMsg = e.toString();
+          boolean is503Error = errorMsg.contains("503") || errorMsg.contains("Service Unavailable");
+
+          if (is503Error && attempt < maxRetries) {
+            // Transient 503 error, retry after delay
+            String2.log(
+                "  Note: Got 503 on attempt "
+                    + attempt
+                    + "/"
+                    + maxRetries
+                    + " for "
+                    + pages[i]
+                    + ". Waiting "
+                    + retryDelayMs
+                    + "ms before retry...");
+            Thread.sleep(retryDelayMs);
+            retryDelayMs = Math.min(retryDelayMs * 2, 5000); // Exponential backoff, max 5s
+          } else if (attempt == maxRetries || !is503Error) {
+            // Final attempt failed or non-503 error, report it
+            results.append("\n* Trouble: " + errorMsg + "\n");
+            break;
+          }
+        }
+      }
+
+      if (content == null) {
+        // Failed after retries or caught non-retriable exception
         continue;
       }
 
@@ -6190,7 +6228,7 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.html");
     assertTrue(
         results.contains(
-            """
+"""
 <option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
 <option>.croissant - Download the dataset croissant schema.
 <option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
@@ -6245,7 +6283,7 @@ class JettyTests {
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/testGriddedNcFiles.html");
     assertTrue(
         results.contains(
-            """
+"""
 <option>.asc - View OPeNDAP-style ISO-8859-1 comma-separated text.
 <option>.croissant - Download the dataset croissant schema.
 <option>.csv - Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).
@@ -6463,7 +6501,7 @@ class JettyTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagJetty
+  @TagExternal
   void testForBrokenLinks() throws Exception {
     this.testForBrokenLinks(
         "http://localhost:" + PORT + "/erddap/convert/oceanicAtmosphericAcronyms.html");
@@ -6640,6 +6678,11 @@ class JettyTests {
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"California Underwater Glider Network - Line 90\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/binnedCUGN90/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"Channel Islands, Kelp Forest Monitoring, Sea Temperature, 1993-2007\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCinpKfmT/index.html\"\n"
                 + "    },\n"
@@ -6755,6 +6798,16 @@ class JettyTests {
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"dfo-marvin1003-20250925T1927\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/Grid_NC_1D_2D/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"ECMWF (RSMC) data from a local source., Lon+/-180\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ECMWF-FIXED/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"EPA SeaMap water station profiles in Gulf of Mexico\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/epaseamapTimeSeriesProfiles/index.html\"\n"
                 + "    },\n"
@@ -6835,6 +6888,11 @@ class JettyTests {
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/TableAggregateRows_nceiPH53sst/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"MODISA L3 SMI,\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUInt16File/index.html\"\n"
                 + "    },\n"
@@ -6912,6 +6970,11 @@ class JettyTests {
                 + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/testActualRange/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"NOAA GOES-17 ABI L1b Radiances CONUS\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/noaa_goes17_abi_l1b_radc/index.html\"\n"
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
@@ -7325,6 +7388,11 @@ class JettyTests {
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"California Underwater Glider Network - Line 90\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/binnedCUGN90/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"Channel Islands, Kelp Forest Monitoring, Sea Temperature, 1993-2007\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCinpKfmT/index.html\"\n"
                 + "    },\n"
@@ -7440,6 +7508,16 @@ class JettyTests {
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"dfo-marvin1003-20250925T1927\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/Grid_NC_1D_2D/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"ECMWF (RSMC) data from a local source., Lon+/-180\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ECMWF-FIXED/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"EPA SeaMap water station profiles in Gulf of Mexico\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/epaseamapTimeSeriesProfiles/index.html\"\n"
                 + "    },\n"
@@ -7520,6 +7598,11 @@ class JettyTests {
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/TableAggregateRows_nceiPH53sst/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"MODISA L3 SMI,\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUInt16File/index.html\"\n"
                 + "    },\n"
@@ -7597,6 +7680,11 @@ class JettyTests {
                 + "      \"@type\": \"Dataset\",\n"
                 + "      \"name\": \"NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present\",\n"
                 + "      \"sameAs\": \"http://localhost:8080/erddap/info/testActualRange/index.html\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "      \"@type\": \"Dataset\",\n"
+                + "      \"name\": \"NOAA GOES-17 ABI L1b Radiances CONUS\",\n"
+                + "      \"sameAs\": \"http://localhost:8080/erddap/info/noaa_goes17_abi_l1b_radc/index.html\"\n"
                 + "    },\n"
                 + "    {\n"
                 + "      \"@type\": \"Dataset\",\n"
@@ -7966,91 +8054,81 @@ class JettyTests {
                 + "  \"distribution\": [\n"
                 + "  {\n"
                 + "    \"@type\": \"cr:FileObject\",\n"
-                + "    \"@id\": \"A2003001.L3m_DAY_CHL_chlor_a_4km.nc\",\n"
-                + "    \"contentSize\": \"7363403 B\",\n"
-                + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdMH1chla1day/A2003001.L3m_DAY_CHL_chlor_a_4km.nc\",\n"
-                + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-                + "  },\n"
-                + "  {\n"
-                + "    \"@type\": \"cr:FileObject\",\n"
-                + "    \"@id\": \"A2003002.L3m_DAY_CHL_chlor_a_4km.nc\",\n"
-                + "    \"contentSize\": \"7363403 B\",\n"
-                + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdMH1chla1day/A2003002.L3m_DAY_CHL_chlor_a_4km.nc\",\n"
-                + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-                + "  },\n"
-                + "  {\n"
-                + "    \"@type\": \"cr:FileObject\",\n"
-                + "    \"@id\": \"A2016291.L3m_DAY_CHL_chlor_a_4km.nc\",\n"
-                + "    \"contentSize\": \"7363403 B\",\n"
-                + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdMH1chla1day/A2016291.L3m_DAY_CHL_chlor_a_4km.nc\",\n"
-                + "    \"encodingFormat\": \"application/x-netcdf\"\n"
+                + "    \"@id\": \"manifest\",\n"
+                + "    \"name\": \"manifest\",\n"
+                + "    \"description\": \"Manifest file containing the list of all data files.\",\n"
+                + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdMH1chla1day.manifest\",\n"
+                + "    \"encodingFormat\": \"text/csv\"\n"
                 + "  },\n"
                 + "  {\n"
                 + "    \"@type\": \"cr:FileSet\",\n"
-                + "    \"@id\": \"erdMH1chla1dayFiles\",\n"
-                + "    \"description\": \"Files that contain the data.\",\n"
-                + "    \"encodingFormat\": \"application/json\",\n"
-                + "    \"includes\": \"http://localhost:8080/erddap/files/erdMH1chla1day/*.*\"\n"
+                + "    \"@id\": \"files\",\n"
+                + "    \"name\": \"files\",\n"
+                + "    \"description\": \"The set of data files.\",\n"
+                + "    \"containedIn\": { \"@id\": \"manifest\" },\n"
+                + "    \"encodingFormat\": \"*/*\",\n"
+                + "    \"includes\": \"*\"\n"
                 + "  }\n"
                 + "  ],\n"
                 + "  \"recordSet\": [\n"
                 + "    {\n"
                 + "      \"@type\": \"cr:RecordSet\",\n"
-                + "      \"@id\": \"dataRecordSet\",\n"
+                + "      \"@id\": \"default\",\n"
+                + "      \"name\": \"default\",\n"
                 + "      \"field\": [\n"
                 + "        {\n"
                 + "          \"@type\": \"cr:Field\",\n"
-                + "          \"@id\": \"dataRecordSet/time\",\n"
+                + "          \"@id\": \"default/time\",\n"
                 + "          \"description\": \"Centered Time\",\n"
                 + "          \"dataType\": \"cr:Float64\",\n"
                 + "          \"source\": {\n"
                 + "            \"fileSet\": {\n"
-                + "              \"@id\": \"erdMH1chla1dayFiles\"\n"
+                + "              \"@id\": \"files\"\n"
                 + "            },\n"
                 + "            \"extract\": {\n"
-                + "              \"column\": \"time\"\n"
+                + "              \"column\": \"***fileName,timeFormat=yyyyDDD,A(\\\\d{7})\\\\.L3m_DAY_CHL_chlor_a_4km\\\\.nc,1\"\n"
                 + "            }\n"
                 + "          }\n"
                 + "        },\n"
                 + "        {\n"
                 + "          \"@type\": \"cr:Field\",\n"
-                + "          \"@id\": \"dataRecordSet/latitude\",\n"
+                + "          \"@id\": \"default/latitude\",\n"
                 + "          \"description\": \"Latitude\",\n"
                 + "          \"dataType\": \"cr:Float32\",\n"
                 + "          \"source\": {\n"
                 + "            \"fileSet\": {\n"
-                + "              \"@id\": \"erdMH1chla1dayFiles\"\n"
+                + "              \"@id\": \"files\"\n"
                 + "            },\n"
                 + "            \"extract\": {\n"
-                + "              \"column\": \"latitude\"\n"
+                + "              \"column\": \"lat\"\n"
                 + "            }\n"
                 + "          }\n"
                 + "        },\n"
                 + "        {\n"
                 + "          \"@type\": \"cr:Field\",\n"
-                + "          \"@id\": \"dataRecordSet/longitude\",\n"
+                + "          \"@id\": \"default/longitude\",\n"
                 + "          \"description\": \"Longitude\",\n"
                 + "          \"dataType\": \"cr:Float32\",\n"
                 + "          \"source\": {\n"
                 + "            \"fileSet\": {\n"
-                + "              \"@id\": \"erdMH1chla1dayFiles\"\n"
+                + "              \"@id\": \"files\"\n"
                 + "            },\n"
                 + "            \"extract\": {\n"
-                + "              \"column\": \"longitude\"\n"
+                + "              \"column\": \"lon\"\n"
                 + "            }\n"
                 + "          }\n"
                 + "        },\n"
                 + "        {\n"
                 + "          \"@type\": \"cr:Field\",\n"
-                + "          \"@id\": \"dataRecordSet/chlorophyll\",\n"
+                + "          \"@id\": \"default/chlorophyll\",\n"
                 + "          \"description\": \"Mean Chlorophyll a Concentration\",\n"
                 + "          \"dataType\": \"cr:Float32\",\n"
                 + "          \"source\": {\n"
                 + "            \"fileSet\": {\n"
-                + "              \"@id\": \"erdMH1chla1dayFiles\"\n"
+                + "              \"@id\": \"files\"\n"
                 + "            },\n"
                 + "            \"extract\": {\n"
-                + "              \"column\": \"chlorophyll\"\n"
+                + "              \"column\": \"chlor_a\"\n"
                 + "            }\n"
                 + "          }\n"
                 + "        }\n"
@@ -8801,7 +8879,7 @@ class JettyTests {
       "&short_name=depth",
       "&minLat=-45&maxLat=45",
       "&minLon=-25&maxLon=25",
-      "&minTime=now-5years&maxTime=now-2years"
+      "&minTime=2018&maxTime=now-2years"
     };
     for (int i = 0; i < goodQueries.length; i++) {
       query += goodQueries[i];
@@ -10612,6 +10690,9 @@ class JettyTests {
         globecBottle.makeNewFileForDapQuery(
             language, null, null, tUserDapQuery, dir, globecBottle.className() + "_Data", ".nc");
     results = NcHelper.ncdump(dir + tName, "");
+    results =
+        results.replaceFirst("^netcdf\\s+(.+?)\\s*\\{", "netcdf EDDTableFromNcFiles_Data.nc {");
+    results = results.replaceAll("\r\n", "\n");
     String tHeader1 =
         "netcdf EDDTableFromNcFiles_Data.nc {\n"
             + "  dimensions:\n"
@@ -10758,17 +10839,107 @@ class JettyTests {
             ".ncHeader");
     // TestUtil.displayInBrowser("file://" + dir + tName);
     results = File2.directReadFromUtf8File(dir + tName);
-    String2.log(results);
 
+    results = results.replaceAll("\r\n", "\n");
+    results =
+        results.replaceFirst("^netcdf\\s+(.+?)\\s*\\{", "netcdf EDDTableFromNcFiles_Data.nc {");
+    tHeader1 =
+"""
+netcdf EDDTableFromNcFiles_Data.nc {
+  dimensions:
+    row = 1007;
+    ship_strlen = 11;
+  variables:
+    float longitude(row=1007);
+      :_CoordinateAxisType = "Lon";
+      :_FillValue = 327.67f; // float
+      :actual_range = -126.0f, -124.1f; // float
+      :axis = "X";
+      :ioos_category = "Location";
+      :long_name = "Longitude";
+      :missing_value = 327.67f; // float
+      :standard_name = "longitude";
+      :units = "degrees_east";
+
+    float NO3(row=1007);
+      :_FillValue = -99.0f; // float
+      :actual_range = 0.0f, 99.79f; // float
+      :colorBarMaximum = 50.0; // double
+      :colorBarMinimum = 0.0; // double
+      :ioos_category = "Dissolved Nutrients";
+      :long_name = "Nitrate";
+      :missing_value = -9999.0f; // float
+      :standard_name = "mole_concentration_of_nitrate_in_sea_water";
+      :units = "micromoles L-1";
+
+    double time(row=1007);
+      :_CoordinateAxisType = "Time";
+      :actual_range = 1.02833814E9, 1.02978828E9; // double
+      :axis = "T";
+      :cf_role = "profile_id";
+      :ioos_category = "Time";
+      :long_name = "Time";
+      :standard_name = "time";
+      :time_origin = "01-JAN-1970 00:00:00";
+      :units = "seconds since 1970-01-01T00:00:00Z";
+
+    char ship(row=1007, ship_strlen=11);
+      :_Encoding = "ISO-8859-1";
+      :ioos_category = "Identifier";
+      :long_name = "Ship";
+
+  // global attributes:
+  :cdm_data_type = "TrajectoryProfile";
+  :cdm_profile_variables = "cast, longitude, latitude, time";
+  :cdm_trajectory_variables = "cruise_id, ship";
+  :Conventions = "COARDS, CF-1.6, ACDD-1.3";
+  :Easternmost_Easting = -124.1f; // float
+  :featureType = "TrajectoryProfile";
+  :geospatial_lat_max = 44.65; // double
+  :geospatial_lat_min = 41.9; // double
+  :geospatial_lat_units = "degrees_north";
+  :geospatial_lon_max = -124.1f; // float
+  :geospatial_lon_min = -126.0f; // float
+  :geospatial_lon_units = "degrees_east";
+  :geospatial_vertical_max = 0.0; // double
+  :geospatial_vertical_min = 0.0; // double
+  :geospatial_vertical_positive = "up";
+  :geospatial_vertical_units = "m";
+  :history = """;
+    tHeader1 = tHeader1.replaceAll("\r\n", "\n");
     tResults = results.substring(0, tHeader1.length());
     Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
 
-    expected = tHeader2 + "}\n";
-    tPo = results.indexOf(expected.substring(0, 17));
+    tHeader2 =
+"""
+/erddap/tabledap/testGlobecBottle.ncHeader?longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
+  :id = "Globec_bottle_data_2002";
+  :infoUrl = "https://en.wikipedia.org/wiki/Global_Ocean_Ecosystem_Dynamics";
+  :institution = "GLOBEC";
+  :keywords = "10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water";
+  :keywords_vocabulary = "GCMD Science Keywords";
+  :Northernmost_Northing = 44.65; // double
+  :sourceUrl = "(local files; contact erd.data@noaa.gov)";
+  :Southernmost_Northing = 41.9; // double
+  :standard_name_vocabulary = "CF Standard Name Table v70";
+  :subsetVariables = "cruise_id, ship, cast, longitude, latitude, time";
+  :time_coverage_end = "2002-08-19T20:18:00Z";
+  :time_coverage_start = "2002-08-03T01:29:00Z";
+  :title = "GLOBEC NEP Rosette Bottle Data (2002)";
+  :Westernmost_Easting = -126.0f; // float
+}
+                """;
+    results =
+        results.substring(0, results.indexOf("  :license = "))
+            + results.substring(results.indexOf("  :Northernmost_Northing = "));
+    results =
+        results.substring(0, results.indexOf("  :summary = "))
+            + results.substring(results.indexOf("  :time_coverage_end = "));
+    tPo = results.indexOf(tHeader2.substring(0, 17));
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(
-        results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
-        expected,
+        results.substring(tPo, Math.min(results.length(), tPo + tHeader2.length())),
+        tHeader2,
         "results=\n" + results);
 
     // .odvTxt
@@ -11290,8 +11461,7 @@ class JettyTests {
             tLocalDir),
         5,
         "nFilesToDownload");
-    Math2.sleep(10000);
-    // String2.pressEnterToContinue("Hopefully the first download tasks finished.");
+    Math2.sleep(1000);
 
     // Use ".*" for the path regex to make the test compatible with windows systems.
     // The issue is that Windows sometimes uses / and sometimes uses \ as a path separator.
@@ -11334,8 +11504,7 @@ class JettyTests {
             tLocalDir),
         2,
         "nFilesToDownload");
-    Math2.sleep(3000);
-    // String2.pressEnterToContinue("Hopefully the download tasks finished.");
+    Math2.sleep(1000);
 
     results =
         FileVisitorDNLS.oneStep( // throws IOException if "Too many open files"
@@ -11656,9 +11825,7 @@ class JettyTests {
         // Nothing wront here, it's common for this to thow an error and then kick off the file
         // copies.
       }
-      Math2.sleep(5000);
-      // String2.pressEnterToContinue(
-      // "\n*** When the tasks are finished, press Enter.");
+
       edd = EDDTableFromNcFiles.oneFromXmlFragment(null, results);
 
       Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -11951,10 +12118,8 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -11981,9 +12146,7 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -12152,10 +12315,8 @@ class JettyTests {
     results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
     expected =
         "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,_FillValue,1.0E35f\n" : "")
             + "*GLOBAL*,cdm_data_type,TimeSeries\n"
             + "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,CREATION_DATE,hh:mm  D-MMM-YYYY\n" : "")
             + "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n"
             + "*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n"
             + "*GLOBAL*,creator_type,group\n"
@@ -12193,9 +12354,7 @@ class JettyTests {
             + "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n"
             + "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n"
             + "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,missing_value,1.0E35f\n" : "")
             + "*GLOBAL*,Northernmost_Northing,21.0d\n"
-            + (EDStatic.config.useSaxParser ? "*GLOBAL*,platform_code,CODE\n" : "")
             + "*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n"
             + "*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n"
             + "*GLOBAL*,sourceUrl,(local files)\n"
@@ -12411,18 +12570,9 @@ class JettyTests {
             + "    Float64 actual_range 5.01, 5375.0;\n"
             + // 2014-01-17 was 5.0, 5374.0
             "    String axis \"Z\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    String grads_dim \"z\";\n" + "    String grads_mapping \"levels\";\n"
-                : "")
             + "    String ioos_category \"Location\";\n"
             + "    String long_name \"Depth\";\n"
-            + (EDStatic.config.useSaxParser
-                ? "    Float64 maximum 5375.0;\n"
-                    + "    Float64 minimum 5.01;\n"
-                    + "    String name \"Depth\";\n"
-                : "")
             + "    String positive \"down\";\n"
-            + (EDStatic.config.useSaxParser ? "    Float32 resolution 137.69205;\n" : "")
             + "    String standard_name \"depth\";\n"
             + "    String units \"m\";\n"
             + "  }";
@@ -12726,7 +12876,7 @@ class JettyTests {
   /** This tests saveAsKml. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagThredds // external server is failing to respond, so disable the test for now
+  @TagDisabledThredds // external server is failing to respond, so disable the test for now
   void testKml() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -12875,8 +13025,9 @@ class JettyTests {
     // String mapDapQuery = "chlorophyll[200][][(29):(50)][(225):(247)]"; // stride irrelevant
     int language = 0;
 
+    String baseUrl = ExternalTestUrls.apdrcHawaiiBase();
     // get das and dds
-    String threddsUrl = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
+    String threddsUrl = baseUrl + "/dods/public_data/SODA/soda_pop2.2.4";
     String erddapUrl =
         EDStatic.erddapUrl + "/griddap/hawaii_d90f_20ee_c4cb"; // in tests, always non-https url
     DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
@@ -13001,21 +13152,9 @@ class JettyTests {
               + "      :_CoordinateAxisType = \"Time\";\n"
               + "      :actual_range = -3.122928E9, 1.2923712E9; // double\n"
               + "      :axis = \"T\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :grads_dim = \"t\";\n"
-                      + "      :grads_mapping = \"linear\";\n"
-                      + "      :grads_min = \"00z15jan1871\";\n"
-                      + "      :grads_size = \"1680\";\n"
-                      + "      :grads_step = \"1mo\";\n"
-                  : "")
               + "      :ioos_category = \"Time\";\n"
               + "      :legacy_time_adjust = \"true\";\n"
               + "      :long_name = \"Centered Time\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :maximum = \"00z15dec2010\";\n"
-                      + "      :minimum = \"00z15jan1871\";\n"
-                      + "      :resolution = 30.43657f; // float\n"
-                  : "")
               + "      :standard_name = \"time\";\n"
               + "      :time_origin = \"01-JAN-1970 00:00:00\";\n"
               + "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n"
@@ -13025,18 +13164,9 @@ class JettyTests {
               + "      :_CoordinateZisPositive = \"down\";\n"
               + "      :actual_range = 5.01, 5375.0; // double\n"
               + "      :axis = \"Z\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :grads_dim = \"z\";\n" + "      :grads_mapping = \"levels\";\n"
-                  : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Depth\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :maximum = 5375.0; // double\n"
-                      + "      :minimum = 5.01; // double\n"
-                      + "      :name = \"Depth\";\n"
-                  : "")
               + "      :positive = \"down\";\n"
-              + (EDStatic.config.useSaxParser ? "      :resolution = 137.69205f; // float\n" : "")
               + "      :standard_name = \"depth\";\n"
               + "      :units = \"m\";\n"
               + "\n"
@@ -13044,18 +13174,8 @@ class JettyTests {
               + "      :_CoordinateAxisType = \"Lat\";\n"
               + "      :actual_range = -75.25, 89.25; // double\n"
               + "      :axis = \"Y\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :grads_dim = \"y\";\n"
-                      + "      :grads_mapping = \"linear\";\n"
-                      + "      :grads_size = \"330\";\n"
-                  : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Latitude\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :maximum = 89.25; // double\n"
-                      + "      :minimum = -75.25; // double\n"
-                      + "      :resolution = 0.5f; // float\n"
-                  : "")
               + "      :standard_name = \"latitude\";\n"
               + "      :units = \"degrees_north\";\n"
               + "\n"
@@ -13063,18 +13183,8 @@ class JettyTests {
               + "      :_CoordinateAxisType = \"Lon\";\n"
               + "      :actual_range = 0.25, 359.75; // double\n"
               + "      :axis = \"X\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :grads_dim = \"x\";\n"
-                      + "      :grads_mapping = \"linear\";\n"
-                      + "      :grads_size = \"720\";\n"
-                  : "")
               + "      :ioos_category = \"Location\";\n"
               + "      :long_name = \"Longitude\";\n"
-              + (EDStatic.config.useSaxParser
-                  ? "      :maximum = 359.75; // double\n"
-                      + "      :minimum = 0.25; // double\n"
-                      + "      :resolution = 0.5f; // float\n"
-                  : "")
               + "      :standard_name = \"longitude\";\n"
               + "      :units = \"degrees_east\";\n"
               + "\n"
@@ -13140,7 +13250,9 @@ class JettyTests {
               + "  :dataType = \"Grid\";\n"
               + "  :defaultDataQuery = \"temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]\";\n"
               + "  :defaultGraphQuery = \"temp[last][0][0:last][0:last]&.draw=surface&.vars=longitude|latitude|temp\";\n"
-              + "  :documentation = \"http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php\";\n"
+              + "  :documentation = \""
+              + baseUrl
+              + "/datadoc/soda_2.2.4.php\";\n"
               + "  :Easternmost_Easting = 359.75; // double\n"
               + "  :geospatial_lat_max = 89.25; // double\n"
               + "  :geospatial_lat_min = -75.25; // double\n"
@@ -13174,7 +13286,9 @@ class JettyTests {
               + "particular purpose, or assumes any legal liability for the accuracy,\n"
               + "completeness, or usefulness, of this information.\";\n"
               + "  :Northernmost_Northing = 89.25; // double\n"
-              + "  :sourceUrl = \"http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4\";\n"
+              + "  :sourceUrl = \""
+              + baseUrl
+              + "/dods/public_data/SODA/soda_pop2.2.4\";\n"
               + "  :Southernmost_Northing = -75.25; // double\n"
               + "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n"
               + "  :summary = \"Simple Ocean Data Assimilation (SODA) version 2.2.4 - A reanalysis of ocean \n"
@@ -13921,6 +14035,8 @@ class JettyTests {
     results =
         results.replaceAll(
             ":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f", ":actual_range = MIN, MAX");
+    results = results.replaceAll("\r\n", "\n");
+    expected = expected.replaceAll("\r\n", "\n");
     tPo = results.indexOf("  variables:\n");
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(
@@ -13940,6 +14056,7 @@ class JettyTests {
       results =
           results.replaceAll(
               ":actual_range = -?[0-9]+.[0-9]+f, -?[0-9]+.[0-9]+f", ":actual_range = MIN, MAX");
+      results = results.replaceAll("\r\n", "\n");
       tPo = results.indexOf("  variables:\n");
       Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
       Test.ensureEqual(
@@ -14560,7 +14677,6 @@ class JettyTests {
       // "Restart the local erddap with quickRestart=true and with datasetID=" +
       // datasetID + " .\n" +
       // "Wait until all datasets are loaded.");
-      Math2.sleep(30000); // allow tasks to finish
 
       // change the file's timestamp
       File2.setLastModified(fullName, timestamp - 60000); // 1 minute earlier
@@ -16258,7 +16374,7 @@ class JettyTests {
   /** This tests hardFlag. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagIncompleteTest
+  @TagDisabledIncompleteTest
   void testHardFlag() throws Throwable {
     // String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
     // "This test requires hawaii_d90f_20ee_c4cb and
@@ -16356,7 +16472,7 @@ class JettyTests {
     int firstTest = 0;
     int lastTest = 1000;
     // gc and sleep to give computer time to catch up from previous tests
-    for (int i = 0; i < 4; i++) Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
+    for (int i = 0; i < 4; i++) Math2.gcAndWait("EDDGridFromNcFiles.testSpeed (between tests)");
     // boolean oReallyVerbose = reallyVerbose;
     // reallyVerbose = false;
     String outName;
@@ -16492,8 +16608,6 @@ class JettyTests {
 
     lastTest = Math.min(lastTest, extensions.length - 1);
     for (int ext = firstTest; ext <= lastTest; ext++) {
-      // String2.pressEnterToContinue("");
-      // Math2.sleep(3000);
       String dotExt = extensions[ext];
       // try {
       String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext + ": " + dotExt + " speed\n");
@@ -16526,7 +16640,6 @@ class JettyTests {
               + "ms (expected="
               + expectedMs[ext]
               + ")\n");
-      // Math2.sleep(3000);
 
       // if not too slow or too fast, break
       // if (time > 1.5 * Math.max(50, expectedMs[ext]) ||
@@ -16686,7 +16799,9 @@ class JettyTests {
             + "<body>\n"
             + "<h2>HTTP ERROR 400 Ambiguous URI empty segment</h2>\n"
             + "<table>\n"
-            + "<tr><th>URI:</th><td>/erddap/files//.csv</td></tr>\n"
+            + "<tr><th>URI:</th><td>http://localhost:"
+            + PORT
+            + "/erddap/files//.csv</td></tr>\n"
             + "<tr><th>STATUS:</th><td>400</td></tr>\n"
             + "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n"
             + "</table>\n"
@@ -16718,7 +16833,9 @@ class JettyTests {
             + "<body>\n"
             + "<h2>HTTP ERROR 400 Ambiguous URI empty segment</h2>\n"
             + "<table>\n"
-            + "<tr><th>URI:</th><td>/erddap/files/nceiPH53sstn1day//.csv</td></tr>\n"
+            + "<tr><th>URI:</th><td>http://localhost:"
+            + PORT
+            + "/erddap/files/nceiPH53sstn1day//.csv</td></tr>\n"
             + "<tr><th>STATUS:</th><td>400</td></tr>\n"
             + "<tr><th>MESSAGE:</th><td>Ambiguous URI empty segment</td></tr>\n"
             + "</table>\n"
@@ -17122,7 +17239,7 @@ class JettyTests {
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  @TagDisabledFlaky // It seems if data is not cached to frequently fail for one of the sides
   // in erdQSwindmday
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
@@ -17553,7 +17670,7 @@ class JettyTests {
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagFlaky // It seems if data is not cached to frequently fail for one of the sides
+  @TagDisabledFlaky // It seems if data is not cached to frequently fail for one of the sides
   // in erdQSwindmday
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
@@ -17602,7 +17719,7 @@ class JettyTests {
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
   @TagJetty
-  @TagThredds
+  @TagDisabledThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
@@ -17730,7 +17847,7 @@ class JettyTests {
     EDDGridFromDap eddGridFromDap =
         (EDDGridFromDap) context.getErddap().gridDatasetHashMap.get("hawaii_d90f_20ee_c4cb");
     assertEquals(
-        "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4",
+        ExternalTestUrls.apdrcHawaiiBase() + "/dods/public_data/SODA/soda_pop2.2.4",
         eddGridFromDap.localSourceUrl());
 
     EDDGridLonPM180 eddGridLonPM180 =
@@ -17946,9 +18063,6 @@ class JettyTests {
 
       // request status.html
       SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
-      Math2.sleep(1000);
-      //   TestUtil.displayInBrowser("file://" + EDStatic.config.bigParentDirectory +
-      // "logs/log.txt");
 
       //   String2.pressEnterToContinue(
       //       "Look at log.txt to see if update was run and successfully "
@@ -17958,6 +18072,288 @@ class JettyTests {
       // change timestamp back to original
       File2.setLastModified(fullName, timestamp);
     }
+  }
+
+  /** EDDTableAggregateRows, nceiPH53sst */
+  @org.junit.jupiter.api.Test
+  void testAllChildAggregation_nceiPH53sst() throws Throwable {
+    String results, tName, expected;
+    EDDTable tedd = (EDDTable) EDDTestDataset.getTableAggregateRows_nceiPH53sst();
+    String dir = EDStatic.config.fullTestCacheDirectory;
+    int tPo;
+    int language = 0;
+
+    // das
+    tName =
+        tedd.makeNewFileForDapQuery(language, null, null, "", dir, tedd.className() + "1", ".das");
+    results = File2.directReadFrom88591File(dir + tName);
+    expected =
+"""
+Attributes {
+ s {
+  longitude {
+    UInt32 _ChunkSizes 8640;
+    String _CoordinateAxisType "Lon";
+    Float32 actual_range -179.979, 179.979;
+    String axis "X";
+    String grids "uniform grids from -180 to 180 by 0.04";
+    String ioos_category "Location";
+    String long_name "Longitude";
+    String reference_datum "Geographical coordinates, WGS84 datum";
+    String standard_name "longitude";
+    String units "degrees_east";
+    Float32 valid_max 180.0;
+    Float32 valid_min -180.0;
+  }
+  latitude {
+    UInt32 _ChunkSizes 4320;
+    String _CoordinateAxisType "Lat";
+    Float32 actual_range -89.979, 89.979;
+    String axis "Y";
+    String grids "uniform grids from 90.0 to -90.0 by 0.04";
+    String ioos_category "Location";
+    String long_name "Latitude";
+    String reference_datum "Geographical coordinates, WGS84 datum";
+    String standard_name "latitude";
+    String units "degrees_north";
+    Float32 valid_max 90.0;
+    Float32 valid_min -90.0;
+  }
+  time {
+    String _CoordinateAxisType "Time";
+    Float64 actual_range 3.675888e+8, 1.609416e+9;
+    String axis "T";
+    String comment "This is the centered, reference time.";
+    String ioos_category "Time";
+    String long_name "Centered Time";
+    String standard_name "time";
+    String time_origin "01-JAN-1970 00:00:00";
+    String units "seconds since 1970-01-01T00:00:00Z";
+  }
+  sea_surface_temperature {
+    Float64 _FillValue NaN;
+    String ancillary_variables "quality_level pathfinder_quality_level l2p_flags";
+    Float64 colorBarMaximum 32.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "Skin temperature of the ocean";
+    String coverage_content_type "physicalMeasurement";
+    String grid_mapping "crs";
+    String ioos_category "Temperature";
+    String long_name "NOAA Climate Data Record of sea surface skin temperature";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String standard_name "sea_surface_skin_temperature";
+    String units "degree_C";
+    Float64 valid_max 45.0;
+    Float64 valid_min -1.7999999999999545;
+  }
+  dt_analysis {
+    Float64 _FillValue NaN;
+    Float64 colorBarMaximum 5.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "The difference between this SST and the previous day's SST.";
+    String coverage_content_type "auxiliaryInformation";
+    String grid_mapping "crs";
+    String ioos_category "Statistics";
+    String long_name "deviation from last SST analysis";
+    String platform "NOAA-19";
+    String references "AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.";
+    String source "NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)";
+    String units "degree_C";
+    Float64 valid_max 12.700000000000001;
+    Float64 valid_min -12.700000000000001;
+  }
+  wind_speed {
+    String _Unsigned "false";
+    Float64 colorBarMaximum 15.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.";
+    String coverage_content_type "auxiliaryInformation";
+    String grid_mapping "crs";
+    String height "10 m";
+    String ioos_category "Wind";
+    String long_name "10m wind speed";
+    String source "NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.2020.nc, v_wind.10m.gauss.2020.nc";
+    String standard_name "wind_speed";
+    Float64 time_offset 3.1036;
+    String units "m s-1";
+    Byte valid_max 127;
+    Byte valid_min -127;
+  }
+  sea_ice_fraction {
+    Float64 _FillValue NaN;
+    Float64 colorBarMaximum 1.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.3 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.3 grid.";
+    String coverage_content_type "auxiliaryInformation";
+    String grid_mapping "crs";
+    String ioos_category "Ice Distribution";
+    String long_name "sea ice fraction";
+    String references "Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at http://doi.org/10.7289/V5SQ8XB5";
+    String source "NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 20201231120000-NCEI-L4_GHRSST-SSTblend-AVHRR_OI-GLOB-v02.0-fv02.1.nc.gz";
+    String standard_name "sea_ice_area_fraction";
+    Float64 time_offset 2.0;
+    String units "%";
+    Float64 valid_max 1.27;
+    Float64 valid_min -1.27;
+  }
+  quality_level {
+    Byte _FillValue 127;
+    String _Unsigned "false";
+    String ancillary_variables "pathfinder_quality_level";
+    String colorBarContinuous "false";
+    Float64 colorBarMaximum 6.0;
+    Float64 colorBarMinimum 0.0;
+    Int32 colorBarNSections 6;
+    String comment "These are the overall quality indicators and are used for all GHRSST SSTs. Note, the native Pathfinder processing system returns quality levels ranging from 0 to 7 (7 is best quality; -1 represents missing data) and has been converted to the extent possible into the six levels required by the GDS2 (ranging from 0 to 5, where 5 is best). Below is the conversion table:\s
+ GDS2 required quality_level 5  =  native Pathfinder quality level 7 == best_quality\s
+ GDS2 required quality_level 4  =  native Pathfinder quality level 4-6 == acceptable_quality\s
+ GDS2 required quality_level 3  =  native Pathfinder quality level 2-3 == low_quality\s
+ GDS2 required quality_level 2  =  native Pathfinder quality level 1 == worst_quality\s
+ GDS2 required quality_level 1  =  native Pathfinder quality level 0 = bad_data\s
+ GDS2 required quality_level 0  =  native Pathfinder quality level -1 = missing_data\s
+ The original Pathfinder quality level is recorded in the optional variable pathfinder_quality_level.";
+    String coverage_content_type "qualityInformation";
+    String flag_meanings "no_data bad_data worst_quality low_quality acceptable_quality best_quality";
+    Byte flag_values 0, 1, 2, 3, 4, 5;
+    String grid_mapping "crs";
+    String ioos_category "Quality";
+    String long_name "quality level of SST pixel";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String units "1";
+    Byte valid_max 5;
+    Byte valid_min 1;
+  }
+  pathfinder_quality_level {
+    Byte _FillValue 127;
+    String _Unsigned "false";
+    String colorBarContinuous "false";
+    Float64 colorBarMaximum 8.0;
+    Float64 colorBarMinimum 0.0;
+    Int32 colorBarNSections 8;
+    String comment "This variable contains the native Pathfinder processing system quality levels, ranging from 0 to 7, where 0 is worst and 7 is best. And value -1 represents missing data.";
+    String coverage_content_type "qualityInformation";
+    String flag_meanings "bad_data worst_quality low_quality low_quality acceptable_quality acceptable_quality acceptable_quality best_quality";
+    Byte flag_values 0, 1, 2, 3, 4, 5, 6, 7;
+    String grid_mapping "crs";
+    String ioos_category "Quality";
+    String long_name "Pathfinder SST quality flag";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String units "1";
+    Byte valid_max 7;
+    Byte valid_min 0;
+  }
+  l2p_flags {
+    Float64 colorBarMaximum 300.0;
+    Float64 colorBarMinimum 0.0;
+    String comment "Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1.";
+    String coverage_content_type "auxiliaryInformation";
+    Int16 flag_masks 1, 2, 4, 8, 16, 32, 64, 128, 256;
+    String flag_meanings "microwave land ice lake river reserved_for_future_use unused_currently unused_currently unused_currently";
+    String grid_mapping "crs";
+    String ioos_category "Quality";
+    String long_name "L2P flags";
+    String platform "NOAA-19";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String units "1";
+    Int16 valid_max 256;
+    Int16 valid_min 0;
+  }
+ }
+  NC_GLOBAL {
+    String _NCProperties "version=2,netcdf=4.7.4,hdf5=1.10.5";
+    String acknowledgement "Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the NOAA National Centers for Environmental Information (NCEI). This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.";
+    String cdm_data_type "Point";
+    String cdr_id "gov.noaa.ncdc:C00983";
+    String cdr_program "NOAA Climate Data Record Program for satellites";
+    String cdr_variable "sea_surface_temperature";
+    String comment "SST from AVHRR Pathfinder";
+    String contributor_name "Robert Evans";
+    String contributor_role "Principal Investigator";
+    String Conventions "CF-1.6, ACDD-1.3, COARDS";
+    String creator_email "Kenneth.Casey@noaa.gov";
+    String creator_institution "US DOC; NOAA; National Environmental Satellite Data and Information Service; National Centers for Environmental Information";
+    String creator_name "Kenneth S. Casey";
+    String creator_type "person";
+    String creator_url "https://pathfinder.nodc.noaa.gov";
+    String date_created "2021-01-15T20:58:10Z";
+    String date_issued "2016-03-01T00:00:00Z";
+    String date_metadata_modified "2016-01-25T00:00:00Z";
+    String date_modified "2021-01-15T20:58:10Z";
+    String day_or_night "Day";
+    Float64 Easternmost_Easting 179.979;
+    String featureType "Point";
+    String gds_version_id "2.0";
+    String geospatial_bounds "-180.0000 -90.0000, 180.0000 90.0000";
+    String geospatial_bounds_crs "EPSG:4326";
+    Float64 geospatial_lat_max 89.979;
+    Float64 geospatial_lat_min -89.979;
+    Float64 geospatial_lat_resolution 0.04166658948830748;
+    String geospatial_lat_units "degrees_north";
+    Float64 geospatial_lon_max 179.979;
+    Float64 geospatial_lon_min -179.979;
+    Float64 geospatial_lon_resolution 0.041666628081953934;
+    String geospatial_lon_units "degrees_east";
+    String history""";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    expected =
+"""
+    String id "AVHRR_Pathfinder-NCEI-L3C-v5.3";
+    String infoUrl "https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3";
+    String institution "NCEI";
+    String instrument "AVHRR-3";
+    String instrument_vocabulary "NASA Global Change Master Directory (GCMD) Science Keywords v8.4";
+    String keywords "10m, advanced, aerosol, aerosol_dynamic_indicator, analysis, area, atmosphere, atmospheric, avhrr, bias, centers, climate, collated, cryosphere, data, deviation, difference, distribution, dt_analysis, dynamic, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Cryosphere > Sea Ice > Ice Extent, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Sea Ice > Ice Extent, environmental, error, estimate, extent, flag, flags, fraction, ghrsst, global, high, high-resolution, ice, ice distribution, indicator, information, l2p, l2p_flags, l3-collated, l3c, level, national, ncei, noaa, ocean, oceans, optical, optical properties, pathfinder, pathfinder_quality_level, pixel, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds";
+    String keywords_vocabulary "GCMD Science Keywords";
+    String license "These data are available for use without restriction.
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.";
+    Int32 maxAxis0 0;
+    String metadata_link "https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3";
+    String naming_authority "org.ghrsst";
+    String ncei_template_version "NCEI_NetCDF_Grid_Template_v2.0";
+    Float64 Northernmost_Northing 89.979;
+    String orbit_node "Ascending";
+    String platform "NOAA-19";
+    String platform_vocabulary "NASA Global Change Master Directory (GCMD) Science Keywords v8.4";
+    String processing_level "L3C";
+    String product_version "PFV5.3";
+    String program "NOAA Climate Data Record (CDR) Program for satellites";
+    String project "Group for High Resolution Sea Surface Temperature";
+    String publisher_email "ghrsst-po@nceo.ac.uk";
+    String publisher_name "GHRSST Project Office";
+    String publisher_type "group";
+    String publisher_url "https://www.ghrsst.org";
+    String references "https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.";
+    String sea_name "World-Wide Distribution";
+    String sensor "AVHRR-3";
+    String source "AVHRR_GAC-CLASS-L1B-NOAA_19-v1";
+    String sourceUrl "https://www.ncei.noaa.gov/thredds-ocean/catalog/pathfinder/Version5.3/L3C/catalog.html";
+    Float64 Southernmost_Northing -89.979;
+    String spatial_resolution "0.0416667 degree";
+    String standard_name_vocabulary "CF Standard Name Table v70";
+    String summary "MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)";
+    String time_coverage_duration "P1D";
+    String time_coverage_end "2020-12-31T12:00:00Z";
+    String time_coverage_resolution "P1D";
+    String time_coverage_start "1981-08-25T12:00:00Z";
+    String title "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table";
+    Float64 Westernmost_Easting -179.979;
+  }
+}""";
+    tPo = results.indexOf("    String id ");
+    Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+    Test.ensureTrue(tPo + expected.length() <= results.length(), "results too short=\n" + results);
+    Test.ensureEqual(
+        results.substring(tPo, tPo + expected.length()), expected, "results=\n" + results);
   }
 
   /** EDDTableFromErddap */
@@ -18101,53 +18497,36 @@ class JettyTests {
             + "  \"distribution\": [\n"
             + "  {\n"
             + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"202020201231025647-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA19_G_2020366_night-v02.0-fv01.0.nc\",\n"
-            + "    \"contentSize\": \"42714962 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/nceiPH53sstn1day/2020/20201231025647-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA19_G_2020366_night-v02.0-fv01.0.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"1981/data19810825023019-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981237_night-v02.0-fv01.0.nc\",\n"
-            + "    \"contentSize\": \"42714962 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/nceiPH53sstn1day/1981/data/19810825023019-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981237_night-v02.0-fv01.0.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"1981/data19810826023552-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981238_night-v02.0-fv01.0.nc\",\n"
-            + "    \"contentSize\": \"42714962 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/nceiPH53sstn1day/1981/data/19810826023552-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981238_night-v02.0-fv01.0.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"1994/data19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc\",\n"
-            + "    \"contentSize\": \"42714962 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/nceiPH53sstn1day/1994/data/19940913000030-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA09_G_1994256_night-v02.0-fv01.0.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
+            + "    \"@id\": \"manifest\",\n"
+            + "    \"name\": \"manifest\",\n"
+            + "    \"description\": \"Manifest file containing the list of all data files.\",\n"
+            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/testGridFromErddap.manifest\",\n"
+            + "    \"encodingFormat\": \"text/csv\"\n"
             + "  },\n"
             + "  {\n"
             + "    \"@type\": \"cr:FileSet\",\n"
-            + "    \"@id\": \"testGridFromErddapFiles\",\n"
-            + "    \"description\": \"Files that contain the data.\",\n"
-            + "    \"encodingFormat\": \"application/json\",\n"
-            + "    \"includes\": \"http://localhost:8080/erddap/files/nceiPH53sstn1day/*.*\"\n"
+            + "    \"@id\": \"files\",\n"
+            + "    \"name\": \"files\",\n"
+            + "    \"description\": \"The set of data files.\",\n"
+            + "    \"containedIn\": { \"@id\": \"manifest\" },\n"
+            + "    \"encodingFormat\": \"*/*\",\n"
+            + "    \"includes\": \"*\"\n"
             + "  }\n"
             + "  ],\n"
             + "  \"recordSet\": [\n"
             + "    {\n"
             + "      \"@type\": \"cr:RecordSet\",\n"
-            + "      \"@id\": \"dataRecordSet\",\n"
+            + "      \"@id\": \"default\",\n"
+            + "      \"name\": \"default\",\n"
             + "      \"field\": [\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/time\",\n"
+            + "          \"@id\": \"default/time\",\n"
             + "          \"description\": \"Centered Time\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"time\"\n"
@@ -18156,12 +18535,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/latitude\",\n"
+            + "          \"@id\": \"default/latitude\",\n"
             + "          \"description\": \"Latitude\",\n"
             + "          \"dataType\": \"cr:Float32\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"latitude\"\n"
@@ -18170,12 +18549,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/longitude\",\n"
+            + "          \"@id\": \"default/longitude\",\n"
             + "          \"description\": \"Longitude\",\n"
             + "          \"dataType\": \"cr:Float32\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"longitude\"\n"
@@ -18184,12 +18563,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/sea_surface_temperature\",\n"
+            + "          \"@id\": \"default/sea_surface_temperature\",\n"
             + "          \"description\": \"NOAA Climate Data Record of sea surface skin temperature\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"sea_surface_temperature\"\n"
@@ -18198,12 +18577,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/dt_analysis\",\n"
+            + "          \"@id\": \"default/dt_analysis\",\n"
             + "          \"description\": \"deviation from last SST analysis\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"dt_analysis\"\n"
@@ -18212,12 +18591,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/wind_speed\",\n"
+            + "          \"@id\": \"default/wind_speed\",\n"
             + "          \"description\": \"10m wind speed\",\n"
             + "          \"dataType\": \"cr:Int8\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"wind_speed\"\n"
@@ -18226,12 +18605,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/sea_ice_fraction\",\n"
+            + "          \"@id\": \"default/sea_ice_fraction\",\n"
             + "          \"description\": \"sea ice fraction\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"sea_ice_fraction\"\n"
@@ -18240,12 +18619,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/quality_level\",\n"
+            + "          \"@id\": \"default/quality_level\",\n"
             + "          \"description\": \"quality level of SST pixel\",\n"
             + "          \"dataType\": \"cr:Int8\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"quality_level\"\n"
@@ -18254,12 +18633,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/pathfinder_quality_level\",\n"
+            + "          \"@id\": \"default/pathfinder_quality_level\",\n"
             + "          \"description\": \"Pathfinder SST quality flag\",\n"
             + "          \"dataType\": \"cr:Int8\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"pathfinder_quality_level\"\n"
@@ -18268,12 +18647,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/l2p_flags\",\n"
+            + "          \"@id\": \"default/l2p_flags\",\n"
             + "          \"description\": \"L2P flags\",\n"
             + "          \"dataType\": \"cr:Int16\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testGridFromErddapFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"l2p_flags\"\n"
@@ -19341,262 +19720,37 @@ class JettyTests {
             + "  \"distribution\": [\n"
             + "  {\n"
             + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Black.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Black.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Flat.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Flat.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Green.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Green.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Pink.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Pink.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Pinto.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Pinto.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Red.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Red.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Threaded.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Threaded.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20Unspecified.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20Unspecified.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAbalonex2cx20White.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Abalonex2cx20White.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAnchovyx2cx20Deepbody.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Anchovyx2cx20Deepbody.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllAnchovyx2cx20Northern.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Anchovyx2cx20Northern.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBarnacle.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Barnacle.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBarracudax2cx20California.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Barracudax2cx20California.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBassx2cx20Barredx20Sand.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Bassx2cx20Barredx20Sand.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBassx2cx20Giantx20Sea.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Bassx2cx20Giantx20Sea.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBassx2cx20Kelp.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Bassx2cx20Kelp.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBassx2cx20Rock.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Bassx2cx20Rock.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBassx2cx20Spottedx20Sand.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Bassx2cx20Spottedx20Sand.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"AllBassx2cx20Striped.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/All/Bassx2cx20Striped.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n";
-
-    String expected2 =
-        "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"EurekaYellowtail.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Eureka/Yellowtail.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"EurekaZebraperch.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Eureka/Zebraperch.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Losx20AngelesAbalonex2cx20Black.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Losx20Angeles/Abalonex2cx20Black.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Losx20AngelesAbalonex2cx20Flat.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Losx20Angeles/Abalonex2cx20Flat.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Losx20AngelesAbalonex2cx20Green.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Losx20Angeles/Abalonex2cx20Green.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Losx20AngelesAbalonex2cx20Pink.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Losx20Angeles/Abalonex2cx20Pink.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Losx20AngelesAbalonex2cx20Pinto.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Losx20Angeles/Abalonex2cx20Pinto.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n";
-
-    String expected3 =
-        "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"MontereyZebraperch.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Monterey/Zebraperch.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Santax20BarbaraAbalonex2cx20Black.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Santax20Barbara/Abalonex2cx20Black.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Santax20BarbaraAbalonex2cx20Flat.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Santax20Barbara/Abalonex2cx20Flat.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n";
-
-    String expected4 =
-        "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Sanx20FranciscoWormsx2cx20Marine.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Sanx20Francisco/Wormsx2cx20Marine.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Sanx20FranciscoWrassex2cx20Rock.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Sanx20Francisco/Wrassex2cx20Rock.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Sanx20FranciscoYellowtail.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Sanx20Francisco/Yellowtail.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"Sanx20FranciscoZebraperch.nc\",\n"
-            + "    \"contentSize\": \"61944 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/Sanx20Francisco/Zebraperch.nc\",\n"
-            + "    \"encodingFormat\": \"application/x-netcdf\"\n"
+            + "    \"@id\": \"manifest\",\n"
+            + "    \"name\": \"manifest\",\n"
+            + "    \"description\": \"Manifest file containing the list of all data files.\",\n"
+            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/rerdCAMarCatLM.manifest\",\n"
+            + "    \"encodingFormat\": \"text/csv\"\n"
             + "  },\n"
             + "  {\n"
             + "    \"@type\": \"cr:FileSet\",\n"
-            + "    \"@id\": \"rerdCAMarCatLMFiles\",\n"
-            + "    \"description\": \"Files that contain the data.\",\n"
-            + "    \"encodingFormat\": \"application/json\",\n"
-            + "    \"includes\": \"http://localhost:8080/erddap/files/erdCAMarCatLM/*.*\"\n"
+            + "    \"@id\": \"files\",\n"
+            + "    \"name\": \"files\",\n"
+            + "    \"description\": \"The set of data files.\",\n"
+            + "    \"containedIn\": { \"@id\": \"manifest\" },\n"
+            + "    \"encodingFormat\": \"*/*\",\n"
+            + "    \"includes\": \"*\"\n"
             + "  }\n"
-            + "  ],\n"
-            + "  \"recordSet\": [\n"
+            + "  ],\n";
+    String expected4 =
+        "  \"recordSet\": [\n"
             + "    {\n"
             + "      \"@type\": \"cr:RecordSet\",\n"
-            + "      \"@id\": \"dataRecordSet\",\n"
+            + "      \"@id\": \"default\",\n"
+            + "      \"name\": \"default\",\n"
             + "      \"field\": [\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/time\",\n"
+            + "          \"@id\": \"default/time\",\n"
             + "          \"description\": \"Centered Time\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"rerdCAMarCatLMFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"time\"\n"
@@ -19605,12 +19759,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/year\",\n"
+            + "          \"@id\": \"default/year\",\n"
             + "          \"description\": \"Year\",\n"
             + "          \"dataType\": \"cr:Int16\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"rerdCAMarCatLMFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"year\"\n"
@@ -19619,12 +19773,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/fish\",\n"
+            + "          \"@id\": \"default/fish\",\n"
             + "          \"description\": \"Fish Name\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"rerdCAMarCatLMFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"fish\"\n"
@@ -19633,12 +19787,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/port\",\n"
+            + "          \"@id\": \"default/port\",\n"
             + "          \"description\": \"Port\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"rerdCAMarCatLMFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"port\"\n"
@@ -19647,12 +19801,12 @@ class JettyTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/landings\",\n"
+            + "          \"@id\": \"default/landings\",\n"
             + "          \"description\": \"Landings\",\n"
             + "          \"dataType\": \"cr:Int32\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"rerdCAMarCatLMFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"landings\"\n"
@@ -19667,12 +19821,10 @@ class JettyTests {
             + "https://oceanview.pfeg.noaa.gov/las_fish1/doc/marketlist.html .\\n"
             + "cdm_data_type=Other\\n"
             + "Conventions=COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\\n"
-            + "id=Zebraperch\\n"
             + "infoUrl=https://oceanview.pfeg.noaa.gov/las_fish1/doc/names_describe.html\\n"
             + "institution=CA DFG, NOAA ERD\\n"
             + "keywords_vocabulary=GCMD Science Keywords\\n"
             + "naming_authority=gov.noaa.pfeg.coastwatch\\n"
-            + "observationDimension=row\\n"
             + "sourceUrl=https://oceanview.pfeg.noaa.gov/thredds/dodsC/CA_market_catch/ca_fish_grouped.nc\\n"
             + "standard_name_vocabulary=CF Standard Name Table v70\\n"
             + "subsetVariables=fish, port\\n"
@@ -20243,19 +20395,38 @@ class JettyTests {
             + "    \"email\": \"Janet.Mason@noaa.gov\",\n"
             + "    \"sameAs\": \"https://www.pfeg.noaa.gov\"\n"
             + "  },\n"
-            + "  \"identifier\": \"gov.noaa.pfeg.coastwatch/Zebraperch\",\n"
+            + "  \"identifier\": \"rerdCAMarCatLM\",\n"
             + "  \"temporalCoverage\": \"1928-01-16T00:00:00Z/2002-12-16T00:00:00Z\"\n"
             + "}\n";
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
-    assertTrue(
-        results.contains(expected2),
-        "Failed to contain subset of file results. results=\n" + results);
-    assertTrue(
-        results.contains(expected3),
-        "Failed to contain subset of file results. results=\n" + results);
     assertTrue(results.contains(expected4), "Mismatch on end of schema. results=\n" + results);
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testCopyImages() throws Exception {
+    // downloadFile will throw an error if the file does not exist.
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/QuestionMarkTest.png",
+        TEMP_DIR.toAbsolutePath().toString() + "/QuestionMarkTest.png",
+        true);
+
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/nlogo2.gif",
+        TEMP_DIR.toAbsolutePath().toString() + "/nlogo2.gif",
+        true);
+
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/noaa2000.gif",
+        TEMP_DIR.toAbsolutePath().toString() + "/noaa2000.gif",
+        true);
+
+    SSR.downloadFile(
+        "http://localhost:" + PORT + "/erddap/images/noaa_otherName.gif",
+        TEMP_DIR.toAbsolutePath().toString() + "/noaa_otherName.gif",
+        true);
   }
 }

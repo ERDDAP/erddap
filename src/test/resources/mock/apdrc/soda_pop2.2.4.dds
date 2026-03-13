@@ -1,0 +1,75 @@
+Dataset {
+  Grid {
+    ARRAY:
+      Float32 temp[time = 1680][lev = 40][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lev[lev = 40];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } temp;
+  Grid {
+    ARRAY:
+      Float32 salt[time = 1680][lev = 40][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lev[lev = 40];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } salt;
+  Grid {
+    ARRAY:
+      Float32 u[time = 1680][lev = 40][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lev[lev = 40];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } u;
+  Grid {
+    ARRAY:
+      Float32 v[time = 1680][lev = 40][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lev[lev = 40];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } v;
+  Grid {
+    ARRAY:
+      Float32 w[time = 1680][lev = 40][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lev[lev = 40];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } w;
+  Grid {
+    ARRAY:
+      Float32 taux[time = 1680][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } taux;
+  Grid {
+    ARRAY:
+      Float32 tauy[time = 1680][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } tauy;
+  Grid {
+    ARRAY:
+      Float32 ssh[time = 1680][lat = 330][lon = 720];
+    MAPS:
+      Float64 time[time = 1680];
+      Float64 lat[lat = 330];
+      Float64 lon[lon = 720];
+  } ssh;
+  Float64 time[time = 1680];
+  Float64 lev[lev = 40];
+  Float64 lat[lat = 330];
+  Float64 lon[lon = 720];
+} public_data/SODA/soda_pop2.2.4;

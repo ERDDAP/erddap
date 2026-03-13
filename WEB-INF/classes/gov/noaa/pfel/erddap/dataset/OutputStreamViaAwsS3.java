@@ -7,8 +7,9 @@ package gov.noaa.pfel.erddap.dataset;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * OutputStreamViaAwsS3 writes to a file in an S3 bucket, then redirects user to download that file.
@@ -34,7 +35,8 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
   public OutputStreamViaAwsS3(OutputStreamFromHttpResponseViaAwsS3 tParent) throws IOException {
 
     // make the superclass's BufferedOutputStream from an OutputStream
-    super(new FileOutputStream(tParent.localDir + tParent.fileName + tParent.extension));
+    super(
+        Files.newOutputStream(Paths.get(tParent.localDir + tParent.fileName + tParent.extension)));
     parent = tParent;
     fullLocalFileName = tParent.localDir + tParent.fileName + tParent.extension;
   }

@@ -16,7 +16,6 @@ import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTGrid;
 import gov.noaa.pmel.sgt.dm.SGTLine;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.beans.PropertyChangeListener;
 
 /**
@@ -164,11 +163,4 @@ public abstract class CartesianRenderer implements PropertyChangeListener {
   public void modified(String mess) {
     if (cg_ != null) cg_.modified(mess);
   }
-
-  /**
-   * Find data object.
-   *
-   * @since 3.0
-   */
-  public abstract SGTData getDataAt(Point pt);
 }

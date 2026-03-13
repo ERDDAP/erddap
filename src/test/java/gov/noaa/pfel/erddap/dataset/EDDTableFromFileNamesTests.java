@@ -16,8 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagAWS;
-import tags.TagLocalERDDAP;
+import tags.TagDisabledLocalERDDAP;
 import tags.TagSlowTests;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -220,13 +219,10 @@ class EDDTableFromFileNamesTests {
   }
 
   /**
-   * testGenerateDatasetsXmlAwsS3 Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * testGenerateDatasetsXmlAwsS3 - can use anonymous credentials
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3()");
     // testVerboseOn();
@@ -394,7 +390,6 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
     // ensure it is ready-to-use by making a dataset from it
-    String2.log("results=\n" + results);
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -403,9 +398,6 @@ class EDDTableFromFileNamesTests {
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
         "");
-
-    String2.log(
-        "\n*** EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3() finished successfully.");
   }
 
   /** testGenerateDatasetsXmlFromFiles */
@@ -856,13 +848,10 @@ class EDDTableFromFileNamesTests {
   }
 
   /**
-   * Do tests of an Amazon AWS S3 file system. Your S3 credentials must be in <br>
-   * ~/.aws/credentials on Linux, OS X, or Unix <br>
-   * C:\Users\USERNAME\.aws\credentials on Windows See
+   * Do tests of an Amazon AWS S3 file system. This can use anonymous credentials.
    * https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
    */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testAwsS3() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3\n");
     // testVerboseOn();
@@ -1012,20 +1001,15 @@ class EDDTableFromFileNamesTests {
             + ",UTC,bytes\n"
             + "tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_209601-209912.nc,2096-01-01T00:00:00Z,1.098815646E9\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
-
-    String2.log("\n EDDTableFromFileNames.testAwsS3 finished successfully");
-  }
-
-  @org.junit.jupiter.api.Test
-  @TagSlowTests
-  void testgoes17all() throws Throwable {
-    testAccessibleViaFilesFileTable(false, true);
   }
 
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   @TagSlowTests
   void testgoes17partial(boolean deleteCachedInfo) throws Throwable {
+    // formerly had also had an "testgoes17all that called:
+    // testAccessibleViaFilesFileTable(false, true);
+    // That was extremely slow and didn't really test anything that this call doesn't.
     testAccessibleViaFilesFileTable(deleteCachedInfo, false);
   }
 
@@ -1142,7 +1126,6 @@ class EDDTableFromFileNamesTests {
 
   /** testGenerateDatasetsXmlFromOnTheFly */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testGenerateDatasetsXmlFromOnTheFly() throws Throwable {
     // String2.log("\n***
     // EDDTableFromFileNames.testGenerateDatasetsXmlFromOnTheFly()");
@@ -1157,7 +1140,7 @@ class EDDTableFromFileNamesTests {
     String tSummary = ""; // test the auto-generated summary
     String tTitle = ""; // test the auto-generated title
     String tDatasetID =
-        EDDTableFromFileNames.suggestDatasetID(tDir + "/" + tRegex + "(EDDTableFromFileNames)");
+        EDDTableFromFileNames.suggestDatasetID(tDir + tRegex + "(EDDTableFromFileNames)");
     String results =
         EDDTableFromFileNames.generateDatasetsXml(
                 tDir, tRegex, tRecursive, -1, tInfoUrl, tInstitution, tSummary, tTitle, null)
@@ -1309,7 +1292,6 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
     // ensure it is ready-to-use by making a dataset from it
-    String2.log("results=\n" + results);
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromFileNames.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -1318,14 +1300,11 @@ class EDDTableFromFileNamesTests {
         String2.toCSSVString(edd.dataVariableDestinationNames()),
         "url, name, lastModified, size, fileType",
         "");
-
-    String2.log(
-        "\n*** EDDTableFromFileNames.testGenerateDatasetsXmlFromFiles() finished successfully.");
   }
 
   /** Test an AWS S3 dataset in localhost ERDDAP. */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testAwsS3local() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAwsS3b");
     String results, expected;
@@ -1382,7 +1361,6 @@ class EDDTableFromFileNamesTests {
 
   /** Test a ***fromOnTheFile dataset */
   @org.junit.jupiter.api.Test
-  @TagAWS
   void testOnTheFly() throws Throwable {
     // String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
     int language = 0;
@@ -1401,8 +1379,7 @@ class EDDTableFromFileNamesTests {
     String results, expected, tName;
 
     // sleep before these timing tests
-    Math2.gc("EDDTableFromFileNames (between tests)", 5000);
-    Math2.gc("EDDTableFromFileNames (between tests)", 5000);
+    Math2.gcAndWait("EDDTableFromFileNames (between tests)");
 
     if (true) {
       // root dir
@@ -1427,7 +1404,7 @@ class EDDTableFromFileNamesTests {
               + "\nlastModified and size change sometimes. If so, change the test.");
       results = subDirs.toString();
       expected =
-          "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LST2KMF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; // changes
+          "ABI-L1b-RadC, ABI-L1b-RadC-Reproc, ABI-L1b-RadF, ABI-L1b-RadF-Reproc, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LST2KMF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; // changes
       // sometimes
       Test.ensureEqual(results, expected, "");
       expTime = 459; // ms
@@ -1503,116 +1480,102 @@ class EDDTableFromFileNamesTests {
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        "url,name,lastModified,size,fileType\n"
-            + ",,UTC,bytes,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/index.html,index.html,2021-09-27T19:48:15Z,32357.0,.html\n"
-            + // changes sometimes
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,\n"
-            + // disappeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,\n"
-            + // appeared 2021-06-24
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,\n"
-            + // appeared 2021-08-31
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LST2KMF/,,,NaN,\n"
-            + // appeared 2021-11-16
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n"
-            + // appeared 2021-05-03
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
+"""
+url,name,lastModified,size,fileType
+,,UTC,bytes,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/index.html,index.html,2021-09-27T19:48:15Z,32357.0,.html
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LST2KMF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,
+                """;
+    ;
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     tName =
@@ -1620,25 +1583,28 @@ class EDDTableFromFileNamesTests {
             language, null, null, "&url=~\".*-L1b-.*\"", dir, edd.className() + "_all", ".csv");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        "url,name,lastModified,size,fileType\n"
-            + ",,UTC,bytes,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n"
-            + // 2021-05-03 many added below...
-            "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n"
-            + "http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
+"""
+url,name,lastModified,size,fileType
+,,UTC,bytes,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF-Reproc/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,
+http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,
+            """;
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
@@ -1717,60 +1683,50 @@ class EDDTableFromFileNamesTests {
             + "  \"distribution\": [\n"
             + "  {\n"
             + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"jplMURSST20150103090000.png\",\n"
-            + "    \"contentSize\": \"46482 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/testFileNames/jplMURSST20150103090000.png\",\n"
-            + "    \"encodingFormat\": \"image/png\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"jplMURSST20150104090000.png\",\n"
-            + "    \"contentSize\": \"46482 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/testFileNames/jplMURSST20150104090000.png\",\n"
-            + "    \"encodingFormat\": \"image/png\"\n"
-            + "  },\n"
-            + "  {\n"
-            + "    \"@type\": \"cr:FileObject\",\n"
-            + "    \"@id\": \"sub/jplMURSST20150105090000.png\",\n"
-            + "    \"contentSize\": \"46482 B\",\n"
-            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/testFileNames/sub/jplMURSST20150105090000.png\",\n"
-            + "    \"encodingFormat\": \"image/png\"\n"
+            + "    \"@id\": \"manifest\",\n"
+            + "    \"name\": \"manifest\",\n"
+            + "    \"description\": \"Manifest file containing the list of all data files.\",\n"
+            + "    \"contentUrl\": \"http://localhost:8080/erddap/files/testFileNames.manifest\",\n"
+            + "    \"encodingFormat\": \"text/csv\"\n"
             + "  },\n"
             + "  {\n"
             + "    \"@type\": \"cr:FileSet\",\n"
-            + "    \"@id\": \"testFileNamesFiles\",\n"
-            + "    \"description\": \"Files that contain the data.\",\n"
-            + "    \"encodingFormat\": \"application/json\",\n"
-            + "    \"includes\": \"http://localhost:8080/erddap/files/testFileNames/*.*\"\n"
+            + "    \"@id\": \"files\",\n"
+            + "    \"name\": \"files\",\n"
+            + "    \"description\": \"The set of data files.\",\n"
+            + "    \"containedIn\": { \"@id\": \"manifest\" },\n"
+            + "    \"encodingFormat\": \"*/*\",\n"
+            + "    \"includes\": \"*\"\n"
             + "  }\n"
             + "  ],\n"
             + "  \"recordSet\": [\n"
             + "    {\n"
             + "      \"@type\": \"cr:RecordSet\",\n"
-            + "      \"@id\": \"dataRecordSet\",\n"
+            + "      \"@id\": \"default\",\n"
+            + "      \"name\": \"default\",\n"
             + "      \"field\": [\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/five\",\n"
+            + "          \"@id\": \"default/five\",\n"
             + "          \"description\": \"Five\",\n"
             + "          \"dataType\": \"cr:Float32\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"five\"\n"
+            + "              \"column\": \"=5\"\n"
             + "            }\n"
             + "          }\n"
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/url\",\n"
+            + "          \"@id\": \"default/url\",\n"
             + "          \"description\": \"URL\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"url\"\n"
@@ -1779,12 +1735,12 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/name\",\n"
+            + "          \"@id\": \"default/name\",\n"
             + "          \"description\": \"File Name\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"name\"\n"
@@ -1793,12 +1749,12 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/time\",\n"
+            + "          \"@id\": \"default/time\",\n"
             + "          \"description\": \"Time\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"time\"\n"
@@ -1807,12 +1763,12 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/day\",\n"
+            + "          \"@id\": \"default/day\",\n"
             + "          \"description\": \"day\",\n"
             + "          \"dataType\": \"cr:Int32\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"day\"\n"
@@ -1821,12 +1777,12 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/lastModified\",\n"
+            + "          \"@id\": \"default/lastModified\",\n"
             + "          \"description\": \"Last Modified\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"lastModified\"\n"
@@ -1835,12 +1791,12 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/size\",\n"
+            + "          \"@id\": \"default/size\",\n"
             + "          \"description\": \"Size\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"size\"\n"
@@ -1849,12 +1805,12 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/fileType\",\n"
+            + "          \"@id\": \"default/fileType\",\n"
             + "          \"description\": \"File Type\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
             + "              \"column\": \"fileType\"\n"
@@ -1863,107 +1819,92 @@ class EDDTableFromFileNamesTests {
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/fixedTime\",\n"
+            + "          \"@id\": \"default/fixedTime\",\n"
             + "          \"description\": \"Fixed Time\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"fixedTime\"\n"
+            + "              \"column\": \"=NaN\"\n"
             + "            }\n"
             + "          }\n"
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/latitude\",\n"
+            + "          \"@id\": \"default/latitude\",\n"
             + "          \"description\": \"Latitude\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"latitude\"\n"
+            + "              \"column\": \"=Nan\"\n"
             + "            }\n"
             + "          }\n"
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/longitude\",\n"
+            + "          \"@id\": \"default/longitude\",\n"
             + "          \"description\": \"Longitude\",\n"
             + "          \"dataType\": \"cr:Float64\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"longitude\"\n"
+            + "              \"column\": \"=nan\"\n"
             + "            }\n"
             + "          }\n"
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/mySpecialString\",\n"
+            + "          \"@id\": \"default/mySpecialString\",\n"
             + "          \"description\": \"mySpecialString\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"mySpecialString\"\n"
+            + "              \"column\": \"=\\\"My \\\\\\\"Special\\\\\\\" String\\\"\"\n"
             + "            }\n"
             + "          }\n"
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/fvEmptyString\",\n"
+            + "          \"@id\": \"default/fvEmptyString\",\n"
             + "          \"description\": \"fvEmptyString\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"fvEmptyString\"\n"
+            + "              \"column\": \"=\\\"\\\"\"\n"
             + "            }\n"
             + "          }\n"
             + "        },\n"
             + "        {\n"
             + "          \"@type\": \"cr:Field\",\n"
-            + "          \"@id\": \"dataRecordSet/fromScript\",\n"
+            + "          \"@id\": \"default/fromScript\",\n"
             + "          \"description\": \"fromScript\",\n"
             + "          \"dataType\": \"sc:Text\",\n"
             + "          \"source\": {\n"
             + "            \"fileSet\": {\n"
-            + "              \"@id\": \"testFileNamesFiles\"\n"
+            + "              \"@id\": \"files\"\n"
             + "            },\n"
             + "            \"extract\": {\n"
-            + "              \"column\": \"fromScript\"\n"
+            + "              \"column\": \"=\\\"url=\\\"+row.columnString(\\\"url\\\") + \\\" name=\\\"+row.columnString(\\\"name\\\") + \\\" time=\\\"+row.columnString(\\\"time\\\") + \\\" day=\\\"+row.columnString(\\\"day\\\") + \\\" lastMod=\\\"+row.columnString(\\\"lastModified\\\") + \\\" size=\\\"+row.columnString(\\\"size\\\") + \\\" fileType=\\\"+row.columnString(\\\"fileType\\\")\"\n"
             + "            }\n"
             + "          }\n"
             + "        }\n"
             + "      ]\n"
             + "    }\n"
             + "  ],\n"
-            + "  \"description\": \"Images from JPL MUR SST Daily.\\n"
-            + "cdm_data_type=Other\\n"
-            + "Easternmost_Easting=45.0\\n"
-            + "geospatial_lat_max=40.0\\n"
-            + "geospatial_lat_min=20.0\\n"
-            + "geospatial_lat_units=degrees_north\\n"
-            + "geospatial_lon_max=45.0\\n"
-            + "geospatial_lon_min=0.0\\n"
-            + "geospatial_lon_units=degrees_east\\n"
-            + "infoUrl=https://www.pfeg.noaa.gov/\\n"
-            + "institution=NASA JPL\\n"
-            + "Northernmost_Northing=40.0\\n"
-            + "sourceUrl=(local files)\\n"
-            + "Southernmost_Northing=20.0\\n"
-            + "subsetVariables=fileType\\n"
-            + "Westernmost_Easting=0.0\",\n"
+            + "  \"description\": \"Images from JPL MUR SST Daily.\\ncdm_data_type=Other\\nEasternmost_Easting=45.0\\ngeospatial_lat_max=40.0\\ngeospatial_lat_min=20.0\\ngeospatial_lat_units=degrees_north\\ngeospatial_lon_max=45.0\\ngeospatial_lon_min=0.0\\ngeospatial_lon_units=degrees_east\\ninfoUrl=https://www.pfeg.noaa.gov/\\ninstitution=NASA JPL\\nNorthernmost_Northing=40.0\\nsourceUrl=(local files)\\nSouthernmost_Northing=20.0\\nsubsetVariables=fileType\\nWesternmost_Easting=0.0\",\n"
             + "  \"url\": \"http://localhost:8080/erddap/tabledap/testFileNames.html\",\n"
             + "  \"includedInDataCatalog\": {\n"
             + "    \"@type\": \"DataCatalog\",\n"
@@ -1983,13 +1924,7 @@ class EDDTableFromFileNamesTests {
             + "    \"time\",\n"
             + "    \"URL\"\n"
             + "  ],\n"
-            + "  \"license\": \"The data may be used and redistributed for free but is not intended\\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\\n"
-            + "of their employees or contractors, makes any warranty, express or\\n"
-            + "implied, including warranties of merchantability and fitness for a\\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\\n"
-            + "completeness, or usefulness, of this information.\",\n"
+            + "  \"license\": \"The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\",\n"
             + "  \"variableMeasured\": [\n"
             + "    {\n"
             + "      \"@type\": \"PropertyValue\",\n"

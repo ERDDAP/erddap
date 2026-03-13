@@ -821,7 +821,8 @@ public class HtmlWidgets {
       String other) {
 
     StringBuilder sb = new StringBuilder();
-    sb.append("""
+    sb.append(
+        """
             <table class="compact">
               <tr>
             """);
@@ -851,7 +852,8 @@ public class HtmlWidgets {
       if (++inRow % perRow == 0 && i != colors.size() - 1)
         sb.append("  </tr>\n" + "  <tr>\n" + (hasLabel ? "    <td>&nbsp;</td>\n" : ""));
     }
-    sb.append("""
+    sb.append(
+        """
               </tr>
             </table>
             """);
@@ -1145,7 +1147,8 @@ public class HtmlWidgets {
               "Select the last item.",
               buttonJS));
 
-      sb.append("""
+      sb.append(
+          """
 
                 </tr>
               </table>
@@ -1688,7 +1691,8 @@ public class HtmlWidgets {
         sb.append("  \"sliderRight" + s + "\"+HORIZONTAL+MAXOFFRIGHT+" + bgWidth + ",\n");
     }
     sb.setLength(sb.length() - 2); // remove ,\n
-    sb.append("""
+    sb.append(
+        """
             );
 
             var el = dd.elements;
@@ -1700,7 +1704,8 @@ public class HtmlWidgets {
     if (debugMode)
       sb.append(
           "  if (typeof(console) != \"undefined\") console.log(msg);\n"); // for debugging only
-    sb.append("""
+    sb.append(
+        """
             }
 
             """);
@@ -1744,7 +1749,8 @@ public class HtmlWidgets {
             + "\n");
 
     // my_DragFunc
-    sb.append("""
+    sb.append(
+        """
             function my_DragFunc() {
               try {
             """);

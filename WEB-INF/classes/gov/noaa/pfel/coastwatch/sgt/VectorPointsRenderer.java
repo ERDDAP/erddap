@@ -25,12 +25,10 @@ import gov.noaa.pmel.sgt.Graph;
 import gov.noaa.pmel.sgt.JPane;
 import gov.noaa.pmel.sgt.Layer;
 import gov.noaa.pmel.sgt.PlotMark;
-import gov.noaa.pmel.sgt.dm.SGTData;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
@@ -373,10 +371,5 @@ public class VectorPointsRenderer extends CartesianRenderer {
             + evt.getPropertyName()
             + "]"
             + ")");
-  }
-
-  @Override
-  public SGTData getDataAt(Point pt) {
-    return null;
   }
 }

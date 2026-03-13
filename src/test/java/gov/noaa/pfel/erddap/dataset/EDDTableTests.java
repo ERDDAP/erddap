@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagExternalOther;
+import tags.TagDisabledExternalOther;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -78,7 +78,7 @@ class EDDTableTests {
 
   /** Test SOS server using cwwcNDBCMet. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testSosNdbcMet() throws Throwable {
     String2.log("\n*** EDDTable.testSosNdbcMet()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "cwwcNDBCMet");
@@ -2296,7 +2296,7 @@ class EDDTableTests {
 
   /** Test SOS server using ndbcSosCurrents. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testSosCurrents() throws Throwable {
     String2.log("\n*** EDDTable.testSosCurrents()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "ndbcSosCurrents");
@@ -2531,7 +2531,7 @@ class EDDTableTests {
    * helped me fix the bug.
    */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testSosGomoos() throws Throwable {
     String2.log("\n*** EDDTable.testSosGomoos()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "gomoosBuoy");
@@ -2577,7 +2577,7 @@ class EDDTableTests {
 
   /** Test the Oostethys-style SOS data response using cwwcNDBCMet. */
   @org.junit.jupiter.api.Test
-  @TagExternalOther
+  @TagDisabledExternalOther
   void testSosOostethys() throws Throwable {
     String2.log("\n*** EDDTable.testSosOostethys()");
     EDDTable eddTable = (EDDTable) EDDTable.oneFromDatasetsXml(null, "cwwcNDBCMet");
@@ -2869,6 +2869,7 @@ class EDDTableTests {
             + "          <msr:dimensionName>\n"
             + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"sample\">Sample</msr:MD_DimensionNameTypeCode>\n"
             + "          </msr:dimensionName>\n"
+            + "          <msr:dimensionSize gco:nilReason=\"unknown\"/>\n"
             + "        </msr:MD_Dimension>\n"
             + "      </msr:axisDimensionProperties>\n"
             + "      <msr:axisDimensionProperties>\n"
@@ -2876,6 +2877,7 @@ class EDDTableTests {
             + "          <msr:dimensionName>\n"
             + "            <msr:MD_DimensionNameTypeCode codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode\" codeListValue=\"sample\">Sample</msr:MD_DimensionNameTypeCode>\n"
             + "          </msr:dimensionName>\n"
+            + "          <msr:dimensionSize gco:nilReason=\"unknown\"/>\n"
             + "        </msr:MD_Dimension>\n"
             + "      </msr:axisDimensionProperties>\n"
             + "      <msr:transformationParameterAvailability>\n"

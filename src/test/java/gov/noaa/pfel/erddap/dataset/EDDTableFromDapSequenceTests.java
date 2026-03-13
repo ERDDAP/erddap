@@ -27,9 +27,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagExternalERDDAP;
-import tags.TagLocalERDDAP;
-import tags.TagMissingDataset;
+import tags.TagDisabledExternalERDDAP;
+import tags.TagDisabledLocalERDDAP;
+import tags.TagDisabledMissingDataset;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -42,7 +42,7 @@ class EDDTableFromDapSequenceTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // connection can't be opened
+  @TagDisabledMissingDataset // connection can't be opened
   void testGenerateDatasetsXml() throws Throwable {
     // String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml\n" +
     // "This requires testNccsvScalar in localhost ERDDAP.\n");
@@ -284,7 +284,7 @@ class EDDTableFromDapSequenceTests {
 
   /** testGenerateDatasetsXml */
   @org.junit.jupiter.api.Test
-  @TagLocalERDDAP
+  @TagDisabledLocalERDDAP
   void testGenerateDatasetsXml2() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     // String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml2\n" +
@@ -568,7 +568,7 @@ class EDDTableFromDapSequenceTests {
   }
 
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // don't have a definition for pmelArgoAll
+  @TagDisabledMissingDataset // don't have a definition for pmelArgoAll
   void testOneTime() throws Throwable {
     // testVerboseOn();
     String tName;
@@ -603,7 +603,7 @@ class EDDTableFromDapSequenceTests {
 
   /** Try to isolate trouble with Argo. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // don't have a definition for pmelArgoAll
+  @TagDisabledMissingDataset // don't have a definition for pmelArgoAll
   void testArgo() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -650,7 +650,7 @@ class EDDTableFromDapSequenceTests {
    * internal spaces -- erddap needs to percentEncode the request.
    */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // connection timeout
+  @TagDisabledMissingDataset // connection timeout
   void testPsdac() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -801,7 +801,7 @@ class EDDTableFromDapSequenceTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // no definition for erdlasNewportCtd
+  @TagDisabledMissingDataset // no definition for erdlasNewportCtd
   void testErdlasNewportCtd() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -826,7 +826,7 @@ class EDDTableFromDapSequenceTests {
 
   /** NOT FINISHED. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // Connection can't be opened
+  @TagDisabledMissingDataset // Connection can't be opened
   void testDapErdlasNewportCtd() throws Throwable {
     // the basicQuery
     for (int test = 1; test < 2; test++) {
@@ -869,7 +869,7 @@ class EDDTableFromDapSequenceTests {
 
   /** */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // no defintion for erdlasCalCatch
+  @TagDisabledMissingDataset // no defintion for erdlasCalCatch
   void testErdlasCalCatch() throws Throwable {
     // testVerboseOn();
     int language = 0;
@@ -946,7 +946,7 @@ class EDDTableFromDapSequenceTests {
 
   /** This tests sourceNeedsExpandedFP_EQ. 2016-01-16 SOURCE IS GONE. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // unknown host
+  @TagDisabledMissingDataset // unknown host
   void testSourceNeedsExpandedFP_EQ() throws Throwable {
     // String2.log("\n*** EDDTableFromDapSequence.testSourceNeedsExpandedFP_EQ\n");
     // testVerboseOn();
@@ -995,7 +995,7 @@ class EDDTableFromDapSequenceTests {
 
   /** NOT FINISHED. This tests nosCoopsRWL. */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // source 404
+  @TagDisabledMissingDataset // source 404
   void testNosCoopsRWL() throws Throwable {
     // String2.log("\n*** EDDTableFromDapSequence.testNosCoopsRWL\n");
     // testVerboseOn();
@@ -1029,7 +1029,7 @@ class EDDTableFromDapSequenceTests {
 
   /** Test reading .das */
   @org.junit.jupiter.api.Test
-  @TagExternalERDDAP
+  @TagDisabledExternalERDDAP
   void testReadDas() throws Exception {
     String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";
@@ -1040,7 +1040,7 @@ class EDDTableFromDapSequenceTests {
 
   /** Test graph made from subsetVariables data */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // unknown host
+  @TagDisabledMissingDataset // unknown host
   void testSubsetVariablesGraph() throws Throwable {
     String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesGraph\n");
     int language = 0;
@@ -1062,7 +1062,7 @@ class EDDTableFromDapSequenceTests {
 
   /** Test that info from subsetVariables gets back to variable's ranges */
   @org.junit.jupiter.api.Test
-  @TagMissingDataset // unknown host
+  @TagDisabledMissingDataset // unknown host
   void testSubsetVariablesRange() throws Throwable {
     String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesRange\n");
     int language = 0;

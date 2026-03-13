@@ -65,12 +65,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -744,13 +746,13 @@ public abstract class EDD {
           case "EDDTableCopy" -> {
             return EDDTableCopy.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
-            // xmlReader); //inactive
+          // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
+          // xmlReader); //inactive
           case "EDDTableFromAsciiServiceNOS" -> {
             return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
-            // xmlReader); //inactive
+          // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
+          // xmlReader); //inactive
           case "EDDTableFromCassandra" -> {
             return EDDTableFromCassandra.fromXml(erddap, xmlReader);
           }
@@ -769,8 +771,8 @@ public abstract class EDD {
           case "EDDTableFromFileNames" -> {
             return EDDTableFromFileNames.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
-            // xmlReader); //inactive as of 2009-01-14
+          // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
+          // xmlReader); //inactive as of 2009-01-14
           case "EDDTableFromAsciiFiles" -> {
             return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
           }
@@ -810,19 +812,19 @@ public abstract class EDD {
           case "EDDTableFromNccsvFiles" -> {
             return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
-            // xmlReader); //inactive 2010-09-08
-            // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
-            // xmlReader); //inactive 2011-12-16
+          // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
+          // xmlReader); //inactive 2010-09-08
+          // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
+          // xmlReader); //inactive 2011-12-16
           case "EDDTableFromOBIS" -> {
             return EDDTableFromOBIS.fromXml(erddap, xmlReader);
           }
-            // if (type.equals("EDDTableFromPostDatabase"))return
-            // EDDTableFromPostDatabase.fromXml(erddap,
-            // xmlReader);
-            // if (type.equals("EDDTableFromPostNcFiles")) return
-            // EDDTableFromPostNcFiles.fromXml(erddap,
-            // xmlReader);
+          // if (type.equals("EDDTableFromPostDatabase"))return
+          // EDDTableFromPostDatabase.fromXml(erddap,
+          // xmlReader);
+          // if (type.equals("EDDTableFromPostNcFiles")) return
+          // EDDTableFromPostNcFiles.fromXml(erddap,
+          // xmlReader);
           case "EDDTableFromSOS" -> {
             return EDDTableFromSOS.fromXml(erddap, xmlReader);
           }
@@ -1688,6 +1690,7 @@ public abstract class EDD {
                 + SSR.minimalPercentEncode(
                     flagUrl(datasetID)); // %encode deals with & within flagUrl
         EDStatic.addTouch(subscriptionUrl);
+        EDStatic.ensureTouchThreadIsRunningIfNeeded();
         String2.log(datasetID + " sent a subscription request to the remote ERDDAP dataset.");
         // String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are
         // ~confidential
@@ -1767,6 +1770,7 @@ public abstract class EDD {
                   + " is subscribing to underlying fromErddap dataset:\n  "
                   + subscriptionUrl);
         EDStatic.addTouch(subscriptionUrl);
+        EDStatic.ensureTouchThreadIsRunningIfNeeded();
         return; // success
       }
     } catch (Throwable st) {
@@ -2160,8 +2164,8 @@ public abstract class EDD {
         case "/dataType" -> tDataType = content;
         case "addAttributes" -> tAttributes = getAttributesFromXml(xmlReader);
 
-          // PrimitiveArray taa= tAttributes.get("_FillValue");
-          // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
+        // PrimitiveArray taa= tAttributes.get("_FillValue");
+        // String2.log("getSDAD " + tSourceName + " _FillValue=" + taa);
         default -> xmlReader.unexpectedTagException();
       }
     }
@@ -3768,7 +3772,7 @@ public abstract class EDD {
 
     OutputStreamSource outputStreamSource =
         new OutputStreamSourceSimple(
-            new BufferedOutputStream(new FileOutputStream(fullName + randomInt)));
+            new BufferedOutputStream(Files.newOutputStream(Paths.get(fullName + randomInt))));
 
     try {
 
@@ -9191,7 +9195,7 @@ public abstract class EDD {
                 ""; // perhaps sea_water_temperature, perhaps air or land
             case "mask1", "mask2", "not defined", "num", "qual" -> "";
 
-              // and other common incorrect names
+            // and other common incorrect names
             case "best_sea_surface_temperature" -> "sea_surface_temperature";
             case "eastward_sea_water_velocit" ->
                 // missing y
@@ -13769,313 +13773,6 @@ public abstract class EDD {
   }
 
   /**
-   * This creates and writes one InPort XML file. This throws a runtime exception if there is
-   * trouble.
-   */
-  public void writeInPortXmlFile(
-      String fullFileName, String archiveLocation, String archiveOther, String archiveNone) {
-    String error =
-        File2.writeToFileUtf8(
-            fullFileName, getInPortXmlString(archiveLocation, archiveOther, archiveNone));
-    if (error.length() > 0) throw new RuntimeException(error);
-  }
-
-  /** Generate InPortXmlFiles for Coastwatch ERDDAP. */
-  public static void generateInPortXmlFilesForCoastwatchErddap() throws Throwable {
-
-    String2.log("*** generateInPortXmlFilesForCoastwatchErddap");
-    String dir = "/data/InPort/coastwatchErddap/";
-    File2.deleteAllFiles(dir);
-    StringBuilder errorSB = new StringBuilder();
-    int nSkip = 0, nSuccess = 0, nFailure = 0;
-    long eTime = System.currentTimeMillis();
-
-    // get a list of datasets from addDatasets on coastwatch Erddap
-    List<String> lines =
-        SSR.getUrlResponseArrayList(
-            "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/allDatasets.csv0?datasetID,dataStructure");
-    int nLines = lines.size();
-
-    // make HashSet with datasetIDs
-    HashSet<String> hashset = new HashSet<>();
-    for (String s : lines) hashset.add(String2.split(s, ',')[0]);
-
-    // consider making InPort Xml for these datasets
-    for (int line = 0; line < nLines; line++) {
-      if (nSuccess >= 2) break;
-      String tDatasetID = "?";
-      try {
-
-        String parts[] = String2.split(lines.get(line), ',');
-        tDatasetID = parts[0];
-        if (hashset.contains(tDatasetID + "_LonPM180")) {
-          String2.log("skip " + tDatasetID + " because there's a _LonPM180 version of it.");
-          nSkip++;
-          continue;
-        }
-        if (tDatasetID.startsWith("erdPP")
-            || // seawifs derived
-            tDatasetID.startsWith("erdMH1")
-            || // seawifs...
-            tDatasetID.startsWith("erdSA")
-            || tDatasetID.startsWith("erdSG")
-            || tDatasetID.startsWith("erdSH")
-            || tDatasetID.startsWith("erdSW")
-            || tDatasetID.startsWith("erdVH")
-            || // viirs
-            tDatasetID.startsWith("gsfc")
-            || tDatasetID.startsWith("jpl")
-            || tDatasetID.startsWith("erdlasFn")
-            || tDatasetID.startsWith("hycom")
-            || tDatasetID.startsWith("nrl")
-            || // but do they actaully archive it???
-            tDatasetID.startsWith("aadc")
-            || // obis
-            tDatasetID.startsWith("usgs")
-            || // Coastal Relief Model
-            tDatasetID.startsWith("erdCinp")
-            || // National Park Service
-            tDatasetID.startsWith("aviso")
-            || tDatasetID.startsWith("erdTA")
-            || // aviso
-            tDatasetID.startsWith("esrl")
-            || tDatasetID.startsWith("gfdl")
-            || tDatasetID.startsWith("nodc")
-            || tDatasetID.startsWith("pmelTao")
-            || // ???
-            tDatasetID.startsWith("scripps")
-            || // gliders
-            tDatasetID.startsWith("ucsd")
-            || // HFRadar ???
-            tDatasetID.startsWith("UMD / SODA")
-            || // ???
-            tDatasetID.startsWith("gtopp")
-            || // ???
-            tDatasetID.startsWith("NWIOOS")
-            || tDatasetID.startsWith("ncddc")
-            || tDatasetID.startsWith("ncdc")
-            || tDatasetID.startsWith("ncep")
-            || tDatasetID.startsWith("erdCAMarCat")
-            || // Jan Mason???
-            tDatasetID.startsWith("erdHadISST")
-            || // Roy???
-            tDatasetID.startsWith("erdCalCOFI")
-            || // done in La Jolla
-            tDatasetID.startsWith("siocalcofi")
-            || tDatasetID.startsWith("earthCube")
-            || // was a test dataset
-            tDatasetID.startsWith("erdFedRockfish")
-            || // ???
-            tDatasetID.startsWith("erdPrd")
-            || // ???
-            tDatasetID.startsWith("FRDCPS")
-            || // ???
-            tDatasetID.startsWith("fedCalLandings")
-            || // ???
-            tDatasetID.startsWith("LiquidR")
-            || // ???
-            tDatasetID.startsWith("osu")
-            || // ???
-            tDatasetID.startsWith("PRBO")
-            || // Farallon Island Seabird data ???
-            tDatasetID.startsWith("rt")) { // Sacramento River ???
-          String2.log("skip " + tDatasetID + " because datasetID known to be not relevant.");
-          nSkip++;
-          continue;
-        }
-
-        String gridTable = parts[1]; // grid or table
-        String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
-        EDD edd =
-            oneFromXmlFragment(
-                null,
-                "<dataset type=\"EDD"
-                    + String2.toTitleCase(gridTable)
-                    + "FromErddap\" datasetID=\""
-                    + tDatasetID
-                    + "\" active=\"true\">\n"
-                    + "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/"
-                    + gridTable
-                    + "dap/"
-                    + tDatasetID
-                    + "</sourceUrl>\n"
-                    + "</dataset>\n");
-        Attributes gatts = edd.combinedGlobalAttributes().toAttributes(EDMessages.DEFAULT_LANGUAGE);
-        String tCreatorEmail = gatts.getString("creator_email");
-        String tInstitution = gatts.getString("institution");
-        String tTitle = gatts.getString("title");
-        if (tCreatorEmail == null) tCreatorEmail = "";
-        if (tInstitution == null) tInstitution = "";
-        if (tTitle == null) tTitle = "";
-
-        // ! Only include datasets for which ERD Data is the creator.
-
-        // default archive info (e.g., for Dave's datasets)
-        String archiveLocation = "", archiveOther = "", archiveNone = "";
-        if (tDatasetID.startsWith("erdPP")
-            || // seawifs derived
-            tDatasetID.startsWith("erdMH1")
-            || // seawifs...
-            tDatasetID.startsWith("erdSA")
-            || tDatasetID.startsWith("erdSG")
-            || tDatasetID.startsWith("erdSH")
-            || tDatasetID.startsWith("erdSW")
-            || tDatasetID.startsWith("erdVH")
-            || // viirs
-            tDatasetID.startsWith("gsfc")
-            || tDatasetID.startsWith("jpl")
-            || tInstitution.indexOf("GSFC") >= 0
-            || tInstitution.indexOf("JPL") >= 0
-            || tInstitution.indexOf("NASA") >= 0
-            || tInstitution.indexOf("OBPG") >= 0) {
-          archiveLocation = "Other";
-          archiveOther = "NASA";
-
-        } else if (tDatasetID.startsWith("erdlasFn")
-            || tDatasetID.startsWith("hycom")
-            || tDatasetID.startsWith("nrl")
-            || // but do they actaully archive it???
-            tInstitution.indexOf("FNMOC") >= 0
-            || tInstitution.indexOf("Naval Oceanographic") >= 0
-            || tInstitution.indexOf("Naval Research") >= 0) {
-          archiveLocation = "Other";
-          archiveOther = "US Department of Defense"; // ???
-
-        } else if (tDatasetID.startsWith("aadc")
-            || // obis
-            tDatasetID.startsWith("usgs")) { // Coastal Relief Model
-          archiveLocation = "Other";
-          archiveOther = "USGS"; // ???
-
-        } else if (tDatasetID.startsWith("erdCinp")) { // National Park Service
-          archiveLocation = "Other";
-          archiveOther = "US Department of Interior"; // ???
-
-        } else if (tDatasetID.startsWith("aviso") || tDatasetID.startsWith("erdTA")) { // aviso
-          archiveLocation = "World Data Center";
-          archiveOther = "AVISO"; // ???
-
-        } else if (tDatasetID.startsWith("esrl") || tInstitution.indexOf("NGDC") >= 0) {
-          archiveLocation = "NCEI-CO"; // NGDC
-
-        } else if (tDatasetID.startsWith("gfdl")
-            || tDatasetID.startsWith("nodc")
-            || tDatasetID.startsWith("pmelTao")
-            || // ???
-            tDatasetID.startsWith("scripps")
-            || // gliders
-            tTitle.startsWith("Currents, HFRadar,")
-            || // ???
-            tDatasetID.startsWith("ucsd")
-            || // HFRadar ???
-            tDatasetID.startsWith("UMD / SODA")
-            || // ???
-            tDatasetID.startsWith("gtopp")
-            || // ???
-            tInstitution.indexOf("CeNCOOS") >= 0
-            || // IOOS works to archive regional data
-            tInstitution.indexOf("GoMOOS") >= 0
-            || tInstitution.indexOf("NERACOOS") >= 0
-            || tDatasetID.startsWith("NWIOOS")
-            || tInstitution.indexOf("AOML") >= 0
-            || tInstitution.indexOf("FSU") >= 0
-            || // NOAA ship
-            tInstitution.indexOf("NDBC") >= 0
-            || tInstitution.indexOf("NODC") >= 0
-            || tInstitution.indexOf("NOS") >= 0) {
-          archiveLocation = "NCEI-MD"; // NODC
-
-        } else if (tDatasetID.startsWith("ncddc")) {
-          archiveLocation = "NCEI-MS"; // NCDDC
-
-        } else if (tDatasetID.startsWith("ncdc")
-            || tDatasetID.startsWith("ncep")
-            || tInstitution.indexOf("NCDC") >= 0
-            || tInstitution.indexOf("NCEP") >= 0) {
-          archiveLocation = "NCEI-NC"; // NCDC
-
-          // skip local datasets that others will enter into InPort
-        } else if (tDatasetID.startsWith("erdCAMarCat")
-            || // Jan Mason???
-            tDatasetID.startsWith("erdHadISST")
-            || // Roy???
-            tDatasetID.startsWith("erdCalCOFI")
-            || // done in La Jolla
-            tDatasetID.startsWith("siocalcofi")
-            || tDatasetID.startsWith("earthCube")
-            || // was a test dataset
-            tDatasetID.startsWith("erdFedRockfish")
-            || // ???
-            tDatasetID.startsWith("erdPrd")
-            || // ???
-            tDatasetID.startsWith("FRDCPS")
-            || // ???
-            tDatasetID.startsWith("fedCalLandings")
-            || // ???
-            tDatasetID.startsWith("LiquidR")
-            || // ???
-            tDatasetID.startsWith("osu")
-            || // ???
-            tDatasetID.startsWith("PRBO")
-            || // Farallon Island Seabird data ???
-            tDatasetID.startsWith("rt")) { // Sacramento River ???
-          archiveLocation = "To Be Determined";
-          archiveNone = "We will find out if an archive is interested in this dataset.";
-
-        } else {
-          // default archive info (e.g., for Dave's datasets)
-          // These are the ones we'll actually submit to InPort.
-          archiveLocation = "No Archiving Intended";
-          archiveNone =
-              "This data is derived from data in an archive. "
-                  + "The archives only want to archive the source data.";
-        }
-
-        if (archiveLocation.equals("No Archiving Intended")
-            && tCreatorEmail.equals("erd.data@noaa.gov")) {
-          edd.writeInPortXmlFile(dir + fileName, archiveLocation, archiveOther, archiveNone);
-          nSuccess++;
-        } else {
-          nSkip++;
-          String2.log(
-              "skip "
-                  + tDatasetID
-                  + " because creator not erd.data@noaa.gov .\n"
-                  + archiveLocation
-                  + ", "
-                  + archiveOther
-                  + ", "
-                  + archiveNone
-                  + "\n");
-        }
-
-      } catch (Throwable t) {
-        nFailure++;
-        errorSB.append(
-            "ERROR while creating InPort.xml file for "
-                + tDatasetID
-                + "\n"
-                + MustBe.throwableToString(t)
-                + "\n");
-      }
-    }
-
-    // all done
-    String2.log("\n******\n");
-    String2.log(errorSB.toString());
-    String2.log(
-        "generateInPortXmlFilesForCoastwatchErddap() finished.\n"
-            + "  nSkip="
-            + nSkip
-            + " nSuccess="
-            + nSuccess
-            + " nFailure="
-            + nFailure
-            + " time="
-            + Calendar2.elapsedTimeString(System.currentTimeMillis() - eTime));
-  }
-
-  /**
    * This sets verbose=on and reallyVerbose=on for this class and related clases, for tests.
    *
    * @throws Throwable if trouble
@@ -14380,7 +14077,7 @@ public abstract class EDD {
       }
 
       // save changed dxLines
-      dxLines.toFile(datasetsXmlFileName + "temp", File2.UTF_8, null);
+      dxLines.toFile(datasetsXmlFileName + "temp", StandardCharsets.UTF_8, null);
 
       // save errors to file and write to console
       String errorLogName =
@@ -14693,4 +14390,6 @@ public abstract class EDD {
             + tnThreads);
     return tnThreads;
   }
+
+  public abstract boolean isProcessingSubset();
 }

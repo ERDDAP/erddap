@@ -1,5 +1,5 @@
 # Build the ERDDAP war from source
-FROM --platform=$BUILDPLATFORM maven:3.9.11-eclipse-temurin-21-noble AS build
+FROM --platform=$BUILDPLATFORM maven:3.9.12-eclipse-temurin-25-noble AS build
 
 # install zip so certain tests can pass
 RUN apt-get update && \
@@ -28,13 +28,13 @@ RUN if [ "$BUILD_FROM_GIT" = "1" ] && [ -n "$ERDDAP_GIT_URL" ] && [ -n "$ERDDAP_
 
 ARG SKIP_TESTS=false
 RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository \
-    mvn --batch-mode -DskipTests=${SKIP_TESTS} -Dgcf.skipInstallHooks=true \
+    MAVEN_OPTS="-XX:+UseCompactObjectHeaders" mvn --batch-mode -DskipTests=${SKIP_TESTS} -Dgcf.skipInstallHooks=true \
     -Ddownload.unpack=true -Ddownload.unpackWhenChanged=false \
     -Dmaven.test.redirectTestOutputToFile=true package \
     && find target -maxdepth 1 -type d -name 'ERDDAP-*' -exec mv {} target/ERDDAP \;
 
 # Run the built erddap war via a tomcat instance
-FROM tomcat:11.0.11-jdk21-temurin-noble
+FROM tomcat:11.0.18-jdk25-temurin-noble
 
 RUN apt-get update && apt-get install -y \
     unzip \

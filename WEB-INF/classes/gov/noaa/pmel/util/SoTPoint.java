@@ -22,59 +22,17 @@ import java.io.Serializable;
  * @version $Revision: 1.6 $, $Date: 2003/08/22 23:02:40 $
  * @sgt 2.0
  */
-public class SoTPoint implements Serializable, Cloneable {
-  /** X coordinate */
-  private SoTValue x_;
-
-  /** Y coordinate */
-  private SoTValue y_;
-
-  /**
-   * Construct a <code>SoTPoint</code> from <code>SoTValue</code>s.
-   *
-   * @param x space or time coordinate
-   * @param y space or time coordinate
-   */
-  public SoTPoint(SoTValue x, SoTValue y) {
-    x_ = x;
-    y_ = y;
-  }
-
-  /** Get x value */
-  public SoTValue getX() {
-    return x_;
-  }
-
-  /** Get y value */
-  public SoTValue getY() {
-    return y_;
-  }
-
-  /** Test for equality. For equality both x and y values must be equal. */
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof SoTPoint stp)) {
-      return false;
-    }
-    return (x_.equals(stp.getX()) && y_.equals(stp.getY()));
-  }
-
-  @Override
-  public int hashCode() {
-    int hash = 7 * 31;
-    hash = 31 * hash + x_.hashCode();
-    hash = 31 * hash + y_.hashCode();
-    return hash;
-  }
+public record SoTPoint(SoTValue x, SoTValue y) implements Serializable {
+  private static final long serialVersionUID = 5302059508734479430L;
 
   /** Test if x value is time */
   public boolean isXTime() {
-    return x_.isTime();
+    return x.isTime();
   }
 
   /** Test if y value is time */
   public boolean isYTime() {
-    return y_.isTime();
+    return y.isTime();
   }
 
   /**
@@ -84,6 +42,6 @@ public class SoTPoint implements Serializable, Cloneable {
    */
   @Override
   public String toString() {
-    return "(" + x_ + ", " + y_ + ")";
+    return "(" + x + ", " + y + ")";
   }
 }

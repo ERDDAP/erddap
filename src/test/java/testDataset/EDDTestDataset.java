@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import testSupport.ExternalTestUrls;
 
 public class EDDTestDataset {
   public static void generateDatasetsXml() throws URISyntaxException, FileNotFoundException {
@@ -283,6 +284,7 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_erdMBsstdmday());
       datasetsXml.append(xmlFragment_erdMBsstdmday_LonPM180());
       // datasetsXml.append(xmlFragment_test_erdPHsstamday_LonPM180()); //AxisVariable=time has tied
+      datasetsXml.append(xmlFragment_ecmwfTest_LonPM180());
       // values
       datasetsXml.append(xmlFragment_testPM180LonValidMinMax());
       datasetsXml.append(xmlFragment_testInvalidCRAFiles());
@@ -311,6 +313,11 @@ public class EDDTestDataset {
       datasetsXml.append(xmlFragment_TS_ATMP_AAD());
       datasetsXml.append(xmlFragment_erdMPOC1day_AsATable());
       datasetsXml.append(xmlFragment_testParquet());
+      datasetsXml.append(xmlFragment_TableAggregateRows_nceiPH53sst());
+
+      datasetsXml.append(xmlFragment_publicAWSGridFromFiles());
+      datasetsXml.append(xmlFragment_Grid_NC_1D_2D());
+      datasetsXml.append(xmlFragment_binnedCUGN90());
 
       datasetsXml.append(
           "<!-- Here are some excellent gridded datasets that you can include in your ERDDAP\n"
@@ -456,7 +463,9 @@ public class EDDTestDataset {
 
   private static String xmlFragment_hawaii_d90f_20ee_c4cb() {
     return "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_d90f_20ee_c4cb\" active=\"true\">\n"
-        + "    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
+        + "    <sourceUrl>"
+        + ExternalTestUrls.apdrcHawaiiBase()
+        + "/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n"
         + "    <accessibleViaWMS>false</accessibleViaWMS>\n"
         + "    <reloadEveryNMinutes>15000</reloadEveryNMinutes>\n"
         + "    <defaultDataQuery>temp[last][0][0:last][0:last],salt[last][0][0:last][0:last],u[last][0][0:last][0:last],v[last][0][0:last][0:last],w[last][0][0:last][0:last]</defaultDataQuery>\n"
@@ -464,7 +473,9 @@ public class EDDTestDataset {
         + "    <!-- sourceAttributes>\n"
         + "        <att name=\"Conventions\">COARDS</att>\n"
         + "        <att name=\"dataType\">Grid</att>\n"
-        + "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n"
+        + "        <att name=\"documentation\">"
+        + ExternalTestUrls.apdrcHawaiiBase()
+        + "/datadoc/soda_2.2.4.php</att>\n"
         + "        <att name=\"history\">Tue Feb 22 14:37:08 HST 2011 : imported by GrADS Data Server 2.0</att>\n"
         + "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n"
         + "    </sourceAttributes -->\n"
@@ -19952,9 +19963,8 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>0</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/veryLarge/points/testAwsS3/").toURI())
-            .toString()
-        + "/</fileDir>\n"
+        + EDStatic.config.fullTestCacheDirectory
+        + "/points/testAwsS3/</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_20.*\\.nc</fileNameRegex>\n"
         + "    <metadataFrom>last</metadataFrom>\n"
@@ -24594,7 +24604,7 @@ public class EDDTestDataset {
         + "            <att name=\"valid_min\" type=\"short\">0</att>\n"
         + "        </sourceAttributes -->\n"
         + "        <addAttributes>\n"
-        + "            <att name=\"_FillValue\" type=\"short\">32767</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
+        + "            <att name=\"_FillValue\">null</att> <!-- added by addFillValueAttributes at 2020-10-28T11:47:36 -->\n"
         + "            <att name=\"_ChunkSizes\">null</att>\n"
         + "            <att name=\"add_offset\">null</att>\n"
         + "            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n"
@@ -34194,6 +34204,203 @@ public class EDDTestDataset {
         + "</dataset>\n";
   }
 
+  private static String xmlFragment_ecmwfTest_LonPM180() throws URISyntaxException {
+    return """
+    <dataset type="EDDGridLonPM180" datasetID="ECMWF-FIXED" active="true">
+        <maxSourceLon>540</maxSourceLon>
+        <dataset type="EDDGridFromNcFiles" datasetID="ECMWF" active="true">
+            <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+            <updateEveryNMillis>10000</updateEveryNMillis>
+            <fileDir>
+            """
+        + Path.of(EDDTestDataset.class.getResource("/data/grib/").toURI()).toString()
+        +
+"""
+            </fileDir>
+            <fileNameRegex>ecmwf-temp.*\\.grib2</fileNameRegex>
+            <recursive>true</recursive>
+            <pathRegex>.*</pathRegex>
+            <metadataFrom>last</metadataFrom>
+            <matchAxisNDigits>20</matchAxisNDigits>
+            <fileTableInMemory>false</fileTableInMemory>
+            <!-- sourceAttributes>
+            <att name="Conventions">CF-1.6</att>
+            <att name="featureType">GRID</att>
+            <att name="file_format">GRIB-2</att>
+            <att name="GRIB_table_version">34,0</att>
+            <att name="history">Read using CDM IOSP GribCollection v3</att>
+            <att name="Originating_or_generating_Center">European Centre for Medium Range Weather Forecasts
+            (ECMWF) (RSMC)</att>
+            <att name="Originating_or_generating_Subcenter">0</att>
+            <att name="Type_of_generating_process">Forecast</att>
+        </sourceAttributes -->
+            <addAttributes>
+                <att name="cdm_data_type">Grid</att>
+                <att name="Conventions">CF-1.10, COARDS, ACDD-1.3</att>
+                <att name="creator_name">ECMWF (RSMC)</att>
+                <att name="creator_type">institution</att>
+                <att name="grid_mapping_earth_radius" type="double">6371229.0</att>
+                <att name="grid_mapping_name">latitude_longitude</att>
+                <att name="infoUrl">???</att>
+                <att name="institution">ECMWF (RSMC)</att>
+                <att name="keywords">centre, component, data, ecmwf, european, forecasts, isobaric,
+                    local, medium, medium-range, pressure, range, rsmc, source, surface, temperature,
+                    Temperature_isobaric, time, u-component, u-component_of_wind_isobaric, v-component,
+                    v-component_of_wind_isobaric, weather, wind
+                </att>
+                <att name="license">[standard]</att>
+                <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+                <att name="summary">European Centre for Medium-Range Weather Forecasts (ECMWF) (RSMC)
+                    data from a local source.
+                </att>
+                <att name="testOutOfDate">now-8days</att>
+                <att name="title">ECMWF (RSMC) data from a local source.</att>
+            </addAttributes>
+            <axisVariable>
+                <sourceName>time</sourceName>
+                <destinationName>time</destinationName>
+                <!-- sourceAttributes>
+                <att name="calendar">proleptic_gregorian</att>
+                <att name="long_name">GRIB forecast or observation time</att>
+                <att name="standard_name">time</att>
+                <att name="units">Hour since 2025-09-26T00:00:00Z</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Time</att>
+                    <att name="units">hours since 2025-09-29T00:00:00Z</att>
+                </addAttributes>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>isobaric</sourceName>
+                <destinationName>isobaric</destinationName>
+                <!-- sourceAttributes>
+                <att name="Grib_level_type" type="int">100</att>
+                <att name="long_name">Isobaric surface</att>
+                <att name="positive">down</att>
+                <att name="units">Pa</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Pressure</att>
+                    <att name="units">hPa</att>
+                    <att name="scale_factor" type="float">0.01</att>
+                </addAttributes>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lat</sourceName>
+                <destinationName>latitude</destinationName>
+                <!-- sourceAttributes>
+                <att name="units">degrees_north</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Location</att>
+                    <att name="long_name">Latitude</att>
+                    <att name="standard_name">latitude</att>
+                </addAttributes>
+            </axisVariable>
+            <axisVariable>
+                <sourceName>lon</sourceName>
+                <destinationName>longitude</destinationName>
+                <!-- sourceAttributes>
+                <att name="units">degrees_east</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="ioos_category">Location</att>
+                    <att name="long_name">Longitude</att>
+                    <att name="standard_name">longitude</att>
+                </addAttributes>
+            </axisVariable>
+            <dataVariable>
+                <sourceName>Temperature_isobaric</sourceName>
+                <destinationName>Temperature_isobaric</destinationName>
+                <dataType>float</dataType>
+                <!-- sourceAttributes>
+                <att name="abbreviation">mx2t24</att>
+                <att name="coordinates">reftime time isobaric lat lon </att>
+                <att name="Grib2_Generating_Process_Type">Forecast</att>
+                <att name="Grib2_Level_Desc">Isobaric surface</att>
+                <att name="Grib2_Level_Type" type="int">100</att>
+                <att name="Grib2_Parameter" type="intList">0 0 0</att>
+                <att name="Grib2_Parameter_Category">Temperature</att>
+                <att name="Grib2_Parameter_Discipline">Meteorological products</att>
+                <att name="Grib2_Parameter_Name">Temperature</att>
+                <att name="Grib2_Statistical_Process_Type">UnknownStatType- - 1</att>
+                <att name="Grib_Variable_Id">VAR_0-0-0_L100</att>
+                <att name="grid_mapping">LatLon_Projection</att>
+                <att name="long_name">Temperature @ Isobaric surface</att>
+                <att name="missing_value" type="float">NaN</att>
+                <att name="units">K</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="colorBarMaximum" type="double">313.0</att>
+                    <att name="colorBarMinimum" type="double">263.0</att>
+                    <att name="coordinates">null</att>
+                    <att name="grid_mapping">null</att>
+                    <att name="ioos_category">Temperature</att>
+                </addAttributes>
+            </dataVariable>
+            <dataVariable>
+                <sourceName>u-component_of_wind_isobaric</sourceName>
+                <destinationName>u_component_of_wind_isobaric</destinationName>
+                <dataType>float</dataType>
+                <!-- sourceAttributes>
+                <att name="coordinates">reftime time isobaric lat lon </att>
+                <att name="description">u-component of wind</att>
+                <att name="Grib2_Generating_Process_Type">Forecast</att>
+                <att name="Grib2_Level_Desc">Isobaric surface</att>
+                <att name="Grib2_Level_Type" type="int">100</att>
+                <att name="Grib2_Parameter" type="intList">0 2 2</att>
+                <att name="Grib2_Parameter_Category">Momentum</att>
+                <att name="Grib2_Parameter_Discipline">Meteorological products</att>
+                <att name="Grib2_Parameter_Name">u-component of wind</att>
+                <att name="Grib2_Statistical_Process_Type">UnknownStatType- - 1</att>
+                <att name="Grib_Variable_Id">VAR_0-2-2_L100</att>
+                <att name="grid_mapping">LatLon_Projection</att>
+                <att name="long_name">u-component of wind @ Isobaric surface</att>
+                <att name="missing_value" type="float">NaN</att>
+                <att name="units">m/s</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="coordinates">null</att>
+                    <att name="grid_mapping">null</att>
+                    <att name="ioos_category">Pressure</att>
+                </addAttributes>
+            </dataVariable>
+            <dataVariable>
+                <sourceName>v-component_of_wind_isobaric</sourceName>
+                <destinationName>v_component_of_wind_isobaric</destinationName>
+                <dataType>float</dataType>
+                <!-- sourceAttributes>
+                <att name="coordinates">reftime time isobaric lat lon </att>
+                <att name="description">v-component of wind</att>
+                <att name="Grib2_Generating_Process_Type">Forecast</att>
+                <att name="Grib2_Level_Desc">Isobaric surface</att>
+                <att name="Grib2_Level_Type" type="int">100</att>
+                <att name="Grib2_Parameter" type="intList">0 2 3</att>
+                <att name="Grib2_Parameter_Category">Momentum</att>
+                <att name="Grib2_Parameter_Discipline">Meteorological products</att>
+                <att name="Grib2_Parameter_Name">v-component of wind</att>
+                <att name="Grib2_Statistical_Process_Type">UnknownStatType- - 1</att>
+                <att name="Grib_Variable_Id">VAR_0-2-3_L100</att>
+                <att name="grid_mapping">LatLon_Projection</att>
+                <att name="long_name">v-component of wind @ Isobaric surface</att>
+                <att name="missing_value" type="float">NaN</att>
+                <att name="units">m/s</att>
+            </sourceAttributes -->
+                <addAttributes>
+                    <att name="coordinates">null</att>
+                    <att name="grid_mapping">null</att>
+                    <att name="ioos_category">Pressure</att>
+                </addAttributes>
+            </dataVariable>
+        </dataset>
+    </dataset>
+""";
+  }
+
+  public static EDD getEDD_ecmwfTemp_LonPM180() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_ecmwfTest_LonPM180());
+  }
+
   public static EDD geterdMBsstdmday() throws Throwable {
     return EDD.oneFromXmlFragment(null, xmlFragment_erdMBsstdmday());
   }
@@ -38595,6 +38802,181 @@ public class EDDTestDataset {
         + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
         + "            <att name=\"ioos_category\">Unknown</att>\n"
         + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getstringVarDataVariable() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_stringVarDataVariable());
+  }
+
+  private static String xmlFragment_stringVarDataVariable() throws URISyntaxException {
+    return "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"stringVarDataVariable\" active=\"true\">\n"
+        + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
+        + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + "    <fileDir>"
+        + Path.of(EDDTestDataset.class.getResource("/data/nc/").toURI()).toString()
+        + "</fileDir>\n"
+        + "    <fileNameRegex>GL_.*44761\\.nc</fileNameRegex>\n"
+        + "    <recursive>true</recursive>\n"
+        + "    <pathRegex>.*</pathRegex>\n"
+        + "    <metadataFrom>last</metadataFrom>\n"
+        + "    <standardizeWhat>4355</standardizeWhat>  <!-- standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units) -->\n"
+        + "    <preExtractRegex></preExtractRegex>\n"
+        + "    <postExtractRegex></postExtractRegex>\n"
+        + "    <extractRegex></extractRegex>\n"
+        + "    <columnNameForExtract></columnNameForExtract>\n"
+        + "    <removeMVRows>false</removeMVRows>\n"
+        + "    <sortFilesBySourceNames>TIME</sortFilesBySourceNames>\n"
+        + "    <fileTableInMemory>false</fileTableInMemory>\n"
+        + "    <!-- sourceAttributes>\n"
+        + "        <att name=\"area\">Global Ocean</att>\n"
+        + "        <att name=\"author\">Coriolis and MyOcean data provider</att>\n"
+        + "        <att name=\"cdm_data_type\">Time-series</att>\n"
+        + "        <att name=\"citation\">These data were collected and made freely available by the MyOcean project and the\n"
+        + " programs that contribute to it</att>\n"
+        + "        <att name=\"contact\">codac@ifremer.fr</att>\n"
+        + "        <att name=\"conventions\">OceanSITES Manual 1.1, CF-1.1</att>\n"
+        + "        <att name=\"data_assembly_center\">Coriolis</att>\n"
+        + "        <att name=\"data_mode\">R</att>\n"
+        + "        <att name=\"data_type\">OceanSITES time-series data</att>\n"
+        + "        <att name=\"date_update\">2012-08-06T22:07:01Z</att>\n"
+        + "        <att name=\"distribution_statement\">These data follow MyOcean standards; they are public and free of cha\n"
+        + "rge. User assumes all risk for use of data. User must display citation in any publication or product using data\n"
+        + ". User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy</att>\n"
+        + "        <att name=\"format_version\">1.1</att>\n"
+        + "        <att name=\"geospatial_lat_max\">51.078</att>\n"
+        + "        <att name=\"geospatial_lat_min\">47.763</att>\n"
+        + "        <att name=\"geospatial_lon_max\">-39.878</att>\n"
+        + "        <att name=\"geospatial_lon_min\">-44.112</att>\n"
+        + "        <att name=\"history\">2012-08-06T22:07:01Z : Creation</att>\n"
+        + "        <att name=\"id\">GL_201207_TS_DB_44761</att>\n"
+        + "        <att name=\"institution\">Unknown institution</att>\n"
+        + "        <att name=\"institution_references\">http://www.coriolis.eu.org</att>\n"
+        + "        <att name=\"naming_authority\">OceanSITES</att>\n"
+        + "        <att name=\"netcdf_version\">3.5</att>\n"
+        + "        <att name=\"platform_code\">44761</att>\n"
+        + "        <att name=\"qc_manual\">OceanSITES User&#39;s Manual v1.1</att>\n"
+        + "        <att name=\"quality_control_indicator\">6</att>\n"
+        + "        <att name=\"quality_index\">A</att>\n"
+        + "        <att name=\"references\">http://www.myocean.eu.org,http://www.coriolis.eu.org</att>\n"
+        + "        <att name=\"source\">BUOY/MOORING: SURFACE, DRIFTING : observation</att>\n"
+        + "        <att name=\"time_coverage_end\">2012-07-31T23:00:00Z</att>\n"
+        + "        <att name=\"time_coverage_start\">2012-07-11T13:00:00Z</att>\n"
+        + "        <att name=\"update_interval\">daily</att>\n"
+        + "        <att name=\"wmo_platform_code\">44761</att>\n"
+        + "    </sourceAttributes -->\n"
+        + "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n"
+        + "        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n"
+        + "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n"
+        + "    -->\n"
+        + "    <addAttributes>\n"
+        + "        <att name=\"cdm_data_type\">Point</att>\n"
+        + "        <att name=\"Conventions\">OceanSITES Manual 1.1, CF-1.6, COARDS, ACDD-1.3</att>\n"
+        + "        <att name=\"conventions\">null</att>\n"
+        + "        <att name=\"creator_email\">codac@ifremer.fr</att>\n"
+        + "        <att name=\"creator_name\">CODAC</att>\n"
+        + "        <att name=\"creator_type\">institution</att>\n"
+        + "        <att name=\"creator_url\">https://wwz.ifremer.fr/</att>\n"
+        + "        <att name=\"infoUrl\">http://www.myocean.eu.org</att>\n"
+        + "        <att name=\"keywords\">air, air_pressure_at_sea_level, atmosphere, atmospheric, ATMS, ATMS_DM, ATMS_QC, ATPT, ATPT_DM, ATPT_QC, data, depth, DEPTH_QC, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, flag, hour, hourly, institution, latitude, level, local, longitude, measurements, method, ocean, oceans, pressure, processing, quality, science, sea, sea_water_temperature, seawater, source, static, TEMP, TEMP_DM, TEMP_QC, temperature, tendency, tendency_of_air_pressure, time, TIME_QC, water</att>\n"
+        + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
+        + "        <att name=\"license\">These data follow MyOcean standards; they are public and free of charge. User assumes all risk for use of data. User must display citation in any publication or product using data. User must contact PI prior to any commercial use of data. More on: http://www.myocean.eu/data_policy</att>\n"
+        + "        <att name=\"sourceUrl\">(local files)</att>\n"
+        + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
+        + "        <att name=\"subsetVariables\"></att>\n"
+        + "        <att name=\"summary\">Unknown institution data from a local source.</att>\n"
+        + "        <att name=\"title\">The Title for testTreatDimensionsAs</att>\n"
+        + "    </addAttributes>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>TIME</sourceName>\n"
+        + "        <destinationName>time</destinationName>\n"
+        + "        <dataType>double</dataType>\n"
+        + "        <!-- sourceAttributes>\n"
+        + "            <att name=\"_FillValue\" type=\"double\">NaN</att>\n"
+        + "            <att name=\"axis\">T</att>\n"
+        + "            <att name=\"long_name\">time</att>\n"
+        + "            <att name=\"QC_indicator\" type=\"int\">1</att>\n"
+        + "            <att name=\"QC_procedure\" type=\"int\">1</att>\n"
+        + "            <att name=\"standard_name\">time</att>\n"
+        + "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n"
+        + "            <att name=\"valid_max\" type=\"double\">7.144848E9</att>\n"
+        + "            <att name=\"valid_min\" type=\"double\">-6.31152E8</att>\n"
+        + "        </sourceAttributes -->\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"colorBarMaximum\" type=\"double\">8.0E9</att>\n"
+        + "            <att name=\"colorBarMinimum\" type=\"double\">-2.0E9</att>\n"
+        + "            <att name=\"ioos_category\">Time</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>LATITUDE</sourceName>\n"
+        + "        <destinationName>latitude</destinationName>\n"
+        + "        <dataType>float</dataType>\n"
+        + "        <!-- sourceAttributes>\n"
+        + "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n"
+        + "            <att name=\"axis\">Y</att>\n"
+        + "            <att name=\"long_name\">Latitude of each location</att>\n"
+        + "            <att name=\"QC_indicator\" type=\"int\">1</att>\n"
+        + "            <att name=\"QC_procedure\" type=\"int\">1</att>\n"
+        + "            <att name=\"standard_name\">latitude</att>\n"
+        + "            <att name=\"units\">degree_north</att>\n"
+        + "            <att name=\"valid_max\" type=\"double\">90.0</att>\n"
+        + "            <att name=\"valid_min\" type=\"double\">-90.0</att>\n"
+        + "        </sourceAttributes -->\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n"
+        + "            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n"
+        + "            <att name=\"ioos_category\">Location</att>\n"
+        + "            <att name=\"units\">degrees_north</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>LONGITUDE</sourceName>\n"
+        + "        <destinationName>longitude</destinationName>\n"
+        + "        <dataType>float</dataType>\n"
+        + "        <!-- sourceAttributes>\n"
+        + "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n"
+        + "            <att name=\"axis\">X</att>\n"
+        + "            <att name=\"long_name\">Longitude of each location</att>\n"
+        + "            <att name=\"QC_indicator\" type=\"int\">1</att>\n"
+        + "            <att name=\"QC_procedure\" type=\"int\">1</att>\n"
+        + "            <att name=\"standard_name\">longitude</att>\n"
+        + "            <att name=\"units\">degree_east</att>\n"
+        + "            <att name=\"valid_max\" type=\"double\">180.0</att>\n"
+        + "            <att name=\"valid_min\" type=\"double\">-180.0</att>\n"
+        + "        </sourceAttributes -->\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n"
+        + "            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n"
+        + "            <att name=\"ioos_category\">Location</att>\n"
+        + "            <att name=\"units\">degrees_east</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>TEMP</sourceName>\n"
+        + "        <destinationName>TEMP</destinationName>\n"
+        + "        <dataType>float</dataType>\n"
+        + "        <!-- sourceAttributes>\n"
+        + "            <att name=\"_FillValue\" type=\"float\">NaN</att>\n"
+        + "            <att name=\"long_name\">Sea temperature</att>\n"
+        + "            <att name=\"standard_name\">sea_water_temperature</att>\n"
+        + "            <att name=\"units\">degree_C</att>\n"
+        + "        </sourceAttributes -->\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n"
+        + "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n"
+        + "            <att name=\"ioos_category\">Temperature</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "      <sourceName>variable:TEMP:standard_name</sourceName>\n"
+        + "      <destinationName>temp_name</destinationName>\n"
+        + "      <dataType>String</dataType>\n"
+        + "      <addAttributes>\n"
+        + "        <att name=\"long_name\">Temp Name</att>\n"
+        + "        <att name=\"ioos_category\">Unknown</att>\n"
+        + "      </addAttributes>\n"
         + "    </dataVariable>\n"
         + "</dataset>\n";
   }
@@ -43952,5 +44334,677 @@ public class EDDTestDataset {
         + "        </addAttributes>\n"
         + "    </dataVariable>\n"
         + "</dataset>\n";
+  }
+
+  public static EDD getTableAggregateRows_nceiPH53sst() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_TableAggregateRows_nceiPH53sst());
+  }
+
+  private static String xmlFragment_TableAggregateRows_nceiPH53sst() {
+    return "<dataset type=\"EDDTableAggregateRows\" datasetID=\"TableAggregateRows_nceiPH53sst\" active=\"true\">\n"
+        + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
+        + "    <dataset type=\"EDDTableFromEDDGrid\" datasetID=\"nceiPH53sstd1day_AsATable\" active=\"true\">\n"
+        + "        <accessibleTo>String for accessibleTo</accessibleTo>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"summary\">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)</att>\n"
+        + "            <att name=\"title\">MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table</att>\n"
+        + "            <att name=\"maxAxis0\" type=\"int\">0</att>\n"
+        + "        </addAttributes>\n"
+        + "        <dataset type=\"EDDGridFromErddap\" datasetID=\"nceiPH53sstd1day_AsATableChild\">\n"
+        + "            <sourceUrl>http://localhost:8080/erddap/griddap/nceiPH53sstd1day</sourceUrl>\n"
+        + "        </dataset>\n"
+        + "    </dataset>\n"
+        + "    <dataset type=\"EDDTableFromEDDGrid\" datasetID=\"nceiPH53sstn1day_AsATable\" active=\"true\">\n"
+        + "        <accessibleTo>String for accessibleTo</accessibleTo>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"summary\">MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)</att>\n"
+        + "            <att name=\"title\">MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table</att>\n"
+        + "            <att name=\"maxAxis0\" type=\"int\">0</att>\n"
+        + "        </addAttributes>\n"
+        + "        <dataset type=\"EDDGridFromErddap\" datasetID=\"nceiPH53sstn1day_AsATableChild\">\n"
+        + "            <sourceUrl>http://localhost:8080/erddap/griddap/nceiPH53sstn1day</sourceUrl>\n"
+        + "        </dataset>\n"
+        + "    </dataset>\n"
+        + "</dataset>\n";
+  }
+
+  public static EDD getpublicAWSGridFromFiles() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_publicAWSGridFromFiles());
+  }
+
+  private static String xmlFragment_publicAWSGridFromFiles() {
+    return
+"""
+<dataset type="EDDGridFromNcFiles" datasetID="noaa_goes17_abi_l1b_radc" active="true">
+    <reloadEveryNMinutes>60</reloadEveryNMinutes>
+    <updateEveryNMillis>-1</updateEveryNMillis>
+    <fileDir>"""
+        + EDStatic.config.fullTestCacheDirectory
+        +
+"""
+/goes17/</fileDir>
+    <fileNameRegex>.*\\.nc</fileNameRegex>
+    <fileNameRegex>OR_ABI-L1b-RadC.*\\.nc</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <pathRegex>.*ABI-L1b-RadC/2019/001/00/.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <matchAxisNDigits>20</matchAxisNDigits>
+    <fileTableInMemory>false</fileTableInMemory>
+    <cacheFromUrl>https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/001/00/</cacheFromUrl>
+    <cacheSizeGB>50</cacheSizeGB>
+    <axisVariable>
+        <sourceName>t</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+        </addAttributes>
+    </axisVariable>
+
+    <axisVariable>
+        <sourceName>y</sourceName>
+        <destinationName>y</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </axisVariable>
+
+    <axisVariable>
+        <sourceName>x</sourceName>
+        <destinationName>x</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </axisVariable>
+
+    <dataVariable>
+        <sourceName>Rad</sourceName>
+        <destinationName>radiance</destinationName>
+        <dataType>short</dataType>
+        <addAttributes>
+            <att name="ioos_category">Other</att>
+        </addAttributes>
+    </dataVariable>
+
+    <dataVariable>
+        <sourceName>DQF</sourceName>
+        <destinationName>data_quality_flag</destinationName>
+        <dataType>byte</dataType>
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+        </addAttributes>
+    </dataVariable>
+
+    <addAttributes>
+        <att name="cdm_data_type">Grid</att>
+        <att name="infoUrl">https://www.goes-r.gov/products/baseline-radiances.html</att>
+        <att name="institution">NOAA/NESDIS</att>
+        <att name="title">NOAA GOES-17 ABI L1b Radiances CONUS</att>
+        <att name="summary">GOES-17 Advanced Baseline Imager (ABI) Level 1b Radiances CONUS sector from 2019 day 001 hour 00, cached from S3.</att>
+    </addAttributes>
+</dataset>
+        """;
+  }
+
+  public static EDD getGrid_NC_1D_2D() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_Grid_NC_1D_2D());
+  }
+
+  private static String xmlFragment_Grid_NC_1D_2D() throws URISyntaxException {
+    return
+"""
+<dataset type="EDDGridFromNcFiles" datasetID="Grid_NC_1D_2D" active="true">
+    <fileDir>"""
+        + Path.of(EDDTestDataset.class.getResource("/largePoints/dfoGlider").toURI()).toString()
+        +
+"""
+    </fileDir>
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <updateEveryNMillis>10000</updateEveryNMillis>
+    <fileNameRegex>.*\\.nc</fileNameRegex>
+    <recursive>false</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <matchAxisNDigits>20</matchAxisNDigits>
+    <fileTableInMemory>false</fileTableInMemory>
+    <addAttributes>
+        <att name="_NCProperties">null</att>
+        <att name="cdm_data_type">TrajectoryProfile</att>
+        <att name="cdm_profile_variables">profile_id, ???</att>
+        <att name="cdm_trajectory_variables">trajectory_id, ???</att>
+        <att name="Conventions">CF-1.10, COARDS, ACDD-1.3</att>
+        <att name="creator_type">person</att>
+        <att name="infoUrl">https://cproof.uvic.ca</att>
+        <att name="keywords">20230720t1402, angle, autonomous underwater vehicles, auvs, backscatter, backscatter_700, c-proof, cdom, chemistry, chlorophyll, color, colored, concentration, concentration_of_chlorophyll_in_sea_water, conductivity, currents, data, density, department, depth, dfo, dfo-k999-20230720t1402, direction, dissolved, distance, distance_over_ground, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll, Earth Science &gt; Oceans &gt; Ocean Pressure &gt; Water Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Potential Temperature, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Conductivity, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Density, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Potential Density, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, electrical, fisheries, flown, glider, ground, heading, index, k999, latitude, longitude, matter, mission, ocean, ocean color, ocean pressure, ocean temperature, oceanography, oceans, optical, optical properties, organic, orientation, over, physical, physical oceanography, pitch, platform, platform_orientation, platform_pitch_angle, platform_roll_angle, potential, potential_density, potential_temperature, practical, pressure, profile, profile_direction, profile_index, proof, properties, roll, salinity, salinity/density, science, sea, sea_water_density, sea_water_electrical_conductivity, sea_water_potential_density, sea_water_potential_temperature, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, since, speed, start, temperature, time, vertical, water, water pressure, water temperature, wavelength, waypoint, waypoint_latitude, waypoint_longitude</att>
+        <att name="Metadata_Conventions">null</att>
+        <att name="publisher_type">person</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="time_coverage_end">2023-09-11T21:45:03Z</att>
+        <att name="time_coverage_start">2023-07-20T14:02:06Z</att>
+    </addAttributes>
+    <axisVariable>
+        <sourceName>depth</sourceName>
+        <destinationName>depth</destinationName>
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>time</sourceName>
+        <destinationName>time</destinationName>
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </axisVariable>
+    <dataVariable>
+        <sourceName>heading</sourceName>
+        <destinationName>heading</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pitch</sourceName>
+        <destinationName>pitch</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>roll</sourceName>
+        <destinationName>roll</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>waypoint_latitude</sourceName>
+        <destinationName>waypoint_latitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">90.0</att>
+            <att name="colorBarMinimum" type="double">-90.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Location</att>
+            <att name="units">degrees_north</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>waypoint_longitude</sourceName>
+        <destinationName>waypoint_longitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">180.0</att>
+            <att name="colorBarMinimum" type="double">-180.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Location</att>
+            <att name="units">degrees_east</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>conductivity</sourceName>
+        <destinationName>conductivity</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">40.0</att>
+            <att name="colorBarMinimum" type="double">30.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Salinity</att>
+            <att name="resolution">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>temperature</sourceName>
+        <destinationName>temperature</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">32.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="resolution">null</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pressure</sourceName>
+        <destinationName>pressure</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">5000.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Pressure</att>
+            <att name="resolution">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>chlorophyll</sourceName>
+        <destinationName>chlorophyll</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">30.0</att>
+            <att name="colorBarMinimum" type="double">0.03</att>
+            <att name="colorBarScale">Log</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Ocean Color</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>cdom</sourceName>
+        <destinationName>cdom</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>backscatter_700</sourceName>
+        <destinationName>backscatter_700</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Optical Properties</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>distance_over_ground</sourceName>
+        <destinationName>distance_over_ground</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>salinity</sourceName>
+        <destinationName>salinity</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">37.0</att>
+            <att name="colorBarMinimum" type="double">32.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Salinity</att>
+            <att name="resolution">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>potential_density</sourceName>
+        <destinationName>potential_density</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">28.0</att>
+            <att name="colorBarMinimum" type="double">20.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Physical Oceanography</att>
+            <att name="resolution">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>density</sourceName>
+        <destinationName>density</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">28.0</att>
+            <att name="colorBarMinimum" type="double">20.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Salinity</att>
+            <att name="resolution">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>potential_temperature</sourceName>
+        <destinationName>potential_temperature</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">32.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="resolution">null</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>profile_index</sourceName>
+        <destinationName>profile_index</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>profile_direction</sourceName>
+        <destinationName>profile_direction</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">360.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Currents</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>profile</sourceName>
+        <destinationName>profile</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="long_name">Profile</att>
+            <att name="ioos_category">Other</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>longitude</sourceName>
+        <destinationName>longitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">180.0</att>
+            <att name="colorBarMinimum" type="double">-180.0</att>
+            <att name="long_name">Longitude</att>
+            <att name="reference">null</att>
+            <att name="references">WGS84</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>latitude</sourceName>
+        <destinationName>latitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">90.0</att>
+            <att name="colorBarMinimum" type="double">-90.0</att>
+            <att name="long_name">Latitude</att>
+            <att name="reference">null</att>
+            <att name="references">WGS84</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>profile_time_start</sourceName>
+        <destinationName>profile_time_start</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Currents</att>
+            <att name="ioos_category">Time</att>
+            <att name="coordinates">null</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>profile_time_end</sourceName>
+        <destinationName>profile_time_end</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+            <att name="coordinates">null</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+            """;
+  }
+
+  public static EDD getbinnedCUGN90() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_binnedCUGN90());
+  }
+
+  private static String xmlFragment_binnedCUGN90() throws URISyntaxException {
+    return
+"""
+<dataset type="EDDGridFromNcFiles" datasetID="binnedCUGN90" active="true">
+    <reloadEveryNMinutes>180</reloadEveryNMinutes>
+    <updateEveryNMillis>10000</updateEveryNMillis>
+        <fileDir>"""
+        + Path.of(EDDTestDataset.class.getResource("/largePoints/binnedCUGN90/").toURI()).toString()
+        +
+"""
+    </fileDir>
+    <fileNameRegex>CUGN_line_90.nc</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <preExtractRegex></preExtractRegex>
+    <postExtractRegex></postExtractRegex>
+    <extractRegex></extractRegex>
+    <columnNameForExtract></columnNameForExtract>
+    <removeMVRows>true</removeMVRows>
+    <sortFilesBySourceNames></sortFilesBySourceNames>
+    <fileTableInMemory>false</fileTableInMemory>
+    <accessibleViaFiles>true</accessibleViaFiles>
+    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+        <att name="cdm_timeseries_variables">station, longitude, latitude</att>
+        <att name="subsetVariables">station, longitude, latitude</att>
+        binnedCUGN90
+    -->
+    <addAttributes>
+        <att name="acknowledgment">Funded by National Oceanic and Atmospheric Administration (NOAA): Ocean Observing and Monitoring Division, and Integrated Ocean Observing System. Supported by Instrument Development Group - Scripps Institution of Oceanography</att>
+        <att name="cdm_data_type">TrajectoryProfile</att>
+        <att name="cdm_profile_variables">time_uv,lat_uv,lon_uv,u_depth_mean,v_depth_mean,profile,time,latitude,longitude</att>
+        <att name="cdm_trajectory_variables">mission</att>
+        <att name="Conventions">CF-1.6, ACDD-1.3, COARDS</att>
+        <att name="infoUrl">https://spraydata.ucsd.edu/projects/CUGN</att>
+        <att name="title">California Underwater Glider Network - Line 90</att>
+        <att name="subsetVariables">mission</att>
+    </addAttributes>
+    <axisVariable>
+        <sourceName>depth</sourceName>
+        <destinationName>depth</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">8000.0</att>
+            <att name="colorBarMinimum" type="double">-8000.0</att>
+            <att name="colorBarPalette">TopographyDepth</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </axisVariable>
+    <axisVariable>
+        <sourceName>profile</sourceName>
+        <destinationName>profile</destinationName>
+        <dataType>int</dataType>
+        <addAttributes>
+            <att name="ioos_category">Identifier</att>
+            <att name="long_name">Profile</att>
+        </addAttributes>
+    </axisVariable>
+    <dataVariable>
+        <sourceName>time</sourceName>
+        <destinationName>time_column</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>mission</sourceName>
+        <destinationName>mission</destinationName>
+        <dataType>int</dataType>
+        <addAttributes>
+            <att name="ioos_category">Identifier</att>
+            <att name="cf_role">trajectory_id</att>
+        </addAttributes>
+    </dataVariable>
+<!--
+2025, 01-09 JPS attempted adding this, but the var is a char array not a string. Produced errors on loading. Solution will be to update the netcdf files to netcdf4 and use true string type.
+<dataVariable>
+        <sourceName>mission_name</sourceName>
+        <destinationName>mission_name</destinationName>
+        <dataType>String</dataType>
+        <addAttributes>
+            <att name="ioos_category">Identifier</att>
+        </addAttributes>
+    </dataVariable>
+-->
+    <dataVariable>
+        <sourceName>lat</sourceName>
+        <destinationName>latitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">90.0</att>
+            <att name="colorBarMinimum" type="double">-90.0</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>lon</sourceName>
+        <destinationName>longitude</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">180.0</att>
+            <att name="colorBarMinimum" type="double">-180.0</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>temperature</sourceName>
+        <destinationName>temperature</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">32.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Sea Water Temperature</att>
+            <att name="units">degree_C</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>salinity</sourceName>
+        <destinationName>salinity</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">37.0</att>
+            <att name="colorBarMinimum" type="double">32.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Salinity</att>
+            <att name="long_name">Sea Water Practical Salinity</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>chlorophyll_a</sourceName>
+        <destinationName>chlorophyll</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+                <att name="colorBarMaximum" type="double">15.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Ocean Color</att>
+            <att name="long_name">Chlorophyll FLuorescence</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>doxy</sourceName>
+        <destinationName>doxy</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Dissolved O2</att>
+            <att name="missing_value" type="double">NaN</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>acoustic_backscatter</sourceName>
+        <destinationName>acoustic_backscatter</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="ioos_category">Unknown</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>acoustic_backscatter_flag</sourceName>
+        <destinationName>acoustic_backscatter_flag</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="coordinates">null</att>
+            <att name="missing_value" type="double">NaN</att>
+            <att name="ioos_category">Identifier</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>u</sourceName>
+        <destinationName>u</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">0.5</att>
+            <att name="colorBarMinimum" type="double">-0.5</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Currents</att>
+            <att name="missing_value" type="double">NaN</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>v</sourceName>
+        <destinationName>v</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">0.5</att>
+            <att name="colorBarMinimum" type="double">-0.5</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Currents</att>
+            <att name="missing_value" type="double">NaN</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>time_uv</sourceName>
+        <destinationName>time_uv</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>lat_uv</sourceName>
+        <destinationName>lat_uv</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">90.0</att>
+            <att name="colorBarMinimum" type="double">-90.0</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>lon_uv</sourceName>
+        <destinationName>lon_uv</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">180.0</att>
+            <att name="colorBarMinimum" type="double">-180.0</att>
+            <att name="ioos_category">Location</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>u_depth_mean</sourceName>
+        <destinationName>u_depth_mean</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">0.5</att>
+            <att name="colorBarMinimum" type="double">-0.5</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Currents</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>v_depth_mean</sourceName>
+        <destinationName>v_depth_mean</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">0.5</att>
+            <att name="colorBarMinimum" type="double">-0.5</att>
+            <att name="coordinates">null</att>
+            <att name="ioos_category">Currents</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+        """;
   }
 }

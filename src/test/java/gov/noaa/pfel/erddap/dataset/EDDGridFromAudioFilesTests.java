@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagIncompleteTest;
+import tags.TagDisabledIncompleteTest;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
@@ -553,7 +553,7 @@ class EDDGridFromAudioFilesTests {
   }
 
   /** This was used one time to fix some test files. */
-  @TagIncompleteTest // wasn't used before migration, more of a script than a test
+  @TagDisabledIncompleteTest // wasn't used before migration, more of a script than a test
   void oneTimeFixFiles() throws Exception {
     Table table = new Table();
     String dir = "audio/wav/"; // probably needs to be a resource if we're doing anything with this.

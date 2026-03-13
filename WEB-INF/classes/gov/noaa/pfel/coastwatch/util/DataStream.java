@@ -7,7 +7,8 @@ package gov.noaa.pfel.coastwatch.util;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * This class contains static methods related to DataInputStream and DataOutputStream.
@@ -23,7 +24,8 @@ public class DataStream {
    * @return a buffered file dataOutputStream
    */
   public static DataOutputStream getDataOutputStream(String fullFileName) throws Exception {
-    return new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fullFileName)));
+    return new DataOutputStream(
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(fullFileName))));
   }
 
   /**
