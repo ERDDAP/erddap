@@ -319,6 +319,8 @@ public class EDConfig {
     ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false, true));
     Map<String, String> ev = System.getenv();
 
+    forceSynchronousLoading = getSetupEVBoolean(setup, ev, "forceSynchronousLoading", false);
+
     // logLevel may be: warning, info(default), all
     EDStatic.setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
 
