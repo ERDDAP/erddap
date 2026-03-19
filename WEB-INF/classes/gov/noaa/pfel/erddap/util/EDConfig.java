@@ -30,7 +30,7 @@ public class EDConfig {
    */
   public boolean skipEmailThread = false;
 
-  public boolean forceSynchronousLoading = false;
+  @FeatureFlag public boolean forceSynchronousLoading = false;
 
   /**
    * This is almost always false. During development, Bob sets this to true. No one else needs to.

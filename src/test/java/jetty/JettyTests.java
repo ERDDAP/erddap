@@ -20545,6 +20545,7 @@ completeness, or usefulness, of this information.";
   }
 
   @org.junit.jupiter.api.Test
+  @TagJetty
   void testInitializeMqttClient() {
     CompletableFuture<com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient> futureClient =
         EDDTableFromMqtt.initialiseMqttAsyncClient(
@@ -20560,6 +20561,7 @@ completeness, or usefulness, of this information.";
   }
 
   @org.junit.jupiter.api.Test
+  @TagJetty
   void testProcessMqttData() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
     Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
@@ -20580,6 +20582,7 @@ completeness, or usefulness, of this information.";
   }
 
   @org.junit.jupiter.api.Test
+  @TagJetty
   void testGetFilePathForTopic() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
     URL url = JettyTests.class.getResource("/testFromMqtt/test/");
@@ -20592,6 +20595,7 @@ completeness, or usefulness, of this information.";
   }
 
   @org.junit.jupiter.api.Test
+  @TagJetty
   void testProcessMqttData_fewerColumns() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
     Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
@@ -20612,6 +20616,7 @@ completeness, or usefulness, of this information.";
   }
 
   @org.junit.jupiter.api.Test
+  @TagJetty
   void testProcessMqttData_moreColumns() throws Throwable {
     EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
     Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
