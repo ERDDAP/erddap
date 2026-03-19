@@ -9,6 +9,11 @@ public class SkipDatasetHandler extends StateWithParent {
     super(saxHandler, completeState);
   }
 
+  public static SkipDatasetHandler convertStateToSkip(
+      SaxHandler saxHandler, StateWithParent toSkip) {
+    return new SkipDatasetHandler(saxHandler, toSkip.completeState);
+  }
+
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) {}
 

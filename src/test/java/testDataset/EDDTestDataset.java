@@ -15678,7 +15678,7 @@ public class EDDTestDataset {
         + "    <fileDir>"
         + Path.of(EDDTestDataset.class.getResource("/testFromMqtt").toURI())
         + "    </fileDir>\n"
-        + "    <serverHost>broker.hivemq.com</serverHost>\n"
+        + "    <serverHost>localhost</serverHost>\n"
         + "    <serverPort>1883</serverPort>\n"
         + "    <clientId>client-id</clientId>\n"
         + "    <username>${localhost:canonical-name}</username>\n"

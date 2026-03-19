@@ -3,6 +3,7 @@ package jetty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.LongArray;
@@ -19,6 +20,7 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import dods.dap.DAS;
 import dods.dap.DConnect;
 import dods.dap.DDS;
@@ -45,6 +47,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTableFromAsciiFiles;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromDapSequence;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromEDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromErddap;
+import gov.noaa.pfel.erddap.dataset.EDDTableFromMqtt;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromNcFiles;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
@@ -57,6 +60,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -69,6 +73,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -84,6 +89,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.semver4j.Semver;
 import tags.TagDisabledIncompleteTest;
 import tags.TagDisabledThredds;
@@ -131,7 +137,7 @@ class JettyTests extends WireMockLifecycle {
     // If the cache/data folder is cold some machines might need longer. If
     // all of the data is already loaded on the machine, this can probably be
     // shortened.
-    Thread.sleep(10 * 60 * 1000);
+    Thread.sleep(12 * 60 * 1000);
     initialCroissantSetting = EDStatic.config.generateCroissantSchema;
   }
 
@@ -20536,5 +20542,94 @@ completeness, or usefulness, of this information.";
             + "    message=\"Not Found: File not found: gibberish.csv .\";\n"
             + "})";
     Test.ensureEqual(results, expected, "results=\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testInitializeMqttClient() {
+    CompletableFuture<com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient> futureClient =
+        EDDTableFromMqtt.initialiseMqttAsyncClient(
+            "localhost", 1883, "test-client", "user", "password", false, 60, true, 0, 10, true);
+
+    try {
+      com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient client = futureClient.join();
+      Test.ensureNotNull(client, "Client should not be null");
+      client.disconnect();
+    } catch (Exception e) {
+      fail(e);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testProcessMqttData() throws Throwable {
+    EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
+    Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
+    String topic = "sensor/data_" + System.currentTimeMillis(); // unique topic for test
+    String payload = "{\"lat\": 20.0, \"lon\": -150.0, \"temperature\": 22.5}";
+    Mockito.when(publish.getTopic())
+        .thenReturn(com.hivemq.client.mqtt.datatypes.MqttTopic.of(topic));
+    Mockito.when(publish.getPayloadAsBytes()).thenReturn(payload.getBytes());
+    eddTableFromMqtt.processMqttData(publish);
+
+    String expectedFilePath = eddTableFromMqtt.getFilePathForTopic(topic);
+    Table resultTable = new Table();
+    resultTable.readJsonlCSV(expectedFilePath, null, null, true);
+    Test.ensureEqual(resultTable.nRows(), 1, "nRows");
+    Test.ensureEqual(resultTable.getFloatData(0, 0), 20.0f, "lat");
+    Test.ensureEqual(resultTable.getFloatData(1, 0), -150.0f, "lon");
+    Test.ensureEqual(resultTable.getFloatData(2, 0), 22.5f, "temperature");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testGetFilePathForTopic() throws Throwable {
+    EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
+    URL url = JettyTests.class.getResource("/testFromMqtt/test/");
+    String filePath = Path.of(url.toURI()).toString().replace('\\', '/');
+
+    Test.ensureEqual(
+        eddTableFromMqtt.getFilePathForTopic("test/topic1").replace('\\', '/'),
+        filePath + "/topic1.jsonl",
+        "topic file path");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testProcessMqttData_fewerColumns() throws Throwable {
+    EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
+    Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
+    String topic = "sensor/data_fewer_" + System.currentTimeMillis(); // unique topic for test
+    String payload = "{\"lat\": 20.0, \"lon\": -150.0}";
+    Mockito.when(publish.getTopic())
+        .thenReturn(com.hivemq.client.mqtt.datatypes.MqttTopic.of(topic));
+    Mockito.when(publish.getPayloadAsBytes()).thenReturn(payload.getBytes());
+    eddTableFromMqtt.processMqttData(publish);
+
+    String expectedFilePath = eddTableFromMqtt.getFilePathForTopic(topic);
+    Table resultTable = new Table();
+    resultTable.readJsonlCSV(expectedFilePath, null, null, true);
+    Test.ensureEqual(resultTable.nRows(), 1, "nRows");
+    Test.ensureEqual(resultTable.getFloatData(0, 0), 20.0f, "lat");
+    Test.ensureEqual(resultTable.getFloatData(1, 0), -150.0f, "lon");
+    Test.ensureTrue(Float.isNaN(resultTable.getFloatData(2, 0)), "temperature is NaN");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testProcessMqttData_moreColumns() throws Throwable {
+    EDDTableFromMqtt eddTableFromMqtt = (EDDTableFromMqtt) EDDTestDataset.gettestFromMqtt();
+    Mqtt5Publish publish = Mockito.mock(Mqtt5Publish.class);
+    String topic = "sensor/data_more_" + System.currentTimeMillis(); // unique topic for test
+    String payload =
+        "{\"lat\": 20.0, \"lon\": -150.0, \"temperature\": 22.5, \"extra_col\": \"dummy\"}";
+    Mockito.when(publish.getTopic())
+        .thenReturn(com.hivemq.client.mqtt.datatypes.MqttTopic.of(topic));
+    Mockito.when(publish.getPayloadAsBytes()).thenReturn(payload.getBytes());
+    eddTableFromMqtt.processMqttData(publish);
+
+    String expectedFilePath = eddTableFromMqtt.getFilePathForTopic(topic);
+    Table resultTable = new Table();
+    resultTable.readJsonlCSV(expectedFilePath, null, null, true);
+    Test.ensureEqual(resultTable.nRows(), 1, "nRows");
+    Test.ensureEqual(resultTable.nColumns(), 3, "nColumns");
+    Test.ensureEqual(resultTable.getFloatData(0, 0), 20.0f, "lat");
+    Test.ensureEqual(resultTable.getFloatData(1, 0), -150.0f, "lon");
+    Test.ensureEqual(resultTable.getFloatData(2, 0), 22.5f, "temperature");
   }
 }
