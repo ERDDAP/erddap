@@ -48,7 +48,7 @@
         <error-prone.version>2.41.0</error-prone.version>
         <prometheusVersion>1.5.0</prometheusVersion>
         <parquetVersion>1.17.0</parquetVersion>
-        <awssdkVersion>2.42.13</awssdkVersion>
+        <awssdkVersion>2.42.16</awssdkVersion>
         <luceneVersion>10.4.0</luceneVersion>
         <nettyVersion>4.2.10.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.5</mavenTestPluginVersion>
