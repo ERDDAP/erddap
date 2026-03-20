@@ -20456,8 +20456,9 @@ completeness, or usefulness, of this information.";
             EDStatic.erddapUrl + "/files/erdQSwindmday/erdQSux10mday/.csv");
     expected =
         "Name,Last modified,Size,Description\n"
-            + "QS1999213_1999243_ux10.nc,1278088334000,13878880,\n"
-            + "QS1999244_1999273_ux10.nc,1278088418000,13878868,\n";
+            + "QS1999213_1999243_ux10.nc,TIMESTAMP,13878880,\n"
+            + "QS1999244_1999273_ux10.nc,TIMESTAMP,13878868,\n";
+    results = results.replaceAll(",[0-9]{13},", ",TIMESTAMP,");
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // download a file in root
