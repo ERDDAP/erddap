@@ -35,10 +35,14 @@ public class EDDGridSideBySideHandler extends BaseGridHandler {
       }
       String active = attributes.getValue("active");
       String childDatasetID = attributes.getValue("datasetID");
-      State state =
-          HandlerFactory.getHandlerFor(
-              tType, childDatasetID, active, this, saxHandler, context, false);
-      saxHandler.setState(state);
+      try {
+        State state =
+            HandlerFactory.getHandlerFor(
+                tType, childDatasetID, active, this, saxHandler, context, false);
+        saxHandler.setState(state);
+      } catch (Throwable t) {
+        String2.log("Error creating child dataset " + childDatasetID + ": " + t.getMessage());
+      }
     }
   }
 
