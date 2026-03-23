@@ -394,6 +394,7 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 <showLoadErrorsOnStatusPage>true</showLoadErrorsOnStatusPage>
 <useSisISO19115>true</useSisISO19115>
 <useHeadersForUrl>true</useHeadersForUrl>
+<enableMqttBroker>true</enableMqttBroker>
 
 <!-- set AWS credentials to anonymous -->
 <useAwsAnonymous>true</useAwsAnonymous>

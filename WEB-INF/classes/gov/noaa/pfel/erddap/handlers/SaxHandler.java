@@ -45,7 +45,11 @@ public class SaxHandler extends DefaultHandler {
           .append(e.getMessage())
           .append("\n");
       String2.log(e.getMessage());
-      this.state.popState();
+      if (state instanceof StateWithParent) {
+        setState(SkipDatasetHandler.convertStateToSkip(this, (StateWithParent) state));
+      } else {
+        state.popState();
+      }
     }
   }
 
@@ -63,7 +67,11 @@ public class SaxHandler extends DefaultHandler {
           .append(e.getMessage())
           .append("\n");
       String2.log(e.getMessage());
-      this.state.popState();
+      if (state instanceof StateWithParent) {
+        setState(SkipDatasetHandler.convertStateToSkip(this, (StateWithParent) state));
+      } else {
+        state.popState();
+      }
     }
   }
 
@@ -81,7 +89,11 @@ public class SaxHandler extends DefaultHandler {
           .append(e.getMessage())
           .append("\n");
       String2.log(e.getMessage());
-      this.state.popState();
+      if (localName.equals("dataset") || !(state instanceof StateWithParent)) {
+        this.state.popState();
+      } else {
+        setState(SkipDatasetHandler.convertStateToSkip(this, (StateWithParent) state));
+      }
     }
   }
 

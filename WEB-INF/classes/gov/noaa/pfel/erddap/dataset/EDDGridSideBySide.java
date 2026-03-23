@@ -273,6 +273,12 @@ public class EDDGridSideBySide extends EDDGrid {
     accessibleViaFiles = EDStatic.config.filesActive && tAccessibleViaFiles && cAccessibleViaFiles;
 
     // check the siblings and create childStopsAt
+    if (nChildren == 0
+        && !EDStatic.config.forceSynchronousLoading
+        && EDStatic.initialLoadDatasets()) {
+      requestReloadASAP();
+      throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "no children datasets available.");
+    }
     EDDGrid firstChild = childDatasets[0];
     int nAV = firstChild.axisVariables.length;
     for (int c = 0; c < nChildren; c++) {
