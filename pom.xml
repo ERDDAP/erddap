@@ -601,7 +601,7 @@
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>4.0.2</version>
+                    <version>4.0.3</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
