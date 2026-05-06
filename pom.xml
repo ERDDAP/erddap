@@ -789,7 +789,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.83</version>
+                <version>1.84</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
             <dependency>
@@ -1101,7 +1101,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.10</version>
+            <version>42.7.11</version>
         </dependency>
 
         <!-- CASSANDRA 
