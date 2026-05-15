@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: erddap
+  description: The content of [tomcat]/webapps/erddap (with a few extra files). 
+  annotations:
+    github.com/project-slug: 'British-Oceanographic-Data-Centre/erddap'
+    backstage.io/source-location: url:https://github.com/British-Oceanographic-Data-Centre/erddap/
+spec:
+  type: service
+  lifecycle: experimental
+  owner: guest
