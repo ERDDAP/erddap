@@ -212,10 +212,24 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       return FileVisitResult.CONTINUE;
     }
 
-    // skip because it doesn't match pathRegex?
-    if (pathPattern != null && !pathPattern.matcher(ttDir).matches()) {
-      if (debugMode) String2.log(">> doesn't match pathRegex: " + ttDir + " regex=" + pathRegex);
-      return FileVisitResult.SKIP_SUBTREE;
+    // Validate if directory might match pathRegex
+    if (pathPattern != null) {
+      Matcher matcher = pathPattern.matcher(ttDir);
+      if (!matcher.matches()) {
+        if (recursive && matcher.hitEnd()) {
+          if (debugMode)
+            String2.log(
+                ">> directory path might match pathRegex but doesn't: "
+                    + ttDir
+                    + " regex="
+                    + pathRegex);
+          return FileVisitResult.CONTINUE; // keep looking in subdirs
+        }
+        if (debugMode)
+          String2.log(
+              ">> directory path doesn't match pathRegex: " + ttDir + " regex=" + pathRegex);
+        return FileVisitResult.SKIP_SUBTREE;
+      }
     }
 
     if (directoriesToo) {
@@ -244,6 +258,23 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
       // getParent returns \\ or /, without trailing /
       String ttDir = String2.replaceAll(file.getParent().toString(), fromSlash, toSlash) + toSlash;
+
+      // Validate the full file path against pathRegex (matching S3 behavior)
+      // Using matches() here because we now have the complete file path
+      String fullFilePath = ttDir + name;
+      // Don't apply pathRegex to the initial dir itself, but do apply it to all subdirs and files.
+      if (!(ttDir.equals(dir) && attrs.isRegularFile())
+          && pathPattern != null
+          && !pathPattern.matcher(fullFilePath).matches()) {
+        if (debugMode)
+          String2.log(
+              ">> file's full path doesn't match pathRegex: "
+                  + fullFilePath
+                  + " regex="
+                  + pathRegex);
+        return FileVisitResult.CONTINUE;
+      }
+
       if (debugMode) String2.log(">> add fileName: " + ttDir + name);
       directoryPA.add(ttDir);
       namePA.add(name);
