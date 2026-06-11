@@ -1606,4 +1606,52 @@ class FileVisitorDNLSTests {
     // }
     File2.delete(tgzName);
   }
+
+  /** This tests multi-level pathRegex matching. */
+  @org.junit.jupiter.api.Test
+  void testMultiLevelPathRegex() throws Throwable {
+    String2.log("\n*** FileVisitorDNLS.testMultiLevelPathRegex()");
+
+    String dirPath =
+        File2.addSlash(
+            Path.of(FileVisitorDNLSTests.class.getResource("/data/CFPointConventions/").toURI())
+                .toString()
+                .replace('\\', '/'));
+
+    // Test with pathRegex that requires traversing multiple subdirectories
+    // This tests the fix for the bug where complex path regex patterns didn't work
+    // because intermediate directories were incorrectly filtered out.
+    // The pattern .*/trajectory-Incomplete-Multidimensional.* matches directories containing
+    // "trajectory-Incomplete-Multidimensional" anywhere in their path.
+    Table table =
+        FileVisitorDNLS.oneStep(
+            dirPath,
+            ".*\\.nc$", // match .nc files
+            true, // recursive
+            ".*/trajectory/trajectory-Incomplete-Multidimensional.*", // path regex requiring
+            // traversal through named
+            // subdirectories
+            false /* directories */);
+
+    StringArray directoryPA = (StringArray) table.getColumn(FileVisitorDNLS.DIRECTORY);
+    StringArray namePA = (StringArray) table.getColumn(FileVisitorDNLS.NAME);
+
+    // Should find .nc files in directories matching the pattern
+    Test.ensureTrue(
+        table.nRows() > 0, "Should find at least 1 file matching multi-level pathRegex");
+
+    // All files should be in paths containing "Incomplete-Multidimensional"
+    for (int i = 0; i < table.nRows(); i++) {
+      String fullPath = directoryPA.get(i);
+      Test.ensureTrue(
+          fullPath.contains("Incomplete-Multidimensional"),
+          "File path should contain 'Incomplete-Multidimensional': " + fullPath);
+    }
+
+    // Verify .nc files are found
+    for (int i = 0; i < table.nRows(); i++) {
+      String name = namePA.get(i);
+      Test.ensureTrue(name.endsWith(".nc"), "File name should end with .nc: " + name);
+    }
+  }
 }
