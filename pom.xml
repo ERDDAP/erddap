@@ -50,7 +50,7 @@
         <parquetVersion>1.17.1</parquetVersion>
         <awssdkVersion>2.44.5</awssdkVersion>
         <luceneVersion>10.4.0</luceneVersion>
-        <nettyVersion>4.2.13.Final</nettyVersion>
+        <nettyVersion>4.2.15.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.5</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.14</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
