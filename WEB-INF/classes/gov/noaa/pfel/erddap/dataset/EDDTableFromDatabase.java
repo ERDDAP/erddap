@@ -734,6 +734,9 @@ public class EDDTableFromDatabase extends EDDTable {
       TableWriter tableWriter)
       throws Throwable {
 
+    if (handleViaFixedOrSubsetVariables(
+        language, loggedInAs, requestUrl, userDapQuery, tableWriter)) return;
+
     // good summary of using statements, queries, resultSets, ...
     //  https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html
 
@@ -946,17 +949,21 @@ public class EDDTableFromDatabase extends EDDTable {
       StringBuilder query = new StringBuilder();
       int nRv = resultsVariables.size();
       String distinctString = distinct ? "DISTINCT " : "";
-      for (int rv = 0; rv < nRv; rv++)
-        // no danger of sql injection since query has been parsed and
-        //  resultsVariables must be known sourceNames
-        // Note that I tried to use '?' for resultsVariables, but never got it to work: wierd
-        // results.
-        // Quotes around colNames avoid trouble when colName is a SQL reserved word.
-        query.append(
-            (rv == 0 ? "SELECT " + distinctString : ", ")
-                + columnNameQuotes
-                + resultsVariables.get(rv)
-                + columnNameQuotes);
+      if (nRv == 0) {
+        query.append("SELECT " + distinctString + "1");
+      } else {
+        for (int rv = 0; rv < nRv; rv++)
+          // no danger of sql injection since query has been parsed and
+          //  resultsVariables must be known sourceNames
+          // Note that I tried to use '?' for resultsVariables, but never got it to work: wierd
+          // results.
+          // Quotes around colNames avoid trouble when colName is a SQL reserved word.
+          query.append(
+              (rv == 0 ? "SELECT " + distinctString : ", ")
+                  + columnNameQuotes
+                  + resultsVariables.get(rv)
+                  + columnNameQuotes);
+      }
       // Lack of quotes around table names means they can't be SQL reserved words.
       // (If do quote in future, quote individual parts.)
       query.append(
@@ -1086,16 +1093,21 @@ public class EDDTableFromDatabase extends EDDTable {
         tableColToRsCol[rv] =
             rs.findColumn(tName); // stored as 1..    throws Throwable if not found
       }
-      int triggerNRows = EDStatic.config.partialRequestMaxCells / resultsEDVs.length;
+      int triggerNRows = EDStatic.config.partialRequestMaxCells / Math.max(1, resultsEDVs.length);
       Table table = makeEmptySourceTable(resultsEDVs, triggerNRows);
       PrimitiveArray paArray[] = new PrimitiveArray[nRv];
       for (int rv = 0; rv < nRv; rv++) paArray[rv] = table.getColumn(rv);
+      PrimitiveArray dummyPa =
+          nRv == 0 ? PrimitiveArray.factory(PAType.INT, triggerNRows, false) : null;
 
       // process the resultSet rows of data
       while (true) {
         boolean hasNext = rs.next();
 
         if (hasNext) {
+          if (nRv == 0) {
+            dummyPa.addInt(1);
+          }
           for (int rv = 0; rv < nRv; rv++) {
             int rsCol = tableColToRsCol[rv];
             EDV edv = resultsEDVs[rv];
@@ -1137,20 +1149,30 @@ public class EDDTableFromDatabase extends EDDTable {
           }
         }
 
-        if ((paArray[0].size() > 0 && !hasNext) || paArray[0].size() >= triggerNRows) {
+        if (((nRv == 0 ? dummyPa.size() > 0 : paArray[0].size() > 0) && !hasNext)
+            || (nRv == 0 ? dummyPa.size() >= triggerNRows : paArray[0].size() >= triggerNRows)) {
           if (Thread.currentThread().isInterrupted())
             throw new SimpleException(
                 "EDDTableFromDatabase.getDataForDapQuery"
                     + EDStatic.messages.get(Message.CAUGHT_INTERRUPTED, 0));
 
           // convert script columns into data columns
-          if (scriptNames != null)
-            convertScriptColumnsToDataColumns(
-                "", table, scriptNames, scriptTypes, scriptNeedsColumns);
+          if (scriptNames != null) {
+            if (nRv == 0) {
+              // temporarily add dummy column so table.nRows() works
+              table.addColumn("dummy", dummyPa);
+              convertScriptColumnsToDataColumns(
+                  "", table, scriptNames, scriptTypes, scriptNeedsColumns);
+              table.removeColumn(0);
+            } else {
+              convertScriptColumnsToDataColumns(
+                  "", table, scriptNames, scriptTypes, scriptNeedsColumns);
+            }
+          }
 
           // String2.log(table.toString("rows",5));
           preStandardizeResultsTable(loggedInAs, table);
-          if (table.nRows() > 0) {
+          if (table.nRows() > 0 || (nRv == 0 && dummyPa.size() > 0 && scriptNames == null)) {
             standardizeResultsTable(
                 language,
                 requestUrl,
@@ -1162,6 +1184,7 @@ public class EDDTableFromDatabase extends EDDTable {
           if (hasNext) {
             table = makeEmptySourceTable(resultsEDVs, triggerNRows);
             for (int rv = 0; rv < nRv; rv++) paArray[rv] = table.getColumn(rv);
+            if (nRv == 0) dummyPa.clear();
           }
           if (tableWriter.noMoreDataPlease) {
             tableWriter.logCaughtNoMoreDataPlease(datasetID);
