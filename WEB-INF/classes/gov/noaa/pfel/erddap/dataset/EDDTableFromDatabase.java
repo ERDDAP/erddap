@@ -74,10 +74,6 @@ public class EDDTableFromDatabase extends EDDTable {
 
   protected String catalogSeparator;
 
-  public static String testUser = "postgres";
-  public static String testUrl = "jdbc:postgresql://localhost:5432/mydatabase";
-  public static String testDriver = "org.postgresql.Driver";
-
   /**
    * This constructs an EDDTableFromDatabase based on the information in an .xml file.
    *

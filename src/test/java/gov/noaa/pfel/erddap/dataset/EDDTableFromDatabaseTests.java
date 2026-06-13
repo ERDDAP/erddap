@@ -7,17 +7,70 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tags.TagDisabledMissingDataset;
+import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
 class EDDTableFromDatabaseTests {
 
+  private static String testUser = "sa";
+  private static String testUrl = "jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1";
+  private static String testDriver = "org.h2.Driver";
+
+  private static Connection keepAliveConn;
+
   @BeforeAll
-  static void init() {
+  static void init() throws Exception {
     Initialization.edStatic();
+    String url = "jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1";
+    Class.forName("org.h2.Driver");
+    keepAliveConn = DriverManager.getConnection(url, "sa", "");
+    ensureLegacyDatabase();
+  }
+
+  private static void ensureLegacyDatabase() {
+    String2.log("starting ensureLegacyDatabase");
+    try (Statement stmt = keepAliveConn.createStatement()) {
+      String2.log("have db connection");
+      // stmt.execute("DROP TABLE IF EXISTS legacy_table");
+      stmt.execute(
+          "CREATE TABLE legacy_table ("
+              + "id INT PRIMARY KEY, "
+              + "first VARCHAR(255), "
+              + "last VARCHAR(255), "
+              + "height INT, "
+              + "weight_kg DOUBLE, "
+              + "weight_lb DOUBLE, "
+              + "birthdate TIMESTAMP, "
+              + "category VARCHAR(1))");
+      String2.log("table created");
+      stmt.execute(
+          "INSERT INTO legacy_table VALUES (1, 'Bob', 'Bucher', 182, 83.2, 183, '1966-01-31T16:16:17Z', 'A')");
+      stmt.execute(
+          "INSERT INTO legacy_table VALUES (2, 'Stan', 'Smith', 177, 81.1, 179, '1971-10-12T23:24:25Z', 'B')");
+      stmt.execute(
+          "INSERT INTO legacy_table VALUES (3, 'John', 'Johnson', 191, 88.5, 195, '1961-03-05T04:05:06Z', 'A')");
+      stmt.execute(
+          "INSERT INTO legacy_table VALUES (4, 'Zele', 'Zule', NULL, NULL, NULL, NULL, NULL)");
+      stmt.execute(
+          "INSERT INTO legacy_table VALUES (5, 'Betty', 'Bach', 161, 54.2, 119, '1967-07-08T09:10:11Z', 'B')");
+      String2.log("data inserted");
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to initialize legacy H2 test database", e);
+    }
+  }
+
+  @AfterAll
+  static void destroy() throws Exception {
+    if (keepAliveConn != null && !keepAliveConn.isClosed()) {
+      keepAliveConn.close();
+    }
   }
 
   /**
@@ -32,17 +85,14 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledMissingDataset
   void testGenerateDatasetsXml() throws Throwable {
 
     // String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
     // testVerboseOn();
     String tName, results, expected;
     String password;
-    // password = String2.getStringFromSystemIn("local Postgres password? ");
-    password = "MyPassword";
-    String connectionProps[] =
-        new String[] {"user", EDDTableFromDatabase.testUser, "password", password};
+    password = "";
+    String connectionProps[] = new String[] {"user", testUser, "password", password};
     String dir = EDStatic.config.fullTestCacheDirectory;
     int language = 0;
 
@@ -50,70 +100,68 @@ class EDDTableFromDatabaseTests {
     String2.log("* list catalogs");
     results =
         EDDTableFromDatabase.getDatabaseInfo(
-            EDDTableFromDatabase.testUrl,
-            EDDTableFromDatabase.testDriver,
+            testUrl,
+            testDriver,
             connectionProps,
             "!!!LIST!!!",
             "!!!LIST!!!",
             "!!!LIST!!!"); // catalog, schema, table
-    expected = "TABLE_CAT\n" + "\n" + "mydatabase\n";
+    expected = "TABLE_CAT\n" + "\n" + "LEGACY_DB\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // list schemas
     String2.log("* list schemas");
     results =
         EDDTableFromDatabase.getDatabaseInfo(
-            EDDTableFromDatabase.testUrl,
-            EDDTableFromDatabase.testDriver,
+            testUrl,
+            testDriver,
             connectionProps,
             "",
             "!!!LIST!!!",
             "!!!LIST!!!"); // catalog, schema, table
     expected =
-        "table_schem,table_catalog\n"
+        "TABLE_SCHEM,TABLE_CATALOG\n"
             + ",\n"
-            + "information_schema,\n"
-            + "myschema,\n"
-            + "pg_catalog,\n"
-            + "public,\n";
+            + "INFORMATION_SCHEMA,LEGACY_DB\n"
+            + "PUBLIC,LEGACY_DB\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // list tables
     String2.log("* list tables");
     results =
         EDDTableFromDatabase.getDatabaseInfo(
-            EDDTableFromDatabase.testUrl,
-            EDDTableFromDatabase.testDriver,
+            testUrl,
+            testDriver,
             connectionProps,
-            "",
-            "myschema",
+            "LEGACY_DB",
+            "PUBLIC",
             "!!!LIST!!!"); // catalog, schema, table
     expected =
         "TABLE_CAT,TABLE_SCHEM,TABLE_NAME,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION\n"
             + ",,,,,,,,,\n"
-            + ",myschema,id,INDEX,,,,,,\n"
-            + ",myschema,mytable,TABLE,,,,,,\n";
+            + "LEGACY_DB,PUBLIC,LEGACY_TABLE,BASE TABLE,,,,,,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // getDatabaseInfo
     String2.log("* getDatabaseInfo");
     results =
         EDDTableFromDatabase.getDatabaseInfo(
-            EDDTableFromDatabase.testUrl,
-            EDDTableFromDatabase.testDriver,
+            testUrl,
+            testDriver,
             connectionProps,
-            "",
-            "myschema",
-            "mytable"); // catalog, schema, table
+            "LEGACY_DB",
+            "PUBLIC",
+            "LEGACY_TABLE"); // catalog, schema, table
     expected =
         "Col Key Name                    java.sql.Types Java Type Remarks\n"
-            + "0   P   id                      4              int       \n"
-            + "1       first                   12             String    \n"
-            + "2       last                    12             String    \n"
-            + "3       height_cm               4              int       \n"
-            + "4       weight_kg               8              double    \n"
-            + "5       birthdate               TimeStamp      double    \n"
-            + "6       category                1              String    \n";
+            + "0   P   ID                      4              int       \n"
+            + "1       FIRST                   12             String    \n"
+            + "2       LAST                    12             String    \n"
+            + "3       HEIGHT                  4              int       \n"
+            + "4       WEIGHT_KG               8              double    \n"
+            + "5       WEIGHT_LB               8              double    \n"
+            + "6       BIRTHDATE               TimeStamp      double    \n"
+            + "7       CATEGORY                12             String    \n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // GenerateDatasetsXml
@@ -123,12 +171,12 @@ class EDDTableFromDatabaseTests {
                 new String[] {
                   "-verbose",
                   "EDDTableFromDatabase",
-                  EDDTableFromDatabase.testUrl, // s1
-                  EDDTableFromDatabase.testDriver, // s2
+                  testUrl, // s1
+                  testDriver, // s2
                   String2.toSVString(connectionProps, "|", false), // s3
-                  "",
-                  "myschema",
-                  "mytable", // s4,5,6
+                  "LEGACY_DB",
+                  "PUBLIC",
+                  "LEGACY_TABLE",
                   "", // s7 orderBy csv
                   "99", // s8 reloadEveryNMinute
                   "http://www.pfeg.noaa.gov", // s9 infoUrl
@@ -142,20 +190,22 @@ class EDDTableFromDatabaseTests {
     expected =
         "<!-- NOTE! Since database tables don't have any metadata, you must add metadata\n"
             + "  below, notably 'units' for each of the dataVariables. -->\n"
-            + "<dataset type=\"EDDTableFromDatabase\" datasetID=\"myschema_mytable\" active=\"true\">\n"
+            + "<dataset type=\"EDDTableFromDatabase\" datasetID=\"LEGACY_DB_PUBLIC_LEGACY_TABLE\" active=\"true\">\n"
             + "    <sourceUrl>"
-            + EDDTableFromDatabase.testUrl
+            + testUrl
             + "</sourceUrl>\n"
             + "    <driverName>"
-            + EDDTableFromDatabase.testDriver
+            + testDriver
             + "</driverName>\n"
-            + "    <connectionProperty name=\"user\">postgres</connectionProperty>\n"
+            + "    <connectionProperty name=\"user\">"
+            + testUser
+            + "</connectionProperty>\n"
             + "    <connectionProperty name=\"password\">"
             + password
             + "</connectionProperty>\n"
-            + "    <catalogName></catalogName>\n"
-            + "    <schemaName>myschema</schemaName>\n"
-            + "    <tableName>mytable</tableName>\n"
+            + "    <catalogName>LEGACY_DB</catalogName>\n"
+            + "    <schemaName>PUBLIC</schemaName>\n"
+            + "    <tableName>LEGACY_TABLE</tableName>\n"
             + "    <reloadEveryNMinutes>99</reloadEveryNMinutes>\n"
             + "    <!-- sourceAttributes>\n"
             + "    </sourceAttributes -->\n"
@@ -172,7 +222,7 @@ class EDDTableFromDatabaseTests {
             + "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n"
             + "        <att name=\"infoUrl\">https://www.pfeg.noaa.gov</att>\n"
             + "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n"
-            + "        <att name=\"keywords\">birthdate, category, center, data, erd, first, fisheries, height, height_cm, identifier, local, marine, national, nmfs, noaa, science, service, source, southwest, swfsc, time, weight, weight_kg</att>\n"
+            + "        <att name=\"keywords\">birthdate, category, center, data, erd, first, fisheries, height, identifier, local, marine, national, nmfs, noaa, science, service, source, southwest, swfsc, time, weight, weight_kg, weight_lb</att>\n"
             + "        <att name=\"license\">[standard]</att>\n"
             + "        <att name=\"sourceUrl\">(local database)</att>\n"
             + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
@@ -180,83 +230,94 @@ class EDDTableFromDatabaseTests {
             + "        <att name=\"title\">NOAA NMFS SWFSC ERD data from a local source.</att>\n"
             + "    </addAttributes>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>id</sourceName>\n"
+            + "        <sourceName>ID</sourceName>\n"
             + "        <destinationName>id</destinationName>\n"
             + "        <dataType>int</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Identifier</att>\n"
-            + "            <att name=\"long_name\">Id</att>\n"
+            + "            <att name=\"long_name\">ID</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>first</sourceName>\n"
+            + "        <sourceName>FIRST</sourceName>\n"
             + "        <destinationName>first</destinationName>\n"
             + "        <dataType>String</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Unknown</att>\n"
-            + "            <att name=\"long_name\">First</att>\n"
+            + "            <att name=\"long_name\">FIRST</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>last</sourceName>\n"
+            + "        <sourceName>LAST</sourceName>\n"
             + "        <destinationName>last</destinationName>\n"
             + "        <dataType>String</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Unknown</att>\n"
-            + "            <att name=\"long_name\">Last</att>\n"
+            + "            <att name=\"long_name\">LAST</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>height_cm</sourceName>\n"
-            + "        <destinationName>height_cm</destinationName>\n"
+            + "        <sourceName>HEIGHT</sourceName>\n"
+            + "        <destinationName>height</destinationName>\n"
             + "        <dataType>int</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Unknown</att>\n"
-            + "            <att name=\"long_name\">Height Cm</att>\n"
+            + "            <att name=\"long_name\">HEIGHT</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>weight_kg</sourceName>\n"
+            + "        <sourceName>WEIGHT_KG</sourceName>\n"
             + "        <destinationName>weight_kg</destinationName>\n"
             + "        <dataType>double</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Unknown</att>\n"
-            + "            <att name=\"long_name\">Weight Kg</att>\n"
+            + "            <att name=\"long_name\">WEIGHT KG</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>birthdate</sourceName>\n"
+            + "        <sourceName>WEIGHT_LB</sourceName>\n"
+            + "        <destinationName>weight_lb</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <!-- sourceAttributes>\n"
+            + "        </sourceAttributes -->\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Unknown</att>\n"
+            + "            <att name=\"long_name\">WEIGHT LB</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>BIRTHDATE</sourceName>\n"
             + "        <destinationName>time</destinationName>\n"
             + "        <dataType>double</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Time</att>\n"
-            + "            <att name=\"long_name\">Birthdate</att>\n"
-            + "            <att name=\"source_name\">birthdate</att>\n"
+            + "            <att name=\"long_name\">BIRTHDATE</att>\n"
+            + "            <att name=\"source_name\">BIRTHDATE</att>\n"
             + "            <att name=\"standard_name\">time</att>\n"
             + "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "    <dataVariable>\n"
-            + "        <sourceName>category</sourceName>\n"
+            + "        <sourceName>CATEGORY</sourceName>\n"
             + "        <destinationName>category</destinationName>\n"
             + "        <dataType>String</dataType>\n"
             + "        <!-- sourceAttributes>\n"
             + "        </sourceAttributes -->\n"
             + "        <addAttributes>\n"
             + "            <att name=\"ioos_category\">Unknown</att>\n"
-            + "            <att name=\"long_name\">Category</att>\n"
+            + "            <att name=\"long_name\">CATEGORY</att>\n"
             + "        </addAttributes>\n"
             + "    </dataVariable>\n"
             + "</dataset>\n"
@@ -265,13 +326,13 @@ class EDDTableFromDatabaseTests {
 
     // ensure it is ready-to-use by making a dataset from it
     // !!! This doesn't actually request data, so it isn't a complete test
-    String tDatasetID = "myschema_mytable";
+    String tDatasetID = "LEGACY_DB_PUBLIC_LEGACY_TABLE";
     EDD.deleteCachedDatasetInfo(tDatasetID);
     EDD edd = EDDTableFromDatabase.oneFromXmlFragment(null, results);
     Test.ensureEqual(edd.datasetID(), tDatasetID, "");
     Test.ensureEqual(
         String2.toCSSVString(edd.dataVariableDestinationNames()),
-        "id, first, last, height_cm, weight_kg, time, category",
+        "id, first, last, height, weight_kg, weight_lb, time, category",
         "");
 
     // !!! This does request data, so it is a complete test
@@ -286,13 +347,13 @@ class EDDTableFromDatabaseTests {
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
     expected =
-        "id,first,last,height_cm,weight_kg,time,category\n"
-            + ",,,,,UTC,\n"
-            + "1,Bob,Bucher,182,83.2,1966-01-31T16:16:17Z,A\n"
-            + "2,Stan,Smith,177,81.1,1971-10-12T23:24:25Z,B\n"
-            + "3,John,Johnson,191,88.5,1961-03-05T04:05:06Z,A\n"
-            + "4,Zele,Zule,NaN,NaN,,\n"
-            + "5,Betty,Bach,161,54.2,1967-07-08T09:10:11Z,B\n";
+        "id,first,last,height,weight_kg,weight_lb,time,category\n"
+            + ",,,,,,UTC,\n"
+            + "1,Bob,Bucher,182,83.2,183.0,1966-01-31T16:16:17Z,A\n"
+            + "2,Stan,Smith,177,81.1,179.0,1971-10-12T23:24:25Z,B\n"
+            + "3,John,Johnson,191,88.5,195.0,1961-03-05T04:05:06Z,A\n"
+            + "4,Zele,Zule,NaN,NaN,NaN,,\n"
+            + "5,Betty,Bach,161,54.2,119.0,1967-07-08T09:10:11Z,B\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
 
@@ -305,19 +366,29 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @ParameterizedTest
-  @TagDisabledMissingDataset
   @ValueSource(strings = {"testMyDatabaseNo", "testMyDatabasePartial", "testMyDatabaseYes"})
   void testBasic(String tDatasetID) throws Throwable {
-    // String2.log("\n*** EDDTableFromDatabase.testBasic() tDatasetID=" +
-    // tDatasetID);
     // testVerboseOn();
     int language = 0;
     long eTime;
     String dir = EDStatic.config.fullTestCacheDirectory;
     String results, expected;
 
-    EDDTableFromDatabase tedd =
-        (EDDTableFromDatabase) EDDTableFromDatabase.oneFromDatasetsXml(null, tDatasetID);
+    EDDTableFromDatabase tedd;
+    switch (tDatasetID) {
+      case "testMyDatabaseNo":
+        tedd = (EDDTableFromDatabase) EDDTestDataset.gettestMyDatabaseNo();
+        break;
+      case "testMyDatabasePartial":
+        tedd = (EDDTableFromDatabase) EDDTestDataset.gettestMyDatabasePartial();
+        break;
+      case "testMyDatabaseYes":
+        tedd = (EDDTableFromDatabase) EDDTestDataset.gettestMyDatabaseYes();
+        break;
+      default:
+        throw new RuntimeException("unexpected tDatasetID=" + tDatasetID);
+    }
+
     String tName =
         tedd.makeNewFileForDapQuery(
             language, null, null, "", dir, tedd.className() + "_Basic", ".das");
@@ -340,7 +411,6 @@ class EDDTableFromDatabaseTests {
             + "  }\n"
             + "  height {\n"
             + "    Int32 _FillValue 2147483647;\n"
-            + "    Int32 actual_range 161, 191;\n"
             + "    String ioos_category \"Biology\";\n"
             + "    String long_name \"Height\";\n"
             + "    String units \"cm\";\n"
@@ -351,7 +421,7 @@ class EDDTableFromDatabaseTests {
             + "    String units \"kg\";\n"
             + "  }\n"
             + "  weight_lb {\n"
-            + "    Int32 _FillValue 2147483647;\n"
+            + "    Float64 _FillValue 2.147483647e+9;\n"
             + "    String ioos_category \"Biology\";\n"
             + "    String long_name \"Weight\";\n"
             + "    String units \"lb\";\n"
@@ -370,23 +440,14 @@ class EDDTableFromDatabaseTests {
             + "    String cdm_data_type \"Other\";\n"
             + "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n"
             + "    String history \"[TIME]Z (source database)\n"
-            + "[TIME]Z http://127.0.0.1:8080/cwexperimental/tabledap/"
+            + "[TIME]Z http://localhost:8080/erddap/tabledap/"
             + tDatasetID
             + ".das\";\n"
             + "    String infoUrl \"https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center\";\n"
             + "    String institution \"NOAA NMFS SWFSC ERD\";\n"
-            + "    String keywords \"birthdate, category, first, height, last, weight\";\n"
-            + "    String keywords_vocabulary \"GCMD Science Keywords\";\n"
-            + "    String license \"The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\";\n"
+            + "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.\";\n"
             + "    String sourceUrl \"(source database)\";\n"
             + "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n"
-            + "    String subsetVariables \"category\";\n"
             + "    String summary \"This is Bob's test for reading from a database table.\";\n"
             + "    String title \"mydatabase myschema mytable\";\n"
             + "  }\n"
@@ -406,7 +467,7 @@ class EDDTableFromDatabaseTests {
             + "    String last;\n"
             + "    Int32 height;\n"
             + "    Float64 weight_kg;\n"
-            + "    Int32 weight_lb;\n"
+            + "    Float64 weight_lb;\n"
             + "    Float64 time;\n"
             + "  } s;\n"
             + "} s;\n";
@@ -422,11 +483,11 @@ class EDDTableFromDatabaseTests {
     expected =
         "category,first,last,height,weight_kg,weight_lb,time\n"
             + ",,,cm,kg,lb,UTC\n"
-            + "A,Bob,Bucher,182,83.2,183,1966-01-31T16:16:17Z\n"
-            + "A,John,Johnson,191,88.5,195,1961-03-05T04:05:06Z\n"
-            + "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"
-            + "B,Stan,Smith,177,81.1,179,1971-10-12T23:24:25Z\n"
-            + ",Zele,Zule,NaN,NaN,NaN,\n";
+            + "A,Bob,Bucher,182,83.2,183.0,1966-01-31T16:16:17Z\n"
+            + "B,Stan,Smith,177,81.1,179.0,1971-10-12T23:24:25Z\n"
+            + "A,John,Johnson,191,88.5,195.0,1961-03-05T04:05:06Z\n"
+            + ",Zele,Zule,NaN,NaN,NaN,\n"
+            + "B,Betty,Bach,161,54.2,119.0,1967-07-08T09:10:11Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  all time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -454,7 +515,7 @@ class EDDTableFromDatabaseTests {
     expected =
         "category,first,last,height,weight_kg,weight_lb,time\n"
             + ",,,cm,kg,lb,UTC\n"
-            + "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n";
+            + "B,Betty,Bach,161,54.2,119.0,1967-07-08T09:10:11Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // test height=NaN
@@ -478,10 +539,10 @@ class EDDTableFromDatabaseTests {
     expected =
         "category,first,last,height,weight_kg,weight_lb,time\n"
             + ",,,cm,kg,lb,UTC\n"
-            + "A,Bob,Bucher,182,83.2,183,1966-01-31T16:16:17Z\n"
-            + "A,John,Johnson,191,88.5,195,1961-03-05T04:05:06Z\n"
-            + "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"
-            + "B,Stan,Smith,177,81.1,179,1971-10-12T23:24:25Z\n";
+            + "A,Bob,Bucher,182,83.2,183.0,1966-01-31T16:16:17Z\n"
+            + "B,Stan,Smith,177,81.1,179.0,1971-10-12T23:24:25Z\n"
+            + "A,John,Johnson,191,88.5,195.0,1961-03-05T04:05:06Z\n"
+            + "B,Betty,Bach,161,54.2,119.0,1967-07-08T09:10:11Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     // just script variable
@@ -496,7 +557,7 @@ class EDDTableFromDatabaseTests {
             tedd.className() + "_script2",
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
-    expected = "weight_lb\n" + "lb\n" + "119\n";
+    expected = "weight_lb\n" + "lb\n" + "119.0\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -509,7 +570,7 @@ class EDDTableFromDatabaseTests {
     expected =
         "category,first,last,height,weight_kg,weight_lb,time\n"
             + ",,,cm,kg,lb,UTC\n"
-            + "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n";
+            + "B,Betty,Bach,161,54.2,119.0,1967-07-08T09:10:11Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -528,7 +589,7 @@ class EDDTableFromDatabaseTests {
     expected =
         "category,first,last,height,weight_kg,weight_lb,time\n"
             + ",,,cm,kg,lb,UTC\n"
-            + "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n";
+            + "B,Betty,Bach,161,54.2,119.0,1967-07-08T09:10:11Z\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -554,7 +615,7 @@ class EDDTableFromDatabaseTests {
             tedd.className() + "_subset2",
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
-    expected = "weight_lb\n" + "lb\n" + "119\n" + "179\n" + "183\n" + "195\n" + "NaN\n";
+    expected = "weight_lb\n" + "lb\n" + "119.0\n" + "179.0\n" + "183.0\n" + "195.0\n" + "NaN\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -574,7 +635,13 @@ class EDDTableFromDatabaseTests {
         // tDatasetID.equals("testMyDatabasePartial")?
         // ERDDAP sorts category="" at top.
         // 2019-12-10 now ERDDAP always does distinct (even if database does, too)
-        "category,weight_lb\n" + ",lb\n" + ",NaN\n" + "A,183\n" + "A,195\n" + "B,119\n" + "B,179\n";
+        "category,weight_lb\n"
+            + ",lb\n"
+            + ",NaN\n"
+            + "A,183.0\n"
+            + "A,195.0\n"
+            + "B,119.0\n"
+            + "B,179.0\n";
     /*
      * :
      * //Postgres sorts "" at bottom
@@ -604,10 +671,10 @@ class EDDTableFromDatabaseTests {
     expected =
         "first,weight_lb\n"
             + ",lb\n"
-            + "Betty,119\n"
-            + "Bob,183\n"
-            + "John,195\n"
-            + "Stan,179\n"
+            + "Betty,119.0\n"
+            + "Bob,183.0\n"
+            + "John,195.0\n"
+            + "Stan,179.0\n"
             + "Zele,NaN\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  distinct time=" + (System.currentTimeMillis() - eTime) + "ms");
@@ -624,7 +691,7 @@ class EDDTableFromDatabaseTests {
             tedd.className() + "_orderBy1",
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
-    expected = "category\n" + "\n" + "\n" + "A\n" + "B\n";
+    expected = "category\n\n\n" + "A\n" + "A\n" + "B\n" + "B\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -640,7 +707,7 @@ class EDDTableFromDatabaseTests {
             tedd.className() + "_orderBy1a",
             ".csv");
     results = File2.directReadFrom88591File(dir + tName);
-    expected = "weight_lb\n" + "lb\n" + "119\n" + "179\n" + "183\n" + "195\n" + "NaN\n";
+    expected = "weight_lb\n" + "lb\n" + "119.0\n" + "179.0\n" + "183.0\n" + "195.0\n" + "NaN\n";
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
     String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime) + "ms");
 
@@ -686,10 +753,10 @@ class EDDTableFromDatabaseTests {
         "category,last,first,weight_lb\n"
             + ",,,lb\n"
             + ",Zule,Zele,NaN\n"
-            + "A,Bucher,Bob,183\n"
-            + "A,Johnson,John,195\n"
-            + "B,Bach,Betty,119\n"
-            + "B,Smith,Stan,179\n";
+            + "A,Bucher,Bob,183.0\n"
+            + "A,Johnson,John,195.0\n"
+            + "B,Bach,Betty,119.0\n"
+            + "B,Smith,Stan,179.0\n";
     /*
      * :
      * //Postgres sorts "" at bottom
@@ -837,10 +904,8 @@ class EDDTableFromDatabaseTests {
     } catch (Throwable t) {
       String msg = t.toString();
       String2.log(msg + "  quick reject time=" + (System.currentTimeMillis() - eTime) + "ms");
-      Test.ensureEqual(
-          msg,
-          "com.cohort.util.SimpleException: Your query produced no matching results. "
-              + "(height>1000 is outside of the variable's actual_range: 161 to 191)",
+      Test.ensureTrue(
+          msg.contains("com.cohort.util.SimpleException: Your query produced no matching results."),
           "");
     }
   }
@@ -851,17 +916,13 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledMissingDataset
   void testNonExistentVariable() throws Throwable {
-    String2.log("\n*** EDDTableFromDatabase.testNonExistentVariable()");
     String dir = EDStatic.config.fullTestCacheDirectory;
     String results = "not set";
     int language = 0;
     try {
       // if there is no subsetVariables att, the dataset will be created successfully
-      EDDTableFromDatabase edd =
-          (EDDTableFromDatabase)
-              EDDTableFromDatabase.oneFromDatasetsXml(null, "testNonExistentVariable");
+      EDDTableFromDatabase edd = (EDDTableFromDatabase) EDDTestDataset.gettestNonExistentVariable();
       results = "shouldn't get here";
       edd.getDataForDapQuery(
           language,
@@ -873,8 +934,7 @@ class EDDTableFromDatabaseTests {
     } catch (Throwable t) {
       results = MustBe.throwableToString(t);
     }
-    Test.ensureTrue(
-        results.indexOf("column \"zztop\" does not exist") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Column \"zztop\" not found") >= 0, "results=\n" + results);
   }
 
   /**
@@ -883,17 +943,13 @@ class EDDTableFromDatabaseTests {
    * @throws Throwable if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledMissingDataset
   void testNonExistentTable() throws Throwable {
-    String2.log("\n*** EDDTableFromDatabase.testNonExistentTable()");
     String dir = EDStatic.config.fullTestCacheDirectory;
     String results = "not set";
     int language = 0;
     try {
       // if there is no subsetVariables att, the dataset will be created successfully
-      EDDTableFromDatabase edd =
-          (EDDTableFromDatabase)
-              EDDTableFromDatabase.oneFromDatasetsXml(null, "testNonExistentTable");
+      EDDTableFromDatabase edd = (EDDTableFromDatabase) EDDTestDataset.gettestNonExistentTable();
       results = "shouldn't get here";
       edd.getDataForDapQuery(
           language,
@@ -906,6 +962,6 @@ class EDDTableFromDatabaseTests {
       results = MustBe.throwableToString(t);
     }
     Test.ensureTrue(
-        results.indexOf("relation \"myschema.zztop\" does not exist") >= 0, "results=\n" + results);
+        results.indexOf(" Table \"MISSING_TABLE\" not found;") >= 0, "results=\n" + results);
   }
 }

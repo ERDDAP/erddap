@@ -45007,4 +45007,294 @@ public class EDDTestDataset {
 </dataset>
         """;
   }
+
+  public static EDD gettestMyDatabaseNo() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testMyDatabaseNo());
+  }
+
+  private static String xmlFragment_testMyDatabaseNo() {
+    return
+"""
+    <dataset type="EDDTableFromDatabase" datasetID="testMyDatabaseNo" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <catalogName></catalogName>
+    <schemaName></schemaName>
+    <tableName>LEGACY_TABLE</tableName>
+    <sourceCanOrderBy>yes</sourceCanOrderBy>
+    <sourceCanDoDistinct>yes</sourceCanDoDistinct>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="license">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.</att>
+        <att name="sourceUrl">(source database)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">This is Bob's test for reading from a database table.</att>
+        <att name="title">mydatabase myschema mytable</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>CATEGORY</sourceName>
+        <destinationName>category</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Category</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>FIRST</sourceName>
+        <destinationName>first</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">First Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAST</sourceName>
+        <destinationName>last</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Last Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>HEIGHT</sourceName>
+        <destinationName>height</destinationName>
+        <dataType>int</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="actual_range">161, 191</att><att name="ioos_category">Biology</att><att name="long_name">Height</att><att name="units">cm</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_KG</sourceName>
+        <destinationName>weight_kg</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">kg</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_LB</sourceName>
+        <destinationName>weight_lb</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">lb</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BIRTHDATE</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_CoordinateAxisType">Time</att><att name="axis">T</att><att name="ioos_category">Time</att><att name="long_name">Birthdate</att><att name="standard_name">time</att><att name="time_origin">01-JAN-1970 00:00:00</att><att name="units">seconds since 1970-01-01T00:00:00Z</att></addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestMyDatabasePartial() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testMyDatabasePartial());
+  }
+
+  private static String xmlFragment_testMyDatabasePartial() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testMyDatabasePartial" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>LEGACY_TABLE</tableName>
+    <sourceCanOrderBy>partial</sourceCanOrderBy>
+    <sourceCanDoDistinct>partial</sourceCanDoDistinct>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="license">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.</att>
+        <att name="sourceUrl">(source database)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">This is Bob's test for reading from a database table.</att>
+        <att name="title">mydatabase myschema mytable</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>CATEGORY</sourceName>
+        <destinationName>category</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Category</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>FIRST</sourceName>
+        <destinationName>first</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">First Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAST</sourceName>
+        <destinationName>last</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Last Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>HEIGHT</sourceName>
+        <destinationName>height</destinationName>
+        <dataType>int</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="actual_range">161, 191</att><att name="ioos_category">Biology</att><att name="long_name">Height</att><att name="units">cm</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_KG</sourceName>
+        <destinationName>weight_kg</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">kg</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_LB</sourceName>
+        <destinationName>weight_lb</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">lb</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BIRTHDATE</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="_CoordinateAxisType">Time</att>
+            <att name="axis">T</att>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Birthdate</att>
+            <att name="standard_name">time</att>
+            <att name="time_origin">01-JAN-1970 00:00:00</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestMyDatabaseYes() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testMyDatabaseYes());
+  }
+
+  private static String xmlFragment_testMyDatabaseYes() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testMyDatabaseYes" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>LEGACY_TABLE</tableName>
+    <sourceCanOrderBy>yes</sourceCanOrderBy>
+    <sourceCanDoDistinct>yes</sourceCanDoDistinct>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="license">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.</att>
+        <att name="sourceUrl">(source database)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">This is Bob's test for reading from a database table.</att>
+        <att name="title">mydatabase myschema mytable</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>CATEGORY</sourceName>
+        <destinationName>category</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Category</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>FIRST</sourceName>
+        <destinationName>first</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">First Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAST</sourceName>
+        <destinationName>last</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Last Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>HEIGHT</sourceName>
+        <destinationName>height</destinationName>
+        <dataType>int</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="actual_range">161, 191</att><att name="ioos_category">Biology</att><att name="long_name">Height</att><att name="units">cm</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_KG</sourceName>
+        <destinationName>weight_kg</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">kg</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_LB</sourceName>
+        <destinationName>weight_lb</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">lb</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BIRTHDATE</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="_CoordinateAxisType">Time</att>
+            <att name="axis">T</att>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Birthdate</att>
+            <att name="standard_name">time</att>
+            <att name="time_origin">01-JAN-1970 00:00:00</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestNonExistentVariable() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testNonExistentVariable());
+  }
+
+  private static String xmlFragment_testNonExistentVariable() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testNonExistentVariable" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>LEGACY_TABLE</tableName>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="title">testNonExistentVariable</att>
+        <att name="summary">testNonExistentVariable summary</att>
+    </addAttributes>
+    <dataVariable>
+      <sourceName>zztop</sourceName><destinationName>zztop</destinationName><dataType>String</dataType>
+      <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">ID</att></addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestNonExistentTable() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testNonExistentTable());
+  }
+
+  private static String xmlFragment_testNonExistentTable() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testNonExistentTable" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>missing_table</tableName>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="title">testNonExistentTable</att>
+        <att name="summary">testNonExistentTable summary</att>
+    </addAttributes>
+    <dataVariable>
+      <sourceName>id</sourceName><destinationName>id</destinationName><dataType>int</dataType>
+      <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">ID</att></addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
 }
