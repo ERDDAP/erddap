@@ -41,6 +41,48 @@ While many of the tests interact with external servers, for example to load data
 
 The external tests should be run periodically (maybe around release time), but are unlikely to be relevant to day to day ERDDAP development&trade;.
 
+### Useful test invocation commands
+
+Run a single unit test
+
+```
+mvn -Dtest=EDDTableFromAsciiFilesTests#testBasic test
+```
+
+Attach a debugger to a single unit test (debugging port 8000 by default):
+
+```
+mvnDebug -DforkCount=0 -Dtest=EDDTableFromAsciiFilesTests#testBasic test
+```
+
+or
+
+```
+MAVEN_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000" \
+   mvn -DforkCount=0 -Dtest=EDDTableFromAsciiFilesTests#testBasic test
+```
+
+Run a single integration test:
+
+```
+mvn -Dtest=foo -Dsurefire.failIfNoSpecifiedTests=false -Dgcf.skip -Dit.test=JettyTests#displayInformation verify
+```
+
+Attach a debugger to a single integration test (debugging port 8000 by default):
+
+```
+mvnDebug -DforkCount=0 -Dtest=foo -Dsurefire.failIfNoSpecifiedTests=false -Dgcf.skip \
+  -Dit.test=JettyTests#displayInformation verify
+```
+
+or
+
+```
+MAVEN_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000" \
+  mvn -DforkCount=0 -Dtest=foo -Dsurefire.failIfNoSpecifiedTests=false -Dgcf.skip \
+  -Dit.test=JettyTests#testEDDGridNcoJsonMetadata verify
+```
+
 ### Metrics
 
 Metrics are collected using [Prometheus](https://prometheus.github.io/client_java/). You can see the metrics on a local server at [/erddap/metrics](http://localhost:8080/erddap/metrics?debug=text).

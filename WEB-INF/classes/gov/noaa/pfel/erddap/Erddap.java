@@ -56,6 +56,7 @@ import gov.noaa.pfel.erddap.dataset.TableWriterJsonl;
 import gov.noaa.pfel.erddap.dataset.TableWriterNccsv;
 import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
+import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
@@ -181,6 +182,7 @@ public class Erddap extends HttpServlet {
           ".mat",
           ".nc",
           ".nccsv",
+          ".ncoJson",
           ".tsv",
           ".xhtml");
 
@@ -5413,6 +5415,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<li>.nccsv - a flat, table-like, NetCDF-like, ASCII CSV file.\n" +
               "(<a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-1.20\">more&nbsp;information" +
               EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>)\n" +
+          "<li>.ncoJson - a JSON file (NCO-style) with the dataset's metadata only (global attributes," +
+              "dimensions, and variables with their attributes, type, and shape) and no data values." +
+              "(<a rel="help" href="https://nco.sourceforge.net/nco.html#json">more&nbsp;information" +
+              "&externalLinkHtml;</a>)" +
           "<li>.tsv - a tab-separated ASCII text table.\n" +
               "(<a rel=\"help\" href=\"https://jkorpela.fi/TSV.html\">more&nbsp;information" +
               EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>)\n" +
@@ -17663,8 +17669,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String parts[] = String2.split(endOfRequestUrl, '/');
     int nParts = parts.length;
+    if (nParts == 1 && !parts[0].startsWith("index.") && String2.countAll(parts[0], ".") == 1) {
+      // This is a /info/<datasetID>.<metadataFormat> request,
+      // reformat to /info/<datasetID>/index.<metadataFormat>
+      // for processing below. (This is a convenience for users.)
+      String[] datasetIDAndExt = String2.split(parts[0], '.');
+      if (datasetIDAndExt.length == 2
+          && datasetIDAndExt[0].length() > 0
+          && datasetIDAndExt[1].length() > 0) {
+        parts = new String[] {datasetIDAndExt[0], "index." + datasetIDAndExt[1]};
+        nParts = 2;
+      }
+    }
     if (nParts == 0 || !parts[nParts - 1].startsWith("index.")) {
       StringArray sa = new StringArray(parts);
+
       sa.add("index.html");
       parts = sa.toArray();
       nParts = parts.length;
@@ -17687,6 +17706,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
     EDStatic.tally.add("Info File Type (since startup)", fileTypeName);
     EDStatic.tally.add("Info File Type (since last daily report)", fileTypeName);
+    if (fileTypeName.equals(".ncoJson") && nParts < 2) {
+      // .ncoJson info is the metadata of a single dataset; there is no such document
+      // for the list of all datasets (bad request)
+      sendHttpError(
+          requestNumber,
+          request,
+          response,
+          EDStatic.bilingual(
+              language,
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.UNSUPPORTED_FILE_TYPE, 0), fileTypeName),
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.UNSUPPORTED_FILE_TYPE, language), fileTypeName)),
+          HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
     if (nParts < 2) {
       // *** info/index.xxx    view all datasets
 
@@ -17937,6 +17972,45 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // request is valid -- make the table
     EDStatic.tally.add("Info (since startup)", tID);
     EDStatic.tally.add("Info (since last daily report)", tID);
+
+    if (fileTypeName.equals(".ncoJson")) {
+      // write metadata-only ncoJson response (no data)
+      // these should always be very fast because we're not reading any actual data!
+      NcoJsonFiles ncoJsonFiles = new NcoJsonFiles();
+      String jsonp = request.getParameter("jsonp");
+      String fileName = edd.suggestFileName(loggedInAs, tID, fileTypeName);
+      OutputStreamSource outSource =
+          new OutputStreamFromHttpResponse(
+              request,
+              response,
+              fileName,
+              jsonp == null ? ".ncoJson" : ".jsonp", // .jsonp pseudo fileType for correct mime type
+              fileTypeName);
+      if (edd instanceof EDDTable) {
+        ncoJsonFiles.saveTableAsNcoJson(
+            outSource,
+            new NcoJsonFiles().new NcoJsonEDDTableMetadataProvider((EDDTable) edd, language),
+            null,
+            jsonp);
+      } else if (edd instanceof EDDGrid) {
+        GridDataAccessor gridDataAccessor =
+            new GridDataAccessor(
+                language,
+                (EDDGrid) edd,
+                null, // requestUrl
+                null, // userDapQuery
+                true,
+                false,
+                false);
+        ncoJsonFiles.saveGridAsNcoJson(
+            outSource, (EDDGrid) edd, null, gridDataAccessor, jsonp, false);
+      } else {
+        throw new RuntimeException(
+            "Unsupported EDD type for .ncoJson: " + edd.getClass().getName());
+      }
+      return;
+    }
+
     Table table = new Table();
     StringArray rowTypeSA = new StringArray();
     StringArray variableNameSA = new StringArray();
@@ -23900,8 +23974,27 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    */
   public static void sendResourceNotFoundError(
       int requestNumber, HttpServletRequest request, HttpServletResponse response, String message) {
+    sendHttpError(requestNumber, request, response, message, HttpServletResponse.SC_NOT_FOUND);
+  }
 
-    EDStatic.lowSendError(requestNumber, response, HttpServletResponse.SC_NOT_FOUND, message);
+  /**
+   * This sends the HTTP error with the specified error code. This always also sends the error to
+   * String2.log.
+   *
+   * @param requestNumber The requestNumber assigned to this request by doGet().
+   * @param request The user's request.
+   * @param response The response to be written to.
+   * @param message use "" if nothing specific.
+   * @param errorCode the HTTP error code to send
+   */
+  public static void sendHttpError(
+      int requestNumber,
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String message,
+      int errorCode) {
+
+    EDStatic.lowSendError(requestNumber, response, errorCode, message);
   }
 
   /**

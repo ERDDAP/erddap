@@ -4903,6 +4903,10 @@ results as a table of data in these common, computer-program friendly, file type
 <li>.nccsv - a flat, table-like, NetCDF-like, ASCII CSV file.
     (<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">more&nbsp;information
     &externalLinkHtml;</a>)
+<li>.ncoJson - a JSON file (NCO-style) with the dataset's metadata only (global attributes,
+    dimensions, and variables with their attributes, type, and shape) and no data values.
+    (<a rel="help" href="https://nco.sourceforge.net/nco.html#json">more&nbsp;information
+    &externalLinkHtml;</a>)
 <li>.tsv - a tab-separated ASCII text table.
     (<a rel="help" href="https://jkorpela.fi/TSV.html">more&nbsp;information
     &externalLinkHtml;</a>)
