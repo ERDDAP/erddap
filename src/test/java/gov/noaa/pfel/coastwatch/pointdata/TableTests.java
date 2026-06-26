@@ -33,7 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -47,7 +46,6 @@ import tags.TagDisabledExternalOther;
 import tags.TagDisabledIncompleteTest;
 import tags.TagDisabledLargeFiles;
 import tags.TagDisabledMissingFile;
-import tags.TagDisabledPassword;
 import tags.TagSlowTests;
 import testDataset.Initialization;
 import ucar.nc2.NetcdfFile;
@@ -17965,196 +17963,94 @@ public class TableTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagDisabledPassword
   void testSql() throws Exception {
-    // String2.log("\n*** Table.testSql");
-    // Table.verbose = true;
-    // Table.reallyVerbose = true;
-
     // load the sql driver (the actual driver .jar must be in the classpath)
-    Class.forName("org.postgresql.Driver");
+    Class.forName("org.h2.Driver");
 
     // set up connection and query
-    String url = "jdbc:postgresql://otter.pfeg.noaa.gov/posttest"; // database name
-    String user = "postadmin";
-    String password = String2.getPasswordFromSystemIn("Password for '" + user + "'? ");
-    if (password.length() == 0) {
-      String2.log("No password, so skipping the test.");
-      return;
-    }
+    String url = "jdbc:h2:mem:testSql;DB_CLOSE_DELAY=-1;TIME ZONE=UTC"; // database name
+    String user = "sa";
+    String password = "";
+
     Connection con = DriverManager.getConnection(url, user, password);
-    // String2.log("getConnection time=" + (System.currentTimeMillis() - tTime) +
-    // "ms"); // often 9s !
-
-    DatabaseMetaData dm = con.getMetaData();
-    // String2.log("getMaxRowSize=" + dm.getMaxRowSize()); // 1GB
-
-    // get catalog info -- has one col with name(s) of databases for this user
-    // ...
 
     // test getSqlSchemas
     StringArray schemas = Table.getSqlSchemas(con);
-    Test.ensureTrue(schemas.indexOf("public") >= 0, "schemas=" + schemas.toString());
+    Test.ensureTrue(schemas.indexOfIgnoreCase("public") >= 0, "schemas=" + schemas.toString());
 
-    // sometimes: make names table
-    if (false) {
-      Table namesTable = new Table();
-      namesTable.addColumn("id", PrimitiveArray.factory(new int[] {1, 2, 3}));
-      namesTable.addColumn(
-          "first_name", PrimitiveArray.factory(new String[] {"Bob", "Nate", "Nancy"}));
-      namesTable.addColumn(
-          "last_name", PrimitiveArray.factory(new String[] {"Smith", "Smith", "Jones"}));
-      namesTable.saveAsSql(
-          con, true, // 'true' tests dropSqlTable, too
-          "names", 0, null, null, null, 2);
-    }
+    // make names table
+    Table namesTable = new Table();
+    namesTable.addColumn("id", PrimitiveArray.factory(new int[] {1, 2, 3}));
+    namesTable.addColumn(
+        "first_name", PrimitiveArray.factory(new String[] {"Bob", "Nate", "Nancy"}));
+    namesTable.addColumn(
+        "last_name", PrimitiveArray.factory(new String[] {"Smith", "Smith", "Jones"}));
+    namesTable.saveAsSql(con, true, "names", 0, null, null, null, 2);
 
     // test getSqlTableNames
     StringArray tableNames = Table.getSqlTableNames(con, "public", new String[] {"TABLE"});
     // String2.log("tableNames=" + tableNames);
-    Test.ensureTrue(tableNames.indexOf("names") >= 0, "tableNames=" + tableNames.toString());
     Test.ensureTrue(
-        tableNames.indexOf("zztop") < 0, "tableNames=" + tableNames.toString()); // doesn't exist
+        tableNames.indexOfIgnoreCase("names") >= 0, "tableNames=" + tableNames.toString());
+    Test.ensureTrue(
+        tableNames.indexOfIgnoreCase("zztop") < 0,
+        "tableNames=" + tableNames.toString()); // doesn't exist
 
     // test getSqlTableType
-    Test.ensureEqual(Table.getSqlTableType(con, "public", "names"), "TABLE", "");
+    Test.ensureEqual(Table.getSqlTableType(con, "public", "names"), "BASE TABLE", "");
     Test.ensureEqual(Table.getSqlTableType(con, "public", "zztop"), null, ""); // doesn't exist
 
     // *** test saveAsSql (create a table) (this tests dropSqlTable, too)
-    if (true) {
-      String tempTableName = "TempTest";
-      String dates[] = {"1960-01-02", "1971-01-02", null, "2020-12-31"};
-      double dateDoubles[] = new double[4];
-      String timestamps[] = {
-        "1960-01-02 01:02:03", "1971-01-02 07:08:09", null, "2020-12-31 23:59:59"
-      };
-      double timestampDoubles[] = new double[4];
-      String times[] = {"01:02:03", "07:08:09", null, "23:59:59"};
-      for (int i = 0; i < 4; i++) {
-        dateDoubles[i] =
-            dates[i] == null ? Double.NaN : Calendar2.isoStringToEpochSeconds(dates[i]);
-        timestampDoubles[i] =
-            timestamps[i] == null ? Double.NaN : Calendar2.isoStringToEpochSeconds(timestamps[i]);
-      }
-      Table tempTable = new Table();
-      tempTable.addColumn("uid", PrimitiveArray.factory(new int[] {1, 2, 3, 4}));
-      tempTable.addColumn(
-          "short", PrimitiveArray.factory(new short[] {-10, 0, Short.MAX_VALUE, 10}));
-      // Math2.random makes this test different every time. ensures old table is
-      // dropped and new one created.
-      tempTable.addColumn(
-          "int", PrimitiveArray.factory(new int[] {Math2.random(1000), 0, Integer.MAX_VALUE, 20}));
-      tempTable.addColumn("long", PrimitiveArray.factory(new long[] {-30, 0, Long.MAX_VALUE, 30}));
-      tempTable.addColumn(
-          "float", PrimitiveArray.factory(new float[] {-44.4f, 0f, Float.NaN, 44.4f}));
-      tempTable.addColumn(
-          "double", PrimitiveArray.factory(new double[] {-55.5, 0, Double.NaN, 55.5}));
-      tempTable.addColumn(
-          "string", PrimitiveArray.factory(new String[] {"ab", "", null, "longer"}));
-      tempTable.addColumn("date", PrimitiveArray.factory(dateDoubles));
-      tempTable.addColumn("timestamp", PrimitiveArray.factory(timestampDoubles));
-      tempTable.addColumn("time", PrimitiveArray.factory(times));
-      tempTable.saveAsSql(
-          con,
-          true, // 'true' tests dropSqlTable, too
-          tempTableName,
-          0,
-          new int[] {7},
-          new int[] {8},
-          new int[] {9},
-          1.5);
+    String tempTableName = "TempTest";
+    String dates[] = {"1960-01-02Z", "1971-01-02Z", null, "2020-12-31Z"};
+    double dateDoubles[] = new double[4];
+    String timestamps[] = {
+      "1960-01-02 01:02:03Z", "1971-01-02 07:08:09Z", null, "2020-12-31 23:59:59Z"
+    };
+    double timestampDoubles[] = new double[4];
+    String times[] = {"01:02:03", "07:08:09", null, "23:59:59"};
+    for (int i = 0; i < 4; i++) {
+      dateDoubles[i] = dates[i] == null ? Double.NaN : Calendar2.isoStringToEpochSeconds(dates[i]);
+      timestampDoubles[i] =
+          timestamps[i] == null ? Double.NaN : Calendar2.isoStringToEpochSeconds(timestamps[i]);
+    }
+    Table tempTable = new Table();
+    tempTable.addColumn("uid", PrimitiveArray.factory(new int[] {1, 2, 3, 4}));
+    tempTable.addColumn("short", PrimitiveArray.factory(new short[] {-10, 0, Short.MAX_VALUE, 10}));
+    // Math2.random makes this test different every time. ensures old table is
+    // dropped and new one created.
+    tempTable.addColumn(
+        "int", PrimitiveArray.factory(new int[] {Math2.random(1000), 0, Integer.MAX_VALUE, 20}));
+    tempTable.addColumn("long", PrimitiveArray.factory(new long[] {-30, 0, Long.MAX_VALUE, 30}));
+    tempTable.addColumn(
+        "float", PrimitiveArray.factory(new float[] {-44.4f, 0f, Float.NaN, 44.4f}));
+    tempTable.addColumn(
+        "double", PrimitiveArray.factory(new double[] {-55.5, 0, Double.NaN, 55.5}));
+    tempTable.addColumn("string", PrimitiveArray.factory(new String[] {"ab", "", null, "longer"}));
+    tempTable.addColumn("date", PrimitiveArray.factory(dateDoubles));
+    tempTable.addColumn("timestamp", PrimitiveArray.factory(timestampDoubles));
+    tempTable.addColumn("time", PrimitiveArray.factory(times));
+    tempTable.saveAsSql(
+        con,
+        true, // 'true' tests dropSqlTable, too
+        tempTableName,
+        0,
+        new int[] {7},
+        new int[] {8},
+        new int[] {9},
+        1.5);
 
-      // test readSql (read a table)
-      Table tempTable2 = new Table();
-      readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
-      Test.ensureEqual(tempTable, tempTable2, "");
+    // test readSql (read a table)
+    Table tempTable2 = new Table();
+    readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
+    Test.ensureEqual(tempTable, tempTable2, "");
 
-      // *** test rollback: add data that causes database to throw exception
-      tempTable2.setIntData(0, 0, 5); // ok
-      tempTable2.setIntData(0, 1, 6); // ok
-      tempTable2.setIntData(0, 2, 7); // ok
-      tempTable2.setIntData(0, 3, 1); // not ok because not unique
-      try { // try to add new tempTable2 to database table
-        tempTable2.saveAsSql(
-            con,
-            false, // false, so added to previous data
-            tempTableName,
-            0,
-            new int[] {7},
-            new int[] {8},
-            new int[] {9},
-            1.5);
-        String2.log("Shouldn't get here.");
-        Math2.sleep(60000);
-      } catch (Exception e) {
-        // this error is expected
-        // make sure it has both parts of the error message
-        String2.log("\nEXPECTED " + String2.ERROR + ":\n" + MustBe.throwableToString(e));
-        Test.ensureTrue(
-            e.toString()
-                    .indexOf(
-                        "PSQLException: "
-                            + String2.ERROR
-                            + ": duplicate key violates unique constraint \"temptest_pkey\"")
-                >= 0,
-            "(A) The error was: " + e.toString());
-        Test.ensureTrue(
-            e.toString()
-                    .indexOf("java.sql.BatchUpdateException: Batch entry 3 INSERT INTO TempTest (")
-                >= 0,
-            "(B)The error was: " + e.toString());
-      }
-
-      // and ensure database was rolled back to previous state
-      readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
-      Test.ensureEqual(tempTable, tempTable2, "");
-
-      // *** test pre-execute errors: add data that causes saveAsSql to throw
-      // exception
-      tempTable2.setIntData(0, 0, 5); // ok, so new rows can be added
-      tempTable2.setIntData(0, 1, 6); // ok
-      tempTable2.setIntData(0, 2, 7); // ok
-      tempTable2.setIntData(0, 3, 8); // ok
-      int timeCol = tempTable2.findColumnNumber("time");
-      // invalid date will be caught before statement is fully prepared
-      tempTable2.setStringData(timeCol, 3, "20.1/30"); // first 3 rows succeed, this should fail
-      try { // try to add new tempTable2 to database table
-        tempTable2.saveAsSql(
-            con,
-            false, // false, so added to previous data
-            tempTableName,
-            0,
-            new int[] {7},
-            new int[] {8},
-            new int[] {9},
-            1.5);
-        String2.log("Shouldn't get here.");
-        Math2.sleep(60000);
-      } catch (Exception e) {
-        // this error is expected
-        // make sure it is the right error
-        String2.log("\nEXPECTED " + String2.ERROR + ":\n" + MustBe.throwableToString(e));
-        Test.ensureTrue(
-            e.toString()
-                    .indexOf(
-                        "java.lang.RuntimeException: ERROR in Table.saveAsSql(TempTest):\n"
-                            + "Time format must be "
-                            + "HH:MM:SS. Bad value=20.1/30 in row=3 col=9")
-                >= 0,
-            "error=" + e.toString());
-      }
-
-      // and ensure it rolls back to previous state
-      readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
-      Test.ensureEqual(tempTable, tempTable2, "");
-
-      // *** test successfully add data (and ensure previous rollbacks worked
-      // assign row numbers so new rows can be added (and so different from possibly
-      // added 5,6,7,8)
-      tempTable2.setIntData(0, 0, 9); // ok,
-      tempTable2.setIntData(0, 1, 10); // ok
-      tempTable2.setIntData(0, 2, 11); // ok
-      tempTable2.setIntData(0, 3, 12); // ok
+    // *** test rollback: add data that causes database to throw exception
+    tempTable2.setIntData(0, 0, 5); // ok
+    tempTable2.setIntData(0, 1, 6); // ok
+    tempTable2.setIntData(0, 2, 7); // ok
+    tempTable2.setIntData(0, 3, 1); // not ok because not unique
+    try { // try to add new tempTable2 to database table
       tempTable2.saveAsSql(
           con,
           false, // false, so added to previous data
@@ -18164,18 +18060,79 @@ public class TableTests {
           new int[] {8},
           new int[] {9},
           1.5);
-
-      // and ensure result has 8 rows
-      readSql(tempTable2, con, "SELECT uid, string FROM " + tempTableName);
-      Test.ensureEqual(tempTable2.getColumn(0).toString(), "1, 2, 3, 4, 9, 10, 11, 12", "");
-      Test.ensureEqual(
-          tempTable2.getColumn(1).toString(), "ab, , [null], longer, ab, , [null], longer", "");
+      String2.log("Shouldn't get here.");
+      Math2.sleep(60000);
+    } catch (Exception e) {
+      // this error is expected
+      // make sure it has both parts of the error message
+      String2.log("\nEXPECTED " + String2.ERROR + ":\n" + MustBe.throwableToString(e));
+      Test.ensureTrue(
+          e.toString().indexOf("Unique index or primary key violation") >= 0,
+          "(A) The error was: " + e.toString());
+      Test.ensureTrue(
+          e.toString().indexOf("BatchUpdateException") >= 0, "(B)The error was: " + e.toString());
     }
 
-    // don't drop the table, so I can view it in phpPgAdmin
+    // and ensure database was rolled back to previous state
+    readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
+    Test.ensureEqual(tempTable, tempTable2, "");
 
-    // how read just column names and types? query that returns no rows???
+    // *** test pre-execute errors: add data that causes saveAsSql to throw
+    // exception
+    tempTable2.setIntData(0, 0, 5); // ok, so new rows can be added
+    tempTable2.setIntData(0, 1, 6); // ok
+    tempTable2.setIntData(0, 2, 7); // ok
+    tempTable2.setIntData(0, 3, 8); // ok
+    int timeCol = tempTable2.findColumnNumber("time");
+    // invalid date will be caught before statement is fully prepared
+    tempTable2.setStringData(timeCol, 3, "20.1/30"); // first 3 rows succeed, this should fail
+    try { // try to add new tempTable2 to database table
+      tempTable2.saveAsSql(
+          con,
+          false, // false, so added to previous data
+          tempTableName,
+          0,
+          new int[] {7},
+          new int[] {8},
+          new int[] {9},
+          1.5);
+      String2.log("Shouldn't get here.");
+      Math2.sleep(60000);
+    } catch (Exception e) {
+      // this error is expected
+      // make sure it is the right error
+      String2.log("\nEXPECTED " + String2.ERROR + ":\n" + MustBe.throwableToString(e));
+      Test.ensureTrue(
+          e.toString().indexOf("Time format must be HH:MM:SS. Bad value=20.1/30 in row=3 col=9")
+              >= 0,
+          "error=" + e.toString());
+    }
 
+    // and ensure it rolls back to previous state
+    readSql(tempTable2, con, "SELECT * FROM " + tempTableName);
+    Test.ensureEqual(tempTable, tempTable2, "");
+
+    // *** test successfully add data (and ensure previous rollbacks worked
+    // assign row numbers so new rows can be added (and so different from possibly
+    // added 5,6,7,8)
+    tempTable2.setIntData(0, 0, 9); // ok,
+    tempTable2.setIntData(0, 1, 10); // ok
+    tempTable2.setIntData(0, 2, 11); // ok
+    tempTable2.setIntData(0, 3, 12); // ok
+    tempTable2.saveAsSql(
+        con,
+        false, // false, so added to previous data
+        tempTableName,
+        0,
+        new int[] {7},
+        new int[] {8},
+        new int[] {9},
+        1.5);
+
+    // and ensure result has 8 rows
+    readSql(tempTable2, con, "SELECT \"uid\", \"string\" FROM " + tempTableName);
+    Test.ensureEqual(tempTable2.getColumn(0).toString(), "1, 2, 3, 4, 9, 10, 11, 12", "");
+    Test.ensureEqual(tempTable2.getColumn(1).toString(), "ab, , , longer, ab, , , longer", "");
   }
 
   /** This tests readIObis. */
