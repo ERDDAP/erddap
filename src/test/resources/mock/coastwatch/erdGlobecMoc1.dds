@@ -1,0 +1,27 @@
+Dataset {
+  Sequence {
+    String cruise_id;
+    Float32 longitude;
+    Float32 latitude;
+    Float64 time;
+    Byte cast_no;
+    String station_id;
+    Float32 abund_m3;
+    String comments;
+    String counter_id;
+    String d_n_flag;
+    Byte gear_area_m2;
+    Float32 gear_mesh;
+    String gear_type;
+    String genus_species;
+    String life_stage;
+    String local_code;
+    Float32 max_sample_depth;
+    Float32 min_sample_depth;
+    String nodc_code;
+    String program;
+    Byte sample_id;
+    Float32 vol_filt;
+    Int16 water_depth;
+  } s;
+} s;
