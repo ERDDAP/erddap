@@ -17679,23 +17679,22 @@ netcdf EDDTableFromNcFiles_Data.nc {
     DConnect dConnect;
     DDS dds;
 
-    /*
-     * //test of Sequence DAP dataset
-     * String2.log("\n*** test of Sequence DAP dataset");
-     * String sequenceUrl =
-     * "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
-     * dConnect = new DConnect(sequenceUrl, true, 1, 1);
-     * dds = dConnect.getDDS(DEFAULT_TIMEOUT);
-     * results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
-     * expected =
-     * "zztop";
-     * Test.ensureEqual(results, expected, "results=" + results);
-     */
+    // test of Sequence DAP dataset
+    String2.log("\n*** test of Sequence DAP dataset");
+    String sequenceUrl =
+        System.getProperty("test.coastwatch.pfegUrl", "https://coastwatch.pfeg.noaa.gov")
+            + "/erddap/tabledap/erdGlobecMoc1";
+    dConnect = new DConnect(sequenceUrl, true, 1, 1);
+    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    results = String2.toCSSVString(OpendapHelper.findVarsWithSharedDimensions(dds));
+    expected = "";
+    Test.ensureEqual(results, expected, "results=" + results);
 
     // test of DArray DAP dataset
     // 2018-09-13 https: works in browser by not yet in Java
     String dArrayUrl =
-        "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        System.getProperty("test.coaps.fsuUrl", "https://tds.coaps.fsu.edu")
+            + "/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
     String2.log("\n*** test of DArray DAP dataset\n" + dArrayUrl);
     dConnect = new DConnect(dArrayUrl, true, 1, 1);
     dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);

@@ -22,6 +22,8 @@ public class WireMockStarter {
 
     // Set system property so tests will use the mock base URL when they build URLs
     System.setProperty("test.apdrc.hawaiiUrl", "http://localhost:" + port());
+    System.setProperty("test.coaps.fsuUrl", "http://localhost:" + port());
+    System.setProperty("test.coastwatch.pfegUrl", "http://localhost:" + port());
 
     // Stub basic SODA responses from resources/mock/apdrc/
     stubFromResourceDap(
@@ -148,6 +150,11 @@ public class WireMockStarter {
     WireMock.stubFor(
         WireMock.get(WireMock.urlEqualTo("/dods/public_data/SODA/soda_pop2.2.4"))
             .willReturn(WireMock.aResponse().withStatus(200).withBody("APDRC SODA mock root")));
+
+    stubFromResourceDap(
+        "/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc.dds",
+        "/mock/coaps/WTEP_20120128v30001.nc.dds");
+    stubFromResourceDap("/erddap/tabledap/erdGlobecMoc1.dds", "/mock/coastwatch/erdGlobecMoc1.dds");
   }
 
   private static void stubFromResource(String urlPath, String resourcePath) {
