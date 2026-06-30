@@ -1,0 +1,19 @@
+Dataset {
+    Int32 time[time = 144];
+    Float32 lat[time = 144];
+    Float32 lon[time = 144];
+    Float32 PL_HD[time = 144];
+    Float32 PL_CRS[time = 144];
+    Float32 DIR[time = 144];
+    Float32 PL_WDIR[time = 144];
+    Float32 PL_SPD[time = 144];
+    Float32 SPD[time = 144];
+    Float32 PL_WSPD[time = 144];
+    Float32 P[time = 144];
+    Float32 T[time = 144];
+    Float32 RH[time = 144];
+    Int32 date[time = 144];
+    Int32 time_of_day[time = 144];
+    String flag[time = 144];
+    String history[h_num = 50];
+} samos/data/research/WTEP/2012/WTEP_20120128v30001.nc;
