@@ -261,6 +261,7 @@ class EDDTableFromHttpGetTests {
     // ****** from here on are the non-hammer, static tests
     // *** test insertOrDelete
     String2.log("\n>> insertOrDelete #1: insert 1 row");
+    Math2.sleep(2);
     results =
         EDDTableFromHttpGet.insertOrDelete(
             language,
@@ -307,6 +308,7 @@ class EDDTableFromHttpGetTests {
 
     // *** add 2 rows via array
     String2.log("\n>> insertOrDelete #2: insert 2 rows via array");
+    Math2.sleep(2);
     results =
         EDDTableFromHttpGet.insertOrDelete(
             language,
@@ -379,6 +381,8 @@ class EDDTableFromHttpGetTests {
 
     // *** change all values in a row
     String2.log("\n>> insertOrDelete #3: change all values in a row");
+    Math2.sleep(2);
+    Math2.sleep(2);
     results =
         EDDTableFromHttpGet.insertOrDelete(
             language,
@@ -481,6 +485,7 @@ class EDDTableFromHttpGetTests {
 
     // *** delete a row
     String2.log("\n>> EDDTableFromHttpGet.insertOrDelete #4: delete a row");
+    Math2.sleep(2);
     results =
         EDDTableFromHttpGet.insertOrDelete(
             language,
