@@ -48,6 +48,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+        config-file: ./.github/codeql/codeql-config.yml
 
     # Intercept the Java compilation process to map the Abstract Syntax Tree
     - name: Run manual build steps

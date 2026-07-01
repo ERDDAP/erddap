@@ -1,0 +1,35 @@
+extensions:
+  - addsTo:
+      pack: codeql/java-all
+      extensible: barrierModel
+    data:
+      # ========================================================================
+      # 1. LEGACY INITIALIZATION PATHWAY
+      # ========================================================================
+      - ["gov.noaa.pfel.erddap.dataset", "EDD", true, "fromXml", "", "", "ReturnValue", "path-injection", "manual"]
+      - ["gov.noaa.pfel.erddap.dataset", "EDD", true, "fromXml", "", "", "ReturnValue", "sql-injection", "manual"]
+      - ["gov.noaa.pfel.erddap.dataset", "EDD", true, "fromXml", "", "", "ReturnValue", "command-injection", "manual"]
+      
+      - ["gov.noaa.pfel.erddap", "LoadDatasets", false, "parseUsingSimpleXmlReader", "", "", "Argument[0]", "path-injection", "manual"]
+      - ["gov.noaa.pfel.erddap", "LoadDatasets", false, "parseUsingSimpleXmlReader", "", "", "Argument[0]", "sql-injection", "manual"]
+
+      # ========================================================================
+      # 2. MODERN INITIALIZATION PATHWAY (Concrete Handlers Only)
+      # ========================================================================
+      - ["gov.noaa.pfel.erddap", "DatasetHandler", true, "characters", "", "", "Argument[0]", "path-injection", "manual"]
+      - ["gov.noaa.pfel.erddap", "DatasetHandler", true, "characters", "", "", "Argument[0]", "sql-injection", "manual"]
+      - ["gov.noaa.pfel.erddap", "DatasetHandler", true, "startElement", "", "", "Argument[3]", "path-injection", "manual"]
+      
+      - ["gov.noaa.pfel.erddap", "TopLevelHandler", true, "characters", "", "", "Argument[0]", "path-injection", "manual"]
+      - ["gov.noaa.pfel.erddap", "TopLevelHandler", true, "characters", "", "", "Argument[0]", "sql-injection", "manual"]
+
+      # ========================================================================
+      # 3. EDCONFIG PATHWAY (Trusted Configuration Container)
+      # ========================================================================
+      # Leaving the method name blank ("") acts as a wildcard. CodeQL will 
+      # automatically consider any data returning from ANY getter or method 
+      # inside EDConfig as entirely safe and untainted.
+      - ["gov.noaa.pfel.erddap.util", "EDConfig", false, "", "", "", "ReturnValue", "path-injection", "manual"]
+      - ["gov.noaa.pfel.erddap.util", "EDConfig", false, "", "", "", "ReturnValue", "sql-injection", "manual"]
+      - ["gov.noaa.pfel.erddap.util", "EDConfig", false, "", "", "", "ReturnValue", "command-injection", "manual"]
+      - ["gov.noaa.pfel.erddap.util", "EDConfig", false, "", "", "", "ReturnValue", "request-ssrf", "manual"]

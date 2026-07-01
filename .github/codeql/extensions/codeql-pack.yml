@@ -1,0 +1,7 @@
+name: erddap/vulnerability-barriers
+version: 0.0.1
+library: true
+extensionTargets:
+  codeql/java-all: '*'
+dataExtensions:
+  - erddap-models.yml
