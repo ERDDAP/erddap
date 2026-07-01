@@ -1,7 +1,11 @@
 package jetty;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -33,6 +37,8 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.TestSSR;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.LoadDatasets;
+import gov.noaa.pfel.erddap.RunLoadDatasets;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDGridFromDap;
@@ -58,6 +64,7 @@ import gov.noaa.pfel.erddap.variable.DataVariableInfo;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -82,6 +89,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -113,8 +121,10 @@ class JettyTests extends WireMockLifecycle {
   private static Server server;
   private static Integer PORT = 8080;
   static boolean initialCroissantSetting = false;
+  static boolean initialForceSynchronousLoadingSetting = false;
 
   @BeforeAll
+  @SuppressWarnings("DoNotCall") // tell errorprone to ignore LoadDatasets.run
   public static void setUp() throws Throwable {
     Initialization.edStatic();
     EDDTestDataset.generateDatasetsXml();
@@ -133,11 +143,43 @@ class JettyTests extends WireMockLifecycle {
 
     server.start();
 
-    // Delay the tests to give the server a chance to load all of the data.
-    // If the cache/data folder is cold some machines might need longer. If
-    // all of the data is already loaded on the machine, this can probably be
-    // shortened.
-    Thread.sleep(12 * 60 * 1000);
+    // Wait for the server to load all of the data.
+    initialForceSynchronousLoadingSetting = EDStatic.config.forceSynchronousLoading;
+    EDStatic.config.forceSynchronousLoading = true;
+    final long dataLoadStartTime = System.currentTimeMillis();
+    System.out.println("Waiting for server to finish initial load datasets");
+    String dataLoadMaxWaitTimeSecondsProperty =
+        System.getProperty("jettyTests.dataLoadMaxWaitTimeSeconds");
+    long dataLoadMaxWaitTimeSeconds =
+        dataLoadMaxWaitTimeSecondsProperty != null
+            ? Long.parseLong(dataLoadMaxWaitTimeSecondsProperty)
+            : 12 * 60;
+    await()
+        .atMost(dataLoadMaxWaitTimeSeconds, SECONDS)
+        .pollInterval(1, SECONDS)
+        .until(() -> !EDStatic.initialLoadDatasets());
+    int dataLoadTimeSeconds = (int) ((System.currentTimeMillis() - dataLoadStartTime) / 1000);
+    System.out.println("Initial dataset loading completed in " + dataLoadTimeSeconds + " seconds");
+
+    // Run a second loadDatasets to load datasets that don't load the first time,
+    // in particular miniNdbc4103 which is a child dataset of EDDTableAggregateRows miniNdbc410
+    // see EDDTestDataset.xmlFragment_miniNdbc410
+    // FIXME likely related to https://github.com/ERDDAP/erddap/issues/440
+    // All legitimate datasets should load during the first pass if forceSynchronousLoading is set
+    // Child dataset miniNdbc4103 is in the expected dataset list in JettyTests.testJsonld
+    System.out.println("Waiting for second dataset loading pass");
+    final long dataLoadSecondPassStartTime = System.currentTimeMillis();
+    new LoadDatasets(
+            ((RunLoadDatasets) EDStatic.runningThreads.get("runLoadDatasets")).erddap,
+            EDStatic.config.datasetsRegex,
+            null,
+            true)
+        .run();
+    int dataLoadSecondPassTimeSeconds =
+        (int) ((System.currentTimeMillis() - dataLoadSecondPassStartTime) / 1000);
+    System.out.println(
+        "Second dataset loading pass completed in " + dataLoadSecondPassTimeSeconds + " seconds");
+
     initialCroissantSetting = EDStatic.config.generateCroissantSchema;
   }
 
@@ -149,6 +191,7 @@ class JettyTests extends WireMockLifecycle {
   @AfterAll
   public static void tearDown() throws Exception {
     server.stop();
+    EDStatic.config.forceSynchronousLoading = initialForceSynchronousLoadingSetting;
   }
 
   /** Check if the Institution row attributes are being displayed correctly */
@@ -4062,6 +4105,882 @@ class JettyTests extends WireMockLifecycle {
     Test.ensureEqual(
         table.columnAttributes(t25Col).getString("ioos_category"), "Temperature", ncHeader);
     Test.ensureEqual(table.columnAttributes(t25Col).getString("units"), "degree_C", ncHeader);
+  }
+
+  /** A simple class to hold the name, type, and data of an ncoJson attribute for testing. */
+  private class NcoJsonAttribute {
+    String name;
+    String type;
+    Object data;
+
+    public NcoJsonAttribute(String name, String type, Object data) {
+      this.name = name;
+      this.type = type;
+      this.data = data;
+    }
+  }
+
+  /**
+   * Assert that the given ncoJson attribute is present in the given attributes JSONObject and has
+   * the expected type and data.
+   *
+   * @param attrs the JSONObject containing the attributes
+   * @param nja the expected NcoJsonAttribute
+   */
+  private void assertNcoAttribute(JSONObject attrs, NcoJsonAttribute nja) {
+    assertTrue(attrs.has(nja.name), "ncoJson attribute " + nja.name + " not found");
+    JSONObject attr = attrs.getJSONObject(nja.name);
+    assertTrue(attr.has("type"), "ncoJson attribute " + nja.name + " has no type");
+    assertEquals(
+        nja.type, attr.getString("type"), "ncoJson attribute " + nja.name + " has unexpected type");
+    assertTrue(attr.has("data"), "ncoJson attribute " + nja.name + " has no data");
+    Object dataVal = attr.get("data");
+    String unexpectedDataMessage = "ncoJson attribute " + nja.name + " has unexpected data";
+    if (dataVal instanceof JSONArray) {
+      JSONArray dataArray = (JSONArray) dataVal;
+      if (!dataArray.isEmpty() && dataArray.get(0) instanceof BigDecimal) {
+        // convert JSONArray of BigDecimal to List<Double>
+        List<Double> doubleList = new ArrayList<>();
+        for (int i = 0; i < dataArray.length(); i++) {
+          doubleList.add(dataArray.getBigDecimal(i).doubleValue());
+        }
+        assertEquals(nja.data, doubleList, unexpectedDataMessage);
+      } else {
+        assertEquals(nja.data, dataArray.toList(), unexpectedDataMessage);
+      }
+    } else if (dataVal instanceof BigDecimal) {
+      // convert BigDecimal to double for comparison
+      assertEquals(nja.data, ((BigDecimal) dataVal).doubleValue(), unexpectedDataMessage);
+    } else if (dataVal == JSONObject.NULL) {
+      assertNull(nja.data, unexpectedDataMessage);
+    } else {
+      assertEquals(nja.data, dataVal, unexpectedDataMessage);
+    }
+  }
+
+  /**
+   * Assert that the given ncoJson dimension is present in the given dimensions JSONObject and has
+   * the expected length.
+   *
+   * @param dims the JSONObject containing the dimensions
+   * @param dimKey the key of the dimension to check
+   * @param dimLength the expected length of the dimension
+   */
+  private void assertNcoDimension(JSONObject dims, String dimKey, int dimLength) {
+    assertTrue(dims.has(dimKey), "ncoJson dimension " + dimKey + " not found");
+    assertEquals(
+        dimLength, dims.getInt(dimKey), "ncoJson dimension " + dimKey + " has unexpected length");
+  }
+
+  /**
+   * Assert that the given ncoJson variable is present in the given variables JSONObject and has the
+   * expected shape, type, and attributes.
+   *
+   * @param vars the JSONObject containing the variables
+   * @param varKey the key of the variable to check
+   * @param shape the expected shape of the variable
+   * @param type the expected type of the variable
+   * @param njas the expected attributes of the variable
+   */
+  private void assertNcoVariable(
+      JSONObject vars, String varKey, List<String> shape, String type, NcoJsonAttribute... njas) {
+    assertTrue(vars.has(varKey), "ncoJson variables " + varKey + " not found");
+    JSONObject var = vars.getJSONObject(varKey);
+    assertTrue(var.has("shape"), "ncoJson variable " + varKey + " has no shape");
+    assertEquals(
+        shape,
+        var.getJSONArray("shape").toList(),
+        "ncoJson variable " + varKey + " has unexpected shape");
+    assertTrue(var.has("type"), "ncoJson variable " + varKey + " has no type");
+    assertEquals(
+        type, var.getString("type"), "ncoJson variable " + varKey + " has unexpected type");
+    assertTrue(var.has("attributes"), "ncoJson variable " + varKey + " has no attributes");
+
+    JSONObject varAttrs = var.getJSONObject("attributes");
+    for (NcoJsonAttribute nja : njas) {
+      assertNcoAttribute(varAttrs, nja);
+    }
+
+    // verify that the variable has no "data" key
+    assertFalse(var.has("data"), "ncoJson variable " + varKey + " should not have data");
+  }
+
+  /**
+   * Ensure /info/index.ncoJson returns a 400 (bad request), because the list of all ERDDAP datasets
+   * is not representable by ncoJson
+   *
+   * @throws Exception if trouble
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testListDatasetsNcoJsonBadRequest() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+    HttpResponse<String> response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/info/index.ncoJson"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(400, response.statusCode());
+  }
+
+  /**
+   * Test short metadata URL (e.g. /info/<datasetID>.json)
+   *
+   * @throws Exception if trouble
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testShortDatasetInfoUrl() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+
+    HttpResponse<String> response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/info/pmelTaoDySst/index.json"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    String longUrlResponseStr = response.body();
+
+    response =
+        client.send(
+            HttpRequest.newBuilder(server.getURI().resolve("/erddap/info/pmelTaoDySst.json"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    String shortUrlResponseStr = response.body();
+
+    assertEquals(longUrlResponseStr, shortUrlResponseStr);
+  }
+
+  /**
+   * Test EDDTable ncoJson /info (metadata) response/output.
+   *
+   * @throws Exception if trouble
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testEDDTableNcoJsonMetadata() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+
+    HttpResponse<String> response =
+        client.send(
+            HttpRequest.newBuilder(
+                    server.getURI().resolve("/erddap/info/pmelTaoDySst/index.ncoJson"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    String pmelTaoDySstNcoJsonResponseStr = response.body();
+    JSONObject pmelTaoDySstNcoJsonResponse = new JSONObject(pmelTaoDySstNcoJsonResponseStr);
+    assertNotNull(pmelTaoDySstNcoJsonResponse);
+    assertTrue(
+        pmelTaoDySstNcoJsonResponse.has("attributes"),
+        "pmelTaoDySst ncoJson metadata has no attributes");
+    assertTrue(
+        pmelTaoDySstNcoJsonResponse.has("dimensions"),
+        "pmelTaoDySst ncoJson metadata has no dimensions");
+    assertTrue(
+        pmelTaoDySstNcoJsonResponse.has("variables"),
+        "pmelTaoDySst ncoJson metadata has no variables");
+
+    JSONObject globalAttrs = pmelTaoDySstNcoJsonResponse.getJSONObject("attributes");
+    // full ncoJson is tested below so global attr testing doesn't need to be exhaustive here
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("cdm_data_type", "char", "TimeSeries"));
+    assertNcoAttribute(
+        globalAttrs,
+        new NcoJsonAttribute(
+            "cdm_timeseries_variables",
+            "char",
+            "array, station, wmo_platform_code, longitude, latitude, depth"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("Conventions", "char", "COARDS, CF-1.6, ACDD-1.3"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("creator_email", "char", "Dai.C.McClurg@noaa.gov"));
+    assertNcoAttribute(
+        globalAttrs,
+        new NcoJsonAttribute("creator_name", "char", "GTMBA Project Office/NOAA/PMEL"));
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("creator_type", "char", "group"));
+    assertNcoAttribute(
+        globalAttrs,
+        new NcoJsonAttribute("creator_url", "char", "https://www.pmel.noaa.gov/gtmba/mission"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("geospatial_vertical_max", "double", 15.0));
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("geospatial_vertical_min", "double", 1.0));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("project", "char", "TAO/TRITON, RAMA, PIRATA"));
+    assertNcoAttribute(
+        globalAttrs,
+        new NcoJsonAttribute(
+            "title",
+            "char",
+            "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature"));
+
+    JSONObject dimensions = pmelTaoDySstNcoJsonResponse.getJSONObject("dimensions");
+    assertNcoDimension(dimensions, "row", 0);
+    assertNcoDimension(dimensions, "array_strlen", 1);
+    assertNcoDimension(dimensions, "station_strlen", 1);
+
+    JSONObject variables = pmelTaoDySstNcoJsonResponse.getJSONObject("variables");
+    assertNcoVariable(
+        variables,
+        "array",
+        List.of("row", "array_strlen"),
+        "char",
+        new NcoJsonAttribute("ioos_category", "char", "Identifier"),
+        new NcoJsonAttribute("long_name", "char", "Array"));
+
+    assertNcoVariable(
+        variables,
+        "station",
+        List.of("row", "station_strlen"),
+        "char",
+        new NcoJsonAttribute("cf_role", "char", "timeseries_id"),
+        new NcoJsonAttribute("ioos_category", "char", "Identifier"),
+        new NcoJsonAttribute("long_name", "char", "Station"));
+
+    assertNcoVariable(
+        variables,
+        "wmo_platform_code",
+        List.of("row"),
+        "int",
+        new NcoJsonAttribute("actual_range", "int", List.of(13001, 56055)),
+        new NcoJsonAttribute("ioos_category", "char", "Identifier"),
+        new NcoJsonAttribute("long_name", "char", "WMO Platform Code"),
+        new NcoJsonAttribute("missing_value", "int", 2147483647));
+
+    assertNcoVariable(
+        variables,
+        "longitude",
+        List.of("row"),
+        "float",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Lon"),
+        new NcoJsonAttribute("actual_range", "float", List.of(0.0, 357.0)),
+        new NcoJsonAttribute("axis", "char", "X"),
+        new NcoJsonAttribute("epic_code", "int", 502),
+        new NcoJsonAttribute("ioos_category", "char", "Location"),
+        new NcoJsonAttribute("long_name", "char", "Nominal Longitude"),
+        new NcoJsonAttribute("missing_value", "float", 1.0E35),
+        new NcoJsonAttribute("standard_name", "char", "longitude"),
+        new NcoJsonAttribute("type", "char", "EVEN"),
+        new NcoJsonAttribute("units", "char", "degrees_east"));
+
+    assertNcoVariable(
+        variables,
+        "latitude",
+        List.of("row"),
+        "float",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Lat"),
+        new NcoJsonAttribute("actual_range", "float", List.of(-25.0, 21.0)),
+        new NcoJsonAttribute("axis", "char", "Y"),
+        new NcoJsonAttribute("epic_code", "int", 500),
+        new NcoJsonAttribute("ioos_category", "char", "Location"),
+        new NcoJsonAttribute("long_name", "char", "Nominal Latitude"),
+        new NcoJsonAttribute("missing_value", "float", 1.0E35),
+        new NcoJsonAttribute("standard_name", "char", "latitude"),
+        new NcoJsonAttribute("type", "char", "EVEN"),
+        new NcoJsonAttribute("units", "char", "degrees_north"));
+
+    assertNcoVariable(
+        variables,
+        "time",
+        List.of("row"),
+        "double",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Time"),
+        new NcoJsonAttribute("actual_range", "double", List.of(2.474064E8, 1.6389648E9)),
+        new NcoJsonAttribute("axis", "char", "T"),
+        new NcoJsonAttribute("ioos_category", "char", "Time"),
+        new NcoJsonAttribute("long_name", "char", "Centered Time"),
+        new NcoJsonAttribute("standard_name", "char", "time"),
+        new NcoJsonAttribute("time_origin", "char", "01-JAN-1970 00:00:00"),
+        new NcoJsonAttribute("type", "char", "EVEN"),
+        new NcoJsonAttribute("units", "char", "seconds since 1970-01-01T00:00:00Z"));
+
+    assertNcoVariable(
+        variables,
+        "depth",
+        List.of("row"),
+        "float",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Height"),
+        new NcoJsonAttribute("_CoordinateZisPositive", "char", "down"),
+        new NcoJsonAttribute("actual_range", "float", List.of(1.0, 15.0)),
+        new NcoJsonAttribute("axis", "char", "Z"),
+        new NcoJsonAttribute("epic_code", "int", 3),
+        new NcoJsonAttribute("ioos_category", "char", "Location"),
+        new NcoJsonAttribute("long_name", "char", "Depth"),
+        new NcoJsonAttribute("missing_value", "float", 1.0E35),
+        new NcoJsonAttribute("positive", "char", "down"),
+        new NcoJsonAttribute("standard_name", "char", "depth"),
+        new NcoJsonAttribute("type", "char", "EVEN"),
+        new NcoJsonAttribute("units", "char", "m"));
+
+    assertNcoVariable(
+        variables,
+        "T_25",
+        List.of("row"),
+        "float",
+        new NcoJsonAttribute("actual_range", "float", List.of(17.12, 35.4621)),
+        new NcoJsonAttribute("colorBarMaximum", "double", 32.0),
+        new NcoJsonAttribute("colorBarMinimum", "double", 0.0),
+        new NcoJsonAttribute("epic_code", "int", 25),
+        new NcoJsonAttribute("generic_name", "char", "temp"),
+        new NcoJsonAttribute("ioos_category", "char", "Temperature"),
+        new NcoJsonAttribute("long_name", "char", "Sea Surface Temperature"),
+        new NcoJsonAttribute("missing_value", "float", 1.0E35),
+        new NcoJsonAttribute("name", "char", "T"),
+        new NcoJsonAttribute("standard_name", "char", "sea_surface_temperature"),
+        new NcoJsonAttribute("units", "char", "degree_C"));
+
+    assertNcoVariable(
+        variables,
+        "QT_5025",
+        List.of("row"),
+        "float",
+        new NcoJsonAttribute("actual_range", "float", List.of(0.0, 5.0)),
+        new NcoJsonAttribute("colorBarContinuous", "char", "false"),
+        new NcoJsonAttribute("colorBarMaximum", "double", 6.0),
+        new NcoJsonAttribute("colorBarMinimum", "double", 0.0),
+        new NcoJsonAttribute(
+            "description",
+            "char",
+            "Quality: 0=missing data, 1=highest, 2=standard, 3=lower, 4=questionable, 5=bad, -9=contact Dai.C.McClurg@noaa.gov.  To get probably valid data only, request QT_5025>=1 and QT_5025<=3."),
+        new NcoJsonAttribute("epic_code", "int", 5025),
+        new NcoJsonAttribute("generic_name", "char", "qt"),
+        new NcoJsonAttribute("ioos_category", "char", "Quality"),
+        new NcoJsonAttribute("long_name", "char", "Sea Surface Temperature Quality"),
+        new NcoJsonAttribute("missing_value", "float", 1.0E35),
+        new NcoJsonAttribute("name", "char", "QT"));
+
+    assertNcoVariable(
+        variables,
+        "ST_6025",
+        List.of("row"),
+        "float",
+        new NcoJsonAttribute("actual_range", "float", List.of(0.0, 5.0)),
+        new NcoJsonAttribute("colorBarContinuous", "char", "false"),
+        new NcoJsonAttribute("colorBarMaximum", "double", 8.0),
+        new NcoJsonAttribute("colorBarMinimum", "double", 0.0),
+        new NcoJsonAttribute(
+            "description",
+            "char",
+            "Source Codes:\n0 = No Sensor, No Data\n1 = Real Time (Telemetered Mode)\n2 = Derived from Real Time\n3 = Temporally Interpolated from Real Time\n4 = Source Code Inactive at Present\n5 = Recovered from Instrument RAM (Delayed Mode)\n6 = Derived from RAM\n7 = Temporally Interpolated from RAM"),
+        new NcoJsonAttribute("epic_code", "int", 6025),
+        new NcoJsonAttribute("generic_name", "char", "st"),
+        new NcoJsonAttribute("ioos_category", "char", "Other"),
+        new NcoJsonAttribute("long_name", "char", "Sea Surface Temperature Source"),
+        new NcoJsonAttribute("missing_value", "float", 1.0E35),
+        new NcoJsonAttribute("name", "char", "ST"));
+
+    // compare full ncoJson response string literal to expected
+    // NOTE: set a breakpoint to access ncoJson metadata from the test server at
+    // http://localhost:8080/erddap/info/pmelTaoDySst/index.ncoJson
+    // newline \n and quote \" characters must be double escaped to \\n and \\" respectively
+    String expectedPmelTaoDySstNcoJsonResponseStr =
+        """
+        {
+          "attributes": {
+            "cdm_data_type": {"type": "char", "data": "TimeSeries"},
+            "cdm_timeseries_variables": {"type": "char", "data": "array, station, wmo_platform_code, longitude, latitude, depth"},
+            "Conventions": {"type": "char", "data": "COARDS, CF-1.6, ACDD-1.3"},
+            "creator_email": {"type": "char", "data": "Dai.C.McClurg@noaa.gov"},
+            "creator_name": {"type": "char", "data": "GTMBA Project Office/NOAA/PMEL"},
+            "creator_type": {"type": "char", "data": "group"},
+            "creator_url": {"type": "char", "data": "https://www.pmel.noaa.gov/gtmba/mission"},
+            "Data_Source": {"type": "char", "data": "Global Tropical Moored Buoy Array Project Office/NOAA/PMEL"},
+            "defaultGraphQuery": {"type": "char", "data": "longitude,latitude,T_25&time>=now-7days"},
+            "Easternmost_Easting": {"type": "double", "data": 357.0},
+            "featureType": {"type": "char", "data": "TimeSeries"},
+            "File_info": {"type": "char", "data": "Contact: Dai.C.McClurg@noaa.gov"},
+            "geospatial_lat_max": {"type": "double", "data": 21.0},
+            "geospatial_lat_min": {"type": "double", "data": -25.0},
+            "geospatial_lat_units": {"type": "char", "data": "degrees_north"},
+            "geospatial_lon_max": {"type": "double", "data": 357.0},
+            "geospatial_lon_min": {"type": "double", "data": 0.0},
+            "geospatial_lon_units": {"type": "char", "data": "degrees_east"},
+            "geospatial_vertical_max": {"type": "double", "data": 15.0},
+            "geospatial_vertical_min": {"type": "double", "data": 1.0},
+            "geospatial_vertical_positive": {"type": "char", "data": "down"},
+            "geospatial_vertical_units": {"type": "char", "data": "m"},
+            "history": {"type": "char", "data": "This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n2018-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data."},
+            "infoUrl": {"type": "char", "data": "https://www.pmel.noaa.gov/gtmba/mission"},
+            "institution": {"type": "char", "data": "NOAA PMEL, TAO/TRITON, RAMA, PIRATA"},
+            "keywords": {"type": "char", "data": "buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton"},
+            "keywords_vocabulary": {"type": "char", "data": "GCMD Science Keywords"},
+            "license": {"type": "char", "data": "Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information."},
+            "Northernmost_Northing": {"type": "double", "data": 21.0},
+            "project": {"type": "char", "data": "TAO/TRITON, RAMA, PIRATA"},
+            "Request_for_acknowledgement": {"type": "char", "data": "If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115"},
+            "sourceUrl": {"type": "char", "data": "(local files)"},
+            "Southernmost_Northing": {"type": "double", "data": -25.0},
+            "standard_name_vocabulary": {"type": "char", "data": "CF Standard Name Table v70"},
+            "subsetVariables": {"type": "char", "data": "array, station, wmo_platform_code, longitude, latitude, depth"},
+            "summary": {"type": "char", "data": "This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission ."},
+            "testOutOfDate": {"type": "char", "data": "now-3days"},
+            "time_coverage_end": {"type": "char", "data": "2021-12-08T12:00:00Z"},
+            "time_coverage_start": {"type": "char", "data": "1977-11-03T12:00:00Z"},
+            "title": {"type": "char", "data": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature"},
+            "Westernmost_Easting": {"type": "double", "data": 0.0}
+          },
+          "dimensions": {
+            "row": 0,
+            "array_strlen": 1,
+            "station_strlen": 1
+          },
+          "variables": {
+            "array": {
+              "shape": ["row", "array_strlen"],
+              "type": "char",
+              "attributes": {
+                "ioos_category": {"type": "char", "data": "Identifier"},
+                "long_name": {"type": "char", "data": "Array"}
+              }
+            },
+            "station": {
+              "shape": ["row", "station_strlen"],
+              "type": "char",
+              "attributes": {
+                "cf_role": {"type": "char", "data": "timeseries_id"},
+                "ioos_category": {"type": "char", "data": "Identifier"},
+                "long_name": {"type": "char", "data": "Station"}
+              }
+            },
+            "wmo_platform_code": {
+              "shape": ["row"],
+              "type": "int",
+              "attributes": {
+                "actual_range": {"type": "int", "data": [13001, 56055]},
+                "ioos_category": {"type": "char", "data": "Identifier"},
+                "long_name": {"type": "char", "data": "WMO Platform Code"},
+                "missing_value": {"type": "int", "data": 2147483647}
+              }
+            },
+            "longitude": {
+              "shape": ["row"],
+              "type": "float",
+              "attributes": {
+                "_CoordinateAxisType": {"type": "char", "data": "Lon"},
+                "actual_range": {"type": "float", "data": [0.0, 357.0]},
+                "axis": {"type": "char", "data": "X"},
+                "epic_code": {"type": "int", "data": 502},
+                "ioos_category": {"type": "char", "data": "Location"},
+                "long_name": {"type": "char", "data": "Nominal Longitude"},
+                "missing_value": {"type": "float", "data": 1.0E35},
+                "standard_name": {"type": "char", "data": "longitude"},
+                "type": {"type": "char", "data": "EVEN"},
+                "units": {"type": "char", "data": "degrees_east"}
+              }
+            },
+            "latitude": {
+              "shape": ["row"],
+              "type": "float",
+              "attributes": {
+                "_CoordinateAxisType": {"type": "char", "data": "Lat"},
+                "actual_range": {"type": "float", "data": [-25.0, 21.0]},
+                "axis": {"type": "char", "data": "Y"},
+                "epic_code": {"type": "int", "data": 500},
+                "ioos_category": {"type": "char", "data": "Location"},
+                "long_name": {"type": "char", "data": "Nominal Latitude"},
+                "missing_value": {"type": "float", "data": 1.0E35},
+                "standard_name": {"type": "char", "data": "latitude"},
+                "type": {"type": "char", "data": "EVEN"},
+                "units": {"type": "char", "data": "degrees_north"}
+              }
+            },
+            "time": {
+              "shape": ["row"],
+              "type": "double",
+              "attributes": {
+                "_CoordinateAxisType": {"type": "char", "data": "Time"},
+                "actual_range": {"type": "double", "data": [2.474064E8, 1.6389648E9]},
+                "axis": {"type": "char", "data": "T"},
+                "ioos_category": {"type": "char", "data": "Time"},
+                "long_name": {"type": "char", "data": "Centered Time"},
+                "standard_name": {"type": "char", "data": "time"},
+                "time_origin": {"type": "char", "data": "01-JAN-1970 00:00:00"},
+                "type": {"type": "char", "data": "EVEN"},
+                "units": {"type": "char", "data": "seconds since 1970-01-01T00:00:00Z"}
+              }
+            },
+            "depth": {
+              "shape": ["row"],
+              "type": "float",
+              "attributes": {
+                "_CoordinateAxisType": {"type": "char", "data": "Height"},
+                "_CoordinateZisPositive": {"type": "char", "data": "down"},
+                "actual_range": {"type": "float", "data": [1.0, 15.0]},
+                "axis": {"type": "char", "data": "Z"},
+                "epic_code": {"type": "int", "data": 3},
+                "ioos_category": {"type": "char", "data": "Location"},
+                "long_name": {"type": "char", "data": "Depth"},
+                "missing_value": {"type": "float", "data": 1.0E35},
+                "positive": {"type": "char", "data": "down"},
+                "standard_name": {"type": "char", "data": "depth"},
+                "type": {"type": "char", "data": "EVEN"},
+                "units": {"type": "char", "data": "m"}
+              }
+            },
+            "T_25": {
+              "shape": ["row"],
+              "type": "float",
+              "attributes": {
+                "actual_range": {"type": "float", "data": [17.12, 35.4621]},
+                "colorBarMaximum": {"type": "double", "data": 32.0},
+                "colorBarMinimum": {"type": "double", "data": 0.0},
+                "epic_code": {"type": "int", "data": 25},
+                "generic_name": {"type": "char", "data": "temp"},
+                "ioos_category": {"type": "char", "data": "Temperature"},
+                "long_name": {"type": "char", "data": "Sea Surface Temperature"},
+                "missing_value": {"type": "float", "data": 1.0E35},
+                "name": {"type": "char", "data": "T"},
+                "standard_name": {"type": "char", "data": "sea_surface_temperature"},
+                "units": {"type": "char", "data": "degree_C"}
+              }
+            },
+            "QT_5025": {
+              "shape": ["row"],
+              "type": "float",
+              "attributes": {
+                "actual_range": {"type": "float", "data": [0.0, 5.0]},
+                "colorBarContinuous": {"type": "char", "data": "false"},
+                "colorBarMaximum": {"type": "double", "data": 6.0},
+                "colorBarMinimum": {"type": "double", "data": 0.0},
+                "description": {"type": "char", "data": "Quality: 0=missing data, 1=highest, 2=standard, 3=lower, 4=questionable, 5=bad, -9=contact Dai.C.McClurg@noaa.gov.  To get probably valid data only, request QT_5025>=1 and QT_5025<=3."},
+                "epic_code": {"type": "int", "data": 5025},
+                "generic_name": {"type": "char", "data": "qt"},
+                "ioos_category": {"type": "char", "data": "Quality"},
+                "long_name": {"type": "char", "data": "Sea Surface Temperature Quality"},
+                "missing_value": {"type": "float", "data": 1.0E35},
+                "name": {"type": "char", "data": "QT"}
+              }
+            },
+            "ST_6025": {
+              "shape": ["row"],
+              "type": "float",
+              "attributes": {
+                "actual_range": {"type": "float", "data": [0.0, 5.0]},
+                "colorBarContinuous": {"type": "char", "data": "false"},
+                "colorBarMaximum": {"type": "double", "data": 8.0},
+                "colorBarMinimum": {"type": "double", "data": 0.0},
+                "description": {"type": "char", "data": "Source Codes:\\n0 = No Sensor, No Data\\n1 = Real Time (Telemetered Mode)\\n2 = Derived from Real Time\\n3 = Temporally Interpolated from Real Time\\n4 = Source Code Inactive at Present\\n5 = Recovered from Instrument RAM (Delayed Mode)\\n6 = Derived from RAM\\n7 = Temporally Interpolated from RAM"},
+                "epic_code": {"type": "int", "data": 6025},
+                "generic_name": {"type": "char", "data": "st"},
+                "ioos_category": {"type": "char", "data": "Other"},
+                "long_name": {"type": "char", "data": "Sea Surface Temperature Source"},
+                "missing_value": {"type": "float", "data": 1.0E35},
+                "name": {"type": "char", "data": "ST"}
+              }
+            }
+          }
+        }
+        """;
+
+    assertEquals(
+        expectedPmelTaoDySstNcoJsonResponseStr,
+        pmelTaoDySstNcoJsonResponseStr,
+        "pmelTaoDySst ncoJson metadata response does not match expected: "
+            + String2.differentLine(
+                expectedPmelTaoDySstNcoJsonResponseStr, pmelTaoDySstNcoJsonResponseStr));
+
+    // ensure that the ncoJson metadata response is exactly like an ncoJson data response
+    // ignoring the history global attribute and variable data
+    client.send(
+        HttpRequest.newBuilder(
+                server.getURI().resolve("/erddap/tabledap/pmelTaoDySst.ncoJson?&time=max(time)"))
+            .GET()
+            .build(),
+        HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    JSONObject dataResponse = new JSONObject(response.body());
+    // remove history from global attributes and data from variables
+    dataResponse.getJSONObject("attributes").remove("history");
+    for (String varName : dataResponse.getJSONObject("variables").keySet()) {
+      dataResponse.getJSONObject("variables").getJSONObject(varName).remove("data");
+    }
+    pmelTaoDySstNcoJsonResponse.getJSONObject("attributes").remove("history");
+    assertTrue(
+        pmelTaoDySstNcoJsonResponse.similar(dataResponse),
+        "testEDDGridFromNcFilesUnpacked ncoJson data response with data attributes removed from vars does not match expected:"
+            + String2.differentLine(
+                pmelTaoDySstNcoJsonResponse.toString(2), dataResponse.toString(2)));
+  }
+
+  /**
+   * Test EDDGrid ncoJson /info (metadata) response/output.
+   *
+   * @throws Exception if trouble
+   */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testEDDGridNcoJsonMetadata() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+
+    HttpResponse<String> response =
+        client.send(
+            HttpRequest.newBuilder(
+                    server
+                        .getURI()
+                        .resolve("/erddap/info/testEDDGridFromNcFilesUnpacked/index.ncoJson"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    String testEDDGridFromNcFilesUnpackedNcoJsonResponseStr = response.body();
+    JSONObject testEDDGridFromNcFilesUnpackedNcoJsonResponse =
+        new JSONObject(testEDDGridFromNcFilesUnpackedNcoJsonResponseStr);
+    assertNotNull(testEDDGridFromNcFilesUnpackedNcoJsonResponse);
+    assertTrue(
+        testEDDGridFromNcFilesUnpackedNcoJsonResponse.has("attributes"),
+        "testEDDGridFromNcFilesUnpacked ncoJson metadata has no attributes");
+    assertTrue(
+        testEDDGridFromNcFilesUnpackedNcoJsonResponse.has("dimensions"),
+        "testEDDGridFromNcFilesUnpacked ncoJson metadata has no dimensions");
+    assertTrue(
+        testEDDGridFromNcFilesUnpackedNcoJsonResponse.has("variables"),
+        "testEDDGridFromNcFilesUnpacked ncoJson metadata has no variables");
+
+    JSONObject globalAttrs =
+        testEDDGridFromNcFilesUnpackedNcoJsonResponse.getJSONObject("attributes");
+    // full ncoJson is tested below so global attr testing doesn't need to be exhaustive here
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("cdm_data_type", "char", "Grid"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("contact", "char", "ghrsst@podaac.jpl.nasa.gov"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("Conventions", "char", "CF-1.6, COARDS, ACDD-1.3"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("creator_email", "char", "ghrsst@podaac.jpl.nasa.gov"));
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("creator_name", "char", "GHRSST"));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("creator_url", "char", "https://podaac.jpl.nasa.gov/"));
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("geospatial_lat_max", "float", 20.0995));
+    assertNcoAttribute(globalAttrs, new NcoJsonAttribute("geospatial_lat_min", "float", 20.0006));
+    assertNcoAttribute(
+        globalAttrs, new NcoJsonAttribute("geospatial_lat_units", "char", "degrees_north"));
+    assertNcoAttribute(
+        globalAttrs,
+        new NcoJsonAttribute(
+            "title", "char", "Daily MUR SST, Interim near-real-time (nrt) product"));
+
+    JSONObject dimensions =
+        testEDDGridFromNcFilesUnpackedNcoJsonResponse.getJSONObject("dimensions");
+    assertNcoDimension(dimensions, "time", 2);
+    assertNcoDimension(dimensions, "latitude", 10);
+    assertNcoDimension(dimensions, "longitude", 10);
+
+    JSONObject variables = testEDDGridFromNcFilesUnpackedNcoJsonResponse.getJSONObject("variables");
+    assertNcoVariable(
+        variables,
+        "time",
+        List.of("time"),
+        "double",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Time"),
+        new NcoJsonAttribute("actual_range", "double", List.of(1.4440356E9, 1.444122E9)),
+        new NcoJsonAttribute("axis", "char", "T"),
+        new NcoJsonAttribute("ioos_category", "char", "Time"),
+        new NcoJsonAttribute("long_name", "char", "reference time of sst field"),
+        new NcoJsonAttribute("standard_name", "char", "time"),
+        new NcoJsonAttribute("time_origin", "char", "01-JAN-1970 00:00:00"),
+        new NcoJsonAttribute("units", "char", "seconds since 1970-01-01T00:00:00Z"));
+    assertNcoVariable(
+        variables,
+        "latitude",
+        List.of("latitude"),
+        "float",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Lat"),
+        new NcoJsonAttribute("actual_range", "float", List.of(20.0006, 20.0995)),
+        new NcoJsonAttribute("axis", "char", "Y"),
+        new NcoJsonAttribute("ioos_category", "char", "Location"),
+        new NcoJsonAttribute("long_name", "char", "Latitude"),
+        new NcoJsonAttribute("standard_name", "char", "latitude"),
+        new NcoJsonAttribute("units", "char", "degrees_north"),
+        new NcoJsonAttribute("valid_max", "float", 90.0),
+        new NcoJsonAttribute("valid_min", "float", -90.0));
+
+    assertNcoVariable(
+        variables,
+        "longitude",
+        List.of("longitude"),
+        "float",
+        new NcoJsonAttribute("_CoordinateAxisType", "char", "Lon"),
+        new NcoJsonAttribute("actual_range", "float", List.of(-134.995, -134.896)),
+        new NcoJsonAttribute("axis", "char", "X"),
+        new NcoJsonAttribute("ioos_category", "char", "Location"),
+        new NcoJsonAttribute("long_name", "char", "Longitude"),
+        new NcoJsonAttribute("standard_name", "char", "longitude"),
+        new NcoJsonAttribute("units", "char", "degrees_east"),
+        new NcoJsonAttribute("valid_max", "float", 180.0),
+        new NcoJsonAttribute("valid_min", "float", -180.0));
+
+    assertNcoVariable(
+        variables,
+        "analysed_sst",
+        List.of("time", "latitude", "longitude"),
+        "double",
+        new NcoJsonAttribute("_FillValue", "double", null),
+        new NcoJsonAttribute("colorBarMaximum", "double", 305.0),
+        new NcoJsonAttribute("colorBarMinimum", "double", 273.0),
+        new NcoJsonAttribute(
+            "comment",
+            "char",
+            "Interim near-real-time (nrt) version; to be replaced by Final version"),
+        new NcoJsonAttribute("ioos_category", "char", "Temperature"),
+        new NcoJsonAttribute("long_name", "char", "analysed sea surface temperature"),
+        new NcoJsonAttribute("standard_name", "char", "sea_surface_foundation_temperature"),
+        new NcoJsonAttribute("units", "char", "degree_K"),
+        new NcoJsonAttribute("valid_max", "double", 330.917),
+        new NcoJsonAttribute("valid_min", "double", 265.383));
+
+    // compare full ncoJson response string literal to expected
+    // NOTE: set a breakpoint to access ncoJson metadata from the test server at
+    // http://localhost:8080/erddap/info/testEDDGridFromNcFilesUnpacked/index.ncoJson
+    // newline \n and quote \" characters must be double escaped to \\n and \\" respectively
+    String expectedTestEDDGridFromNcFilesUnpackedNcoJsonResponse =
+        """
+      {
+        "attributes": {
+          "cdm_data_type": {"type": "char", "data": "Grid"},
+          "comment": {"type": "char", "data": "Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\"Multi-scale Ultra-high Resolution\\"; produced under NASA MEaSUREs program."},
+          "contact": {"type": "char", "data": "ghrsst@podaac.jpl.nasa.gov"},
+          "Conventions": {"type": "char", "data": "CF-1.6, COARDS, ACDD-1.3"},
+          "creation_date": {"type": "char", "data": "2015-10-06"},
+          "creator_email": {"type": "char", "data": "ghrsst@podaac.jpl.nasa.gov"},
+          "creator_name": {"type": "char", "data": "GHRSST"},
+          "creator_url": {"type": "char", "data": "https://podaac.jpl.nasa.gov/"},
+          "DSD_entry_id": {"type": "char", "data": "JPL-L4UHfnd-GLOB-MUR"},
+          "Easternmost_Easting": {"type": "float", "data": -134.896},
+          "file_quality_index": {"type": "char", "data": "0"},
+          "GDS_version_id": {"type": "char", "data": "GDS-v1.0-rev1.6"},
+          "geospatial_lat_max": {"type": "float", "data": 20.0995},
+          "geospatial_lat_min": {"type": "float", "data": 20.0006},
+          "geospatial_lat_units": {"type": "char", "data": "degrees_north"},
+          "geospatial_lon_max": {"type": "float", "data": -134.896},
+          "geospatial_lon_min": {"type": "float", "data": -134.995},
+          "geospatial_lon_resolution": {"type": "double", "data": 0.011000000000001996},
+          "geospatial_lon_units": {"type": "char", "data": "degrees_east"},
+          "history": {"type": "char", "data": "Interim near-real-time (nrt) version created at nominal 1-day latency."},
+          "infoUrl": {"type": "char", "data": "https://podaac.jpl.nasa.gov/"},
+          "institution": {"type": "char", "data": "Jet Propulsion Laboratory"},
+          "keywords": {"type": "char", "data": "analysed, analysed_sst, daily, data, day, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans, product, propulsion, real, records, research, resolution, scale, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use"},
+          "keywords_vocabulary": {"type": "char", "data": "GCMD Science Keywords"},
+          "license": {"type": "char", "data": "The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information."},
+          "netcdf_version_id": {"type": "char", "data": "3.5"},
+          "Northernmost_Northing": {"type": "float", "data": 20.0995},
+          "product_version": {"type": "char", "data": "04nrt"},
+          "references": {"type": "char", "data": "ftp://mariana.jpl.nasa.gov/mur_sst/tmchin/docs/ATBD/"},
+          "source_data": {"type": "char", "data": "AVHRR19_G-NAVO, AVHRR_METOP_A-EUMETSAT, MODIS_A-JPL, MODIS_T-JPL, WSAT-REMSS, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF"},
+          "sourceUrl": {"type": "char", "data": "(local files)"},
+          "Southernmost_Northing": {"type": "float", "data": 20.0006},
+          "spatial_resolution": {"type": "char", "data": "0.011 degrees"},
+          "standard_name_vocabulary": {"type": "char", "data": "CF Standard Name Table v70"},
+          "summary": {"type": "char", "data": "Interim-Multi-scale Ultra-high Resolution (MUR)(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\"Multi-scale Ultra-high Resolution\\"; produced under NASA Making Earth System Data Records for Use in Research Environments (MEaSUREs) program."},
+          "time_coverage_end": {"type": "char", "data": "2015-10-06T09:00:00Z"},
+          "time_coverage_start": {"type": "char", "data": "2015-10-05T09:00:00Z"},
+          "title": {"type": "char", "data": "Daily MUR SST, Interim near-real-time (nrt) product"},
+          "Westernmost_Easting": {"type": "float", "data": -134.995}
+        },
+        "dimensions": {
+          "time": 2,
+          "latitude": 10,
+          "longitude": 10
+        },
+        "variables": {
+          "time": {
+            "shape": ["time"],
+            "type": "double",
+            "attributes": {
+              "_CoordinateAxisType": {"type": "char", "data": "Time"},
+              "actual_range": {"type": "double", "data": [1.4440356E9, 1.444122E9]},
+              "axis": {"type": "char", "data": "T"},
+              "ioos_category": {"type": "char", "data": "Time"},
+              "long_name": {"type": "char", "data": "reference time of sst field"},
+              "standard_name": {"type": "char", "data": "time"},
+              "time_origin": {"type": "char", "data": "01-JAN-1970 00:00:00"},
+              "units": {"type": "char", "data": "seconds since 1970-01-01T00:00:00Z"}
+            }
+          },
+          "latitude": {
+            "shape": ["latitude"],
+            "type": "float",
+            "attributes": {
+              "_CoordinateAxisType": {"type": "char", "data": "Lat"},
+              "actual_range": {"type": "float", "data": [20.0006, 20.0995]},
+              "axis": {"type": "char", "data": "Y"},
+              "ioos_category": {"type": "char", "data": "Location"},
+              "long_name": {"type": "char", "data": "Latitude"},
+              "standard_name": {"type": "char", "data": "latitude"},
+              "units": {"type": "char", "data": "degrees_north"},
+              "valid_max": {"type": "float", "data": 90.0},
+              "valid_min": {"type": "float", "data": -90.0}
+            }
+          },
+          "longitude": {
+            "shape": ["longitude"],
+            "type": "float",
+            "attributes": {
+              "_CoordinateAxisType": {"type": "char", "data": "Lon"},
+              "actual_range": {"type": "float", "data": [-134.995, -134.896]},
+              "axis": {"type": "char", "data": "X"},
+              "ioos_category": {"type": "char", "data": "Location"},
+              "long_name": {"type": "char", "data": "Longitude"},
+              "standard_name": {"type": "char", "data": "longitude"},
+              "units": {"type": "char", "data": "degrees_east"},
+              "valid_max": {"type": "float", "data": 180.0},
+              "valid_min": {"type": "float", "data": -180.0}
+            }
+          },
+          "analysed_sst": {
+            "shape": ["time", "latitude", "longitude"],
+            "type": "double",
+            "attributes": {
+              "_FillValue": {"type": "double", "data": null},
+              "colorBarMaximum": {"type": "double", "data": 305.0},
+              "colorBarMinimum": {"type": "double", "data": 273.0},
+              "comment": {"type": "char", "data": "Interim near-real-time (nrt) version; to be replaced by Final version"},
+              "ioos_category": {"type": "char", "data": "Temperature"},
+              "long_name": {"type": "char", "data": "analysed sea surface temperature"},
+              "standard_name": {"type": "char", "data": "sea_surface_foundation_temperature"},
+              "units": {"type": "char", "data": "degree_K"},
+              "valid_max": {"type": "double", "data": 330.917},
+              "valid_min": {"type": "double", "data": 265.383}
+            }
+          }
+        }
+      }
+      """;
+    assertEquals(
+        expectedTestEDDGridFromNcFilesUnpackedNcoJsonResponse,
+        testEDDGridFromNcFilesUnpackedNcoJsonResponseStr,
+        "testEDDGridFromNcFilesUnpacked ncoJson metadata response does not match expected: "
+            + String2.differentLine(
+                expectedTestEDDGridFromNcFilesUnpackedNcoJsonResponse,
+                testEDDGridFromNcFilesUnpackedNcoJsonResponseStr));
+
+    // ensure that the ncoJson metadata response is exactly like an ncoJson data response
+    // ignoring the history global attribute and variable data
+    response =
+        client.send(
+            HttpRequest.newBuilder(
+                    server
+                        .getURI()
+                        .resolve("/erddap/griddap/testEDDGridFromNcFilesUnpacked.ncoJson"))
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, response.statusCode());
+    JSONObject dataResponse = new JSONObject(response.body());
+    // remove history from global attributes and data from variables
+    dataResponse.getJSONObject("attributes").remove("history");
+    for (String varName : dataResponse.getJSONObject("variables").keySet()) {
+      dataResponse.getJSONObject("variables").getJSONObject(varName).remove("data");
+    }
+    testEDDGridFromNcFilesUnpackedNcoJsonResponse.getJSONObject("attributes").remove("history");
+    assertTrue(
+        testEDDGridFromNcFilesUnpackedNcoJsonResponse.similar(dataResponse),
+        "testEDDGridFromNcFilesUnpacked ncoJson data response with history and data removed does not match expected: "
+            + String2.differentLine(
+                testEDDGridFromNcFilesUnpackedNcoJsonResponse.toString(2),
+                dataResponse.toString(2)));
   }
 
   /* FileVisitorDNLS */

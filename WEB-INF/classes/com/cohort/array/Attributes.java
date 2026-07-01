@@ -914,15 +914,16 @@ public class Attributes {
   /**
    * This writes the attributes for a variable (or *GLOBAL*) to a String using NCO JSON lvl=2
    * pedantic style. See https://nco.sourceforge.net/nco.html#json This doesn't change any of the
-   * attributes. See issues in javadoc for EDDTable.saveAsNcoJson().
+   * attributes. See issues in javadoc for NcoJsonFiles.
    *
    * <p>String attributes are written as type="char". See comments in EDDTable.
    *
    * @param indent a String a spaces for the start of each line
+   * @param includeTrailingComma if true, a comma is included after the closing } of the attributes
    * @return a string with all of the attributes for a variable (or *GLOBAL*) formatted for NCO
    *     JSON, with a comma after the closing }.
    */
-  public String toNcoJsonString(String indent) {
+  public String toNcoJsonString(String indent, boolean includeTrailingComma) {
     StringBuilder sb = new StringBuilder();
 
     // "attributes": {
@@ -986,7 +987,9 @@ public class Attributes {
         (somethingWritten ? "\n" : "")
             + // end previous line
             indent
-            + "},\n");
+            + "}"
+            + (includeTrailingComma ? "," : "")
+            + "\n");
     return sb.toString();
   }
 
