@@ -4391,231 +4391,164 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <resourceNotFound>Ο πόρος δεν βρέθηκε:</resourceNotFound>
 <restfulWebServices>RESTful Web Services</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPείναι και τα δύο:
-&lt; ul&gt;
-&lt;li&gt;&lt;a rl=\"help\" href=\"https://en.wikipedia.org/wiki/Web_application\"&gt; Εφαρμογή ιστού
-&externalLinkHtml;&lt;/a&gt;
-&ndash; μια ιστοσελίδα με μια μορφή που οι άνθρωποι με προγράμματα περιήγησης μπορούν να χρησιμοποιήσουν (σε αυτή την περίπτωση, για να πάρουν δεδομένα, γραφήματα, ή πληροφορίες σχετικά με σύνολα δεδομένων).
-&lt;br&gt;&nbsp;&lt;li&gt;&lt;a rl=\"help\" href=\"https://en.wikipedia.org/wiki/Web_service\"&gt;Ashttphttphttphttp\"\"=\"\"\"\"==\"=\"\"\"==========&gt;==&gt;&gt;&gt;=&gt;b&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;RESTfulυπηρεσία web
-&externalLinkHtml;&lt;/a&gt;
-&ndash; ένα URL που τα προγράμματα υπολογιστών μπορούν να χρησιμοποιήσουν (σε αυτή την περίπτωση, για να πάρουν δεδομένα, γραφήματα, και πληροφορίες σχετικά με σύνολα δεδομένων).
-&lt;/ul&gt;
-Για κάθεERDDAPιστοσελίδα με μια μορφή που εσείς ως άνθρωπος με έναν browser μπορεί να χρησιμοποιήσει, υπάρχει
-αντίστοιχοERDDAPweb service που έχει σχεδιαστεί για να είναι εύκολο για προγράμματα υπολογιστών και σενάρια στη χρήση.
+ ERDDAP είναι και τα δύο:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Εφαρμογή ιστού
+ &externalLinkHtml;  </a> &ndash; μια ιστοσελίδα με μια μορφή που οι άνθρωποι με προγράμματα περιήγησης μπορούν να χρησιμοποιήσουν (στην περίπτωση αυτή, για να λάβετε δεδομένα, γραφήματα ή πληροφορίες σχετικά με σύνολα δεδομένων) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> Α RESTful υπηρεσία web
+ &externalLinkHtml;  </a> &ndash; ένα URL που τα προγράμματα υπολογιστών μπορούν να χρησιμοποιήσουν (στην περίπτωση αυτή, για τη λήψη δεδομένων, γραφημάτων και πληροφοριών σχετικά με σύνολα δεδομένων) .
+ </ul> Για κάθε ERDDAP ιστοσελίδα με μια μορφή που εσείς ως άνθρωπος με έναν browser μπορεί να χρησιμοποιήσει, υπάρχει
+αντίστοιχο ERDDAP web service που έχει σχεδιαστεί για να είναι εύκολο για προγράμματα υπολογιστών και σενάρια στη χρήση.
 Για παράδειγμα, οι άνθρωποι μπορούν να χρησιμοποιήσουν αυτό το URL για να κάνουν μια πλήρη αναζήτηση κειμένου για ενδιαφέροντα σύνολα δεδομένων:
-&lt;br&gt; &lt; a href=\"&htmlQueryUrl;\"&gt;&htmlQueryUrl;&lt;/a&gt;
-&lt;br&gt;Με την αλλαγή της επέκτασης αρχείου στο URL από .html σε.json(ή csv, ή.htmlTable, ή.jsonlCSV1, ή.xhtml, ...):
-&lt;br&gt; &lt; a href=\"&jsonQueryUrl;\"&gt;&jsonQueryUrl;&lt;/a&gt;
-&lt;br&gt;Παίρνουμε ένα URL που ένα πρόγραμμα υπολογιστή ήJavaΣενάριο σενάριο μπορεί να χρησιμοποιηθεί για να πάρει το ίδιο
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Αλλάζοντας την επέκταση αρχείου στο URL από .html σε .json  (ή .csv, ή .htmlTable , ή .jsonlCSV1 , ή .xhtml , ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> Έχουμε ένα URL που ένα πρόγραμμα υπολογιστή ή Java Σενάριο σενάριο μπορεί να χρησιμοποιηθεί για να πάρει το ίδιο
 πληροφορίες σε μια πιο φιλική προς τον υπολογιστή μορφή προγράμματος, όπως
-&lt; a el=\"help\" href=\"https://www..json.org/\"&gt; JSON
-&externalLinkHtml;&lt;/a&gt;.
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> .
 
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"BuildThings\" href=\"#BuildThings\" rem=\"bookmark\"&gt; Κατασκευή Πράγματα στην κορυφήERDDAP&lt;/a&gt; &lt;/h3&gt;
-Υπάρχουν πολλά χαρακτηριστικά στοERDDAPπου μπορεί να χρησιμοποιηθεί από προγράμματα υπολογιστών ή σενάρια
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Κατασκευή Πράγματα στην κορυφή ERDDAP  </a>  </h3> Υπάρχουν πολλά χαρακτηριστικά στο ERDDAP που μπορεί να χρησιμοποιηθεί από προγράμματα υπολογιστών ή σενάρια
 που γράφεις. Μπορείτε να τα χρησιμοποιήσετε για να δημιουργήσετε άλλες εφαρμογές web ή web υπηρεσίες στο
-κορυφήERDDAP, κάνονταςERDDAPΚάνε την περισσότερη δουλειά&#33;
-Έτσι, αν έχετε μια ιδέα για μια καλύτερη διασύνδεση με τα δεδομένα πουERDDAPεξυπηρετεί ή ένα διαδίκτυο
+κορυφή ERDDAP , κάνοντας ERDDAP Κάνε την περισσότερη δουλειά&#33;
+Έτσι, αν έχετε μια ιδέα για μια καλύτερη διασύνδεση με τα δεδομένα που ERDDAP εξυπηρετεί ή ένα διαδίκτυο
 σελίδα που χρειάζεται έναν εύκολο τρόπο πρόσβασης στα δεδομένα, σας ενθαρρύνουμε να χτίσετε το δικό σας
-web application, web service, ή ιστοσελίδα και χρήσηERDDAPως θεμέλιο.
-Το σύστημά σας μπορεί να πάρει δεδομένα, γραφήματα, και άλλες πληροφορίες απόERDΣERDDAPή από
-ΈτεραERDDAPεγκαταστάσεις, ή μπορείτε
-&lt;-- setup πάντα από erddap της ακτοφυλακής --&gt;
-&lt; a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/deploy-install\"&gt;set Πάνω στο δικό σουERDDAPεξυπηρετητής &lt;/a&gt;,
+web application, web service, ή ιστοσελίδα και χρήση ERDDAP ως θεμέλιο.
+Το σύστημά σας μπορεί να πάρει δεδομένα, γραφήματα, και άλλες πληροφορίες από ERD Σ ERDDAP ή από
+Έτερα ERDDAP εγκαταστάσεις, ή μπορείτε
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Στήσε το δικό σου. ERDDAP εξυπηρετητής </a> ,
 που μπορεί να είναι
 δημόσια προσβάσιμη ή απλώς ιδιωτική πρόσβαση.
 
 
-&lt;h3&gt; &lt; a class=\"selfLink\" id=\"ζητεί\" href=\"#ζητεί\" el=\"bookmark\"&gt;RESTfulΑιτήματα URL &lt;/a&gt; &lt;/h3&gt;
-Αιτήματα για πληροφορίες χρήστη-interface απόERDDAP(για παράδειγμα, αποτελέσματα αναζήτησης)
-χρησιμοποιεί το καθολικό πρότυπο του διαδικτύου για αιτήματα:
-&lt;a rl=\"help\" href=\"https://en.wikipedia.org/wiki/Uniform_Resource_Locator\"&gt;URLs
-&externalLinkHtml;&lt;/a&gt;
-αποστέλλεται μέσω
-&lt;a href=\"https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3\"&gt;HTTP GET&externalLinkHtml;&lt;/a&gt;.
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful Αιτήματα URL </a>  </h3> Αιτήματα για πληροφορίες χρήστη-interface από ERDDAP  (για παράδειγμα, τα αποτελέσματα αναζήτησης) χρησιμοποιεί το καθολικό πρότυπο του διαδικτύου για αιτήματα:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URLs
+ &externalLinkHtml;  </a> αποστέλλεται μέσω
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Αυτός είναι ο ίδιος μηχανισμός που χρησιμοποιεί ο περιηγητής σας όταν συμπληρώνετε μια φόρμα
-σε μια ιστοσελίδα και κάντε κλικ στο<kbd>Submit</kbd>Για χρήσηHTTP GET, δημιουργείτε ένα ειδικά διαμορφωμένο URL (που μπορεί να περιλαμβάνει ένα ερώτημα)
-και να το στείλει μεHTTP GET. Μπορείτε να σχηματίσετε αυτές τις διευθύνσεις URL με το χέρι και να τις εισάγετε στο
+σε μια ιστοσελίδα και κάντε κλικ στο <kbd> Υποβολή </kbd> Για χρήση HTTP GET , δημιουργείτε ένα ειδικά διαμορφωμένο URL (που μπορεί να περιλαμβάνει ένα ερώτημα) και να το στείλει με HTTP GET . Μπορείτε να σχηματίσετε αυτές τις διευθύνσεις URL με το χέρι και να τις εισάγετε στο
 το πεδίο κειμένου διευθύνσεων του περιηγητή σας (για παράδειγμα,
-&lt;br&gt; &lt; a href=\"&jsonQueryUrl;\"&gt;&jsonQueryUrl;&lt;/a&gt;)
-&lt;br&gt;Ή, μπορείτε να γράψετε ένα πρόγραμμα υπολογιστή ή web page script για να δημιουργήσετε ένα URL, στείλτε το,
-και να πάρει την απάντηση. URL μέσωHTTP GETεπιλέχθηκαν επειδή
-&lt; ul&gt;
-&lt;li&gt; Είναι απλά στη χρήση.
-&lt;li&gt; Δουλεύουν καλά.
-&lt;li&gt; Υποστηρίζονται καθολικά (σε προγράμματα περιήγησης, γλώσσες υπολογιστών, λειτουργικό σύστημα
-εργαλεία κ.λπ.).
-&lt;li&gt; Είναι ένα θεμέλιο
-&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Representational_State_Transfer\"&gt; Εκπρόσωπος Κρατική μεταφορά (REST)
-&externalLinkHtml;&lt;/a&gt; και
-&lt;a rl=\"help\" href=\"https://www.crummy.com/writing/ (στα Αγγλικά).RESTful-Web-Υπηρεσίες\"&gt;Πηγή προσανατολισμένη αρχιτεκτονική (ROA)
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt; Διευκολύνουν τη χρήση του World Wide Web ως μια μεγάλη κατανεμημένη εφαρμογή,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Ή, μπορείτε να γράψετε ένα πρόγραμμα υπολογιστή ή web page script για να δημιουργήσετε ένα URL, να το στείλετε,
+και να πάρει την απάντηση. URL μέσω HTTP GET επιλέχθηκαν επειδή
+ <ul>  <li> Είναι απλά στη χρήση.
+ <li> Δουλεύουν καλά.
+ <li> Υποστηρίζονται καθολικά. (σε περιηγητές, γλώσσες υπολογιστών, λειτουργικό σύστημα
+εργαλεία κ.λπ.) .
+ <li> Είναι ένα θεμέλιο
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Μεταφορά από το κράτος εκπροσώπησης ( REST )  &externalLinkHtml;  </a> και
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Αρχιτεκτονική με προσανατολισμό τους πόρους ( ROA )  &externalLinkHtml;  </a>  <li> Διευκολύνουν τη χρήση του World Wide Web ως μια μεγάλη κατανεμημένη εφαρμογή,
 για παράδειγμα μέσω
-&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\"&gt;mashups&externalLinkHtml;&lt;/a&gt;
-&lt; a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Ajax_%28programming%29\"&gt;AJAXαιτήσεις
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt; Είναι &lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Stateless_protocol\"&gt;Ακρατείς
-&externalLinkHtml;&lt;/a&gt;
-Όπως είναιERDDAP, που κάνει το σύστημα απλούστερο.
-&lt;li&gt; Ένα URL ορίζει πλήρως ένα δεδομένο αίτημα, ώστε να μπορείτε να το σελιδοδείκτη στο πρόγραμμα περιήγησης σας,
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX αιτήσεις
+ &externalLinkHtml;  </a>  <li> Είναι. <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Ανιθαγενείς
+ &externalLinkHtml;  </a> Όπως είναι ERDDAP , που κάνει το σύστημα απλούστερο.
+ <li> Ένα URL ορίζει πλήρως ένα δεδομένο αίτημα, ώστε να μπορείτε να το σελιδοδείκτη στο πρόγραμμα περιήγησης σας,
 γράψτε το στις σημειώσεις σας, στείλτε το σε ένα φίλο, κλπ.
-&lt;/ul&gt;
-
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark\"&gt; Ποσοστό κωδικοποίησης &lt;/a&gt;&lt;/h3&gt;
-Σε URL, ορισμένοι χαρακτήρες δεν επιτρέπονται (για παράδειγμα, κενά) και άλλοι χαρακτήρες
-έχουν ειδικές σημασίες (για παράδειγμα, το '&amp;' διαχωρίζει το key=value pairs σε ένα ερώτημα).
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Ποσοστό κωδικοποίησης </a>  </h3> Σε URL, ορισμένοι χαρακτήρες δεν επιτρέπονται (για παράδειγμα, κενά) και άλλοι χαρακτήρες
+έχουν ειδική σημασία (για παράδειγμα, το '&amp?' διαχωρίζει το key=τιμή ζεύγη σε ένα ερώτημα) .
 Όταν συμπληρώνετε μια φόρμα σε μια ιστοσελίδα και κάνετε κλικ στο Υποβολή, ο περιηγητής σας αυτόματα
-&lt; a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;% κωδικοποιεί
-&externalLinkHtml;&lt;/a&gt;
-οι ειδικοί χαρακτήρες στο URL (για παράδειγμα, ο χώρος γίνεται %20), για παράδειγμα,
-&lt;br&gt; &lt; a href=\"&htmlQueryUrlWithSpaces;\"&gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
-&lt;br&gt; Αλλά αν το πρόγραμμα ή το σενάριο του υπολογιστή σας παράγει τις διευθύνσεις URL, πιθανότατα χρειάζεται να κάνει το ποσοστό
-Αυτοκωδικοποίηση. Εάν ναι, τότε πιθανώς όλοι οι χαρακτήρες εκτός του A-Za-z0-9_-&#33;~'()*
-στις τιμές του ερωτήματος (τα μέρη μετά το'='σημάνσεις) πρέπει να κωδικοποιηθούν
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % κωδικοποιήσεων
+ &externalLinkHtml;  </a> οι ειδικοί χαρακτήρες στο URL (για παράδειγμα, ο χώρος γίνεται% 20) , για παράδειγμα,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Αλλά αν το πρόγραμμα ή το σενάριο του υπολογιστή σας παράγει τις διευθύνσεις URL, πιθανότατα χρειάζεται να κάνει το ποσοστό
+Αυτοκωδικοποίηση. Αν ναι, τότε ίσως όλοι οι χαρακτήρες εκτός από το A-Za-z0-9_-&#33;.~ \" () *
+στις τιμές του ερωτήματος (τα μέρη μετά την '=' σημεία) πρέπει να κωδικοποιηθεί
 ως %HH, όπου HH είναι η δεκαεξαδική τιμή του χαρακτήρα, για παράδειγμα, ο χώρος γίνεται %20.
 Οι χαρακτήρες πάνω από #127 πρέπει να μετατραπούν σε UTF-8 bytes, τότε κάθε UTF-8 byte πρέπει να είναι τοις εκατό κωδικοποιημένο
-(ζητήστε βοήθεια από έναν προγραμματιστή). Οι γλώσσες προγραμματισμού έχουν εργαλεία για να το κάνουν αυτό (για παράδειγμα, δείτεJavaΣ
-&lt;a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLENcoder.html\"&gt;java.net.URLEncoder&externalLinkHtml;&lt;/a&gt; καιJavaΣενάρια
-&lt;a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"&gt;encodeURIComponent()&externalLinkHtml;&lt;/a&gt;) και υπάρχουν
-&lt;a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\"&gt; Ιστοί που το ποσοστό κωδικοποιούν/αποκωδικοποιούν για εσάς
-&externalLinkHtml;&lt;/a&gt;
-
-
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\" απαντήσεις\" href=\"# responses\" rel=\"bookmark\"&gt; Ανταπόκριση Τύποι αρχείων &lt;/a&gt; &lt;/h3&gt;
-Αν και οι άνθρωποι που χρησιμοποιούν προγράμματα περιήγησης θέλουν να λάβουν αποτελέσματα χρήστη-interface (για παράδειγμα,
+ (ζητήστε βοήθεια από έναν προγραμματιστή) . Οι γλώσσες προγραμματισμού έχουν εργαλεία για να το κάνουν αυτό (Για παράδειγμα, δείτε: Java Σ
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> και Java Σενάρια
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponent ()  &externalLinkHtml;  </a> ) Και υπάρχουν
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> ιστοσελίδες που το ποσοστό κωδικοποιεί / decode για εσάς
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Τύπος αρχείου απάντησης </a>  </h3> Αν και οι άνθρωποι που χρησιμοποιούν προγράμματα περιήγησης θέλουν να λάβουν αποτελέσματα χρήστη-interface (για παράδειγμα,
 αποτελέσματα αναζήτησης) ως έγγραφα HTML, τα προγράμματα υπολογιστών συχνά προτιμούν να έχουν αποτελέσματα
-απλή, εύκολα αναλυμένη, λιγότερο λεκτική έγγραφα.ERDDAPμπορεί να επιστρέψει τη διεπαφή χρήστη
+απλή, εύκολα αναλυμένη, λιγότερο λεκτική έγγραφα. ERDDAP μπορεί να επιστρέψει τη διεπαφή χρήστη
 αποτελέσματα ως πίνακας δεδομένων σε αυτούς τους κοινούς, φιλικούς προς το πρόγραμμα υπολογιστών, τύπους αρχείων:
-&lt; ul&gt;
-&lt;li&gt;.csv - ένα κόμμα-χωρισμένο πίνακα κειμένου ASCII.
-(&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Comma-separated_values\"&gt;more&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.htmlTable- μια ιστοσελίδα .html με τα δεδομένα σε έναν πίνακα.
-(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\"&gt; περισσότερο&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.itx- ένα αρχείο κειμένου Igor με ένα κύμα για κάθε στήλη δεδομένων.
-(&lt;a rel=\"help\" href=\"https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf\"&gt;more&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.json- ένα αρχείο JSON σαν τραπέζι.
-(&lt;a rel=\"help\" href=\"https://www).json.org/\"&gt; περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt; ή
-&lt; a el=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#json\"&gt;ERDDAP-ειδικές πληροφορίες &lt;/a&gt;)
-&lt;li&gt;.jsonlCSV1- a \"Better than CSV\" JSON Lines αρχείο με τα ονόματα στήλης στην πρώτη γραμμή.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.jsonlCSV- a \"Better than CSV\" JSON Lines αρχείο χωρίς ονόματα στήλης.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.jsonlKVP- ένα αρχείο JSON Lines με τα ζεύγη Key:Value.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.mat- ένα δυαδικό αρχείο MATLAB.
-(&lt;a rel=\"help\" href=\"https://www).mathworks.com/\"&gt; περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.nc- ένα επίπεδο, τραπέζι-όπως,NetCDF-3 δυαδικό αρχείο.
-(&lt;a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/\"&gt;more&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.nccsv- ένα επίπεδο, τραπέζι-όπως,NetCDF- Όπως, αρχείο CSV ASCII.
-(&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-1.20\"&gt;περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.ncΟ Json - ένα αρχείο JSON (NCO-style) με μεταδεδομένα του συνόλου δεδομένων μόνο (παγκόσμια χαρακτηριστικά,
-διαστάσεις, και μεταβλητές με τα χαρακτηριστικά, τον τύπο και το σχήμα τους) και χωρίς τιμές δεδομένων.
-(&lt;a rel=\"help\" href=\"https://nco.sourceforge.net/nco.html#json\"&gt;περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.tsv- έναν πίνακα κειμένου ASCII χωρισμένο σε καρτέλες.
-(&lt;a rl=\"help\" href=\"https://jkorpela.fi/TSV.html\"&gt;περισσότερα&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.xhtml- ένα αρχείο XHTML (XML) με τα δεδομένα σε έναν πίνακα.
-(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\"&gt; περισσότερο&nbsp;Πληροφορίες
-&externalLinkHtml;&lt;/a&gt;)
-&lt;/ul&gt;
-Σε κάθε μορφή πίνακα αποτελεσμάτων (εκτός.jsonlKVP, όπου τα ονόματα στήλης είναι σε κάθε σειρά):
-&lt; ul&gt;
-&lt;li&gt;Κάθε στήλη έχει ένα όνομα στήλης και έναν τύπο πληροφοριών.
-&lt;li&gt;Η πρώτη σειρά του πίνακα έχει τα ονόματα στήλη.
-&lt;li&gt; Οι επόμενες σειρές έχουν τις πληροφορίες που ζητήσατε.
-&lt;/ul&gt;
-&lt; p&gt; Το περιεχόμενο σε αυτούς τους απλούς τύπους αρχείων είναι επίσης ελαφρώς διαφορετικό από το .html
+ <ul>  <li> .csv - ένας κομματικός πίνακας κειμένου ASCII.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - μια ιστοσελίδα .html με τα δεδομένα σε έναν πίνακα.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .itx - ένα αρχείο κειμένου Igor με ένα κύμα για κάθε στήλη δεδομένων.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .json - ένα αρχείο JSON σαν τραπέζι.
+ ( <a rel="help" href="https://www.json.org/"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> ή
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP -ειδικές πληροφορίες </a> )  <li>  .jsonlCSV1 - a \"Better than CSV\" JSON Lines αρχείο με τα ονόματα στήλης στην πρώτη γραμμή.
+ ( <a rel="help" href="https://jsonlines.org/"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - a \"Better than CSV\" JSON Lines αρχείο χωρίς ονόματα στήλης.
+ ( <a rel="help" href="https://jsonlines.org/"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - ένα αρχείο JSON Lines με τα ζεύγη Key:Value.
+ ( <a rel="help" href="https://jsonlines.org/"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .mat - ένα δυαδικό αρχείο MATLAB.
+ ( <a rel="help" href="https://www.mathworks.com/"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .nc - ένα επίπεδο, τραπέζι-όπως, NetCDF -3 δυαδικό αρχείο.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .nccsv - ένα επίπεδο, τραπέζι-όπως, NetCDF - Όπως, αρχείο CSV ASCII.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .nc Ο Json - ένα αρχείο JSON ( NCO - στυλ) μόνο με τα μεταδεδομένα του συνόλου δεδομένων (καθολικά χαρακτηριστικά,
+διαστάσεις και μεταβλητές με τα χαρακτηριστικά, τον τύπο και το σχήμα τους) και όχι τιμές δεδομένων.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .tsv - έναν πίνακα κειμένου ASCII χωρισμένο σε καρτέλες.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  <li>  .xhtml - ένα XHTML (XML) αρχείο με τα δεδομένα σε έναν πίνακα.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> περισσότερο &nbsp; Πληροφορίες
+ &externalLinkHtml;  </a> )  </ul> Σε κάθε μορφή πίνακα αποτελεσμάτων (εκτός .jsonlKVP , όπου τα ονόματα στήλης είναι σε κάθε σειρά) :
+ <ul>  <li> Κάθε στήλη έχει ένα όνομα στήλης και έναν τύπο πληροφοριών.
+ <li> Η πρώτη σειρά του πίνακα έχει τα ονόματα στήλης.
+ <li> Οι επόμενες σειρές έχουν τις πληροφορίες που ζητήσατε.
+ </ul>  <p> Το περιεχόμενο σε αυτούς τους απλούς τύπους αρχείων είναι επίσης ελαφρώς διαφορετικό από το .html
 απάντηση & mdash; είναι σκόπιμα χωρίς οστά έτσι ώστε να είναι ευκολότερο για έναν υπολογιστή
 πρόγραμμα εργασίας.
 
-&lt; p&gt; &lt; a class=\"selfLink\" id=\"DataStructure\" href=\"#DataStructure\" rel=\"bookmark\"&gt;Μια συνεπής δομή δεδομένων για τις απαντήσεις&lt;/a&gt;
-&lt;br&gt;Όλες οι υπηρεσίες διασύνδεσης χρήστη που περιγράφονται σε αυτή τη σελίδα μπορούν να επιστρέψουν έναν πίνακα
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Μια Συνεπής Δομή Δεδομένων για τις Απαντήσεις </a>  <br> Όλες οι υπηρεσίες διασύνδεσης χρήστη που περιγράφονται σε αυτή τη σελίδα μπορούν να επιστρέψουν έναν πίνακα
 δεδομένα σε οποιαδήποτε από τις κοινές μορφές αρχείων που αναφέρονται παραπάνω. Ελπίζω να μπορείς να γράψεις.
 μόνο μία διαδικασία για την ανάλυση ενός πίνακα δεδομένων σε μία από τις μορφές. Τότε μπορείς.
 επαναχρησιμοποιεί αυτή τη διαδικασία για να αναλύσει την απάντηση από οποιαδήποτε από αυτές τις υπηρεσίες. Αυτό
-θα πρέπει να διευκολύνει την αντιμετώπισηERDDAP.
+θα πρέπει να διευκολύνει την αντιμετώπιση ERDDAP .
 
 
-&lt; p&gt; &lt; a class=\" selfLink\" id=\"csvΑποτελέσματα\" href=\"#csvΑποτελέσματα\" rel=\"bookmark\"&gt;.csv&lt;/a&gt; και.tsvΛεπτομέρειες&lt;ul&gt;
-&lt;li&gt; Εάν ένα δεδομένο σε ένα αρχείο .csv έχει εσωτερικά διπλά εισαγωγικά ή κόμματα,ERDDAPακολουθεί την
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> και .tsv Λεπτομέρειες <ul>  <li> Εάν ένα δεδομένο σε ένα αρχείο .csv έχει εσωτερικά διπλά εισαγωγικά ή κόμματα, ERDDAP ακολουθεί την
 .csv προδιαγραφή αυστηρά: βάζει διπλά εισαγωγικά γύρω από το datum και διπλά
 τα εσωτερικά διπλά εισαγωγικά.
-&lt;li&gt;Ειδικούς χαρακτήρες σε ένα .csv ή.tsvαρχείο κωδικοποιούνται όπως
-&lt; a el=\"help\" href=\"https://www..json.org/\"&gt; JSON
-&externalLinkHtml;&lt;/a&gt;
-χαρακτήρες με κωδικό backslash:
- \n (νέα γραμμή),  \\ \\ \\ ), ), ), f f form ), ), ), ), ), car car car car car car car car car car car car  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\  \\ 
-ή με τη σύνταξη του \\u&lt;i&gt;hhh&lt;/i&gt;.
-&lt;/ul&gt;
-
-
-&lt; p&gt; &lt; a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" ret=\" bookmark\"&gt; jsonp&lt;/a&gt;
-&lt;br&gt;Αιτήσεις για.jsonαρχεία μπορεί τώρα να περιλαμβάνει ένα προαιρετικό
-&lt;a href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-γρήγορα/\"&gt;jsonp
-&externalLinkHtml;&lt;/a&gt; αίτημα από
-προσθήκη \"&amp·.jsonp=&lt;i&gt;λειτουργίαName&lt;/i&gt;\" έως το τέλος του ερωτήματος. Βασικά, αυτό λέει
-ERDDAPγια να προσθέσετε \" &lt;i&gt;λειτουργίαName&lt;/i&gt;(\" στην αρχή της απάντησης και \")\" στην
-Τέλος της απάντησης. Ο πρώτος χαρακτήρας της συνάρτησης &lt;i&gt;Name&lt;/i&gt; πρέπει να είναι γράμμα ISO 8859 ή \"_\".
+ <li> Ειδικοί χαρακτήρες σε .csv ή .tsv αρχείο κωδικοποιούνται όπως
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> χαρακτήρες με κωδικό backslash:
+\n (νέα γραμμή) , \\ (backslash) , \\στ (formfeed) , \t (καρτέλα) , \r (επιστροφή μεταφοράς) ή με το - u <i> - Ναι. </i> σύνταξη.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> Τζσονπ. </a>  <br> Αιτήσεις .json αρχεία μπορεί τώρα να περιλαμβάνει ένα προαιρετικό
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> Τζσονπ.
+ &externalLinkHtml;  </a> αίτηση από
+προσθήκη \"&amp· .json p= <i> συνάρτηση Όνομα </i> \" στο τέλος του ερωτήματος. Βασικά, αυτό λέει
+ ERDDAP για να προσθέσετε \" <i> συνάρτηση Όνομα </i>  (\" στην αρχή της απάντησης και) \" στο
+Τέλος της απάντησης. Ο πρώτος χαρακτήρας του <i> συνάρτηση Όνομα </i> πρέπει να είναι γράμμα ISO 8859 ή \"_\".
 Κάθε προαιρετικός μεταγενέστερος χαρακτήρας πρέπει να είναι ένα γράμμα ISO 8859, \"_\", ένα ψηφίο, ή \".\".
 Εάν αρχικά δεν υπήρχε ερώτημα, αφήστε το \"&amp?\" στο ερώτημά σας.
 
 
-&lt; p&gt; griddap καιtabledapΠροσφορά διαφορετικών τύπων αρχείων
-&lt;br&gt;Οι τύποι αρχείων που αναφέρονται παραπάνω είναι τύποι αρχείωνERDDAPμπορεί να χρησιμοποιήσει για να ανταποκριθεί σε
-Τύποι αιτήσεων χρήσης-interface (για παράδειγμα, αιτήσεις αναζήτησης).ERDDAPυποστηρίγματα
-διαφορετικό σύνολο τύπων αρχείων για επιστημονικά δεδομένα (π.χ. δορυφόρος και σημαδούρας)
-Αιτήσεις δεδομένων (βλ.
-&lt; a el=\"help\" href=\"&tErddapUrl;/griddap/documentation.html#fileType\"&gt; griddap&lt;/a&gt; και
-&lt; a el=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#fileType\"&gt;tabledap&lt;/a&gt;
-τεκμηρίωση).
+ <p> griddap και tabledap Προσφορά διαφορετικών τύπων αρχείων
+ <br> Οι τύποι αρχείων που αναφέρονται παραπάνω είναι τύποι αρχείων ERDDAP μπορεί να χρησιμοποιήσει για να ανταποκριθεί σε
+Τύποι αιτημάτων χρήστη-interface (για παράδειγμα, αιτήσεις αναζήτησης) . ERDDAP υποστηρίγματα
+διαφορετικό σύνολο τύπων αρχείων για επιστημονικά δεδομένα (για παράδειγμα, δορυφορική και σημαδούρα
+δεδομένα) αιτήματα (Δείτε το
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> griddap </a> και
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> τεκμηρίωση) .
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;&lt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rem=\"bookmark\"&gt; Πρόσβαση URL γιαERDDAPΥπηρεσίες &lt;/a&gt; &lt;/h3&gt;
-ERDDAPέχει αυτά τα σημεία πρόσβασης URL για προγράμματα υπολογιστών:
-&lt; ul&gt;
-&lt;li&gt; Για να πάρετε τη λίστα με τις κύριες διευθύνσεις URL πρόσβασης πόρων &lt;/strong&gt;, χρησιμοποιήστε
-&lt;br&gt;&plainLinkExamples1;&lt;br&gt;&nbsp;&lt;li&gt; Για να πάρετε την τρέχουσα λίστα των &lt;strong&gt;όλα τα σύνολα δεδομένων&lt;/strong&gt;, χρησιμοποιήστε
-&lt;br&gt;&plainLinkExamples2;&lt;br&gt;&nbsp;&lt; li&gt;Για να πάρετε &lt; strong&gt; metadata&lt;/ strong&gt; για ένα συγκεκριμένο σύνολο δεδομένων
-(ο κατάλογος των μεταβλητών και τα χαρακτηριστικά τους), χρήση
-&lt;br&gt;&tErddapUrl;/info/&lt;i&gt;datasetID&lt;/i&gt;/δείκτης &lt;i&gt;.fileType&lt;/i&gt;
-&lt;br&gt;για παράδειγμα,
-&lt;br&gt;&plainLinkExamples3;&lt;br&gt;&nbsp;&lt;li&gt; Για να πάρετε τα αποτελέσματα της &lt;strong&gt;πλήρες αναζητήσεις κειμένου&lt;/strong&gt; για σύνολα δεδομένων
-(χρησιμοποιείται)"searchFor=wind%20speed"ως παράδειγμα), χρήση
-&lt;br&gt;&plainLinkExamples4;&lt;br&gt;(Το πρόγραμμα ή το σενάριο μπορεί να χρειαστεί να
-&lt; a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;%-encode
-&externalLinkHtml;&lt;/a&gt;
-η τιμή στο ερώτημα.)
-&lt;br&gt;&nbsp;&lt;br&gt;Ή, χρησιμοποιήστε το
-&lt; a rem=\" bookmark\" href=\"&tErddapUrl;/opensearch1.1/index.html\"&gt;OpenSearch1.1&lt;/a&gt;
-πρότυπο για να κάνετε μια πλήρη αναζήτηση κειμένου για σύνολα δεδομένων.
-&lt;br&gt;&nbsp;&lt;li&gt; Για να πάρετε τα αποτελέσματα της &lt;strong&gt;προηγμένες αναζητήσεις&lt;/strong&gt; για σύνολα δεδομένων
-(χρησιμοποιείται)"searchFor=wind%20speed"ως παράδειγμα), χρήση
-&lt;br&gt;&plainLinkExamples5;&lt;br&gt;Αλλά πειραματιστείτε με
-&lt; a href=\"&tErddapUrl;/search/advanced.html;&encodedDefaultPIppQuery;\"&gt;&advancedSearch;&lt;/a&gt;
-σε έναν περιηγητή για να υπολογίσει όλες τις προαιρετικές παραμέτρους.
-(Το πρόγραμμα ή το σενάριο σας μπορεί να χρειαστεί να
-&lt; a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;%-encode
-&externalLinkHtml;&lt;/a&gt;
-η τιμή στο ερώτημα.)
-&lt;br&gt;&nbsp;&lt;li&gt; Για να πάρετε τη λίστα του &lt;strong&gt;categoryAttributes&lt;/δυνατός&gt;
-(π.χ. ίδρυμα,long_name, standard_name), χρήση
-&lt;br&gt;&plainLinkExamples6;&lt;br&gt;&nbsp;&lt;li&gt; Για να πάρετε τη λίστα των &lt;strong&gt;κατηγοριών για μια συγκεκριμένη κατηγορία Χαρακτηριστικά &lt;/δυνατός&gt;
-(χρησιμοποιώντας το πρότυπο_όνομα\" ως παράδειγμα), χρήση
-&lt;br&gt;&plainLinkExamples7;&lt;br&gt;&nbsp;&lt;li&gt; Για να πάρετε τη λίστα των &lt;strong&gt;στοιχείων δεδομένων σε μια συγκεκριμένη κατηγορία&lt;/strong&gt;
-(χρησιμοποιώντας το πρότυπο_name=time\" ως παράδειγμα), χρήση
-&lt;br&gt;&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Πρόσβαση URL για ERDDAP Υπηρεσίες </a>  </h3>  ERDDAP έχει αυτά τα σημεία πρόσβασης URL για προγράμματα υπολογιστών:
+ <ul>  <li> Για να πάρετε τη λίστα του <strong> κύρια URL πρόσβασης πόρων </strong> , χρήση
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Για να πάρετε την τρέχουσα λίστα <strong> όλα τα σύνολα δεδομένων </strong> , χρήση
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Για να πάρει <strong> μεταδεδομένα </strong> για συγκεκριμένο σύνολο δεδομένων
+ (τον κατάλογο των μεταβλητών και των χαρακτηριστικών τους) , χρήση
+ <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /δείκτης <i>  .fileType  </i>  <br> για παράδειγμα,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Για να πάρει τα αποτελέσματα <strong> Πλήρεις αναζητήσεις κειμένου </strong> για σύνολα δεδομένων
+ (χρήση "searchFor=wind%20speed" ως παράδειγμα) , χρήση
+ <br>  &plainLinkExamples4;  <br>  (Το πρόγραμμα ή το σενάριο μπορεί να χρειαστεί να
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> %-κωδικός
+ &externalLinkHtml;  </a> η τιμή στο ερώτημα.)  <br>  &nbsp;  <br> Ή, χρησιμοποιήστε το
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> πρότυπο για να κάνετε μια πλήρη αναζήτηση κειμένου για σύνολα δεδομένων.
+ <br>  &nbsp;  <li> Για να πάρει τα αποτελέσματα <strong> προχωρημένες αναζητήσεις </strong> για σύνολα δεδομένων
+ (χρήση "searchFor=wind%20speed" ως παράδειγμα) , χρήση
+ <br>  &plainLinkExamples5;  <br> Αλλά πειραματίσου με
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> σε έναν περιηγητή για να υπολογίσει όλες τις προαιρετικές παραμέτρους.
+ (Το πρόγραμμα ή το σενάριο μπορεί να χρειαστεί να
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> %-κωδικός
+ &externalLinkHtml;  </a> η τιμή στο ερώτημα.)  <br>  &nbsp;  <li> Για να πάρετε τη λίστα των <strong>  categoryAttributes  </strong>  (για παράδειγμα, το ίδρυμα, long_name , πρότυπο_ όνομα) , χρήση
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Για να πάρετε τη λίστα των <strong> κατηγορίες για μια συγκεκριμένη κατηγορία Χαρακτηριστικά </strong>  (χρησιμοποιώντας το πρότυπο_όνομα- ως παράδειγμα) , χρήση
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Για να πάρετε τη λίστα των <strong> σύνολα δεδομένων σε μια συγκεκριμένη κατηγορία </strong>  (χρησιμοποιώντας το πρότυπο_name=time\" ως παράδειγμα) , χρήση
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

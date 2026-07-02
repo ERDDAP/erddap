@@ -3780,231 +3780,164 @@ A-Za-z0-9_-!.~&#39;()* ছাড়া অন্য সব অক্ষরকে
 <resourceNotFound>সম্পদ পাওয়া যায়নি:</resourceNotFound>
 <restfulWebServices>আরামদায়ক ওয়েব পরিষেবা</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPউভয়:
-চ্যানেল
-&lt;llaba reouta= \"help\"=http://in.gnome.org/wedia.org/wiki/net&gt; একটি ওয়েব অ্যাপ্লিকেশন
-&externalLinkHtml;&lt;username&gt;
-তথ্য, গ্রাফ অথবা তথ্যের জন্য ওয়েব পেজ; একটি ফর্মের মাধ্যমে সেই ফর্ম ব্যবহার করা যাবে (এই ক্ষেত্রে তথ্য, গ্রাফ অথবা তথ্য) ।
-&lt;message&gt;&nbsp;/llayouta real=\"Aps=\"http://en.A.RESTfulওয়েব সার্ভিস
-&externalLinkHtml;&lt;username&gt;
-(এই ক্ষেত্রে, তথ্য, গ্রাফ এবং তথ্য পেতে কম্পিউটার প্রোগ্রাম ব্যবহার করা যাবে) ।
-/ুলুল
-প্রতিERDDAPওয়েব পেজ একটি ফর্ম হিসেবে আপনি ব্রাউজার ব্যবহার করতে পারেন, সেখানে একটি আছে
-সংশ্লিষ্টERDDAPওয়েব সার্ভিসের জন্য ডিজাইন করা হয়েছিল কম্পিউটার এবং স্ক্রিপ্ট ব্যবহারের জন্য সহজ।
+ ERDDAP উভয়:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> একটি ওয়েব অ্যাপ্লিকেশন
+ &externalLinkHtml;  </a> ওয়েব পেজ যা ব্রাউজারের সাহায্যে মানুষ ব্যবহার করতে পারে (এই ক্ষেত্রে, তথ্য তথ্য পেতে, গ্রাফ অথবা তথ্য সংক্রান্ত তথ্য উল্লেখ করুন) . .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> একটিও নয় RESTful ওয়েব সার্ভিস
+ &externalLinkHtml;  </a> অপর একটি URL; যে কম্পিউটার ব্যবহার করতে পারে প্রোগ্রাম (এই ক্ষেত্রে, তথ্য পেতে, গ্রাফ এবং তথ্য সংক্রান্ত তথ্য উল্লেখ করুন) . .
+ </ul> প্রতি ERDDAP ওয়েব পেজ একটি ফর্ম হিসেবে আপনি ব্রাউজার ব্যবহার করতে পারেন, সেখানে একটি আছে
+সংশ্লিষ্ট ERDDAP ওয়েব সার্ভিসের জন্য ডিজাইন করা হয়েছিল কম্পিউটার এবং স্ক্রিপ্ট ব্যবহারের জন্য সহজ।
 উদাহরণস্বরূপ, মজার তথ্যের জন্য মানুষ এই URL ব্যবহার করতে পারেন:
-[&lt;bra n're===&htmlQueryUrl;\"\"&htmlQueryUrl;&lt;username&gt;
-&lt;b&gt;'র দ্বারা উল্লিখিত ফাইলের মধ্যে উপস্থিত এক্সটেনশনের তথ্য পরিবর্তিত হয়েছে.json(অথবা . বা,.htmlTableঅথবা.jsonlCSV1অথবা.xhtml...
-[&lt;bra n're===&jsonQueryUrl;\"\"&jsonQueryUrl;&lt;username&gt;
-&lt;br&gt; URL অথবা কম্পিউটারের সাথে সংযোগ স্থাপন করা হবেJavaস্ক্রিপ্ট ব্যবহারের জন্য ব্যবহারযোগ্য স্ক্রিপ্ট
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> URL থেকে প্রাপ্ত ছবির ধারা পরিবর্তনের জন্য ব্যবহৃত হবে .json  (অথবা বা, .htmlTable অথবা .jsonlCSV1 অথবা .xhtml ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> আমরা এমন একটি URL পাই যা কম্পিউটার বা প্রোগ্রাম Java স্ক্রিপ্ট ব্যবহারের জন্য ব্যবহারযোগ্য স্ক্রিপ্ট
 কম্পিউটার সংক্রান্ত অতিরিক্ত তথ্য যেমন বিন্যাস করুন
-Na==help=\" রূপে ধার্য করা হবে=http://www.example.com.json&lt;org&gt; &lt;jone\\.org&gt;
-&externalLinkHtml;/আরে.
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> . .
 
-&lt;h33a শ্রেণী=\" রূপে চিহ্নিত ব্যবহারকারীর নাম । \"Blilding=\" #Bildhings==\" বিল্ড উপরের বিষয়গুলোERDDAP/ফাইল/file &lt;h3&gt;
-অনেক বৈশিষ্ট্য রয়েছেERDDAPকম্পিউটার প্রোগ্রাম দ্বারা ব্যবহৃত স্ক্রিপ্ট
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> বিল্ড উপরের বিষয়গুলো ERDDAP  </a>  </h3> অনেক বৈশিষ্ট্য রয়েছে ERDDAP কম্পিউটার প্রোগ্রাম দ্বারা ব্যবহৃত স্ক্রিপ্ট
 যে আপনি লিখতে. আপনি আরো ওয়েব অ্যাপ্লিকেশন বা ওয়েব সার্ভিস তৈরি করতে পারেন
-উপরেERDDAPএবং তিনিই সৃষ ্ টি করেন ,ERDDAPবেশিরভাগই কাজ করে&#33;
-সুতরাং আপনার একটি ভাল ইন্টারফেস থাকলে তথ্য দিতে পারেনERDDAPওয়েব ব্রাউজার
+উপরে ERDDAP এবং তিনিই সৃষ ্ টি করেন , ERDDAP বেশিরভাগই কাজ করে&#33;
+সুতরাং আপনার একটি ভাল ইন্টারফেস থাকলে তথ্য দিতে পারেন ERDDAP ওয়েব ব্রাউজার
 এই পেজের জন্য তথ্য পাওয়ার একটি সহজ উপায় দরকার, আমরা আপনাকে উৎসাহিত করছি আপনার নিজের তৈরি করতে
-ওয়েব অ্যাপ্লিকেশন, ওয়েব অ্যাপ্লিকেশন অথবা ওয়েব পেজ ব্যবহার করেERDDAPভিত্তি হিসেবে।
-আপনার সিস্টেম থেকে তথ্য, গ্রাফ এবং অন্যান্য তথ্য পেতে পারেনERD`%s'ERDDAPঅজানা
-অন্যান্যERDDAPইনস্টলেশন, অথবা আপনি করতে পারেন
-আমি... উপকূলওয়াচ থেকে সবসময় সেট করা -&gt;
-Paa rel=help ...\"https http://erradp. ut.https/doc.org/server/server/d-র উৎস-dy-dys-র পাথ/dysepi-র পাথ ব্যবহার করুন আপনার নিজেরERDDAPসার্ভার/ ক্ষেত্র
+ওয়েব অ্যাপ্লিকেশন, ওয়েব অ্যাপ্লিকেশন অথবা ওয়েব পেজ ব্যবহার করে ERDDAP ভিত্তি হিসেবে।
+আপনার সিস্টেম থেকে তথ্য, গ্রাফ এবং অন্যান্য তথ্য পেতে পারেন ERD `%s' ERDDAP অজানা
+অন্যান্য ERDDAP ইনস্টলেশন, অথবা আপনি করতে পারেন
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> আপনার নিজের তৈরি করুন ERDDAP সার্ভার </a> '%s'
 হতে পারে
 সার্বজনীনভাবে ব্যবহারযোগ্য অথবা ব্যক্তিগত সুবিধা।
 
 
-&lt;h3\\a শ্রেণী=\" নিজে লিঙ্ক \"Fol\" ificks=\"=#requerificking=\"RESTfulURL '%s'/ahyp-র অনুরোধ জানানো হয়েছে
-ব্যবহারকারীদের জন্য অনুরোধ করা অনুরোধERDDAP(যেমন, অনুসন্ধানের ফলাফল)
-অনুরোধের জন্য ওয়েবের সার্বজনীন মান প্রয়োগ করা হবে:
-da===help\"https=http://in.gnome.org/wiki/Uniform_source_types
-&externalLinkHtml;&lt;username&gt;
-প্রাপ্ত মাধ্যমে প্রেরিত
-http://www.HTTP GET&externalLinkHtml;/আরে.
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful অনুরোধকৃত URL </a>  </h3> ব্যবহারকারীদের জন্য অনুরোধ করা অনুরোধ ERDDAP  (উদাহরণস্বরূপ, অনুসন্ধানের ফলাফল) অনুরোধের জন্য ওয়েবের সার্বজনীন মান প্রয়োগ করা হবে:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> ইউ- আর- এল
+ &externalLinkHtml;  </a> প্রাপ্ত মাধ্যমে প্রেরিত
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> . .
 ফর্ম পূরণ করার সময় এই পদ্ধতি ব্যবহার করা হবে
-একটি ওয়েব পেজ-এ ক্লিক করুন<kbd>Submit</kbd>ব্যবহারের জন্য চিহ্নিতHTTP GETআপনি একটি বিশেষ গঠিত URL তৈরি করতে পারেন (এ ক্ষেত্রে একটি অনুসন্ধান করতে পারেন)
-তারপর তাতে পাঠাওHTTP GET. . এই URLগুলি হাতে ব্যবহার করে প্রবেশ করা যাবে
-আপনার ব্রাউজারের ই-মেইল ঠিকানা (যেমন, উদাহরণস্বরূপ, ক্রমবিন্যাস)
-[&lt;bra n're===&jsonQueryUrl;\"\"&jsonQueryUrl;/ &lt;username&gt;
-Obr &lt;br &gt;, আপনি একটি URL তৈরি করতে কম্পিউটার প্রোগ্রাম অথবা ওয়েব পেজ লিখতে পারেন, প্রেরণ করতে পারেন
-এবং সাড়া পেতে. %s-র মাধ্যমে URLHTTP GETপ্রেরিত হয়েছে
-চ্যানেল
-ব্যবহৃত &lt;&gt; এগুলো খুব সহজ.
-ব্যবহৃত &lt;&gt; তারা ভালোই কাজ করে।
-ব্যবহৃত &lt;&gt; তারা সার্বজনীনভাবে সমর্থন করে (অন্যান্য ব্রাউজার, কম্পিউটার ভাষা, অপারেটিং সিস্টেম)
-সরঞ্জাম, ইত্যাদি।
-ব্যবহৃত &lt;&gt; তারা ভিত্তির ভিত্তি
-da===help\"http://en. অবস্থা স্থানান্তরRESTআপনি কি মনে করতে পারেন?
-&externalLinkHtml;//এইস্থানে
-\"aa rel=help\"=http://www.RESTful- ওয়েব-পরিসেবা\" &lt;Refered Tefededienters (Me)ROAআপনি কি মনে করতে পারেন?
-&externalLinkHtml;&lt;username&gt;
-ব্যবহৃত &lt;&gt; তারা ওয়ার্ল্ড ওয়াইড ওয়েবকে একটি বড় বিতরণ অ্যাপ্লিকেশন হিসেবে ব্যবহার করে,
+একটি ওয়েব পেজ-এ ক্লিক করুন <kbd> জমা করুন </kbd> ব্যবহারের জন্য চিহ্নিত HTTP GET আপনি একটি নির্দিষ্ট URL তৈরী করেন (অনুসন্ধানের জন্য তথ্য) তারপর তাতে পাঠাও HTTP GET . . এই URLগুলি হাতে ব্যবহার করে প্রবেশ করা যাবে
+আপনার ব্রাউজারের ই-মেইল ঠিকানা লেখার ক্ষেত্র (যেমন,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> অথবা, আপনি একটি URL তৈরি করতে পারেন অথবা একটি কম্পিউটার প্রোগ্রাম তৈরি করতে পারেন
+এবং সাড়া পেতে. %s-র মাধ্যমে URL HTTP GET প্রেরিত হয়েছে
+ <ul>  <li> এগুলো খুব সহজ.
+ <li> তারা ভালোই কাজ করে।
+ <li> তারা সার্বজনীনভাবে সমর্থিত (ব্রাউজার, কম্পিউটার ভাষা, অপারেটিং সিস্টেম পরিচালনা করুন
+সরঞ্জাম, দিশা) . .
+ <li> তারা ভিত্তির ভিত্তি
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> ঘোষণা করার অবস্থা ( REST )  &externalLinkHtml;  </a> এবং
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> বিবিধ বৈশিষ্ট্য ( ROA )  &externalLinkHtml;  </a>  <li> তারা ওয়ার্ল্ড ওয়াইড ওয়েবকে একটি বড় বিতরণ অ্যাপ্লিকেশন হিসেবে ব্যবহার করে,
 উদাহরণের মাধ্যমে
-× rel=help”=http://en.mashups&externalLinkHtml;&lt;username&gt;
-http://en.AJAXঅ্যাপ্লিকেশন
-&externalLinkHtml;&lt;username&gt;
-ব্যবহৃত &lt;&gt; এগুলো হলো &lt;a=l=help\"AN=http://en.A.
-&externalLinkHtml;&lt;username&gt;
-যেমন আছেERDDAP- যেটা পদ্ধতি সহজ করে দেয়।
-ব্যবহৃত &lt;&gt; একটি ইউ- আর- এল একটি নির্ধারিত অনুরোধ সংজ্ঞায়িত করুন, এর ফলে আপনি আপনার ব্রাউজারে এটি বুকমার্ক করতে পারবেন।
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX অ্যাপ্লিকেশন
+ &externalLinkHtml;  </a>  <li> তারা <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> নিক্তি
+ &externalLinkHtml;  </a> যেমন আছে ERDDAP - যেটা পদ্ধতি সহজ করে দেয়।
+ <li> একটি ইউ- আর- এল একটি নির্ধারিত অনুরোধ সংজ্ঞায়িত করুন, এর ফলে আপনি আপনার ব্রাউজারে এটি বুকমার্ক করতে পারবেন।
 আপনার নোটের মধ্যে চিঠি লিখুন, বন্ধু, ইত্যাদি ইমেইল করুন।
-/ুলুল
-
-&lt;h33a শ্রেণী=\" নিজে লিঙ্কের ধরন=\"PECTEdected====PADEDato=\" শতাংশ
-URL-র মধ্যে কয়েকটি অক্ষর (উদাহরণস্বরূপ, শূণ্যস্থান, শূণ্যস্থান ও অন্যান্য অক্ষর ব্যবহার করা যাবে না)
-বিশেষ অর্থ রয়েছে (যেমন, 'amp' ও 'amp';' key=value=)।
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> শতাংশ এনকোডিং </a>  </h3> URL-র মধ্যে কয়েকটি অক্ষরের ব্যবহার অনুমোদিত নয় (যেমন, শূণ্যস্থান) অক্ষর এবং অন্যান্য
+বিশেষ অর্থ আছে (উদাহরণস্বরূপ, 'Wacomamp', একটি অনুসন্ধানের জন্য পৃথক মান নির্ধারণ করুন) . .
 ওয়েব পেজ পূরণ করলে, আপনার ব্রাউজারের মধ্যে স্বয়ংক্রিয়ভাবে তথ্য পূরণ করা হবে
-&lt;a শ্রেণী== N=====help\"=http://en.gnome.org/wiki/Egheepature.org/ INd-র জন্য চিহ্নিত করা হয়
-&externalLinkHtml;&lt;username&gt;
-URL-র মধ্যে বিশেষ অক্ষর (যেমন, শূণ্যস্থান, স্থান %d)
-[&lt;bra n're===&htmlQueryUrlWithSpaces;\"\"&htmlQueryUrlWithSpaces;&lt;username&gt;
-&lt;message&gt; কিন্তু আপনার কম্পিউটার প্রোগ্রাম অথবা স্ক্রিপ্ট দ্বারা ইউ. আর. এল. - কে URL- এর উত্‍পাদক হয়, সম্ভবত এর শতাংশ প্রয়োজন ।
-এনকোডিং স্বয়ং এনকোডিং এর ফলে, A-Z_Za-z0-9-9_&#33;
-অনুসন্ধানের মান'='চিহ্নসূচক লিংক হওয়া আবশ্যক
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> এনকোড করা প্যাকেট
+ &externalLinkHtml;  </a> URL'এ বিশেষ অক্ষর (উদাহরণস্বরূপ, জায়গা হয়ে গেলে ২০২০) যেমন,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> কিন্তু আপনার কম্পিউটার প্রোগ্রাম অথবা স্ক্রিপ্ট দ্বারা ইউ. আর. এল. - কে URL- এর উত্‍পাদক হয়, সম্ভবত এর শতাংশ প্রয়োজন ।
+এনকোডিং স্বয়ং এনকোডিং যদি, তাহলে A-Z_Z0-9-9_&#33; 'আ' () *
+অনুসন্ধানের মান (পরে '=' চিহ্ন) এনকোড করা আবশ্যক
 %H, %H-র মান %H-র মধ্যে রূপে %H-র দুটি সংখ্যা উপস্থিত রয়েছে, উদাহরণস্বরূপ, %d অক্ষর %d-র পরিবর্তে বিভাজন করা হয়।
 উপরের ১১২৭ সালে অক্ষরবিশিষ্ট হওয়া আবশ্যক, তারপর প্রতিটি UTF-8 বাইটের মধ্যে অন্তর্ভুক্ত করা আবশ্যক
-( সাহায্যের জন্য প্রোগ্রামারকে জিজ্ঞাসা করুন ।) প্রোগ্রামিং ভাষার বিভিন্ন সরঞ্জাম (যেমন, দেখুন)Java`%s'
-http://www.java.net.URLEncoder&externalLinkHtml;//এইস্থানেJavaস্ক্রিপ্ট
-× real=Aplay=\" “http://www.Javaস্ক্রিপ্ট/ Global Catalog_Object_Uns এনট্রির অংশencodeURIComponent()&externalLinkHtml;/ &lt;a&gt; ও এইখানে
-&lt;a শ্রেণী=========help= http://www.gnome.com=http://www.example.com\" - এ প্রাপ্ত অংশ হিসেবে ব্যবহার করা হয়
-&externalLinkHtml;&lt;username&gt;
-
-
-Qh33a ক্লাস=\" নিজে \"ect\" আইডি=respon==\"=respons=\" রেসপন্স ফাইল ধরন
-যদিও ব্রাউজার ব্যবহার করে মানুষ ব্যবহারকারী দ্বারা নিয়ন্ত্রিত ফলাফল পেতে চায় (যেমন, ধরুন)
-বিভিন্ন ফলাফলের জন্য HTML নথিপত্র, কম্পিউটার প্রোগ্রাম দ্বারা প্রায়ই ফলাফল প্রাপ্ত হলে অনুসন্ধানের ফলাফল দেখা দেয়
-সহজে পার্স করা, সহজে পার্স করা হবে, কম কায়েম ডকুমেন্ট।ERDDAPব্যবহারকারীর দ্বারা ক্রমবিন্যাস করতে ব্যর্থ
+ (একটি প্রোগ্রামার জিজ্ঞাসা) . . প্রোগ্রামিং ভাষা দ্বারা এই কাজ করার জন্য বিভিন্ন সরঞ্জাম (যেমন, দেখুন Java `%s'
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> এবং Java স্ক্রিপ্ট
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> ভ্রনকো বিনিময় ()  &externalLinkHtml;  </a> ) এবং সেখানে
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> যে সমস্ত ওয়েবসাইট আপনার জন্য এনকোড করা হবে সেগুলি
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> প্রাপ্ত ফাইলের ধরন </a>  </h3> যদিও ব্রাউজার ব্যবহার করে মানুষ ব্যবহারকারী দ্বারা গ্রহণ করতে চায় (যেমন,
+অনুসন্ধানের ফলাফল) HTML ডকুমেন্ট অনুযায়ী, কম্পিউটার প্রোগ্রাম দ্বারা প্রায়ই ফলাফল পাওয়া যায়
+সহজে পার্স করা, সহজে পার্স করা হবে, কম কায়েম ডকুমেন্ট। ERDDAP ব্যবহারকারীর দ্বারা ক্রমবিন্যাস করতে ব্যর্থ
 এই কম্পিউটারে হওয়া তথ্যের টেবিলের ভিত্তি হিসাবে কম্পিউটার প্রোগ্রাম আরম্ভ করা হবে:
-চ্যানেল
-ASCII টেক্সট টেবিল।
-( &lt;a l==help\"=http://en.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.htmlTable- টেবিলের মধ্যে তথ্য সহ একটি ওয়েব পেজ।
-( &lt;a l=help] http://www. আরও&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.itx- প্রতিটি কলামের জন্য একটি তরঙ্গ লিখনযোগ্য টেক্সট ফাইল।
-(@aa rever=\"Al=help\"https http://www.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.json- টেবিলের মত JSON ফাইল.
-(Sa==Al=\"Aps=http://http://www..json..org/মোর&nbsp;তথ্য
-&externalLinkHtml;&lt; অথবা/বা
-&lt;al==help\" ফ্ল্যাগে&tErddapUrl;/tabledap/tmp/#joon\"ERDDAP- সুনির্দিষ্ট তথ্য &lt;/&gt;
-ব্যবহৃত &lt;&gt;.jsonlCSV1- লাইনের প্রথম লাইনে \"বিড়াল\" -\" -এর একটি \"বিড়াল লাইন নম্বর.
-( &lt;a l / l=help\"A=http://js.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.jsonlCSV- \"অ্যাডার্ন লাইন\" নামক একটি ফাইলগুলির মধ্যে কোনো কলাম উপস্থিত নেই।
-( &lt;a l / l=help\"A=http://js.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.jsonlKVP- কী মানের মান লেখার জন্য JSON লাইন ফাইল।
-( &lt;a l / l=help\"A=http://js.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.mat- এমটিএলএ বাইনারি ফাইল.
-(Sa==Al=\"Aps=http://http://www..mathwors. com/ আরেকটা&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.nc- ফ্ল্যাট, টেবিলের মত,NetCDF-৩ বাইনারি ফাইল।
-( &lt;a l==help\"Aplay=\"http://www. data. data.com/http://www.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.nccsv- ফ্ল্যাট, টেবিলের মত,NetCDF- যেমন, ASCII CS ফাইল.
-(\"a l=\" real=\"Aps=\"http://radut. us.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.nc& উপরে জেসন - একটি JSON ফাইল (ফাইল)NCO- ডাটা সেট- আপ সহ (শুধুমাত্র সতি বৈশিষ্ট্য সহ)
-গুরুত্বের মাত্রা, তাদের বৈশিষ্ট্য, ধরন এবং আকৃতি দ্বারা নির্ধারিত হয় না। কোনো মান নির্ধারণ করা যাবে না।
-( &lt;a l==\"  কাজ করুন\"=http://t.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.tsv- ASCII টেক্সট টেবিল।
-( &lt;a l==help\"=\"http://jokopl.&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-ব্যবহৃত &lt;&gt;.xhtml- টেবিলের মধ্যে তথ্য সহ একটি XHTML (XML) ফাইল।
-( &lt;a l=help] http://www. আরও&nbsp;তথ্য
-&externalLinkHtml;/ &lt;username&gt;
-/ুলুল
-প্রতিটি ফলাফলের টেবিলের বিন্যাস (যদি না হয়).jsonlKVPপ্রতিটি সারির নাম অনুসারে:
-চ্যানেল
-কলামের মধ্যে একটি কলাম নির্বাচন করুন।
-টেবিলের প্রথম সারির শিরোনাম
-ব্যবহৃত &lt;&gt; পরের সারি... ...আপনি অনুরোধ করেছিলেন.
-/ুলুল
-&lt;name&gt; এই সাধারণ ফাইলটিতে কিছু লেখা আছে যেগুলো ডিজিট থেকে একটু আলাদা।
+ <ul>  <li> ASCII টেক্সট টেবিল।
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - টেবিলের মধ্যে তথ্য সহ একটি ওয়েব পেজ।
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .itx - প্রতিটি কলামের জন্য একটি তরঙ্গ লিখনযোগ্য টেক্সট ফাইল।
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .json - টেবিলের মত JSON ফাইল.
+ ( <a rel="help" href="https://www.json.org/"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> অথবা
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - নির্দিষ্ট তথ্য </a> )  <li>  .jsonlCSV1 - লাইনের প্রথম লাইনে \"বিড়াল\" -\" -এর একটি \"বিড়াল লাইন নম্বর.
+ ( <a rel="help" href="https://jsonlines.org/"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"অ্যাডার্ন লাইন\" নামক একটি ফাইলগুলির মধ্যে কোনো কলাম উপস্থিত নেই।
+ ( <a rel="help" href="https://jsonlines.org/"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - কী মানের মান লেখার জন্য JSON লাইন ফাইল।
+ ( <a rel="help" href="https://jsonlines.org/"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .mat - এমটিএলএ বাইনারি ফাইল.
+ ( <a rel="help" href="https://www.mathworks.com/"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .nc - ফ্ল্যাট, টেবিলের মত, NetCDF -৩ বাইনারি ফাইল।
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .nccsv - ফ্ল্যাট, টেবিলের মত, NetCDF - যেমন, ASCII CS ফাইল.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .nc & উপরে জেসন - একটি JSON ফাইল ( NCO - স্টাইল) তথ্য বিশিষ্ট মিটা-ডাটা সহ (গ্লোবাল বৈশিষ্ট্য,
+গুরুত্বের মাত্রা, তাদের বৈশিষ্ট্য, ধরন এবং আকৃতি) এবং কোন তথ্য নেই।
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .tsv - ASCII টেক্সট টেবিল।
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  <li>  .xhtml - এক্স.এম.এল. (XML) টেবিলের মধ্যে উপস্থিত তথ্য বিশিষ্ট ফাইলটি সংরক্ষণ করা হবে।
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> আরও &nbsp; তথ্য
+ &externalLinkHtml;  </a> )  </ul> প্রতি ফলাফলের টেবিল (শুধুমাত্র .jsonlKVP এবং যারা বামদিকে , কত হতভাগা তারা ।) :
+ <ul>  <li> প্রতিটি কলামের মধ্যে একটি কলাম ও কলামের নাম উল্লেখ করা আবশ্যক।
+ <li> টেবিলের সারির শিরোনাম
+ <li> পরের সারি... ...আপনি অনুরোধ করেছিলেন.
+ </ul>  <p> এই সাধারণ ফাইলটিতে কিছু লেখা আছে যেগুলো ডিজিট থেকে একটু আলাদা।
 সাড়া ও দান; ইচ্ছে করে খালি হাতে রাখা, যাতে কম্পিউটারের জন্য সহজ হয়
 কাজ করার জন্য.
 
-&lt;Paa name=\"= নিজের আই. ডি. আই. \"Data\"=Data Stuflented=====\" data-র মাধ্যমে উপলব্ধ করা হয়
-এই পাতায় বর্ণনাকৃত ব্যবহারকারী - র ব্যবহারকৃত সার্ভিসের সকল তথ্য প্রত্যাবর্তন করা হবে
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> প্রতিক্রিয়ার জন্য একটি কনস্টাইলেশন ডাটা কাঠামো </a>  <br> ব্যবহারকারীর দ্বারা নির্ধারিত সকল পরিসেবা এই পাতার মধ্যে প্রত্যাবর্তন করা যাবে
 উপরের যে কোনো সাধারণ বিন্যাসের তালিকায় অন্তর্ভুক্ত তথ্যের তালিকা । আশা করি, আপনি লিখতে পারেন
 একটি বিন্যাসের বিন্যাসে তথ্য দিতে শুধুমাত্র একটি প্রক্রিয়া ব্যবহার করুন। তারপর আপনি পারেন
 এই প্রক্রিয়া থেকে সাড়া দেয়ার জন্য। এই
-এটা মোকাবেলা করা সহজERDDAP. .
+এটা মোকাবেলা করা সহজ ERDDAP . .
 
 
-&lt;pacaa শ্রেণী= \"\"=link\"=csv=\"=csv==#csvseiss==\" দ্বারা চিহ্নিত মান পুনরায় নির্ধারণ করা হয়। csvs=&lt;port=&lt;channel&gt; এবং &lt;csv&gt;.tsvবিবরণ
-ব্যবহৃত &lt;&gt; যদি কোন csv ফাইলে একটি csv ফাইলে দ্বৈত শব্দ রয়েছে, তাহলে তা লিখে নিন,ERDDAPঅনুসরণ করুন
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> এবং .tsv বিবরণ <ul>  <li> যদি কোন csv ফাইলে একটি csv ফাইলে দ্বৈত শব্দ রয়েছে, তাহলে তা লিখে নিন, ERDDAP অনুসরণ করুন
 csv-এর সুনির্দিষ্ট বর্ণনা কঠোরভাবে: এটি Datm এবং দ্বিগুণের দু'টি উদ্ধৃতি উল্লেখ করে
 অভ্যন্তরীণ উদ্ধৃতি দ্বৈত।
-&lt;llipper -এর মধ্যে mped অক্ষর csv অথবা .csv-এ উপস্থিত.tsvফাইলের নামের অনুরূপ
-Na==help=\" রূপে ধার্য করা হবে=http://www.example.com.json&lt;org&gt; &lt;jone\\.org&gt;
-&externalLinkHtml;&lt;username&gt;
-ব্যাক- ট্রেস- এর কোড:
-\\ t\\ t (নতুন লাইন), \\HON (ব্যাকলি), half (হাইল), \tt (তাপ), &lt;artz)
-অথবা &lt;&lt;u&gt;-এর সাথে &lt;&lt;i\\-\\&gt; ব্যবহার করুন।
-/ুলুল
-
-
-/Paa ক্লাস=\" নিজে \"Jodect\"=jonp=======#jjonp= rel=\"
-&lt;b&gt; .......... প্লেয়ারের জন্য.jsonবর্তমানে একটি ঐচ্ছিক ফাইল বর্তমানে উপস্থিত রয়েছে
-http://na. com/২০০৯/jp/nonp/\"#jjp
-&externalLinkHtml;//এই ক্ষেত্রে অনুরোধ করা হয়েছে
-এর সাথে যোগ করা হয়েছে “এবং”;.jsonp= &lt;&lt;i&gt;[&lt;i&gt;] অনুসন্ধানের সমাপ্তির জন্য। মূলত এটা বলে
-ERDDAPপ্রতিক্রিয়া এবং \"spi\" এর শুরু
-সাড়ার শেষ। &lt;i&gt;-এর প্রথম অক্ষর হতে পারে একটি ISO 681 অক্ষর অথবা \"_O\" হতে হবে।
+ <li> যেকোনো অক্ষরের মধ্যে একটি বিশেষ অক্ষর .tsv ফাইলের নামের অনুরূপ
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> ব্যাক- ট্রেস- এর কোড:
+% 1 সেকেন্ড (নতুন পংক্তি) %2$s-এ (ব্যাকগ্রাউন্ড) ডিস্‌প্লে (ফর্ম) ডিস্‌প্লে (ট্যাব) ডিস্‌প্লে (গাড়ি ফিরে এসেছে) অথবা \\ t <i> ও'হ </i> বাক্যরীতি.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> জসনপ </a>  <br> অনুরোধ .json বর্তমানে একটি ঐচ্ছিক ফাইল বর্তমানে উপস্থিত রয়েছে
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> জসনপ
+ &externalLinkHtml;  </a> অনুরোধ দ্বারা
+এর সাথে যোগ করা হয়েছে “এবং”; .json p= <i> ফাংশন নাম </i> অনুসন্ধানের সমাপ্তি মূলত এটা বলে
+ ERDDAP যোগ করতে <i> ফাংশন নাম </i>  (\"আর এর শুরু,) \"যে,
+সাড়ার শেষ। অক্ষরের প্রথম অক্ষর <i> ফাংশন নাম </i> হতে পারে একটি ISO 681 অক্ষর অথবা \"_O\" হতে হবে।
 প্রতিটি ঐচ্ছিক অক্ষর হতে হবে একটি ISO864 অক্ষর, \"\" অথবা \"eb\"।
 যদি কোন অনুসন্ধান না পাওয়া যায়, তাহলে \"এবং অনুসন্ধান\" ছেড়ে দিন।
 
 
-&lt;propded এবং wavptabledapফাইল টাইপ তৈরি করো
-ফাইল তালিকাভুক্ত করা হয়ERDDAPসাড়া দেওয়ার জন্য ব্যবহার করা যেতে পারে
-ব্যবহারকারী দ্বারা নির্ধারিত অনুরোধের ধরন (যেমন, অনুসন্ধানের জন্য)।ERDDAPসমর্থনের ব্যবস্থা
-বৈজ্ঞানিক উপাত্তের জন্য একটি স্বতন্ত্র ধরনের ফাইল টাইপ (যেমন, স্যাটেলাইট ও পয়:
-তথ্য অনুরোধ (ফাইল দেখুন)
-&lt;al==help\" ফ্ল্যাগে&tErddapUrl;/গ্রিডালী/tmp/process.xml &lt;file&gt;
-&lt;al==help\" ফ্ল্যাগে&tErddapUrl;/tabledap/tmp/#ফাইল ধরনtabledap&lt;username&gt;
-ডকুমেন্টেশন।
+ <p> উন্নত এবং দূর tabledap ফাইল টাইপ তৈরি করো
+ <br> ফাইলের ধরনটি উপরের ফাইলের ধরন ERDDAP সাড়া দেওয়ার জন্য ব্যবহার করা যেতে পারে
+ব্যবহারকারী দ্বারা নির্ধারিত অনুরোধের ধরন (উদাহরণস্বরূপ, অনুসন্ধানের অনুরোধ) . . ERDDAP সমর্থনের ব্যবস্থা
+বৈজ্ঞানিক তথ্যের জন্য একটি স্বতন্ত্র ফাইল টাইপ করুন (যেমন, স্যাটেলাইট এবং রো
+তথ্য) আবেদন (দেখ
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> ধ্রুপদী </a> এবং
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> নথিপত্র) . .
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h33a শ্রেণী=\" রূপে চিহ্নিত ব্যবহারকারীর নাম বিশিষ্ট অবশ ্ যই= \"layspecs======#scsesessives=\" ইউ- আর- এল- এর জন্য ইউ- আর- এলERDDAP‘%s সার্ভিস/@ option: check
-ERDDAPকম্পিউটার প্রোগ্রাম ব্যবহারের জন্য এই URL-টি উপস্থিত রয়েছে:
-চ্যানেল
-ব্যবহৃত &lt;&gt; &lt;স্ট্রং&gt; রিসোর্সের তালিকা প্রাপ্ত করতে ব্যবহৃত আবশ্যক
-&lt;message&gt;&plainLinkExamples1;&lt;message&gt;&nbsp;ব্যবহৃত &lt;&gt; &lt;setting&gt;-এর বর্তমান তালিকা পেতে/গুলি ব্যবহার করুন
-&lt;message&gt;&plainLinkExamples2;&lt;message&gt;&nbsp;কোনো সুনির্দিষ্ট তথ্য সেট করার জন্য &lt; গোনাহ&gt; &lt;hat\t\\ t\t সংক্রান্ত বৈশিষ্ট্য ধার্য করুন
-( ভেরিয়েবল এবং তাদের বৈশিষ্ট্যের তালিকা, ব্যবহার করুন)
-&lt;message&gt;&tErddapUrl;/info/@&gt;datasetID&lt;i&gt; &lt;index&gt;.fileType&lt;i&gt;
-&lt;brary&gt; উদাহরণ স্বরূপ,
-&lt;message&gt;&plainLinkExamples3;&lt;message&gt;&nbsp;ব্যবহৃত &lt;&gt; &lt;text&gt; দীর্ঘ মাপের ফলাফল পেতে/ &lt;settand_property&gt; হওয়া আবশ্যক
-(কাছে)"searchFor=wind%20speed"উদাহরণ হিসেবে, উদাহরণ হিসেবে
-&lt;message&gt;&plainLinkExamples4;'%s' নামক কোনো প্রোগ্রাম অথবা স্ক্রিপ্ট উপস্থিত থাকা আবশ্যক
-&lt;a শ্রেণী========help\"= http://en.gnome.org/wiki/Egnal-interni-in-in-interin-intern
-&externalLinkHtml;&lt;username&gt;
-অনুসন্ধানের মধ্যে একটি মান লিখুন।
-&lt;message&gt;&nbsp;&lt;br&gt;, ব্যবহার করা হয়
-&lt;al_rel=bero=====&tErddapUrl;/search/উইন্ডোটি ১.১/index দেখুন (_S)OpenSearch1.1 &lt;app&gt;
-তথ্যের জন্য সম্পূর্ণ টেক্সট অনুসন্ধানের জন্য পংক্তি লিখুন ।
-&lt;message&gt;&nbsp;ব্যবহৃত &lt;&gt; &lt;uttra&gt; এর সম্ভাব্য ফলাফল পেতে/time_properties - এ অনুসন্ধান করুন
-(কাছে)"searchFor=wind%20speed"উদাহরণ হিসেবে, উদাহরণ হিসেবে
-&lt;message&gt;&plainLinkExamples5;&lt;br&gt; কিন্তু সঙ্গে পরীক্ষা করা
-&lt;a===&tErddapUrl;/search/সাদা/সাদা?&encodedDefaultPIppQuery;\"\"&advancedSearch;&lt;username&gt;
-ঐচ্ছিক পরামিতির সকল পরামিতি পাওয়ার জন্য একটি ব্রাউজারে বের করুন।
-(আপনার প্রোগ্রাম বা স্ক্রিপ্ট হতে হবে)
-&lt;a শ্রেণী========help\"= http://en.gnome.org/wiki/Egnal-interni-in-in-interin-intern
-&externalLinkHtml;&lt;username&gt;
-অনুসন্ধানের মধ্যে একটি মান লিখুন।
-&lt;message&gt;&nbsp;ব্যবহৃত &lt;&gt; &lt;setting&gt;-এর তালিকা প্রাপ্ত করার জন্যcategoryAttributesসাদা/ শীর্ষচরণ
-( উদাহরণস্বরূপ, প্রতিষ্ঠান,long_nameমান
-&lt;message&gt;&plainLinkExamples6;&lt;message&gt;&nbsp;ব্যবহৃত &lt;&gt; একটি নির্দিষ্ট শ্রেণীর জন্য &lt;mull&gt; &lt;sync&gt; নির্দিষ্ট করুন বৈশিষ্ট্য/ সম্পাদনা করুন
-(ব্যবহারকারী নাম ব্যবহার করে)
-&lt;message&gt;&plainLinkExamples7;&lt;message&gt;&nbsp;ব্যবহৃত &lt;&gt; &lt;setting&gt;-এর একটি নির্দিষ্ট শ্রেণীতে তালিকাভুক্ত করতে হবে
-(সাধারণ নাম_name) উদাহরণ হিসেবে ব্যবহার করুন
-&lt;message&gt;&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> ইউ- আর- এল- এর জন্য ইউ- আর- এল ERDDAP %s পরিসেবা </a>  </h3>  ERDDAP কম্পিউটার প্রোগ্রাম ব্যবহারের জন্য এই URL-টি উপস্থিত রয়েছে:
+ <ul>  <li> তালিকার তালিকা পেতে <strong> মূল রিসোর্সের URL </strong> ব্যবহার
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> বর্তমান তালিকার বর্তমান তালিকা প্রাপ্ত করতে ব্যবহৃত <strong> সমস্ত তথ্য </strong> ব্যবহার
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> পেতে <strong> মিটা-ডাটা </strong> একটি নির্দিষ্ট তথ্য সেট করুন
+ (ভেরিয়েবল- এর তালিকা এবং তাদের বৈশিষ্ট্যের তালিকা) ব্যবহার
+ <br>  &tErddapUrl; /etc/ info <i>  datasetID  </i> /উইন্ডো/index <i>  .fileType  </i>  <br> যেমন,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> ফলাফল পেতে <strong> পরিচিতি অনুসন্ধান। </strong> তথ্যসেট করার জন্য
+ (ব্যবহার "searchFor=wind%20speed" যেমন উদাহরণ) ব্যবহার
+ <br>  &plainLinkExamples4;  <br>  (আপনার প্রোগ্রাম অথবা স্ক্রিপ্ট ব্যবহারের জন্য আবশ্যক
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> তথ্যের উৎস
+ &externalLinkHtml;  </a> অনুসন্ধানের ক্ষেত্রে মান লিখুন।)  <br>  &nbsp;  <br> অথবা, ব্যবহার
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch ১.১ </a> তথ্যের জন্য সম্পূর্ণ টেক্সট অনুসন্ধানের জন্য পংক্তি লিখুন ।
+ <br>  &nbsp;  <li> ফলাফল পেতে <strong> & সন্ধান মুছে ফেলো </strong> তথ্যসেট করার জন্য
+ (ব্যবহার "searchFor=wind%20speed" যেমন উদাহরণ) ব্যবহার
+ <br>  &plainLinkExamples5;  <br> কিন্তু সঙ্গে পরীক্ষা
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> ঐচ্ছিক পরামিতির সকল পরামিতি পাওয়ার জন্য একটি ব্রাউজারে বের করুন।
+ (আপনার প্রোগ্রাম অথবা স্ক্রিপ্ট ব্যবহারের জন্য আবশ্যক
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> তথ্যের উৎস
+ &externalLinkHtml;  </a> অনুসন্ধানের ক্ষেত্রে মান লিখুন।)  <br>  &nbsp;  <li> তালিকার নাম পেতে <strong>  categoryAttributes  </strong>  (যেমন প্রতিষ্ঠান, long_name নাম:) ব্যবহার
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> তালিকার নাম পেতে <strong> সুনির্দিষ্ট শ্রেণী বৈশিষ্ট্য </strong>  (উদাহরণস্বরূপ \"আদর্শ নাম\" ব্যবহার করে _BAR_) ব্যবহার
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> তালিকার নাম পেতে <strong> একটি নির্দিষ্ট শ্রেণীতে তথ্যসেট করুন </strong>  (উদাহরণ হিসেবে \"আদর্শ নাম_name=time\" ব্যবহার করে) ব্যবহার
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

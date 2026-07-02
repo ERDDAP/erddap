@@ -4434,231 +4434,164 @@ Eri protokollat ​​sopivat erityyppisille tiedoille ja erilaisille asiakassov
 <resourceNotFound>Resurssia ei löydy:</resourceNotFound>
 <restfulWebServices>RESTful Web Services</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPMolemmat ovat:
-&lt;ul&gt;
-&lt;li&gt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Web_application\"&gt; Web-sovellus
-&externalLinkHtml;&lt;/a&gt;
-&ndash; verkkosivu, jolla on selaimia käyttävä muoto (tässä tapauksessa saada tietoja, kaavioita tai tietoja tietoaineistoista).
-&lt;br&gt;&nbsp;&lt;li&gt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Web_service\"&gt;RESTfulVerkkopalvelu
-&externalLinkHtml;&lt;/a&gt;
-&ndash; URL-osoite, jota tietokoneohjelmat voivat käyttää (tässä tapauksessa saada tietoja, kaavioita ja tietoja tietoaineistoista).
-&lt;/ul&gt;
-JokaiselleERDDAPWeb-sivu, jossa on lomake, jota voit käyttää selaimellasi
-VastaavaERDDAPverkkopalvelu, joka on suunniteltu helppokäyttöiseksi tietokoneohjelmille ja käsikirjoituksille.
+ ERDDAP Molemmat ovat:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Web-sovellukset
+ &externalLinkHtml;  </a> &ndash; verkkosivu, jolla on muoto, jota selaimet voivat käyttää (tässä tapauksessa saada tietoja, kaavioita tai tietoja tietoaineistoista) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful Verkkopalvelu
+ &externalLinkHtml;  </a> &ndash; URL-osoite, jota tietokoneohjelmat voivat käyttää (tässä tapauksessa saada tietoja, kaavioita ja tietoja tietoaineistoista) .
+ </ul> Jokaiselle ERDDAP Web-sivu, jossa on lomake, jota voit käyttää selaimellasi
+Vastaava ERDDAP verkkopalvelu, joka on suunniteltu helppokäyttöiseksi tietokoneohjelmille ja käsikirjoituksille.
 Esimerkiksi ihmiset voivat käyttää tätä URL-osoitetta tehdäkseen täyden tekstin etsinnän mielenkiintoisille aineistoille:
-&lt;br&gt;a href=\"&htmlQueryUrl;&gt; &gt;&htmlQueryUrl;&lt;/a&gt;
-&lt;br&gt; Muuttamalla tiedoston laajennusta URL-osoitteesta .html-osoitteeseen.json.csv tai.htmlTabletai.jsonlCSV1tai.xhtml..):
-&lt;br&gt;a href=\"&jsonQueryUrl;&gt; &gt;&jsonQueryUrl;&lt;/a&gt;
-&lt;br&gt; saamme URL-osoitteen, jossa tietokoneohjelma taiJavaKäsikirjoitus voi käyttää samaa
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Muuttamalla tiedoston laajennus URL-osoitteessa .html:sta .html:iin .json  (.csv tai .htmlTable tai .jsonlCSV1 tai .xhtml ,...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> URL-osoite, jonka tietokoneohjelma tai Java Käsikirjoitus voi käyttää samaa
 Tietoja tietokoneohjelmaystävällisemmässä muodossa, kuten
-&lt;a rel=\"apua\" href=\"https\".json.org/\"JSON
-&externalLinkHtml;&lt;/a&gt;
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> .
 
-&lt;h3&gt;a class=\"selfLink\" id=\"BuildThings\" href=\"#BuildThings\" rel=\"kirjamerkki\"&gt; Rakennettu Asiat huipullaERDDAP&lt;/a&lt;/h3&gt;
-On olemassa monia ominaisuuksiaERDDAPjota voidaan käyttää tietokoneohjelmissa tai käsikirjoituksissa
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Rakennettu Asiat huipulla ERDDAP  </a>  </h3> On olemassa monia ominaisuuksia ERDDAP jota voidaan käyttää tietokoneohjelmissa tai käsikirjoituksissa
 jota kirjoitat. Voit käyttää niitä muiden verkkosovellusten tai verkkopalveluiden rakentamiseen.
-TopERDDAPtehdäERDDAPTee suurin osa työstä&#33;
-Jos sinulla on idea paremmasta käyttöliittymästä tietoihin, jotkaERDDAPPalvelut tai verkko
+Top ERDDAP tehdä ERDDAP Tee suurin osa työstä&#33;
+Jos sinulla on idea paremmasta käyttöliittymästä tietoihin, jotka ERDDAP Palvelut tai verkko
 Sivu, joka tarvitsee helppoa tapaa käyttää tietoja, kannustamme sinua rakentamaan oman
-Web-sovellus, web-palvelu tai web-sivu ja käyttöERDDAPkuin säätiö.
-Järjestelmäsi voi saada tietoja, kaavioita ja muita tietojaERD&gt;ERDDAPtai
-Muut muutERDDAPasennukset tai voit
-&lt;&#33;- Rannikkovartioston erddap -&gt;
-&lt;a rel=\"apu\" href=\"https:/erdap.github.io/docs/server-admin/deploy-install\"&gt; ylös omanERDDAP&lt;/a&gt;,
+Web-sovellus, web-palvelu tai web-sivu ja käyttö ERDDAP kuin säätiö.
+Järjestelmäsi voi saada tietoja, kaavioita ja muita tietoja ERD &gt; ERDDAP tai
+Muut muut ERDDAP asennukset tai voit
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Luo omasi ERDDAP Palvelin </a> ,
 joka voi olla
 julkisesti saatavilla tai vain yksityisesti saatavilla.
 
 
-&lt;h3&gt;a class=\"selfLink\" id=\"pyynnöt\" href=\"#requests\" rel=\"kirjamerkki\"&gt;RESTfulURL-pyyntö &lt;/a&lt;/h3&gt;
-Käyttäjäinterface-tietopyynnötERDDAP(esimerkiksi hakutulokset)
-Käytä Internetin yleistä standardia pyyntöihin:
-&lt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Uniform_Resource_Locator\"&gt;URL-osoite
-&externalLinkHtml;&lt;/a&gt;
-Lähetetty kautta
-&lt;a href=\"https://www.w3.org/protokolla/rfc2616/rfc2616-sec9.html#sec9.3\"&gt;HTTP GET&externalLinkHtml;&lt;/a&gt;
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL-pyynnöt </a>  </h3> Käyttäjäinterface-tietopyynnöt ERDDAP  (Esimerkiksi hakutulokset) Käytä Internetin yleistä standardia pyyntöihin:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URL
+ &externalLinkHtml;  </a> Lähetetty kautta
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Tämä on sama mekanismi kuin selaimesi käyttää, kun täytät lomakkeen.
-WEB ja klikkaa<kbd>Submit</kbd>käyttääHTTP GETluot erityisen muodostetun URL-osoitteen (joka voi sisältää kyselyn)
-Lähetä seHTTP GET. Voit muodostaa nämä URL-osoitteet käsin ja päästä niihin.
-selaimesi osoitetekstikenttä (esimerkiksi
-&lt;br&gt;a href=\"&jsonQueryUrl;&gt; &gt;&jsonQueryUrl;&lt;/a&gt;
-&lt;br&gt; Tai voit kirjoittaa tietokoneohjelman tai verkkosivun käsikirjoituksen luodaksesi URL-osoitteen, lähettää sen,
-ja saada vastauksen. URL-osoitteet kauttaHTTP GETvalittiin, koska
-&lt;ul&gt;
-&lt;li&gt; Niitä on helppo käyttää.
-&lt;li&gt; He toimivat hyvin.
-&lt;li&gt; Niitä tuetaan yleisesti (selaimissa, tietokonekielissä, käyttöjärjestelmässä)
-työkaluja jne.)
-&lt;li&gt; Ne ovat perusta
-&lt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Representational_State_Transfer\"&gt; Edustaminen valtionsiirrot (REST)
-&externalLinkHtml;&lt;/a&gt; ja
-&lt;a rel=\"apu\" href=\"https://www.crummy.com/writing\"RESTfulWeb-palvelut &gt; Resursseja ohjaava arkkitehtuuriROA)
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt; Ne helpottavat World Wide Webin käyttämistä suurena jaettuna sovelluksena.
+WEB ja klikkaa <kbd> Lähetys </kbd> käyttää HTTP GET Luot erityisen muodostetun URL-osoitteen (joka voi sisältää kyselyn) Lähetä se HTTP GET . Voit muodostaa nämä URL-osoitteet käsin ja päästä niihin.
+Selaimesi osoitetekstikenttä (esimerkiksi
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Voit kirjoittaa tietokoneohjelman tai verkkosivun käsikirjoituksen luodaksesi URL-osoitteen, lähettää sen,
+ja saada vastauksen. URL-osoitteet kautta HTTP GET valittiin, koska
+ <ul>  <li> Niitä on helppo käyttää.
+ <li> He toimivat hyvin.
+ <li> Ne ovat yleisesti tuettuja (selaimissa, tietokonekielissä, käyttöjärjestelmässä
+työkaluja jne.) .
+ <li> Ne ovat perusta
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Edustajavaltion siirto ( REST )  &externalLinkHtml;  </a> ja
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Resursseihin perustuva arkkitehtuuri ( ROA )  &externalLinkHtml;  </a>  <li> Ne helpottavat World Wide Webin käyttämistä suurena jaettuna sovelluksena.
 Esimerkiksi
-&lt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\"&gt;mashups&externalLinkHtml;&lt;/a&gt;
-&lt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Ajax_%28 Programming%29\"&gt;AJAXsovelluksia
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt; Ne ovat &lt;a rel=\"apu\" href=\"https:/en.wikipedia.org / Wiki/Stateless_protokolla\"&gt; Tilastoton
-&externalLinkHtml;&lt;/a&gt;
-kuin onERDDAPTämä tekee järjestelmästä yksinkertaisemman.
-&lt;li&gt; URL-osoite määrittää täysin tietyn pyynnön, joten voit kirjata sen selaimeesi.
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX sovelluksia
+ &externalLinkHtml;  </a>  <li> He ovat <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Valtiottomat
+ &externalLinkHtml;  </a> kuin on ERDDAP Tämä tekee järjestelmästä yksinkertaisemman.
+ <li> URL-osoite määrittää täysin tietyn pyynnön, joten voit kirjata sen selaimeesi.
 Kirjoita se muistiinpanoihin, lähetä se ystävälle jne.
-&lt;/ul&gt;
-
-&lt;h3&gt;a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"kirjamerkki\" Prosenttikoodi &lt;/a&lt;/h3&gt;
-URL-osoitteissa jotkut hahmot eivät ole sallittuja (esimerkiksi tilat) tai muita merkkejä.
-on erityisiä merkityksiä (esim. & amp;) erottaa näppäimistön = arvoparit kyselyssä).
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> % koodaaminen </a>  </h3> URL-osoitteissa jotkut hahmot eivät ole sallittuja. (Esimerkiksi avaruus) ja muita hahmoja
+erityisiä merkityksiä (Esimerkiksi \"&amp;\" erottaa avain=arvoparit kyselyssä) .
 Kun täytät lomakkeen verkkosivulla ja klikkaa Lähetä, selaimesi automaattisesti
-&lt;a class=\"N\" rel=\"apu\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;% encodes
-&externalLinkHtml;&lt;/a&gt;
-URL-osoitteen erityishahmot (esimerkiksi tila muuttuu %20)
-&lt;br&gt;a href=\"&htmlQueryUrlWithSpaces;&gt; &gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
-&lt;br&gt; Mutta jos tietokoneohjelma tai käsikirjoitus tuottaa URL-osoitteet, sen on todennäköisesti tehtävä prosentti.
-koodaamaan itseään. Jos näin on, niin luultavasti kaikki muut hahmot kuin A-Za-z0-9.
-kyselyn arvot (osat sen jälkeen)'='merkkejä) on koodattava
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % koodaa
+ &externalLinkHtml;  </a> URL-osoitteen erityispiirteet (Avaruudesta tulee %20) esimerkiksi,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Mutta jos tietokoneohjelma tai käsikirjoitus tuottaa URL-osoitteet, sen on todennäköisesti tehtävä prosentti.
+koodaamaan itseään. Jos näin on, kaikki muut hahmot kuin A-Za-z0-9. \"\"\" () *
+kyselyn arvoihin (osien jälkeen '=' Merkkejä) Pitää koodata
 %H, jossa HH on luonteen kaksinumeroinen heksadesimaalinen arvo, esimerkiksi tila muuttuu %20.
 #127:n yläpuolella olevat ominaisuudet on muunnettava UTF-8-tavuiksi, ja jokaisen UTF-8-tavun on oltava prosenttiosuus koodatuista.
-(Kysy ohjelmoijalta apua). Ohjelmointikielillä on työkaluja tähän (ks.Java&gt;
-&lt;a rel=\"apu\" href=\"https:/docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\"&gt;java.net.URLEncoder&externalLinkHtml;&lt;/a&gt; jaJavaKäsikirjoitus
-&lt;a rel=\"apu\" href=\"https://kehittäjä.mozilla.org/en-US/docs/Web/JavaKäsikirjoitus/viite/Global_Objects/encodeURIComponentencodeURIComponent()&externalLinkHtml;&lt;/a&gt; ja on
-&lt;a class=\"N\" rel=\"apu\" href=\"https:///www.url-encode-decode.com\"&gt; Verkkosivut, jotka prosentteina koodaavat/dekoodaus sinulle
-&externalLinkHtml;&lt;/a&gt;
-
-
-&lt;h3&gt;a class=\"selfLink\" id=\"responses\" href=\"#responses\" rel=\"kirjamerkki\" Response File Types &lt;/a/h3&gt;
-Vaikka ihmiset käyttävät selaimia haluavat saada käyttäjän-interface tuloksia (esim.
-hakutulokset) kuten HTML-dokumentit, tietokoneohjelmat usein haluavat saada tuloksia
-Helppoja, helppokäyttöisiä, vähemmän verboosia.ERDDAPVoit palauttaa käyttäjän
+ (Kysy ohjelmoijalta apua) . Ohjelmointikielillä on työkaluja tähän (Esimerkiksi, katso Java &gt;
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> ja Java Käsikirjoitus
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> CodeuriComponent ()  &externalLinkHtml;  </a> ) ja on
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> Verkkosivut, jotka prosenttiin koodaavat/dekoodaavat sinulle
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Vastaa tiedostotyyppejä </a>  </h3> Vaikka ihmiset käyttävät selaimia haluavat saada käyttäjä-interface tuloksia (esimerkiksi
+Hakutulokset) Koska HTML-dokumentit, tietokoneohjelmat usein haluavat saada tuloksia
+Helppoja, helppokäyttöisiä, vähemmän verboosia. ERDDAP Voit palauttaa käyttäjän
 tulokset näissä tavallisissa, tietokoneohjelman ystävällisissä, tiedostotyypeissä:
-&lt;ul&gt;
-&lt;li&gt;.csv - erillinen ASCII-tekstipöytä.
-(&lt;a rel=\"apu\" href=\"https:/en.wikipedia.org/wiki/Comma-erilliset_arvot\"&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.htmlTable.html-verkkosivu, jossa on taulukon tiedot.
-(&lt;a rel=\"apu\" href=\"https://www.w3schools.com/html/html_tables.asp\") Lisää enemmän&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.itxIgor-tekstitiedosto, jossa on aalto jokaiselle datan sarakkeelle.
-(&lt;a rel=\"apu\" href=\"https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import.pdf\"&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.jsonTable-like JSON -tiedosto.
-(&lt;a rel=\"apu\" href=\"https\").json.org/&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt; tai
-&lt;a rel=\"apu\" href=\"&tErddapUrl;//tabledapLähde: Documentation.html#jsonERDDAPerityistä tietoa &lt;/a&gt;
-&lt;li&gt;.jsonlCSV1- \"Parempi kuin CSV\" JSON Lines -tiedosto, jossa on sarakenimiä ensimmäisellä rivillä.
-(&lt;a rel=\"apu\" href=\"https:/jsonlines.org/\"&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.jsonlCSV- \"Parempi kuin CSV\" JSON Lines -tiedosto, jolla ei ole sarakkeiden nimiä.
-(&lt;a rel=\"apu\" href=\"https:/jsonlines.org/\"&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.jsonlKVPJSON Lines -tiedosto, jossa on Key:Value Pairs.
-(&lt;a rel=\"apu\" href=\"https:/jsonlines.org/\"&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.matMATLAB binaaritiedosto.
-(&lt;a rel=\"apu\" href=\"https\").mathworks.com/&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.ncTasainen, pöydän kaltainen,NetCDF3 binääritiedosto.
-(&lt;a rel=\"apu\" href=\"https: //www.unidata.ucar.edu/software/netcdf/\"&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.nccsvTasainen, pöydän kaltainen,NetCDFASCII CSV -tiedosto.
-(&lt;a rel=\"apu\" href=\"https:/erdap.github.io/docs/user/nccsv-1.20\")&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.ncO Json - JSON-tiedosto (käytetty)NCO-tyyli) vain tietoaineiston metatietojen kanssa (globaalit ominaisuudet,
-mitat ja muuttujat, joilla on ominaisuuksia, tyyppiä ja muotoa, eikä tietoarvoja.
-(&lt;a rel=\"apu\" href=\"https://nco.sourceforge.net/nco.html#json\")&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.tsvTab-erotettu ASCII-tekstipöytä.
-(&lt;a rel=\"apu\" href=\"https:/jkorpela.fi/TSV.html\")&gt; Lisää&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt;.xhtml- XHTML (XML) -tiedosto, jossa on tiedot taulukossa.
-(&lt;a rel=\"apu\" href=\"https://www.w3schools.com/html/html_tables.asp\") Lisää enemmän&nbsp;Tietoa
-&externalLinkHtml;&lt;/a&gt;
-&lt;/ul&gt;
-kaikissa tulostaulukoissa (paitsi.jsonlKVPjossa sarakkeiden nimet ovat jokaisella rivillä:
-&lt;ul&gt;
-Jokaisella sarakkeella on sarakkeen nimi ja yksi tietotyyppi.
-&lt;li&gt; Pöydän ensimmäisellä rivillä on sarakkeen nimet.
-&lt;li&gt; Seuraavat rivit sisältävät pyytämäsi tiedot.
-&lt;/ul&gt;
-&lt;p&gt; Näiden tiedostotyyppien sisältö on myös hieman erilainen kuin .html.
+ <ul>  <li> .csv - erillinen ASCII-tekstipöytä.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .htmlTable .html-verkkosivu, jossa on taulukon tiedot.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .itx Igor-tekstitiedosto, jossa on aalto jokaiselle datan sarakkeelle.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .json Table-like JSON -tiedosto.
+ ( <a rel="help" href="https://www.json.org/"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> tai tai
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP erityistä tietoa </a> )  <li>  .jsonlCSV1 - \"Parempi kuin CSV\" JSON Lines -tiedosto, jossa on sarakenimiä ensimmäisellä rivillä.
+ ( <a rel="help" href="https://jsonlines.org/"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"Parempi kuin CSV\" JSON Lines -tiedosto, jolla ei ole sarakkeiden nimiä.
+ ( <a rel="help" href="https://jsonlines.org/"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP JSON Lines -tiedosto, jossa on Key:Value Pairs.
+ ( <a rel="help" href="https://jsonlines.org/"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .mat MATLAB binaaritiedosto.
+ ( <a rel="help" href="https://www.mathworks.com/"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .nc Tasainen, pöydän kaltainen, NetCDF 3 binääritiedosto.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .nccsv Tasainen, pöydän kaltainen, NetCDF ASCII CSV -tiedosto.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .nc O JSON - JSON-tiedosto ( NCO Tyyli) aineiston metatiedot vain (globaalit ominaisuudet,
+mitat ja muuttujat niiden ominaisuuksia, tyyppiä ja muotoa) Ei data-arvoja.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .tsv Tab-erotettu ASCII-tekstipöytä.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  <li>  .xhtml XHTML (XML) Tiedosta tiedot taulukossa.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Lisää enemmän &nbsp; Tietoa
+ &externalLinkHtml;  </a> )  </ul> Kaikissa tulostaulukoissa (paitsi .jsonlKVP jossa sarakkeiden nimet ovat jokaisella rivillä) :
+ <ul>  <li> Jokaisella sarakkeella on sarakkeen nimi ja yksi tietotyyppi.
+ <li> Pöydän ensimmäisellä rivillä on sarakkeen nimet.
+ <li> Seuraavat rivit sisältävät pyytämäsi tiedot.
+ </ul>  <p> Näiden tiedostotyyppien sisältö on myös hieman erilainen kuin .html.
 Vastaus &mdash; se on tarkoituksellisesti paljastettu, jotta se on helpompi tietokoneelle.
 ohjelman kanssa työskentelyyn.
 
-&lt;p&gt;a class=\"selfLink\" id=\"DataStructure\" href=\"#DataStructure\" rel=\"kirjamerkki\"&gt; Vastausten johdonmukainen tietorakenne\"
-&lt;br&gt; Kaikki tällä sivulla kuvatut käyttöliittymäpalvelut voivat palauttaa taulukon
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Johdonmukainen tietorakenne vastaajille </a>  <br> Kaikki tällä sivulla kuvatut käyttäjäpalvelut voivat palauttaa taulukon
 tiedot kaikissa yllä mainituissa tiedostomuodoissa. Toivottavasti voit kirjoittaa
 vain yksi menettely tietojen taulukon laatimiseksi yhdessä muodossa. Sitten voit
 käyttää uudelleen tätä menettelyä vastaamaan mistä tahansa näistä palveluista. Tämä tämä
-pitäisi helpottaa käsittelyäERDDAP.
+pitäisi helpottaa käsittelyä ERDDAP .
 
 
-&lt;p&gt;a class=\"selfLink\" id=\"csvIssues\" href=\"#csvIssues\" rel=\"kirjamerkki\"&gt;.csv&lt;/a&gt; ja.tsvYksityiskohdat &lt;ul&gt;
-&lt;li&gt; Jos .csv-tiedostossa olevalla datumilla on sisäiset kaksinkertaiset tarjoukset tai kommat,ERDDAPSeuraa
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> ja .tsv Yksityiskohdat <ul>  <li> Jos .csv-tiedostossa olevalla datumilla on sisäiset kaksinkertaiset tarjoukset tai kommat, ERDDAP Seuraa
 .csv spesifikaatio tiukasti: se asettaa kaksinkertaiset lainaukset ympäri datum ja kaksinkertaistaa
 Sisäiset kaksinkertaiset lainaukset.
-&lt;li&gt; Erityishahmot .csv:ssä tai.tsvtiedosto on koodattu kuten
-&lt;a rel=\"apua\" href=\"https\".json.org/\"JSON
-&externalLinkHtml;&lt;/a&gt;
-Backslash-koodattuja hahmoja:
-\n (newline), \\ (backslash), \f (formfeed), \t (tab), \r (vaunu)
-\\u&lt;i&gt;hhh&lt;/i&gt; syntaksi.
-&lt;/ul&gt;
-
-
-&lt;p&gt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"kirjamerkki\"&gt;jsonp&lt;/&gt;
-&lt;br&gt; Pyynnöt.jsontiedostot voivat nyt sisältää valinnaisen
-&lt;a href=\"https://niryariv.wordpress.com/2009/05/jsonp-quickly\"&gt; Jsonp
-&externalLinkHtml;&lt;/a&gt; pyyntö
-Lisää \"&amp;.jsonp&gt;functionName&lt;/i&gt; kyselyn päättymiseen. Periaatteessa tämä kertoo
-ERDDAPlisätä \"i&gt;functionName&lt;/i&gt; (\"vastauksen alkuun\")
-Vastauksen loppu. &lt;i&gt;functionName&lt;/i&gt; on oltava ISO 8859 -kirje tai _.
+ <li> .csv:ssä tai .tsv tiedosto on koodattu kuten
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> Backslash-koodattuja hahmoja:
+\n (Newline) , (backslash) \f (muodostettu) \t (Tab) \r (Kuljetuspalautukset) tai \\u <i> Hhhh </i> syntaksi.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> Pyynnöt .json tiedostot voivat nyt sisältää valinnaisen
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
+ &externalLinkHtml;  </a> pyynnöstä
+Lisää \"&amp; .json p = <i> Toiminnallinen funktio Nimen nimi </i> \"Kysymyksen lopussa. Periaatteessa tämä kertoo
+ ERDDAP Lisää \" <i> Toiminnallinen funktio Nimen nimi </i>  (\"Vastauksen alku ja\") &gt; &gt;
+Vastauksen loppu. Ensimmäinen luonne <i> Toiminnallinen funktio Nimen nimi </i> on oltava ISO 8859 -kirje tai _.
 Jokaisen valinnaisen myöhemmän merkin on oltava ISO 8859 -kirje, \"_\", numero tai \".
 Jos alunperin ei ollut kyselyä, jätä \"jalka\" pois kyselystäsi.
 
 
-Griddap jatabledapTarjota erilaisia tiedostotyyppejä
-&lt;br&gt; Edellä luetellut tiedostotyypit ovat tiedostotyyppejäERDDAPvoidaan käyttää vastaamaan
-Käyttäjäkohtaiset pyynnöt (esimerkiksi hakupyynnöt).ERDDAPTukea
-erityyppiset tiedostotyypit tieteellisiin tietoihin (esimerkiksi satelliitti ja buoy)
-tiedot (katso tiedot)
-&lt;a rel=\"apu\" href=\"&tErddapUrl;/griddap/dokumentaatio.html#fileType\"&gt;griddap&lt;/a&gt;
-&lt;a rel=\"apu\" href=\"&tErddapUrl;//tabledapLähde: Documentation.html#fileTypetabledap&lt;/a&gt;
-dokumentointi).
+ <p> GRDP ja tabledap Tarjota erilaisia tiedostotyyppejä
+ <br> Edellä luetellut tiedostotyypit ovat tiedostotyyppejä ERDDAP voidaan käyttää vastaamaan
+Käyttäjäkohtaiset pyynnöt (Esimerkiksi hakupyynnöt) . ERDDAP Tukea
+Erilaisia tiedostotyyppejä tieteellisiin tietoihin (Esimerkiksi satelliitti ja buoy
+Datatiedot) Pyyntöjä (Katsokaa
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> Griddap </a> ja
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> dokumentointi) .
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;accessUrls=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"kirjamerkki\"&gt; URL-osoitteetERDDAPPalvelut &lt;/a&lt;/h3&gt;
-ERDDAPURL-osoitteet tietokoneohjelmille:
-&lt;ul&gt;
-&lt;li&gt; Saadaksesi luettelon &lt;strong&gt;main resurssien pääsy URL-osoituksista&lt;/strong&gt;, käytä
-&lt;br&gt;&plainLinkExamples1;&lt;br&gt;&nbsp;&lt;li&gt; Jos haluat saada nykyisen luettelon &lt;strong&gt;all datasets&lt;/strong&gt;, käytä
-&lt;br&gt;&plainLinkExamples2;&lt;br&gt;&nbsp;&lt;li&gt; Saada &lt;strong&gt;metadata&lt;/strong&gt; tiettyyn datajoukkoon
-(muuttujien ja niiden ominaisuuksien luettelo),
-&lt;br&gt;&tErddapUrl;Info/&lt;i&gt;datasetID&lt;/i&gt;/indeksi &gt;.fileType&lt;/i&gt;
-&lt;br&gt; esimerkiksi
-&lt;br&gt;&plainLinkExamples3;&lt;br&gt;&nbsp;&lt;li&gt; &lt;strong&gt; full text search&lt;/strong&gt; Näytä tarkat tiedot
-(käyttämällä)"searchFor=wind%20speed"Esimerkkinä, käyttö
-&lt;br&gt;&plainLinkExamples4;&lt;br&gt; (ohjelmisto tai käsikirjoitus voi olla tarpeen)
-&lt;a class=\"N\" rel=\"apu\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;%-encode
-&externalLinkHtml;&lt;/a&gt;
-kyselyn arvo.)
-&lt;br&gt;&nbsp;&lt;br&gt; tai käytä
-&lt;a rel=\"kirjamerkki\" href=\"&tErddapUrl;/opensearch1.1/index.htmlOpenSearch1.1 &lt;/a&gt;
-standardi, jolla tehdään täydellinen tekstihaku tietoaineistoille.
-&lt;br&gt;&nbsp;&lt;li&gt; &lt;strong&gt; Advanced searchs&lt;/strong&gt; Näytä tarkat tiedot
-(käyttämällä)"searchFor=wind%20speed"Esimerkkinä, käyttö
-&lt;br&gt;&plainLinkExamples5;&lt;br&gt; mutta kokeilu
-&lt;a href=\"&tErddapUrl;Etusivu / Advanced.html&encodedDefaultPIppQuery;&gt; &gt;&advancedSearch;&lt;/a&gt;
-selaimessa, jossa selvitetään kaikki valinnaiset parametrit.
-(Ohjattu sivulta tai käsikirjoituksesta voi joutua
-&lt;a class=\"N\" rel=\"apu\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;%-encode
-&externalLinkHtml;&lt;/a&gt;
-kyselyn arvo.)
-&lt;br&gt;&nbsp;&lt;li&gt; Luettelo &lt;strong&gt;categoryAttributes&lt;/vahva &gt;
-(esimerkiksi laitos,long_nameStandard_name), käyttö
-&lt;br&gt;&plainLinkExamples6;&lt;br&gt;&nbsp;&lt;li&gt; &lt;strong&gt; kategoriat tiettyyn luokkaan &lt;/vahva &gt;
-(esimerkiksi \"vakio_nimi\")
-&lt;br&gt;&plainLinkExamples7;&lt;br&gt;&nbsp;&lt;li&gt; Saadaksesi listan &lt;strong&gt;datasets tietyssä luokassa&lt;/strong&gt;
-(esimerkiksi \"vakio_nimi=aika\")
-&lt;br&gt;&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> URL-osoitteet ERDDAP ”Palvelut </a>  </h3>  ERDDAP URL-osoitteet tietokoneohjelmille:
+ <ul>  <li> Saadaksesi listan <strong> Resurssien pääsy URL-osoitteet </strong> käyttää
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> saada nykyinen luettelo <strong> Kaikki aineistot </strong> käyttää
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> saada <strong> Metadata </strong> tiettyyn tietojoukkoon
+ (Muuttujien luettelo ja niiden ominaisuudet) käyttää
+ <br>  &tErddapUrl; /info / <i>  datasetID  </i> Index <i>  .fileType  </i>  <br> esimerkiksi
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> saada tuloksia <strong> Täysi tekstihaku </strong> Tietoja
+ (käyttäen "searchFor=wind%20speed" Esimerkkinä) käyttää
+ <br>  &plainLinkExamples4;  <br>  (Ohjelma tai käsikirjoitus saattaa joutua
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> %-koodi
+ &externalLinkHtml;  </a> arvoa kyselyssä.)  <br>  &nbsp;  <br> Tai käyttää
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> standardi, jolla tehdään täydellinen tekstihaku tietoaineistoille.
+ <br>  &nbsp;  <li> saada tuloksia <strong> Kehittyneitä hakuja </strong> Tietoja
+ (käyttäen "searchFor=wind%20speed" Esimerkkinä) käyttää
+ <br>  &plainLinkExamples5;  <br> Kokeilua
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> selaimessa, jossa selvitetään kaikki valinnaiset parametrit.
+ (Ohjelma tai käsikirjoitus saattaa joutua
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> %-koodi
+ &externalLinkHtml;  </a> arvoa kyselyssä.)  <br>  &nbsp;  <li> Saadaksesi listan <strong>  categoryAttributes  </strong>  (esimerkiksi instituutio, long_name Normaali nimi) käyttää
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Saadaksesi listan <strong> tietyn luokan kategoriat Attribuutti </strong>  (\"Standard_name\" on esimerkki) käyttää
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Saadaksesi listan <strong> Tiedot tietyssä kategoriassa </strong>  (\"Standard_name= Time\" (käytetty)) käyttää
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

@@ -4380,231 +4380,164 @@ Tá prótacail éagsúla oiriúnach do chineálacha éagsúla sonraí agus d’f
 <resourceNotFound>Acmhainn gan aimsiú:</resourceNotFound>
 <restfulWebServices>Seirbhísí Gréasáin RESTful</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPan dá:
-rÃ obh
-cliceáil grianghraf a mhéadú Iarratas gréasáin
-&externalLinkHtml;ú/a ú
-&amp; airgid; leathanach gréasáin le foirm gur féidir le daoine le brabhsálaithe a úsáid (sa chás seo, chun sonraí, graif, nó faisnéis a fháil faoi thacair sonraí).
-rÃ ú&nbsp;cliceáil grianghraf a mhéadúRESTfulweb development
-&externalLinkHtml;ú/a ú
-&amp; Nbsp; URL gur féidir le cláir ríomhaireachta a úsáid (sa chás seo, a fháil sonraí, graif, agus faisnéis faoi datasets).
-r/leathanach
-I gcás gachERDDAPleathanach gréasáin le foirm gur féidir leat mar dhuine le brabhsálaí a úsáid, tá
-comhfhreagrachERDDAPseirbhís gréasáin atá deartha chun a bheith éasca do chláir ríomhaireachta agus scripteanna a úsáid.
+ ERDDAP an dá:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Iarratas gréasáin
+ &externalLinkHtml;  </a> &amp; airgid; leathanach gréasáin le foirm gur féidir le daoine le brabhsálaithe a úsáid (sa chás seo, a fháil sonraí, graif, nó faisnéis faoi tacar sonraí) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> Amharc ar gach eolas RESTful web development
+ &externalLinkHtml;  </a> &amp; airgid; URL gur féidir le cláir ríomhaireachta a úsáid (sa chás seo, a fháil sonraí, graif, agus faisnéis faoi tacar sonraí) .
+ </ul> I gcás gach ERDDAP leathanach gréasáin le foirm gur féidir leat mar dhuine le brabhsálaí a úsáid, tá
+comhfhreagrach ERDDAP seirbhís gréasáin atá deartha chun a bheith éasca do chláir ríomhaireachta agus scripteanna a úsáid.
 Mar shampla, is féidir le daoine a úsáid URL seo a dhéanamh Téacs Iomlán Cuardaigh le haghaidh tacair sonraí suimiúil:
-uaireadóirÃ onn;&htmlQueryUrl;\"&htmlQueryUrl;ú/a ú
-bbbbbbbbbby athrú ar an síneadh comhad i URL ó .html go.json(nó .csv, nó.htmlTable, nó.jsonlCSV1, nó.xhtml,...):
-uaireadóirÃ onn;&jsonQueryUrl;\"&jsonQueryUrl;ú/a ú
-rabhsa linn a fháil URL go bhfuil clár ríomhaire nóJavaIs féidir le script Script úsáid a bhaint as an gcéanna
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Trí athrú ar an síneadh comhad i URL ó .html go .json  (nó .csv, nó .htmlTable , nó .jsonlCSV1 , nó .xhtml , ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> a fháil againn URL go bhfuil clár ríomhaire nó Java Is féidir le script Script úsáid a bhaint as an gcéanna
 faisnéis i bhformáid níos ríomhaire-clár-chairdiúil mhaith
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www..json.org / \"
-&externalLinkHtml;ú/a ú.
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> .
 
-uaireadóirÃ rang = \"selfLink\" id= \"Tríoga Foirgníochta\" href= \"#BuildThings\" rel =\" leabharmharc \" Tógáil Tógála Rudaí ar BarrERDDAPr/a r-phost/h3 r
-Tá go leor gnéithe iERDDAPis féidir a úsáid ag cláir ríomhaire nó scripteanna
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Tógáil Tógála Rudaí ar Barr ERDDAP  </a>  </h3> Tá go leor gnéithe i ERDDAP is féidir a úsáid ag cláir ríomhaire nó scripteanna
 go scríobhann tú. Is féidir leat iad a úsáid chun iarratais gréasáin nó seirbhísí gréasáin eile a thógáil ar
-barrERDDAP, a dhéanamhERDDAPan chuid is mó den obair a dhéanamh&#33;
-Mar sin, má tá tú smaoineamh le haghaidh comhéadan níos fearr leis na sonraí aERDDAPfreastal nó gréasáin
+barr ERDDAP , a dhéanamh ERDDAP an chuid is mó den obair a dhéanamh&#33;
+Mar sin, má tá tú smaoineamh le haghaidh comhéadan níos fearr leis na sonraí a ERDDAP freastal nó gréasáin
 leathanach gur gá ar bhealach éasca chun sonraí a rochtain, molaimid duit a thógáil do chuid féin
-iarratas gréasáin, seirbhís gréasáin, nó leathanach gréasáin agus úsáidERDDAPmar an bunús.
-Is féidir le do chóras a fháil sonraí, graif, agus faisnéis eile óERD'sERDDAPnó ó
-eile eileERDDAPsuiteálacha, nó is féidir leat
-r- thus i gcónaí ó erddap coastwatch ar - ^
-cliceáil grianghraf a mhéadú suas do chuid féinERDDAPfreastalaí / ú,
+iarratas gréasáin, seirbhís gréasáin, nó leathanach gréasáin agus úsáid ERDDAP mar an bunús.
+Is féidir le do chóras a fháil sonraí, graif, agus faisnéis eile ó ERD 's ERDDAP nó ó
+eile eile ERDDAP suiteálacha, nó is féidir leat
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> a chur ar bun do chuid féin ERDDAP freastalaí freastalaí </a> ,
 is féidir a bheith
 rochtain phoiblí nó rochtain phríobháideach ar an bpobal.
 
 
-uaire rang = \"selfLink\" id= \"requests\" href= \"#requests\" rel =\" leabharmharc \"RESTfulIarratais URL rÃ obh/a rÃ l/h3 r
-Iarratais ar fhaisnéis úsáideora-idirghníomhú óERDDAP(mar shampla, torthaí cuardaigh)
-caighdeán uilíoch an ghréasáin a úsáid le haghaidh iarrataí:
-cliceáil grianghraf a mhéadú
-&externalLinkHtml;ú/a ú
-sheoladh tríd an
-Cóipeáil nasc leis an tweet Leabaigh an Tweet .HTTP GET&externalLinkHtml;ú/a ú.
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful Iarratais URL </a>  </h3> Iarratais ar fhaisnéis úsáideora-idirghníomhú ó ERDDAP  (mar shampla, torthaí cuardaigh) caighdeán uilíoch an ghréasáin a úsáid le haghaidh iarrataí:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URLanna
+ &externalLinkHtml;  </a> sheoladh tríd an
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Is é seo an mheicníocht chéanna a úsáideann do bhrabhsálaí nuair a líonann tú foirm
-ar leathanach gréasáin agus cliceáil ar<kbd>Submit</kbd>Le húsáidHTTP GET, tú a ghiniúint URL déanta go speisialta (a d'fhéadfadh a chur san áireamh ceist)
-agus é a sheoladh leHTTP GET. Is féidir leat foirm na URLanna de láimh agus iad a chur isteach i
+ar leathanach gréasáin agus cliceáil ar <kbd> Cuir isteach </kbd> Le húsáid HTTP GET , tú a ghiniúint URL déanta go speisialta (a d'fhéadfadh ceist a chur san áireamh) agus é a sheoladh le HTTP GET . Is féidir leat foirm na URLanna de láimh agus iad a chur isteach i
 réimse téacs seoladh do bhrabhsálaí (mar shampla,
-uaireadóirÃ onn;&jsonQueryUrl;\"&jsonQueryUrl;ú/a ú)
-bbbbr ^R, Is féidir leat scríobh clár ríomhaire nó script leathanach gréasáin a chruthú URL, é a sheoladh,
-agus an freagra a fháil. URLanna viaHTTP GETa roghnaíodh mar gheall ar
-rÃ obh
-uaireadóirÃ Tá siad simplí a úsáid.
-uaireadóirÃ Oibríonn siad go maith.
-uaireadóirÃ Tá siad tacaíocht uilíoch (i brabhsálaithe, teangacha ríomhaireachta, córas oibriúcháin
-uirlisí, etc.
-uaireadóirÃ Tá siad bunús
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://en.wikipedia.org/Representational_State_Transfer) Aistriú Stáit (Aistriú Stáit)REST)
-&externalLinkHtml;ú/a ú agus
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www.crummy.com/writing/RESTful-Web-Seirbhísí\" ×Resource Ailtireacht Treo (ROA)
-&externalLinkHtml;ú/a ú
-uaireadóirÃ Éascaíonn siad ag baint úsáide as an Gréasán Domhanda mar iarratas a dháileadh mór,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Nó, Is féidir leat scríobh clár ríomhaire nó script leathanach gréasáin a chruthú URL, é a sheoladh,
+agus an freagra a fháil. URLanna via HTTP GET a roghnaíodh mar gheall ar
+ <ul>  <li> Tá siad simplí a úsáid.
+ <li> Oibríonn siad go maith.
+ <li> Tá siad tacaíocht uilíoch (i brabhsálaithe, teangacha ríomhaireachta, córas oibriúcháin
+uirlisí, etc) .
+ <li> Tá siad bunús
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Aistriú an Stáit Ionadaíocht ( REST )  &externalLinkHtml;  </a> agus
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Acmhainní Ailtireacht Treo ( ROA )  &externalLinkHtml;  </a>  <li> Éascaíonn siad ag baint úsáide as an Gréasán Domhanda mar iarratas a dháileadh mór,
 mar shampla trí
-cliceáil grianghraf a mhéadúmashups&externalLinkHtml;ú/a ú
-cliceáil grianghraf a mhéadúAJAXiarratais
-&externalLinkHtml;ú/a ú
-uaireadóirÃ Cóipeáil nasc leis an tweet Leabaigh an Tweet https://en.wikipedia.org/wiki/Stateless_protocol)
-&externalLinkHtml;ú/a ú
-mar atáERDDAP, a dhéanann an córas níos simplí.
-uaireadóirÃ A URL a shainiú go hiomlán iarratas ar leith, ionas gur féidir leat leabharmharc sé i do bhrabhsálaí,
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX iarratais
+ &externalLinkHtml;  </a>  <li> Tá siad <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> stateless
+ &externalLinkHtml;  </a> mar atá ERDDAP , a dhéanann an córas níos simplí.
+ <li> A URL a shainiú go hiomlán iarratas ar leith, ionas gur féidir leat leabharmharc sé i do bhrabhsálaí,
 scríobh sé i do nótaí, é a ríomhphost chuig cara, etc.
-r/leathanach
-
-uaireadóirÃ rang = \"selfLink\" id = \"PercentEncode\" href= \"#PercentEncode\" rel =\" leabharmharc \" Ionchódaithe réasúnta ~ / h3 ×
-I URLanna, nach bhfuil roinnt carachtair a cheadaítear (mar shampla, spásanna) agus carachtair eile
-tá bríonna speisialta (mar shampla, ' &amp;' scarann eochair = péirí luach i gceist).
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Ionchódaithe réasúnta </a>  </h3> I URLanna, nach bhfuil roinnt carachtair a cheadaítear (mar shampla, spásanna) agus carachtair eile
+tá bríonna speisialta (mar shampla, ' &amp;' ar leith eochair = péirí luach i gceist) .
 Nuair a líonann tú foirm ar leathanach gréasáin agus cliceáil ar Cuir, do bhrabhsálaí go huathoibríoch
-rang uaire = \"N\" rel = \"cúnamh\" href= \"https://en.wikipedia.org / wiki / códú réasúnta\" ionchódú
-&externalLinkHtml;ú/a ú
-na carachtair speisialta sa URL (mar shampla, éiríonn spás %20), mar shampla,
-uaireadóirÃ onn;&htmlQueryUrlWithSpaces;\"&htmlQueryUrlWithSpaces;ú/a ú
-uaireadóirÃ Ach má ghineann do chlár ríomhaire nó script na URLanna, ní mór dó is dócha a dhéanamh ar an gcéad
-ionchódú féin. Más amhlaidh, ansin is dócha go léir carachtair seachas A-Za-z0-9_-&#33;.~'() *
-i luachanna an cheist (na codanna tar éis an'='comharthaí) Ní mór a ionchódú
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> ionchódú faoin gcéad
+ &externalLinkHtml;  </a> na carachtair speisialta sa URL (mar shampla, éiríonn spás %20) , mar shampla,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Ach má ghineann do chlár ríomhaire nó script na URLanna, ní mór dó is dócha a dhéanamh ar an gcéad
+ionchódú féin. Más amhlaidh, ansin is dócha go léir carachtair seachas A-Za-z0-9_-&#33;. '' () * * *
+i luachanna an cheist (na codanna tar éis an '=' Comharthaí agus comharthaí) Ní mór a ionchódú
 mar %H, i gcás ina bhfuil HH an luach hexadecimal 2 dhigit an carachtar, mar shampla, thiocfaidh chun bheith spás %20.
 Ní mór Carachtair os cionn #127 a thiontú go bytes UTF-8, ansin ní mór gach UTF-8 byte a ionchódú faoin gcéad
-(iarr ar ríomhchláraitheoir cabhair a fháil). teangacha Clárú Tá uirlisí a dhéanamh seo (mar shampla, féachJava's
-cliceáil grianghraf a mhéadújava.net.URLEncoder&externalLinkHtml;ú/a ú agusJavaScript ar
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\" ×encodeURIComponent()&externalLinkHtml;agus tá
-Cóipeáil nasc leis an tweet Leabaigh an Tweet href= https://www.url-encode-decode.com\" ^websites that hundred encode/decode for you.
-&externalLinkHtml;ú/a ú
-
-
-r-phost: josez rang = \"féin Nasc\" id = \"Freagráin\" href= \"Freagráin\" rel = \"bookmark\" × Cineálacha Comhad Freagra rÃ obh / rÃ d
-Cé gur mian le daoine a úsáideann brabhsálaithe torthaí úsáideora a fháil (mar shampla,
-torthaí cuardaigh) mar dhoiciméid HTML, Is fearr le cláir ríomhaireachta go minic torthaí a fháil i
-simplí, go héasca parsed, doiciméid níos lú verbose.ERDDAPis féidir ar ais úsáideoir-interface
+ (iarraidh ar Ríomhchláraitheoir le haghaidh cabhrach) . teangacha Clárú Tá uirlisí a dhéanamh seo (mar shampla, féach Java 's
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> agus Java Script ar
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> Déan teagmháil linn ()  &externalLinkHtml;  </a> ) agus tá
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> láithreáin ghréasáin go ionchódú faoin gcéad / dhíchódú ar do shon
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Cineálacha Comhad Freagra </a>  </h3> Cé gur mian le daoine a úsáideann brabhsálaithe torthaí úsáideora a fháil (mar shampla,
+search engine marketing) mar dhoiciméid HTML, is fearr le cláir ríomhaireachta go minic torthaí a fháil i
+simplí, go héasca parsed, doiciméid níos lú verbose. ERDDAP is féidir ar ais úsáideoir-interface
 torthaí mar tábla sonraí sna coitianta, ríomhaire-clár cairdiúil, cineálacha comhaid:
-rÃ obh
-uaire.csv - tábla téacs ASCII scartha.
-cliceáil grianghraf a mhéadú&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.htmlTable- leathanach gréasáin .html leis na sonraí i dtábla.
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www.w3schools.com/html/html_tables.asp) níos mó&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.itx- Comhad Téacs Igor le tonn do gach colún de shonraí.
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www.wavemetrics.net/doc/igorman/II-09%20Data% 20Import% 20Export.pdf\"&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.json- comhad JSON tábla-mhaith.
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www..json.org / \"níos mó&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú
-\"Is maith liom\"&tErddapUrl;/ Bailetabledap/ doiciméadú.html #json\"ERDDAP--sonrach faisnéis r/a ú)
-uaireadóirÃ.jsonlCSV1- comhad \"Better ná CSV\" JSON Lines le hainmneacha colún ar an gcéad líne.
-cliceáil grianghraf a mhéadú&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.jsonlCSV- \"Better ná CSV\" JSON Línte comhad gan aon ainmneacha colún.
-cliceáil grianghraf a mhéadú&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.jsonlKVP- comhad Línte JSON le Key: Péirí Iarmhair.
-cliceáil grianghraf a mhéadú&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.mat- comhad dénártha MATLAB.
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www..mathworks.com / \"níos mó&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.nc- árasán, cosúil le tábla,NetCDF-3 comhad dénártha.
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www.unidata.ucar.edu/software/netcdf/”&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.nccsv- árasán, cosúil le tábla,NetCDF-like, ASCII CSV comhad.
-(a rel = \"cúnamh\" href=\" https://erddap.github.io/docs/user/nccsv-1.20\"&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.nco Json - comhad JSON (NCO-stíl) le meiteashonraí an tacar sonraí amháin (tréithe domhanda,
+ <ul>  <li> .csv - tábla téacs ASCII scartha.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - leathanach gréasáin .html leis na sonraí i dtábla.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .itx - Comhad Téacs Igor le tonn do gach colún de shonraí.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .json - comhad JSON tábla-mhaith.
+ ( <a rel="help" href="https://www.json.org/"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> nó
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP Eolas sonrach </a> )  <li>  .jsonlCSV1 - comhad \"Better ná CSV\" JSON Lines le hainmneacha colún ar an gcéad líne.
+ ( <a rel="help" href="https://jsonlines.org/"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"Better ná CSV\" JSON Línte comhad gan aon ainmneacha colún.
+ ( <a rel="help" href="https://jsonlines.org/"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - comhad Línte JSON le Key: Péirí Iarmhair.
+ ( <a rel="help" href="https://jsonlines.org/"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .mat - comhad dénártha MATLAB.
+ ( <a rel="help" href="https://www.mathworks.com/"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .nc - árasán, cosúil le tábla, NetCDF -3 comhad dénártha.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .nccsv - árasán, cosúil le tábla, NetCDF -like, ASCII CSV comhad.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .nc o Json - comhad JSON ( NCO - stíl) le meiteashonraí an tacar sonraí amháin (tréithe domhanda,
 toisí, agus athróga lena tréithe, cineál, agus cruth) agus aon luachanna sonraí.
-cliceáil grianghraf a mhéadú&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.tsv- tábla téacs ASCII scartha.
-cliceáil grianghraf a mhéadú&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-uaireadóirÃ.xhtml- comhad XHTML (XML) leis na sonraí i dtábla.
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www.w3schools.com/html/html_tables.asp) níos mó&nbsp;Eochairfhocal information
-&externalLinkHtml;ú/a ú)
-r/leathanach
-I ngach formáid tábla torthaí (ach amháin.jsonlKVP, i gcás ina bhfuil ainmneacha colúin ar gach sraith):
-rÃ obh
-Tá ainm colún agus cineál amháin faisnéise ag colún bbbb.
-Tá na hainmneacha colún ag an gcéad sraith den tábla.
-uaireadóirÃ Tá sraitheanna ina dhiaidh sin an t-eolas a d'iarr tú.
-r/leathanach
-phraghsanna Is é an t-ábhar sna cineálacha comhad plain freisin beagán difriúil ó na .html
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .tsv - tábla téacs ASCII scartha.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) comhad leis na sonraí i dtábla.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> níos mó &nbsp; Eochairfhocal information
+ &externalLinkHtml;  </a> )  </ul> I ngach formáid tábla torthaí (ach amháin .jsonlKVP , i gcás ina bhfuil ainmneacha colún ar gach sraith) :
+ <ul>  <li> Tá ainm colún agus cineál amháin faisnéise ag gach colún.
+ <li> Tá an chéad sraith den tábla na hainmneacha colún.
+ <li> Tá sraitheanna ina dhiaidh sin an t-eolas a d'iarr tú.
+ </ul>  <p> Is é an t-ábhar sna cineálacha comhad plain freisin beagán difriúil ó na .html
 freagra &amp; gríos; tá sé d'aon ghnó lom-cnámh ionas go mbeidh sé níos éasca do ríomhaire
 clár a bheith ag obair le.
 
-rÃ omhaire rang = \"selfLink\" id = \"DataStructure\" href= \"#DataStructure\" rel = \"bookmark\" 0.5A Struchtúr Sonraí Comhsheasmhacha do na Responses/a bhéil
-Is féidir le gach ceann de na seirbhísí úsáideora-idirghníomhú cur síos ar an leathanach seo ar ais tábla
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Struchtúr Comhsheasmhach Sonraí do na freagraí </a>  <br> Is féidir le gach ceann de na seirbhísí úsáideora-idirghníomhú cur síos ar an leathanach seo ar ais tábla
 sonraí in aon cheann de na formáidí comhaid coitianta atá liostaithe thuas. Tá súil againn, is féidir leat scríobh
 ach nós imeachta amháin a parse tábla sonraí i gceann de na formáidí. Ansin, is féidir leat
 an nós imeachta sin a athúsáid chun an freagra ó aon cheann de na seirbhísí sin a pharsáil. Seo é
-Ba chóir go mbeadh sé níos éasca déileáil leERDDAP.
+Ba chóir go mbeadh sé níos éasca déileáil le ERDDAP .
 
 
-rÃ obh rang = \"selfLink\" id = \"csvIssues\" href= \"#csvIssues\" rel =\" leabharmharc \".csv/a rÃ agus.tsvSonraí a bhrú
-uaireadóirÃ Má tá datum i gcomhad .csv Sleachta dúbailte inmheánach nó commas,ERDDAPSeo a leanas na
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> agus .tsv Sonraí Teagmhála <ul>  <li> Má tá datum i gcomhad .csv Sleachta dúbailte inmheánach nó commas, ERDDAP Seo a leanas na
 .csv sonraíocht go docht: cuireann sé Sleachta dúbailte ar fud an datum agus doubles
 na Sleachta dúbailte inmheánach.
-uaire carachtair speisialta i .csv nó.tsvcomhad a ionchódú cosúil
-Cóipeáil nasc leis an tweet Leabaigh an Tweet https://www..json.org / \"
-&externalLinkHtml;ú/a ú
-backslash-ionchódaithe carachtair:
-\n (nua-líne), \\ (backslash), \f (beathaform), \t (tab), \r (tuairisceán carráiste)
-nó leis an \\u bbhhhhhh uimh.
-r/leathanach
-
-
-rÃ omhaire rang = \"selfLink\" id =\" jsonp\" href= \"#jsonp\" rel = \"bookmark\" ×
-uaireadóirÃ le haghaidh.jsonIs féidir comhaid san áireamh anois roghnach
-cliceáil grianghraf a mhéadú
-&externalLinkHtml;ú ú ú ú ú ú ú
-ag cur \" &amp; amp;.jsonp = rÁTHPHÁIRTÍ / rÁth\" go dtí deireadh an cheist. Go bunúsach, Insíonn sé seo
-ERDDAPa chur \" r-phost: r-phoist / r-phoist (\" go dtí tús an freagra agus \")\" leis an
-deireadh na freagartha. An chéad charachtar na rÁTHPHÁIRTÍ × ní mór a bheith ina litir ISO 8859 nó \"_\".
+ <li> Carachtair speisialta i .csv nó .tsv comhad a ionchódú cosúil
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> backslash-ionchódaithe carachtair:
+Táirgí gaolmhara (free line) , \\ (riachtanais uisce: measartha) , (foirm duille: oval) , (cluaisín tab) , (internet marketing) nó leis an \\u <i> Tá an </i> syntax.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> cineál gas: in airde </a>  <br> Iarratais ar .json Is féidir comhaid san áireamh anois roghnach
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> cineál gas: in airde
+ &externalLinkHtml;  </a> iarratas a dhéanamh
+ag cur \" &amp; amp; .json p = p = <i> feidhm fheidhm Ainm an ainm </i> \" go dtí deireadh an cheist. Go bunúsach, Insíonn sé seo
+ ERDDAP a chur le \" <i> feidhm fheidhm Ainm an ainm </i>  (\" go dtí tús na freagartha agus \") \" go dtí an
+deireadh na freagartha. An chéad charachtar <i> feidhm fheidhm Ainm an ainm </i> ní mór a bheith ina litir ISO 8859 nó \"_\".
 Ní mór do gach carachtar roghnach ina dhiaidh sin a bheith ina litir ISO 8859, \"_\", dhigit, nó \".
 Más rud é ar dtús nach raibh aon cheist, fág amach an \" &amp;\" i do cheist.
 
 
-cliceáil grianghraf a mhéadútabledapTairiscint Cineálacha Comhad éagsúla
-Is iad na cineálacha comhaid atá liostaithe thuas cineálacha comhaidERDDAPis féidir a úsáid chun freagra a thabhairt
-cineálacha úsáideora-idirghníomhú na n-iarratas (mar shampla, iarrataí cuardaigh).ERDDAPtacú le tacaíocht
+ <p> griddap agus tabledap Tairiscint Cineálacha Comhad éagsúla
+ <br> Is iad na cineálacha comhaid atá liostaithe thuas cineálacha comhaid ERDDAP is féidir a úsáid chun freagra a thabhairt
+cineálacha úsáideora-idirghníomhú na n-iarratas (mar shampla, iarrataí cuardaigh) . ERDDAP tacú le tacaíocht
 sraith éagsúil de chineálacha comhaid le haghaidh sonraí eolaíochta (mar shampla, satailíte agus baoi
-sonraí) iarrataí (féach na
-\"Is maith liom\"&tErddapUrl;/ griddap / doiciméadú.html #fileType\" × griddap / lí agus
-\"Is maith liom\"&tErddapUrl;/ Bailetabledap/ doiciméadú.html #fileType\" ×tabledapú/a ú
-Doiciméid).
+data recovery) iarratais (féach ar an
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> cineál gas: in airde </a> agus
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> data recovery) .
 
 
-&acceptEncodingHtmlh3tErddapUrl;uaireadóirÃ rang = \"selfLink\" id= \"accessUrls\" href= \"#accessUrls\" rel =\" leabharmharc \" Rochtain URLanna le haghaidhERDDAP'SeirbhÃ sÃ s rÃ onn/rÃ th
-ERDDAPTá na pointí rochtana URL do chláir ríomhaireachta:
-rÃ obh
-uaireadóirÃ Chun a fháil ar an liosta de na uaire láidir URLanna rochtain acmhainní / láidir r, úsáid
-rÃ ú&plainLinkExamples1;rÃ ú&nbsp;uaireadóirÃ Chun a fháil ar an liosta atá ann faoi láthair de radar láidir randall datasets r / láidir r, úsáid
-rÃ ú&plainLinkExamples2;rÃ ú&nbsp;bbbb Chun a fháil bbmetadata láidir / láidir r le haghaidh tacar sonraí ar leith
-(an liosta na n-athróg agus a n-tréithe), úsáid
-rÃ ú&tErddapUrl;/ Eolas / PoiblídatasetIDr/i r-phost/innéacs r-.fileTypeú/i ú
-mar shampla,
-rÃ ú&plainLinkExamples3;rÃ ú&nbsp;uaireadóirÃ Chun a fháil ar na torthaí ar phrastrong cuardaigh téacs raidhfil r / láidir r-phost do datasets
-taiseachas aeir: fliuch"searchFor=wind%20speed"mar shampla), úsáid
-rÃ ú&plainLinkExamples4;bbbb (Is féidir leat clár nó script gá a
-rang uaire = \"N\" rel = \"cúnamh\" href= \"https://en.wikipedia.org / wiki / códú réasúnta\"
-&externalLinkHtml;ú/a ú
-an luach sa cheist.)
-rÃ ú&nbsp;rabhsálaí, bain úsáid as an
-\"Is maith liom\"&tErddapUrl;/ Opensearch1.1/innéacs.html \"OpenSearch1.1 ú/a ú
-caighdeán a dhéanamh cuardach téacs iomlán le haghaidh tacar sonraí.
-rÃ ú&nbsp;uaireadóirÃ Chun a fháil ar na torthaí ar chuardach rstrong ^advanced r / láidir r le haghaidh tacar sonraí
-taiseachas aeir: fliuch"searchFor=wind%20speed"mar shampla), úsáid
-rÃ ú&plainLinkExamples5;bbbbbbut turgnamh le
-\"Agus\"&tErddapUrl;/ cuardaigh / míleata.html?&encodedDefaultPIppQuery;\"&advancedSearch;ú/a ú
-i bhrabhsálaí a dhéanamh amach gach ceann de na paraiméadair roghnacha.
-(D'fhéadfadh do chlár nó script gá le
-rang uaire = \"N\" rel = \"cúnamh\" href= \"https://en.wikipedia.org / wiki / códú réasúnta\"
-&externalLinkHtml;ú/a ú
-an luach sa cheist.)
-rÃ ú&nbsp;uaireadóirÃ Chun a fháil ar an liosta de × láidircategoryAttributesú/láidir ú
-(mar shampla, institiúid,long_name, standard_name), úsáid
-rÃ ú&plainLinkExamples6;rÃ ú&nbsp;uaireadóirÃ Chun a fháil ar an liosta de na rabhacha láidir do chatagóir ar leith ómós a thabhairt ar phraghsanna / láidir
-(ag baint úsáide as \"standard_name\" mar shampla), úsáid
-rÃ ú&plainLinkExamples7;rÃ ú&nbsp;uaireadóirÃ Chun a fháil ar an liosta de rstrong r-shonraí tacair i gcatagóir ar leith r / láidir r
-(ag baint úsáide as \"standard_name = am\" mar shampla), úsáid
-rÃ ú&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Rochtain URLanna le haghaidh ERDDAP Seirbhísí ar líne </a>  </h3>  ERDDAP Tá na pointí rochtana URL do chláir ríomhaireachta:
+ <ul>  <li> A fháil ar an liosta de na <strong> URLanna rochtana acmhainní is mó </strong> , úsáid
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Chun an liosta reatha a fháil <strong> gach tacar sonraí </strong> , úsáid
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> A fháil <strong> meiteashonraí </strong> le haghaidh tacar sonraí ar leith
+ (liosta na n-athróg agus a n-tréithe) , úsáid
+ <br>  &tErddapUrl; / Eolas / <i>  datasetID  </i> / innéacs <i>  .fileType  </i>  <br> mar shampla,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> A fháil ar na torthaí <strong> cuardaigh téacs iomlán </strong> do thacair sonraí
+ (ag baint úsáide as "searchFor=wind%20speed" mar shampla) , úsáid
+ <br>  &plainLinkExamples4;  <br>  (D'fhéadfadh do chlár nó script gá
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> faoin gcéad cód
+ &externalLinkHtml;  </a> an luach sa cheist.)  <br>  &nbsp;  <br> Nó, bain úsáid as an
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> caighdeán a dhéanamh cuardach téacs iomlán le haghaidh tacar sonraí.
+ <br>  &nbsp;  <li> A fháil ar na torthaí <strong> searchs chun cinn </strong> do thacair sonraí
+ (ag baint úsáide as "searchFor=wind%20speed" mar shampla) , úsáid
+ <br>  &plainLinkExamples5;  <br> Ach turgnamh le
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> i bhrabhsálaí a dhéanamh amach gach ceann de na paraiméadair roghnacha.
+ (D'fhéadfadh do chlár nó script gá
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> faoin gcéad cód
+ &externalLinkHtml;  </a> an luach sa cheist.)  <br>  &nbsp;  <li> Chun an liosta a fháil <strong>  categoryAttributes  </strong>  (mar shampla, institiúid, long_name , standard_name) , úsáid
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Chun an liosta a fháil <strong> catagóirí do chatagóir ar leith Ag tagairt </strong>  (ag baint úsáide as \"standard_name\" mar shampla) , úsáid
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Chun an liosta a fháil <strong> datasets i gcatagóir ar leith </strong>  (ag baint úsáide as \"standard_name = am\" mar shampla) , úsáid
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

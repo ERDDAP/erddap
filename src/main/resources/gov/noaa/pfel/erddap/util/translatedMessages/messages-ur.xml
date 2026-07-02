@@ -3584,231 +3584,164 @@ A-Za-z0-9_-!.~&#39;()* کے علاوہ تمام حروف کو %HH کے بطور 
 <resourceNotFound>وسیلہ نہیں ملا:</resourceNotFound>
 <restfulWebServices>آرام دہ ویب سروسز</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPدونوں ہیں:
-محمد علی مکی
-https://en.date= (معاونت) ^ ا ب ایس این اے سی آرک آئی ڈی: ویب اطلاقیے
-&externalLinkHtml;ترجمہ:
-&ndash؛ ایسا ویب صفحہ جس میں ایک شکل ہے کہ براؤزر کے ساتھ انسان استعمال کر سکتے ہیں (اس صورت میں ڈیٹا، گراف یا معلومات حاصل کر سکتے ہیں)۔
-&یہ&nbsp;https://en.date= (معاونت) ^ ا ب پ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ر ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ڈ ڈ ڈ ڈ ڈ ڈ ذ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ف ف ف ف ف ف ف ف ف ف ف ف ف ف -RESTfulویب سروس
-&externalLinkHtml;ترجمہ:
-&ndash؛ ایسا آلہ جسے کمپیوٹر پروگرام استعمال کر سکتے ہیں (اس صورت میں ڈیٹا، گراف اور معلومات حاصل کر سکتے ہیں)۔
-ترجمہ:
-ہر ایک کے لیےERDDAPویب صفحہ ایک ایسی شکل کے ساتھ جس میں آپ بطور انسان استعمال کر سکتے ہیں، ایک ہے
-بندERDDAPویب سروس جو کمپیوٹر پروگراموں اور اسکرپٹوں کے لیے سہولت فراہم کرنے کے لیے بنائی جاتی ہے۔
+ ERDDAP دونوں ہیں:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> ویب اطلاقیے
+ &externalLinkHtml;  </a> &نڈاش؛ ایک ویب پیج جس کے ساتھ ایک شکل ہوتی ہے جسے براؤزر کے ساتھ انسان استعمال کر سکتے ہیں۔ (اس صورت میں ڈیٹا، گراف یا ڈیٹا سیٹ کے بارے میں معلومات حاصل کرنے کے لیے) . .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> جواب RESTful ویب سروس
+ &externalLinkHtml;  </a> &ndash؛ ایک ایسا آلہ جسے کمپیوٹر پروگرام استعمال کر سکتے ہیں۔ (اس صورت میں ڈیٹا، گراف اور ڈیٹا سیٹ کے بارے میں معلومات حاصل کرنے کے لیے) . .
+ </ul> ہر ایک کے لیے ERDDAP ویب صفحہ ایک ایسی شکل کے ساتھ جس میں آپ بطور انسان استعمال کر سکتے ہیں، ایک ہے
+بند ERDDAP ویب سروس جو کمپیوٹر پروگراموں اور اسکرپٹوں کے لیے سہولت فراہم کرنے کے لیے بنائی جاتی ہے۔
 مثال کے طور پر ، انسان اس جال کو دلچسپ اعداد و شمار کے لئے مکمل متن تلاش کرنے کے لئے استعمال کر سکتے ہیں:
-^ ا ب پ ت ٹ ث ج \"آج کا دن تاریخ میں\".&htmlQueryUrl;\" سزا&htmlQueryUrl;ترجمہ:
-www.urduction میں فائل کو تبدیل کرنے سے.json(یا ..htmlTable).jsonlCSV1).xhtml،...
-^ ا ب پ ت ٹ ث ج \"آج کا دن تاریخ میں\".&jsonQueryUrl;\" سزا&jsonQueryUrl;ترجمہ:
-&یہ ہم اس کمپیوٹر پروگرام یا کسی کمپیوٹر پروگرام کو جمع کرتے ہیںJavaاسکرپٹ اسکرپٹ ایک ہی حاصل کرنے کے لیے استعمال ہو سکتا ہے۔
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> فائل کی فضاء کو تبدیل کرنے سے لے کر .html تک .json  (یا... .htmlTable ) .jsonlCSV1 ) .xhtml ،...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> ہم کمپیوٹر پروگرام یا Java اسکرپٹ اسکرپٹ ایک ہی حاصل کرنے کے لیے استعمال ہو سکتا ہے۔
 مزید کمپیوٹر پرگرام- دوستانہ انداز میں معلومات
-https://www.date= (معاونت) ^ ا ب ایس این اے سی آرک آئی ڈی:.json۔۔org/۔۔۔جی۔جی۔
-&externalLinkHtml;ترجمہ:
+ <a rel="help" href="https://www.json.org/"> جون
+ &externalLinkHtml;  </a> . .
 
-District\". ای ایس پی این کرک انفو (انگریزی: تعمیر کریں اوپر کی چیزوںERDDAPhttp://www.date= (معاونت)
-بہت سی خصوصیات ہیں۔ERDDAPجسے کمپیوٹر پروگرام یا سکرپٹ استعمال کیا جا سکتا ہے۔
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> تعمیر کریں اُوپر کی چیزوں ERDDAP  </a>  </h3> بہت سی خصوصیات ہیں۔ ERDDAP جسے کمپیوٹر پروگرام یا سکرپٹ استعمال کیا جا سکتا ہے۔
 کہ آپ لکھتے ہیں۔ آپ انہیں دیگر ویب ایپلیکیشنز یا ویب سروسز بنانے کے لیے استعمال کر سکتے ہیں۔
-اوپرERDDAP، بنانےERDDAPزیادہ‌تر کام کرتے ہیں &#33;
-تو اگر آپ کے پاس اعداد و شمار کے بہتر تناظر کے لئے ایک تصور ہےERDDAPخدمت یا ویب
+اوپر ERDDAP ، بنانے ERDDAP زیادہ‌تر کام کرتے ہیں &#33;
+تو اگر آپ کے پاس اعداد و شمار کے بہتر تناظر کے لئے ایک تصور ہے ERDDAP خدمت یا ویب
 صفحہ جس کو ڈیٹا تک رسائی کے لیے آسان طریقہ کی ضرورت ہوتی ہے، ہم آپ کی حوصلہ افزائی کرتے ہیں کہ آپ کو آپ کی ذاتی تعمیر کریں۔
-ویب کا اطلاق، ویب سروس یا ویب پیج اور استعمال ہوتا ہے۔ERDDAPبطور بنیاد.
-آپ کا نظام معلومات، گراف اور دیگر معلومات حاصل کر سکتا ہے۔ERD'ERDDAPیا کچھ
-دیگرERDDAPتنصیبات، یا آپ کر سکتے ہیں۔
-ترجمہ:۔ ساحلی پٹی سے ہمیشہ نصب کرنا۔
-https://erdap.github.io/docs/per-dmin/deploy-install\". اخذ شدہ بتاریخ 07 اکتوبر 2018. تحقق من التاريخ في: archive-date= (معاونت) ^ ا ب ایس این اے سی آرک آئی ڈی: اپنے آپ کو قائمERDDAPسرور/اردو:
+ویب کا اطلاق، ویب سروس یا ویب پیج اور استعمال ہوتا ہے۔ ERDDAP بطور بنیاد.
+آپ کا نظام معلومات، گراف اور دیگر معلومات حاصل کر سکتا ہے۔ ERD ' ERDDAP یا کچھ
+دیگر ERDDAP تنصیبات، یا آپ کر سکتے ہیں۔
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> اپنے آپ کو قائم کریں ERDDAP سرور </a> :
 جو ہو سکتا ہے۔
 عوامی رسائی یا صرف ایک غیر رسمی رسائی ۔
 
 
-==مزید دیکھیے==*RESTfulدرکار ہے.
-صارفین کی معلومات کے لیے درخواستERDDAP(مثلاً تلاش کے نتائج)۔
-ویب کا عالمی معیار طلبہ کے لیے استعمال کریں:
-https://en.date= (معاونت) ^ ا ب پ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ڈ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ف ﴿ http://
-&externalLinkHtml;ترجمہ:
-بھیجے گئے
-https://www.w3.org/protocols/rfc2616-sec9.html#sec9.3\". اخذ شدہ بتاریخ 08 مارچ 2018. تحقق من التاريخ في:HTTP GET&externalLinkHtml;ترجمہ:
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful سوال </a>  </h3> صارفین کی معلومات کے لیے درخواست ERDDAP  (مثلاً تلاش کے نتائج) ویب کا عالمی معیار طلبہ کے لیے استعمال کریں:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> خودکار-فیصلہ
+ &externalLinkHtml;  </a> بھیجے گئے
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> . .
 یہ وہی کمپیوٹر ہے جسے آپ ایک شکل بھرتے وقت استعمال کرتے ہیں۔
-ویب پیج پر اور کلک کریں۔<kbd>Submit</kbd>استعمال کرنے کے لئےHTTP GET، آپ خاص طور پر تشکیل شدہ ایک کیمیائی عمل (جس میں ایک آلہ شامل ہو سکتا ہے) پیدا کرتے ہیں۔
-اور اسے لے بھیج دیتے ہیںHTTP GET. . آپ انہیں ہاتھ سے بنا سکتے ہیں اور ان میں داخل کر سکتے ہیں
-اپنے سوفٹ ویئر کے پلیٹ فارم کی مثال حاصل کریں.
-^ ا ب پ ت ٹ ث ج \"آج کا دن تاریخ میں\".&jsonQueryUrl;\" سزا&jsonQueryUrl;ترجمہ:
-&یہ، آپ کمپیوٹر پروگرام یا ویب پیج اسکرپٹ لکھ سکتے ہیں
-اور جواب حاصل کریں. تنصیب کے ذریعےHTTP GETکیونکہ انہیں منتخب کیا گیا تھا۔
-محمد علی مکی
-ترجمہ: ان کا استعمال آسان ہے۔
-ترجمہ: وہ اچھا کام کرتے ہیں ۔
-ترجمہ: ان کی بے پناہ حمایت کی جاتی ہے (بشیر، کمپیوٹر زبانوں میں، آپریٹنگ سسٹم میں)۔
-آلات
-ترجمہ: وہ ایک بنیاد ہیں۔
-https://en.wikipedia.org/wiki/ternational_State_Transfer\". اخذ شدہ بتاریخ 22 جولا ئی 2012. تحقق من التاريخ في: سٹیٹس منتقلی (انگریزی:REST)
-&externalLinkHtml;ترجمہ:
-https://www.crummy.com/writer/person.html انصاری (انگریزی:RESTful-Web-serves\". www.urneted Architecture (انگریزی:ROA)
-&externalLinkHtml;ترجمہ:
-ترجمہ: وہ ایک بڑے تقسیم شدہ اطلاق کے طور پر ورلڈ وائڈ ویب کا استعمال آسانی سے کرتے ہیں،
+ویب پیج پر اور کلک کریں۔ <kbd> غیر متصل </kbd> استعمال کرنے کے لئے HTTP GET ، آپ کو خاص طور پر تشکیل دینے والا آلہ پیدا کرتے ہیں۔ (جن میں شاید کوئی شخص بھی شامل ہو) اور اسے لے بھیج دیتے ہیں HTTP GET . . آپ انہیں ہاتھ سے بنا سکتے ہیں اور ان میں داخل کر سکتے ہیں
+اپنے براؤزر کا پتہ متن متن (مثال کے طور پر
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> یا، آپ کمپیوٹر پروگرام یا ویب پیج اسکرپٹ لکھ سکتے ہیں، اسے ارسال کر سکتے ہیں،
+اور جواب حاصل کریں. تنصیب کے ذریعے HTTP GET کیونکہ انہیں منتخب کیا گیا تھا۔
+ <ul>  <li> ان کا استعمال آسان ہے۔
+ <li> وہ اچھا کام کرتے ہیں ۔
+ <li> ان کی مدد کی جائے گی (براؤزر میں کمپیوٹر زبان، آپریٹنگ سسٹم شامل ہیں۔
+آلات،) . .
+ <li> وہ ایک بنیاد ہیں۔
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> نمائندہ ریاست منتقلی ( REST )  &externalLinkHtml;  </a> اور
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> سرِورق کی تصویر ( ROA )  &externalLinkHtml;  </a>  <li> وہ ایک بڑے تقسیم شدہ اطلاق کے طور پر ورلڈ وائڈ ویب کا استعمال آسانی سے کرتے ہیں،
 مثال کے طور پر
-https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\". https://en.wood.org.pk/gmail.com/brography.com/انگریزی:mashups&externalLinkHtml;ترجمہ:
-https://en.wikipedia.org/wiki/Ajax_%28proming%29\". 25 دسمبر 2018 میں اصل سے آرکائیو شدہ. تحقق من التاريخ في:AJAXدرخواست
-&externalLinkHtml;ترجمہ:
-ترجمہ: ^ ا ب پ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ت ٹ ث ج چ ح خ د ڈ ذ ر ڈ ذ https://www.brita.com/date= (معاونت) ^ ا ب ایس این اے سی آرک آئی ڈی:
-&externalLinkHtml;ترجمہ:
-ہے.ERDDAP''جس سے نظام کو آسان بنایا جاتا ہے۔
-ترجمہ: آپ اسے اپنے براؤزر میں لکھ سکتے ہیں،
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX درخواست
+ &externalLinkHtml;  </a>  <li> وہ ہیں <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> بند
+ &externalLinkHtml;  </a> ہے. ERDDAP ''جس سے نظام کو آسان بنایا جاتا ہے۔
+ <li> آپ اسے اپنے براؤزر میں لکھ سکتے ہیں،
 اسے اپنے نوٹس میں لکھیں، ای میل کسی دوست کو، وغیرہ۔
-ترجمہ:
-
-==مزید دیکھیے==* https://www.nk\". اخذ شدہ بتاریخ 07 اکتوبر 2018. تحقق من التاريخ في: archive-date= (معاونت) ^ ا ب پ ت ٹ ث ج چ ح خ د \"آج کا دن تاریخ میں\". Percent Ency/date= (معاونت)
-آئین میں کچھ حروف (مثلاً، جگہوں) اور دیگر حروف کی اجازت نہیں ہے۔
-خاص معنی رکھتے ہیں (مثلاً '&amp؛' الگ الگ چیز= مقداری جوہر ایک مرکب میں۔
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> پرکنٹ آن کوڈ </a>  </h3> آئین میں کچھ حروف کی اجازت نہیں ہے۔ (مثال کے طور پر، جگہ) اور دیگر حروف
+خاص معنی رکھتے ہیں۔ (مثال کے طور پر '&amp؛' کلیات= مقداری جوہر کو ایک مرکب میں الگ کرتا ہے۔) . .
 جب آپ کسی ویب پیج پر ایک فارم بھرتے ہیں اور پھر آپ پر کلک کرتے ہیں تو آپ کے براؤزر خودکار طور پر
-سانچہ:ابتدائی ترتیب:ابتدائی ترتیب:12ء کی دہائی ^ ا ب ایس این اے سی آرک آئی ڈی:
-&externalLinkHtml;ترجمہ:
-مثال کے طور پر، space کے خاص حروف (مثلاً space %20)، مثلاً،
-^ ا ب پ ت ٹ ث ج \"آج کا دن تاریخ میں\".&htmlQueryUrlWithSpaces;\" سزا&htmlQueryUrlWithSpaces;ترجمہ:
-&یہ لیکن اگر آپ کے کمپیوٹر پروگرام یا اسکرپٹ میں پائی جاتی ہے تو اسے غالباً فیصد کرنا پڑتا ہے۔
-خود کو محفوظ. اگر ایسا ہے تو شاید A-Za-Z0-9_-&#33; ~'()*
-حروف تہجی کی قدروں میں (بعد ازاں)۔'='اشاروں (encoded) کی ضرورت ہے۔
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> فیصد ان کوڈ
+ &externalLinkHtml;  </a> حسابِ ابجد کے خاص حروف (مثلاً جگہ %20 بنتی ہے۔) مثال کے طور پر،
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> لیکن اگر آپ کے کمپیوٹر پروگرام یا اسکرپٹ میں پائی جاتی ہے تو اسے غالباً فیصد کرنا پڑتا ہے۔
+خود کو محفوظ. اگر ایسا ہے تو ممکن ہے کہ A-Za-Z0-9_-&#33; ~ ' () *
+ان کی قدروں میں (ان حصوں کے بعد '=' نشانیاں) Encded بننے کی ضرورت ہے
 جیسا کہ %H، جہاں HH ہے وہ حروف تہجی کی 2 مصرعی مقدار ہے مثلاً فضاء %20 بنتی ہے۔
 اوپر #127 کے حروف کو UTF-8BBC میں تبدیل کرنا ضروری ہے، پھر ہر UTF-8 بٹ کو فیصد Encod ہونا چاہیے۔
-( مدد کے لئے پروگرامر کے طور پر )۔ زبانوں میں ایسا کرنے کے لیے اوزار موجود ہیں (مثلاً دیکھیے،Java'
-https://docs.oracle.com/javase/8/docs/api/index.html انگریزی ویکیپیڈیا کے مشارکین. \"Jawa/net/URLEncoder.html\". متناسقات:java.net.URLEncoder&externalLinkHtml;ترجمہ:Javaاسکرپٹ
-https://developer.mographic.org/en-US/docs/Web/.org. https://developer.com/date= (معاونت) ^ ا ب پ ربط : ITIS TSN —Javaاسکرپٹ/Reference/Global_Objets/encodeURICompont\". متناسقات:encodeURIComponent()&externalLinkHtml;وَإِنَّهُمْ يَعْمُونَ سانچہ:قرآن-سورہ 56 آیت 22۔۔
-https://www.url-encode-decode.com\". www.url encode.com.com.com.com. اخذ شدہ بتاریخ 09 جو آپ کے لیے Ecode/decode ہے۔
-&externalLinkHtml;ترجمہ:
-
-
-==مزید دیکھیے==* فائل کا ردّر
-اگرچہ انسان براؤزر استعمال کرنا چاہتا ہے صارف کو (مثلاً،
-تلاش نتائج) بطور ایچ ٹی ایم ایل دستاویزات، کمپیوٹر پروگرام اکثر نتائج حاصل کرنے کو ترجیح دیتے ہیں۔
-سادہ، آسانی سے، کم لفظی دستاویز.ERDDAPصارف کو واپس کر سکتا ہے۔
+ (مدد کیلئے پروگرامر پوچھیں) . . زبانوں کے پاس ایسا کرنے کے لیے اوزار موجود ہیں۔ (مثال کے طور پر ، دیکھیں Java '
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> اور Java اسکرپٹ
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> اِس شمارے میں ()  &externalLinkHtml;  </a> ) اور وہاں ہیں
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> ویب سائٹ جو کہ آپ کے لئے
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> فائل قسم </a>  </h3> اگرچہ انسان براؤزر کو استعمال کرتے ہوئے صارف کے انڈر فیس نتائج حاصل کرنا چاہتے ہیں۔ (مثال کے طور پر
+تلاش کا نتیجہ) ایچ ٹی ایم ایل دستاویزات کے طور پر، کمپیوٹر پروگرام اکثر نتائج حاصل کرنے کو ترجیح دیتے ہیں۔
+سادہ، آسانی سے، کم لفظی دستاویز. ERDDAP صارف کو واپس کر سکتا ہے۔
 ان مجموعی طور پر کمپیوٹر پرگرام دوستانہ، فائل قسم:
-محمد علی مکی
-http://www.csv - ایک ویکیپیڈیا ISCI متن میز.
-(بزبان انگریزی). اردو ویکیپیڈیا کے مشارکین. \"Haccess-date= (معاونت) https://en.wikipedia.org/wiki/Comma-dates.\"&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.htmlTable- ایک.html ویب صفحہ ایک میز میں ڈیٹا کے ساتھ.
-(تلفظ: /=\"l=\"l=\"l=\"l=\"l=\"l=\"n=\"k=\"n=\"/; مزید&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.itx- ایک آئیور متن فائل جس میں ہر کالم آف ڈیٹا کے لیے ایک لہر ہے۔
-(بزبان انگریزی). Appl= (معاونت) https://www.wavemetrics.net/doc/gorman/I-09%20Data%20Import%20EPort.pdf\".comور (انگریزی:&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.json- ایک میز کی طرح جون فائل.
-(اردو ترجمہ: help) معاونت·معلومات https://www.s.com/biography.com/biography.com/biography/Ad-Cobje-Cobje/;.json۔۔org/۔۔۔ اعظم۔&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:&tErddapUrl;/tabledap/document.html#json\".ERDDAP- جی ہاں.
-ترجمہ:.jsonlCSV1- ایک \"CSV سے زیادہ\" Juns Lines فائل کے ساتھ پہلی لائن پر کالموں کے ساتھ.
-(اردو ترجمہ: App\"Href). https://jsonlines.org/=mber.org.com/ یہ فہرست ممالک بلحاظ آبادی ہے۔&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.jsonlCSV- ایک \"CSV سے زیادہ\" Juns Lines فائل جس کے کوئی کالم نام نہیں ہیں۔
-(اردو ترجمہ: App\"Href). https://jsonlines.org/=mber.org.com/ یہ فہرست ممالک بلحاظ آبادی ہے۔&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.jsonlKVP- ایک جولین لائنز فائل کے ساتھ کلیدی جوڑوں کے ساتھ.
-(اردو ترجمہ: App\"Href). https://jsonlines.org/=mber.org.com/ یہ فہرست ممالک بلحاظ آبادی ہے۔&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.mat- ایک MaTLAB binary فائل.
-(اردو ترجمہ: help) معاونت·معلومات https://www.s.com/biography.com/biography.com/biography/Ad-Cobje-Cobje/;.matHworks.com/\" جمع:&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.nc- ایک پلیٹ، میز کی طرح،NetCDFمنفی بینری فائل۔
-(محقق من التاريخ في:&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.nccsv- ایک پلیٹ، میز کی طرح،NetCDF- ایس آئی سی ایس وی فائل کی طرح.
-(اردو ترجمہ: help) معاونت·معلومات) https://erdap.github.io/docs/user/ncsv-1.20\". اردو ڈاٹ کو. اخذ شدہ بتاریخ 22 جولا ئی 2012. تحقق من التاريخ في:&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.ncرے جُسن - ایک جُز فائل (NCO-style) اعداد و شمار کے ساتھ ساتھ metadata صرف (گلوبائی خصوصیات)،
-مقدار، اور ان کی خصوصیات، قسم اور شکل کے ساتھ تبدیل ہوتی ہے) اور اعداد و شمار کی کوئی مقدار نہیں۔
-(محقق من التاريخ في:&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.tsv- ایک ٹی این ایس آئی متن میز.
-(تلفظ: /&lt;korpela.fi/TSV.html \"Armor\". اخذ شدہ بتاریخ 22 جولا ئی 2012. تحقق من التاريخ في:&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:.xhtmlایکس ایچ ٹی ایم ایل (XML) ایک میز میں ڈیٹا کے ساتھ فائل.
-(تلفظ: /=\"l=\"l=\"l=\"l=\"l=\"l=\"n=\"k=\"n=\"/; مزید&nbsp;معلومات
-&externalLinkHtml;ترجمہ:
-ترجمہ:
-ہر نتائج میں میز فارم ( مگر.jsonlKVP، جہاں ہر قطار پر ستون نام ہیں:
-محمد علی مکی
-&یہ ہر کالم میں ستون نام اور ایک قسم کی معلومات ہیں۔
-کاپی رائٹ کی پہلی قطار میں ستونوں کا نام ہے۔
-ترجمہ: اسکے بعد قطاروں میں آپ کی درخواست کی گئی معلومات موجود ہیں ۔
-ترجمہ:
-فولڈرز ان میدانی فائلوں میں موجود مواد .html سے بھی تھوڑا مختلف ہے۔
+ <ul>  <li> . Cssv - ایک Kom-AsCI متن میز.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - ایک.html ویب صفحہ ایک میز میں ڈیٹا کے ساتھ.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .itx - ایک آئیور متن فائل جس میں ہر کالم آف ڈیٹا کے لیے ایک لہر ہے۔
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .json - ایک میز کی طرح جون فائل.
+ ( <a rel="help" href="https://www.json.org/"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> یا
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - غیر واضح معلومات </a> )  <li>  .jsonlCSV1 - ایک \"CSV سے زیادہ\" Juns Lines فائل کے ساتھ پہلی لائن پر کالموں کے ساتھ.
+ ( <a rel="help" href="https://jsonlines.org/"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - ایک \"CSV سے زیادہ\" Juns Lines فائل جس کے کوئی کالم نام نہیں ہیں۔
+ ( <a rel="help" href="https://jsonlines.org/"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - ایک جولین لائنز فائل کے ساتھ کلیدی جوڑوں کے ساتھ.
+ ( <a rel="help" href="https://jsonlines.org/"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .mat - ایک MaTLAB binary فائل.
+ ( <a rel="help" href="https://www.mathworks.com/"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .nc - ایک پلیٹ، میز کی طرح، NetCDF منفی بینری فائل۔
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .nccsv - ایک پلیٹ، میز کی طرح، NetCDF - ایس آئی سی ایس وی فائل کی طرح.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .nc رے Json - ایک جون فائل ( NCO -style) ڈیٹا سیٹ کے ساتھ صرف میٹاداٹا (عالمی خصوصیات،
+مقدار، اور تبدیلی اپنی خصوصیات، قسم اور شکل کے ساتھ ہوتی ہے۔) اور ڈیٹا کی قیمت نہیں.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .tsv - ایک ٹی این ایس آئی متن میز.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  <li>  .xhtml - ایک XHTML (XML) کسی میز میں اعداد کے ساتھ فائل۔
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> مزید &nbsp; معلومات
+ &externalLinkHtml;  </a> )  </ul> ہر نتائج ٹیبل فارمیٹ میں (جگہ .jsonlKVP ، جہاں ہر قطار پر کالم نگار ہیں۔) :
+ <ul>  <li> ہر کالم میں ستون نام اور معلومات کی ایک قسم ہے۔
+ <li> میز کی پہلی قطار میں ستونوں کا نام ہے۔
+ <li> اسکے بعد قطاروں میں آپ کی درخواست کی گئی معلومات موجود ہیں ۔
+ </ul>  <p> ان میدانی فائلوں میں موجود مواد .html سے بھی تھوڑا مختلف ہے۔
 جواب &مداش؛ یہ جان بوجھ کر غائب ہو جاتا ہے تاکہ کمپیوٹر کے لیے آسان ہو۔
 کام کرنے کے لئے پروگرام.
 
-https://www.nk\". 25 دسمبر 2018 میں اصل سے آرکائیو شدہ. تحقق من التاريخ في:
-اس صفحہ پر بیان کردہ صارف کی تمام خدمات کا تختہ پلٹ سکتا ہے۔
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> اِس شمارے میں سے . . . </a>  <br> اس صفحے پر بیان کردہ تمام صارفین کی خدمات میز واپس کر سکتی ہیں۔
 درج ذیل کسی بھی عام فائل فارمیٹ میں ڈیٹا۔ امید ہے، آپ لکھ سکتے ہیں
 صرف ایک فارمیٹ میں ڈیٹا کی میز پر ایک کر سکتے ہیں. پھر آپ کر سکتے ہیں
 اس عمل کو دوبارہ استعمال کریں کہ ان خدمات میں سے کسی بھی جواب کو حل کیا جائے۔ یہ
-مسئلے سے نپٹنے کے لئے آسان ہونا چاہئےERDDAP. .
+مسئلے سے نپٹنے کے لئے آسان ہونا چاہئے ERDDAP . .
 
 
-District) ریاستہائے متحدہ امریکا کا ایک انانکارپوریٹڈ کمیونٹی جو مسیسپی میں واقع ہے۔.tsvطےشدہ
-ترجمہ: اگر کسی دقیق فائل میں کوئی دقیقہ اندرونی دُگنا (csv) ہوتا ہے یا پھر اسکوزہ (conce) ہوتا ہے،ERDDAPپیرو
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> ایس . </a> اور .tsv تفصیلات <ul>  <li> اگر کسی دقیق فائل میں کوئی دقیقہ اندرونی دُگنا (csv) ہوتا ہے یا پھر اسکوزہ (conce) ہوتا ہے، ERDDAP پیرو
 .csv spectation سختی سے : اس میں دُگنا دائرۃ المعارف اور دُگنا لکھا جاتا ہے۔
 اندرونی دُگنا تجزیہ ۔
-http://www.csv میں حروف تہجی.tsvفائل انcode جیسے ہیں۔
-https://www.date= (معاونت) ^ ا ب ایس این اے سی آرک آئی ڈی:.json۔۔org/۔۔۔جی۔جی۔
-&externalLinkHtml;ترجمہ:
-پشتون قبائلی حروف تہجی:
-^ ا ب پ ت ٹ ث ج چ ح خ د ڈ ذ ح خ د ڈ ذ ح خ د ڈ ذ ر ڈ ذ ح خ د ڈ ذ ح خ د ڈ ذ ر ڈ ذ ر ڈ ذ ر ڈ ذ ر ڈ ذ ر ڈ ذ ر ڈ ذ ر ڈ ڈ ڈ ڈ ذ ڈ ڈ ذ ڈ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ذ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ڈ ف ف ف ف ف ف ح ح ح ح ڈ ڈ ڈ ڈ ڈ ڈ -
-یا جس کے ساتھ وضو کیا جاتا ہے
-ترجمہ:
-
-
-https://www.nk.ink\".jsonp.html انگریزی ویکیپیڈیا کے مشارکین. \"Barket\". اخذ شدہ بتاریخ 22 جولا ئی 2012. تحقق من التاريخ في:
-&یہ.jsonفائلیں اس وقت شامل ہو سکتی ہیں
-https://niaryariv.wordpress.com/2009/05/jsonp-resply/\".jsonp.com. اخذ شدہ بتاریخ 08 مارچ 2018. تحقق من التاريخ في:
-&externalLinkHtml;محمد علی کرم
-\"&amp;.jsonاخذ کردہ بتاریخ: 18 اکتوبر 2017ء. تحقق من التاريخ في: بنیادی طور پر، یہ بتاتا ہے
-ERDDAPتاکہ جواب کے شروع میں \"محمد علی جناح\" کو شامل کیا جائے
-جواب کا اختتام ۔ محمد علی مکی makki.ma@gmail.com اردو کوڈر لینکس فورم www.urducoder.com ISO 8859 خط یا \"__\" ہونا چاہیے۔
+ <li> . . . .tsv فائل انcode جیسے ہیں۔
+ <a rel="help" href="https://www.json.org/"> جون
+ &externalLinkHtml;  </a> پشتون قبائلی حروف تہجی:
+http://www.n (نیا لائن) ^ ا ب جی این ڈی- آئی ڈی: (پشتون) . ، %f (دودھ پلانے کا عمل) ،... (طاق) -... (واپسی) یا پھر ے کے ساتھ <i> ہہ </i> ارے.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> جیپ </a>  <br> درخواست کیلئے درخواست .json فائلیں اس وقت شامل ہو سکتی ہیں
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> جیپ
+ &externalLinkHtml;  </a> درخواست
+\"&amp; .json صفحہ= <i> عمل نام </i> \" حدیث کے آخر تک. بنیادی طور پر، یہ بتاتا ہے
+ ERDDAP اور ان میں اضافہ بھی کیا <i> عمل نام </i>  (\" جواب کے آغاز تک اور \") \"...
+جواب کا اختتام ۔ پہلا حرف <i> عمل نام </i> ISO 8859 خط یا \"__\" ہونا چاہیے۔
 اس کے بعد ہر آنے والی شخصیت کو ISO 8859 خط، \"_\"، ایک Decit، یا \"۔
 اگر ابتدائی طور پر کوئی انفنٹری نہیں تھی، تو \"&amp\" چھوڑ دو.
 
 
-&یہtabledapمختلف فائلوں کو شامل کریں
-محمد صلی اللہ علیہ و آلہ وسلم کی فائل مندرجہ بالا اقسام ہیں۔ERDDAPجواب دینے کے لیے استعمال ہو سکتا ہے۔
-درخواستوں کی صارفی انواع (مثلاً طلبہ)۔ERDDAPمدد
-سائنسی اعداد و شمار کے لیے فائل کی ایک الگ سیٹ (جیسے، سیٹلائٹ اور برقیات وغیرہ)۔
-data) درخواستات (غور دیکھیں:
-ترجمہ:&tErddapUrl;/gridap/document.html#filephedap/azip
-ترجمہ:&tErddapUrl;/tabledap/document.html#file &tabledapترجمہ:
-دستاویزات ۔
+ <p> گریناڈاپ اور tabledap مختلف فائلوں کو شامل کریں
+ <br> فائل قسم کی مندرجہ ذیل اقسام ہیں۔ ERDDAP جواب دینے کے لیے استعمال ہو سکتا ہے۔
+درخواستوں کے صارفین کی طرف سے انواع (مثال کے طور پر طالبان طلبہ) . . ERDDAP مدد
+سائنسی اعداد و شمار کی مختلف اقسام ہیں۔ (مثال کے طور پر سیٹلائٹ اور سکیل
+اعداد) درخواست (دیکھیں
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> جدول </a> اور
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> دستاویز) . .
 
 
-&acceptEncodingHtmlh3tErddapUrl;access-date= (معاونت) access Urls\". access-urls\". rel= (معاونت) ^ ا ب پ ت ٹ ث ج \"آج کا دن تاریخ میں\". رسائی حاصل کرنے کے لیےERDDAP'صرف سروسز/2007/08
-ERDDAPکمپیوٹر پروگرامز کے لیے ان ڈرم رسائی پوائنٹ موجود ہے:
-محمد علی مکی
-ترجمہ: اس فہرست کو شامل کرنے کے لیے http://dnetws تک رسائی حاصل کرنے کے لیے/قوت/قوت، استعمال کریں
-&یہ&plainLinkExamples1;&یہ&nbsp;ترجمہ: http://dmail.date= (معاونت) کر نے کے لئے حالیہ فہرست https://www.university.org/struction, استعمال کرنے کے لیے
-&یہ&plainLinkExamples2;&یہ&nbsp;http://www.d-date= (معاونت) مخصوص اعداد و شمار کے لیے https://www.d-date= (معاونت)/url-date= (معاونت);
-(فہرست متغیرات اور ان کی خصوصیات)، استعمال کریں۔
-&یہ&tErddapUrl;ڈی ایس ایل اتصال %ddatasetID&یہ.fileTypeترجمہ:
-مثال کے طور پر
-&یہ&plainLinkExamples3;&یہ&nbsp;ترجمہ: صحیح متن کے نتائج حاصل کرنے کے لیے/ای ایس پی این اے سی آرک آئی ڈی:
-( تفریح"searchFor=wind%20speed"مثال کے طور پر، استعمال
-&یہ&plainLinkExamples4;&یہ معلومات :
-سانچہ:ابتدائی ترتیب:ابتدائی ترتیب:12ء کی دہائی https://en.wikipedia.org/wiki/Percent-encode\". متناسقات:
-&externalLinkHtml;ترجمہ:
-( متی ۲۴ : ۴۵ - ۴۷ )
-&یہ&nbsp;ترجمہ:
-سانچہ:قرآن-سورہ 37 آیت 17۔۔۔*&tErddapUrl;/opensearch1.1/index.html======*OpenSearch1.1/دو/ڑ
-اعداد و شمار کے لیے مکمل متن تلاش کرنے کا معیار۔
-&یہ&nbsp;ترجمہ: اعداد و شمار کے لیے https://www.d-date=/date= (معاونت) کے نتائج حاصل کرنے کے لیے
-( تفریح"searchFor=wind%20speed"مثال کے طور پر، استعمال
-&یہ&plainLinkExamples5;&یہ تجربہ کار
-ا_تصال:&tErddapUrl;/ تلاش کرنا / تلاش کرنا.html؟&encodedDefaultPIppQuery;\" سزا&advancedSearch;ترجمہ:
-سب کو حل کرنے کے لئے ایک براؤزر میں.
-( آپکے پروگرام یا اسکرپٹ کی ضرورت ہو سکتی ہے
-سانچہ:ابتدائی ترتیب:ابتدائی ترتیب:12ء کی دہائی https://en.wikipedia.org/wiki/Percent-encode\". متناسقات:
-&externalLinkHtml;ترجمہ:
-( متی ۲۴ : ۴۵ - ۴۷ )
-&یہ&nbsp;ترجمہ: بھول بھلياں کي فہرست حاصل کر نے کے ليےcategoryAttributes&یہ
-مثال کے طور پر ،long_nameاستعمال:
-&یہ&plainLinkExamples6;&یہ&nbsp;ترجمہ: کسی مخصوص بھول بھلياں کے لیے شامل کر نے کے ليے شامل کريں وائیرڈ اتصال %d
-مثال کے طور پر \" معیاری_نام\" استعمال کریں،
-&یہ&plainLinkExamples7;&یہ&nbsp;ترجمہ: اس فہرست کو نئے سرے سے بنا نے کے لیے بھَٹَنَّا يُسْتَقُونَ سانچہ:تقویم 2/یکم تاریخ
-مثال کے طور پر، استعمال کریں.
-&یہ&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> رسائی حاصل کرنے کے لیے ERDDAP ' سروسز </a>  </h3>  ERDDAP کمپیوٹر پروگرامز کے لیے ان ڈرم رسائی پوائنٹ موجود ہے:
+ <ul>  <li> فہرست حاصل کرنے کے لیے <strong> مرکزی وسائل رسائی URLs </strong> ، استعمال
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> موجودہ فہرست حاصل کرنے کے لیے <strong> تمام اعداد و شمار </strong> ، استعمال
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> حاصل کرنے کے لئے <strong> ملتاٹا </strong> مخصوص ڈیٹا سیٹ کے لیے
+ (یہ فہرست متغیرات اور ان کی خصوصیات ہے۔) ، استعمال
+ <br>  &tErddapUrl; /ت/تُک/ت <i>  datasetID  </i> /index <i>  .fileType  </i>  <br> مثال کے طور پر
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> نتائج حاصل کرنے کے لئے <strong> مکمل متن تلاش </strong> اعداد و شمار کے لئے
+ (استعمال "searchFor=wind%20speed" بطور مثال) ، استعمال
+ <br>  &plainLinkExamples4;  <br>  (آپ کے پروگرام یا اسکرپٹ کی ضرورت ہو سکتی ہے۔
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> فیصد-
+ &externalLinkHtml;  </a> اس کی قیمت.)  <br>  &nbsp;  <br> یا، استعمال
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> اعداد و شمار کے لیے مکمل متن تلاش کرنے کا معیار۔
+ <br>  &nbsp;  <li> نتائج حاصل کرنے کے لئے <strong> ترقیاتی تلاش </strong> اعداد و شمار کے لئے
+ (استعمال "searchFor=wind%20speed" بطور مثال) ، استعمال
+ <br>  &plainLinkExamples5;  <br> لیکن تجربے کے ساتھ
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> سب کو حل کرنے کے لئے ایک براؤزر میں.
+ (آپ کے پروگرام یا اسکرپٹ کی ضرورت ہو سکتی ہے۔
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> فیصد-
+ &externalLinkHtml;  </a> اس کی قیمت.)  <br>  &nbsp;  <li> فہرست حاصل کرنے کے لئے <strong>  categoryAttributes  </strong>  (مثال کے طور پر، long_name ، معیاری _نام:) ، استعمال
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> فہرست حاصل کرنے کے لئے <strong> مخصوص علا قے کے ليے عرفیت </strong>  (بطور مثال \"مقام_نام\" استعمال کرتے ہیں۔) ، استعمال
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> فہرست حاصل کرنے کے لئے <strong> اعداد مخصوص حساب سے طے کرتے ہیں۔ </strong>  (بطور مثال \" معیاری_نام= وقت استعمال کرتے ہوئے\") ، استعمال
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

@@ -3956,231 +3956,164 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <resourceNotFound>ไม่พบทรัพยากร:</resourceNotFound>
 <restfulWebServices>บริการเว็บ RESTful</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPคือทั้ง:
-&lt;l&gt;
-&lt;li) &lt;a rel= \"help\" (httpps) = \"wikipedia.org/wikii/Web_camplication\"] โปรแกรมเว็บ
-&externalLinkHtml;&lt;i&gt;
-& dandash; หน้าเว็บที่มีแบบฟอร์มที่มนุษย์มีเบราว์เซอร์สามารถใช้ได้ (ในกรณีนี้, เพื่อรับข้อมูล, กราฟ, หรือข้อมูลเกี่ยวกับข้อมูล)
-&lt;br /&gt;&nbsp;&lt;li) &lt;a rel= \"help\" (httpps) = \"wikipedia.org/wikii/Web_service\".RESTfulบริการเว็บ
-&externalLinkHtml;&lt;i&gt;
-& dandash; ที่อยู่ URL ที่โปรแกรมคอมพิวเตอร์สามารถใช้ได้ (ในกรณีนี้) เพื่อรับข้อมูล, กราฟ, และข้อมูลเกี่ยวกับชุดข้อมูล
-&lt;i&gt;
-สําหรับทุกERDDAPหน้าเว็บที่มีแบบฟอร์มที่คุณเป็นมนุษย์ที่เบราว์เซอร์สามารถใช้ได้ มี
-ตรงกันERDDAPบริการเว็บที่ถูกออกแบบมาให้ง่ายต่อโปรแกรมคอมพิวเตอร์และสคริปต์ที่จะใช้
+ ERDDAP คือทั้ง:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> โปรแกรมเว็บ
+ &externalLinkHtml;  </a> & dandash; หน้าเว็บที่มีแบบฟอร์มที่คนมีเบราว์เซอร์สามารถใช้ได้ (ในกรณีนี้, เพื่อให้ได้ข้อมูล, กราฟ, หรือข้อมูลเกี่ยวกับชุดข้อมูล) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful บริการเว็บ
+ &externalLinkHtml;  </a> & Ddash; ตําแหน่ง URL ที่โปรแกรมคอมพิวเตอร์สามารถใช้ได้ (ในกรณีนี้, เพื่อให้ได้ข้อมูล, กราฟ, และข้อมูลเกี่ยวกับชุดข้อมูล) .
+ </ul> สําหรับทุก ERDDAP หน้าเว็บที่มีแบบฟอร์มที่คุณเป็นมนุษย์ที่เบราว์เซอร์สามารถใช้ได้ มี
+ตรงกัน ERDDAP บริการเว็บที่ถูกออกแบบมาให้ง่ายต่อโปรแกรมคอมพิวเตอร์และสคริปต์ที่จะใช้
 ตัวอย่างเช่น มนุษย์สามารถใช้ที่อยู่ URL นี้ เพื่อทําการค้นหาชุดข้อมูลที่น่าสนใจ
-&lt;b&gt; &lt;i&gt; &lt;i&gt; &lt;i&gt; &lt;/i&gt; &lt;i&gt; &lt;i&gt;&htmlQueryUrl;\"\"--&htmlQueryUrl;&lt;i&gt;
-&lt;b&gt; โดยเปลี่ยนนามสกุลแฟ้มเป็นที่อยู่ URL จาก .html เป็น.jsonหรือ .csv หรือ.htmlTableหรือ.jsonlCSV1หรือ.xhtml....
-&lt;b&gt; &lt;i&gt; &lt;i&gt; &lt;i&gt; &lt;/i&gt; &lt;i&gt; &lt;i&gt;&jsonQueryUrl;\"\"--&jsonQueryUrl;&lt;i&gt;
-&lt;br /&gt;เราได้ที่อยู่ URL ที่โปรแกรมคอมพิวเตอร์หรือJavaสคริปต์สามารถใช้เพื่อให้ได้ค่าเดียวกันได้
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> โดยการเปลี่ยนนามสกุลแฟ้มเป็นที่อยู่ URL จาก .html ไปยัง .json  (หรือ .csv หรือ .htmlTable หรือ .jsonlCSV1 หรือ .xhtml ....) .
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> เราได้ที่อยู่ URL ที่โปรแกรมคอมพิวเตอร์หรือ Java สคริปต์สามารถใช้เพื่อให้ได้ค่าเดียวกันได้
 ข้อมูลในรูปแบบคอมพิวเตอร์แบบง่าย เช่น
-&lt;a rel= \"help\" (htttps).json.org/\"&gt; Jonson
-&externalLinkHtml;&lt;i&gt;
+ <a rel="help" href="https://www.json.org/"> เจ สัน
+ &externalLinkHtml;  </a> .
 
-&lt;h3&gt; &lt;a คลาส= elflink\" id= \"สร้าง THings\" (EFF=\") สร้าง สิ่งบนERDDAP[h3]
-มีหลายลักษณะERDDAPที่สามารถใช้ได้โดยโปรแกรมคอมพิวเตอร์หรือสคริปต์
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> สร้าง สิ่งบน ERDDAP  </a>  </h3> มีหลายลักษณะ ERDDAP ที่สามารถใช้ได้โดยโปรแกรมคอมพิวเตอร์หรือสคริปต์
 ที่คุณเขียน คุณสามารถใช้มัน เพื่อสร้างโปรแกรมหรือบริการเว็บอื่น ๆ บน
-บนสุดERDDAPทําERDDAPทํางานส่วนใหญ่&#33;
-ถ้าคุณมีไอเดียสําหรับส่วนติดต่อที่ดีกว่าERDDAPบริการหรือเว็บ
+บนสุด ERDDAP ทํา ERDDAP ทํางานส่วนใหญ่&#33;
+ถ้าคุณมีไอเดียสําหรับส่วนติดต่อที่ดีกว่า ERDDAP บริการหรือเว็บ
 หน้าที่ต้องใช้วิธีง่ายในการเข้าถึงข้อมูล เราแนะนําให้คุณสร้างอาคารของคุณเอง
-โปรแกรม, บริการเว็บ, หรือหน้าเว็บERDDAPในฐานะมูลนิธิ
-ระบบของคุณจะได้รับข้อมูล กราฟ และข้อมูลอื่น ๆ จากERD'ERDDAPหรือจาก
-อื่น ๆERDDAPการติดตั้ง หรือคุณสามารถ
-&lt;i&gt;-- การตั้งค่าเสมอจาก arsewatch ของ Erdap --&gt;
-&lt;a rel= \"help\" (htttpps) = \"httterdep. github.io/docs/server-admin/deppy-การติดตั้ง\"&gt; ขึ้นของคุณเองERDDAPเซิร์ฟเวอร์
+โปรแกรม, บริการเว็บ, หรือหน้าเว็บ ERDDAP ในฐานะมูลนิธิ
+ระบบของคุณจะได้รับข้อมูล กราฟ และข้อมูลอื่น ๆ จาก ERD ' ERDDAP หรือจาก
+อื่น ๆ ERDDAP การติดตั้ง หรือคุณสามารถ
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> จัดแจงเอง ERDDAP เซิร์ฟเวอร์ </a> .
 ซึ่งอาจจะ
 เข้าถึงได้ในที่สาธารณะ หรือแค่เข้าถึงได้เป็นการส่วนตัว
 
 
-&lt;h3&gt; &lt;a คลาส= elflink\" id=\"request\"EFF=\"\". request\" rel=\"bookmarks\".RESTfulร้องขอที่อยู่ URL (*h3)
-ร้องขอข้อมูลส่วนติดต่อผู้ใช้จากERDDAP(ตัวอย่างเช่น ผลการค้นหา)
-ใช้มาตรฐานสากลของเว็บสําหรับการร้องขอ:
-&lt;a rel= \"help\" (htttpps) = \"wikipedia.org/wikii/Unigraph_recess_ logcator\". urls
-&externalLinkHtml;&lt;i&gt;
-ส่งผ่านทาง
-&lt;a^9 = \"https/www.w3.org/Protocols/rfc2616/rfc16-sec9.html#sec9.3\"]HTTP GET&externalLinkHtml;&lt;i&gt;
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful ต้องการที่อยู่ URL </a>  </h3> ร้องขอข้อมูลส่วนติดต่อผู้ใช้จาก ERDDAP  (ตัวอย่างเช่น สืบค้นผล) ใช้มาตรฐานสากลของเว็บสําหรับการร้องขอ:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> ตําแหน่ง URL
+ &externalLinkHtml;  </a> ส่งผ่านทาง
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 นี่เป็นกลไกเดียวกันกับที่เบราว์เซอร์ของคุณใช้เมื่อคุณเติมแบบฟอร์ม
-บนหน้าเว็บแล้วคลิก<kbd>Submit</kbd>เพื่อใช้HTTP GETคุณสร้างที่อยู่ URL ที่สร้างขึ้นโดยเฉพาะ (ซึ่งอาจจะรวมการสอบถามด้วย)
-แล้วส่งมันด้วยHTTP GET. คุณสามารถสร้างที่อยู่ URL พวกนี้ด้วยมือ แล้วใส่เข้าไป
-ช่องข้อความที่อยู่ของเบราว์เซอร์ของคุณ (ตัวอย่างเช่น
-&lt;b&gt; &lt;i&gt; &lt;i&gt; &lt;i&gt; &lt;/i&gt; &lt;i&gt; &lt;i&gt;&jsonQueryUrl;\"\"--&jsonQueryUrl;[a]
-&lt;b&gt; หรือ คุณสามารถเขียนโปรแกรมคอมพิวเตอร์ หรือสคริปต์หน้าเว็บ เพื่อสร้างที่อยู่ URL, ส่งมัน
-และได้รับการตอบสนอง ที่อยู่ URL ผ่านHTTP GETถูกเลือกเพราะ
-&lt;l&gt;
-&lt;li&gt; มันใช้ง่าย
-&lt;li&gt; พวกเขาทําได้ดี
-&lt;li&gt; มี การ ให้ การ สนับสนุน โดย ทั่ว ไป (ใน ภาษา ต่าง ๆ, ใน ภาษา ของ คอมพิวเตอร์, ระบบ ดําเนิน งาน
-เครื่องมือ ฯลฯ
-&lt;li&gt; มันเป็นรากฐานของ
-&lt;a rel=\"help\"IFF= \"httppspen.wikipedia.org/wikii/Recentation_State_Transfer\"&gt; การถ่ายโอนสถานะ (September)REST)
-&externalLinkHtml;และ
-&lt;a rel= \"help\" (htttpps) = \"htttpps www.ckmark.com/เขียน/RESTfulWeb-Serviews\"&gt; Resourceed สถาปัตยกรรม ( ()ROA)
-&externalLinkHtml;&lt;i&gt;
-&lt;li&gt; พวกเขาใช้ Worldwide webs เป็นโปรแกรมที่กระจายตัวขนาดใหญ่
+บนหน้าเว็บแล้วคลิก <kbd> ส่ง </kbd> เพื่อใช้ HTTP GET คุณสร้างที่อยู่ URL ที่สร้างขึ้นเป็นพิเศษ (ซึ่งอาจรวมถึงการสอบถาม) แล้วส่งมันด้วย HTTP GET . คุณสามารถสร้างที่อยู่ URL พวกนี้ด้วยมือ แล้วใส่เข้าไป
+ช่องข้อความที่อยู่ของเบราว์เซอร์ของคุณ (ยกตัวอย่างเช่น
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> หรือ คุณสามารถเขียนโปรแกรมคอมพิวเตอร์ หรือสคริปต์หน้าเว็บ เพื่อสร้างที่อยู่ URL แล้วส่งมัน
+และได้รับการตอบสนอง ที่อยู่ URL ผ่าน HTTP GET ถูกเลือกเพราะ
+ <ul>  <li> มันใช้ง่าย
+ <li> พวกเขาทําได้ดี
+ <li> พวกเขาได้รับการสนับสนุนอย่างกว้างขวาง (ในเบราว์เซอร์ ภาษาคอมพิวเตอร์ ระบบปฏิบัติการ
+เครื่องมือต่าง ๆ) .
+ <li> มันเป็นรากฐานของ
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> การโอนย้ายสถานะ ( REST )  &externalLinkHtml;  </a> ถึง
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> สถาปัตยกรรมของทรัพยากร ( ROA )  &externalLinkHtml;  </a>  <li> พวกเขาใช้ Worldwide webs เป็นโปรแกรมที่กระจายตัวขนาดใหญ่
 ตัวอย่างเช่น ผ่าน
-&lt;a rel= \"help\" (htttpps) = \"wikipedia.org/wikii/Mashup_% 28Web_appripps_hbried% 29\".mashups&externalLinkHtml;&lt;i&gt;
-&lt;a rel= \"help\" (htttpps) = \"wikipedia.org/wiki/Ajax_28Prographing% 29\".AJAXโปรแกรม
-&externalLinkHtml;&lt;i&gt;
-&lt;li&gt; เป็น &lt;a rel=\"help\" (htttpps)\"wikipedia.org/wikii/Stateles_protol\"). ไร้สถานะ
-&externalLinkHtml;&lt;i&gt;
-เช่นเดียวกับERDDAPซึ่งทําให้ระบบง่ายขึ้น
-&lt;li&gt; ที่อยู่ URL กําหนดสิ่งที่ร้องขอมาอย่างสมบูรณ์ ดังนั้นคุณสามารถคั่นหน้ามันไว้ในเบราว์เซอร์ของคุณได้
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX โปรแกรม
+ &externalLinkHtml;  </a>  <li> พวกเขาคือ <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> ไร้ชื่อ
+ &externalLinkHtml;  </a> เช่นเดียวกับ ERDDAP ซึ่งทําให้ระบบง่ายขึ้น
+ <li> ที่อยู่ URL กําหนดสิ่งที่ร้องขอมาอย่างสมบูรณ์ ดังนั้นคุณสามารถคั่นหน้ามันไว้ในเบราว์เซอร์ของคุณได้
 เขียนลงในบันทึกของคุณ ส่งอีเมลไปหาเพื่อน ฯลฯ
-&lt;i&gt;
-
-&lt;h3) &lt;a คลาส = \"felfLink\" id= \"PercentEcode\" (RESTEF=\")\". การเข้ารหัส% [h3]
-ในที่อยู่ URL บางตัวอักษรไม่ได้รับอนุญาต (ตัวอย่าง, ช่องว่าง) และอักขระอื่น ๆ
-มีความหมายพิเศษ (ตัวอย่างเช่น '&amp;' ปุ่มพิมพ์แยก=คู่ค่าในการค้นหา)
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> การเข้ารหัส% 1 </a>  </h3> ในที่อยู่ URL บางตัวอักษรไม่อนุญาตให้ใช้ (ตัวอย่างเช่น พื้นที่) และอักขระอื่น ๆ
+มีความหมายพิเศษ (ตัวอย่างเช่น, '&amp;' แยกคีย์ = คู่ค่าในการสอบถาม) .
 เมื่อคุณกรอกแบบฟอร์มบนหน้าเว็บ แล้วคลิกบนการส่ง รายการเบราว์เซอร์ของคุณโดยอัตโนมัติ
-&lt;a คลาส = \"N\" Rel= \"help\" (htttps////wikipedia.org///percent-encing\"). การเข้ารหัส
-&externalLinkHtml;&lt;i&gt;
-อักขระพิเศษที่อยู่ URL (ตัวอย่างเช่น ช่องว่างกลายเป็น % 20) ตัวอย่างเช่น
-&lt;b&gt; &lt;i&gt; &lt;i&gt; &lt;i&gt; &lt;/i&gt; &lt;i&gt; &lt;i&gt;&htmlQueryUrlWithSpaces;\"\"--&htmlQueryUrlWithSpaces;&lt;i&gt;
-&lt;br /&gt; แต่ถ้าโปรแกรมคอมพิวเตอร์หรือสคริปต์ของคุณสร้างที่อยู่ URL มันอาจจะต้องทําเปอร์เซ็นต์
-การเข้ารหัสเอง ถ้าเป็นเช่นนั้น บางทีตัวละครทั้งหมดอาจไม่ใช่ A-Za-z-9_-~' ()
-ในค่าของการค้นหา (ส่วนต่าง ๆ หลัง'='ต้องการเข้ารหัส
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> การเข้ารหัส%
+ &externalLinkHtml;  </a> อักขระพิเศษที่อยู่ URL (ตัวอย่างเช่น พื้นที่กลายเป็น %20) ยกตัวอย่างเช่น
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> แต่ถ้าโปรแกรมคอมพิวเตอร์หรือสคริปต์ของคุณสร้างที่อยู่ URL มันอาจจะต้องทําเปอร์เซ็นต์
+การเข้ารหัสเอง ถ้าเป็นเช่นนั้น ตัวละครทั้งหมดอาจไม่ใช่ A-Za-z-9_-~ ' () *
+ในค่าของการค้นหา (ชิ้นส่วนต่อจาก '=' ป้าย) ต้องเข้ารหัส
 เป็น %HH โดย HH เป็นเลข 2 เฮกเซเดซิมาลค่าของตัวละคร ตัวอย่างเช่น พื้นที่กลายเป็น 2% 0
 อักขระที่อยู่ด้านบน # 127 จะต้องแปลงเป็น UTF-8 ไบต์ แล้วแต่ละตัว UTF-8 ไบต์จะต้องเข้ารหัสเป็นเปอร์เซ็นต์
-(ขอความช่วยเหลือจากโปรแกรมเมอร์) การเขียนโปรแกรมภาษามีเครื่องมือในการทําเช่นนี้ (ตัวอย่างเช่น ดูJava'
-&lt;a rel=\"help\"httpps excults.com/javase//docs/index.html?java/net/Urlecoder.html\".java.net.URLEncoder&externalLinkHtml;และJavaสคริปต์
-&lt;a rel= \"help\" (htttpps)=. Mozilla.org/en-US/docs/Web/Javaสคริปต์/ Reference/Global_Objects/encodeURIMOPONATE\"&gt;encodeURIComponent()&externalLinkHtml;และยังมี
-&lt;a คลาส = \"N\" Rel= \"help\" (httpps) \"www.url-en-decode.com\". webses that min/decode for you
-&externalLinkHtml;&lt;i&gt;
-
-
-&lt;h3&gt; &lt;a คลาส= elflink\" id= \"responses\" (REFF=\"\". \"responses\" Rel= \"bookmarks\") ตัวกรองแฟ้ม
-แม้ว่ามนุษย์จะใช้เว็บเบราว์เซอร์ เพื่อรับผลจากส่วนติดต่อผู้ใช้ (ตัวอย่างเช่น
-การค้นหาผลลัพธ์) เป็นเอกสาร HTML โปรแกรมคอมพิวเตอร์มักจะต้องการได้ผล
-เอกสารที่อธิบายง่าย และน้อยกว่าERDDAPสามารถคืนข้อมูลผู้ใช้งานได้
+ (ถามโปรแกรมเมอร์เพื่อขอความช่วยเหลือ) . การโปรแกรมภาษามีเครื่องมือในการทําสิ่งนี้ (ยกตัวอย่างเช่น Java '
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> ถึง Java สคริปต์
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> การเข้ารหัส ()  &externalLinkHtml;  </a> ) และมี
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> เว็บไซต์ที่มีการเข้ารหัส/ถอดรหัสให้คุณ
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> การตอบกลับประเภทแฟ้ม </a>  </h3> แม้ว่ามนุษย์จะใช้เว็บเบราว์เซอร์ เพื่อรับผลจากการใช้พื้นผิวของผู้ใช้ (ยกตัวอย่างเช่น
+ผลการค้นหา) เป็นเอกสาร HTML โปรแกรมคอมพิวเตอร์มักจะต้องการผลลัพธ์
+เอกสารที่อธิบายง่าย และน้อยกว่า ERDDAP สามารถคืนข้อมูลผู้ใช้งานได้
 ผลที่ได้คือตารางของข้อมูล ในคอมคอมโปรแกรมที่เป็นมิตร และชนิดไฟล์:
-&lt;l&gt;
-&lt;liv&gt;.csv - ตารางข้อความของ ASCII
-(a rel=\"help\"httpps=. Viikipedia.org/wikiiki/comma-kmade_values\"). more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.htmlTable- .html febage กับข้อมูลในตาราง
-(a rel=\"help\"httpps=. www.3 schools.com/html/html_ttl_tables.asp\") มาก&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.itx- แฟ้มข้อความอิกอร์ที่มีคลื่นสําหรับแต่ละคอลัมน์ของข้อมูล
-(a rel=\"help\"httpps=\"https/www.www.webtrics.net/doc/igorman/l-09% Data% 20 Export.pdf\". more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.json- แฟ้มตารางเหมือนเจสัน
-(a rel=\"help\" (https//////////////////////////////////////////////////////////////////////////////////////////////////ค่ะ.json.org/\"&gt; เพิ่มเติม&nbsp;ข้อมูล
-&externalLinkHtml;หรือ
-&lt;aRel=\"help\"ERIF=\"&tErddapUrl;/tabledap/ documentation.html#json\"&gt;ERDDAP- ข้อมูลเฉพาะ)
-&lt;li&gt;.jsonlCSV1- \"ดีกว่า CSV\" ไฟล์ Jsonline ที่มีคอลัมน์ชื่อในบรรทัดแรก
-(a rel=\"help\"htps=\"httpps jsonlines.org/\"). more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.jsonlCSV- \"ดีกว่าแฟ้ม CSV\" Jonson Lone ที่ไม่มีชื่อคอลัมน์
-(a rel=\"help\"htps=\"httpps jsonlines.org/\"). more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.jsonlKVP- ไฟล์ Jsonline กับคีย์: Value คู่
-(a rel=\"help\"htps=\"httpps jsonlines.org/\"). more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.mat- ไฟล์ไบนารี MATLAB
-(a rel=\"help\" (https//////////////////////////////////////////////////////////////////////////////////////////////////ค่ะ.mathworks.com/\"hore&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.nc- โต๊ะแบน เหมือนโต๊ะNetCDF- 3 ไฟล์ไบนารี
-(a rel=\"help\"httpps=\"httpps www.unidata.ucar.edu/sofware/netcdf/\"&gt; More&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.nccsv- โต๊ะแบน เหมือนโต๊ะNetCDF- เหมือนแฟ้ม CSV ASCII
-(a rel=\"help\"https=\"httpps dadap. github.io/docs/user/ncsv-1.20\"). more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.ncโอ Json - ไฟล์ Json (PDF) พ.ศ.NCO- สไตล์) ด้วยข้อมูลกํากับเท่านั้น (คุณสมบัติโลก)
-ขนาด และตัวแปร ที่มีคุณลักษณะ, ประเภท, และรูปร่าง) และไม่มีค่าข้อมูล
-(a rel=\"help\" (htttpps/sourcessforge.net/nco.html#json\". more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.tsv- โต๊ะข้อความของ ASCII
-(a rel=\"help\" (htttpps jakrpela.fi/TSV.html\"). more&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;li&gt;.xhtml- แฟ้ม XHTML (XML) ที่มีข้อมูลอยู่ในตาราง
-(a rel=\"help\"httpps=. www.3 schools.com/html/html_ttl_tables.asp\") มาก&nbsp;ข้อมูล
-&externalLinkHtml;[a]
-&lt;i&gt;
-ในรูปแบบตารางผล (ยกเว้น.jsonlKVPที่ชื่อคอลัมน์อยู่ทุกแถว:
-&lt;l&gt;
-&lt;li&gt; แต่ละคอลัมน์มีชื่อคอลัมน์และข้อมูลประเภทหนึ่ง
-แถวแรกของโต๊ะ มีชื่อคอลัมน์
-&lt;li&gt; แถวต่อ ๆ ไปมีข้อมูลที่คุณร้องขอ
-&lt;i&gt;
-&lt;p&gt; เนื้อหาในแฟ้มธรรมดาเหล่านี้ แตกต่างจาก .html เล็กน้อย
+ <ul>  <li> .csv - ตารางข้อความแบบจุลภาค
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - .html febage กับข้อมูลในตาราง
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .itx - แฟ้มข้อความอิกอร์ที่มีคลื่นสําหรับแต่ละคอลัมน์ของข้อมูล
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .json - แฟ้มตารางเหมือนเจสัน
+ ( <a rel="help" href="https://www.json.org/"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> หรือ
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - ข้อมูลพิเศษ </a> )  <li>  .jsonlCSV1 - \"ดีกว่า CSV\" ไฟล์ Jsonline ที่มีคอลัมน์ชื่อในบรรทัดแรก
+ ( <a rel="help" href="https://jsonlines.org/"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"ดีกว่าแฟ้ม CSV\" Jonson Lone ที่ไม่มีชื่อคอลัมน์
+ ( <a rel="help" href="https://jsonlines.org/"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - ไฟล์ Jsonline กับคีย์: Value คู่
+ ( <a rel="help" href="https://jsonlines.org/"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .mat - ไฟล์ไบนารี MATLAB
+ ( <a rel="help" href="https://www.mathworks.com/"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .nc - โต๊ะแบน เหมือนโต๊ะ NetCDF - 3 ไฟล์ไบนารี
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .nccsv - โต๊ะแบน เหมือนโต๊ะ NetCDF - เหมือนแฟ้ม CSV ASCII
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .nc โอ Json - แฟ้ม Json ( NCO - สไตล์) ด้วยข้อมูลกํากับภาพของชุดข้อมูลเท่านั้น (คุณสมบัติระดับโลก
+ขนาด และตัวแปร ที่มีคุณลักษณะ, ชนิด, และรูปร่าง) และไม่มีค่าข้อมูลใดๆ
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .tsv - โต๊ะข้อความของ ASCII
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) แฟ้มที่มีข้อมูลในตาราง
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> มาก &nbsp; ข้อมูล
+ &externalLinkHtml;  </a> )  </ul> ทุกรูปแบบตารางผลลัพธ์ (ยกเว้น .jsonlKVP เมื่อชื่อคอลัมน์อยู่ทุกแถว) .
+ <ul>  <li> แต่ละคอลัมน์มีชื่อคอลัมน์ และข้อมูลประเภทหนึ่ง
+ <li> แถวแรกของตาราง มีชื่อคอลัมน์
+ <li> แถวต่อ ๆ ไปมีข้อมูลที่คุณร้องขอ
+ </ul>  <p> เนื้อหาในแฟ้มธรรมดาเหล่านี้ แตกต่างจาก .html เล็กน้อย
 การตอบสนอง & mdash; มันถูกจงใจวางโบนเพื่อให้ง่ายต่อคอมพิวเตอร์
 โปรแกรมที่จะทํางานกับ
 
-&lt;p&gt;
-&lt;br /&gt; บริการสําหรับผู้ใช้- interface ทั้งหมดที่อธิบายในหน้านี้ สามารถคืนตารางได้
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> โครง สร้าง ข้อมูล ที่ สอดคล้อง กัน สําหรับ การ ตอบ สนอง </a>  <br> บริการสําหรับผู้ใช้- interface ที่แสดงในหน้านี้ สามารถคืนตารางได้
 ข้อมูลในรูปแบบแฟ้มทั่วไปรายการด้านบน หวังว่าคุณคงเขียนได้
 แค่ขั้นตอนเดียวในการวิเคราะห์ตารางข้อมูล ในรูปแบบหนึ่ง แล้วคุณสามารถ
 ใช้กระบวนการซ้ํา เพื่อวิเคราะห์การตอบสนองจากบริการใด ๆ เหล่านี้ นี่
-น่าจะง่ายกว่าถ้าจะจัดการERDDAP.
+น่าจะง่ายกว่าถ้าจะจัดการ ERDDAP .
 
 
-&lt;p&gt; &lt;i&gt; คลาส = \"ตัวเอง\" id= \"csvIsues\" (REFF=\")\"..tsvรายละเอียด
-&lt;li&gt; หากแฟ้ม Datum ในแฟ้ม .csv มีเครื่องหมายคําพูดคู่ภายในหรือเครื่องหมายจุลภาคERDDAPตามไป
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> ถึง .tsv รายละเอียด <ul>  <li> หากแฟ้ม Datum ในแฟ้ม .csv มีเครื่องหมายคําพูดคู่ภายในหรือเครื่องหมายจุลภาค ERDDAP ตามไป
 .csv กําหนดอย่างเข้มงวด: มันใส่คําพูดคู่รอบ datums และคู่
 คําคมภายใน
-อักขระพิเศษใน .csv หรือ.tsvแฟ้มถูกเข้ารหัสอยู่
-&lt;a rel= \"help\" (htttps).json.org/\"&gt; Jonson
-&externalLinkHtml;&lt;i&gt;
-จํานวนตัวอักษรที่ซ้ํากัน:
-\\ n (บรรทัดใหม่),\\ (แบ็คสแลช), / f (เก่า),\\ t (ตบ), / r (กลับหลัง)
-หรือด้วยไวยากรณ์
-&lt;i&gt;
-
-
-&lt;p&gt; &lt;i&gt; คลาส = \"felflink\" id= \"jjsonp\" (EFF) = \"#jjsonp\" rel= \"bookmark\". jsonp\"
-&lt;br /&gt;ถาม.jsonแฟ้มต่าง ๆ อาจรวมไปถึงตัวเลือกต่าง ๆ
-&lt;AREFF= \"https niriview. wordpress.com/2009/05/05/Jsonp-quecky/\". jsonp
-&externalLinkHtml;&lt;i&gt;ร้องขอโดย
-เพิ่ม \"&amp;.jsonp= &lt;i&gt; ฟังก์ชันName โดยทั่วไปแล้ว มันบอก
-ERDDAPเพื่อเพิ่ม \" &lt;i&gt; ฟังก์ชัน\"
-จบการตอบรับ อักขระแรกของ &lt;i&gt;ฟังก์ชันName ต้องเป็นอักษร ISO 8859 หรือ \"_\"
+ <li> อักขระพิเศษใน .csv หรือ .tsv แฟ้มถูกเข้ารหัสอยู่
+ <a rel="help" href="https://www.json.org/"> เจ สัน
+ &externalLinkHtml;  </a> จํานวนตัวอักษรที่ซ้ํากัน:
+_n (บรรทัดใหม่) ,\\ (ด้านหลัง) , / f (แบบฟอร์มป้อนข้อมูล) , / t (แท็บ) , / r (รถม้ากลับมา) หรือกับ... <i> ฮึ่ม </i> ไวยากรณ์
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> Jonp </a>  <br> ต้องการ .json แฟ้มต่าง ๆ อาจรวมไปถึงตัวเลือกต่าง ๆ
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> Jonp
+ &externalLinkHtml;  </a> ร้องขอโดย
+เพิ่ม \"&amp; .json p= <i> ฟังก์ชัน ชื่อ </i> เพื่อสิ้นสุดการสอบถาม โดยทั่วไปแล้ว มันบอก
+ ERDDAP เพื่อเพิ่ม \" <i> ฟังก์ชัน ชื่อ </i>  (\"สู่จุดเริ่มต้นของการตอบรับและ\") \"ถึง
+จบการตอบรับ ตัวละครแรกของ <i> ฟังก์ชัน ชื่อ </i> ต้องเป็นอักษร ISO 8859 หรือ \"_\"
 แต่ละตัวอักษรต่อมาต้องเป็นอักษร ISO 8859, \"_\", เลข, หรือ \"\".
 หากตอนแรกไม่มีการสอบถาม ให้ปิด \"&amp\" ในคําถามของคุณ
 
 
-&lt;p&gt;gridp และtabledapเสนอประเภทแฟ้มที่แตกต่างกัน
-&lt;b&gt; ประเภทแฟ้มที่แสดงอยู่ด้านบนเป็นประเภทแฟ้มERDDAPสามารถใช้ในการตอบสนอง
-ชนิดของการร้องขอของผู้ใช้ (ตัวอย่างเช่น ต้องการค้นหา)ERDDAPสนับสนุน
-ประเภทแฟ้มชุดอื่น ๆ สําหรับข้อมูลทางวิทยาศาสตร์ (ตัวอย่างเช่น ดาวเทียม และ ทุ่น
-ร้องขอข้อมูล (ดู
-&lt;aRel=\"help\"ERIF=\"&tErddapUrl;และ
-&lt;aRel=\"help\"ERIF=\"&tErddapUrl;/tabledap/ documentation.html# file scheme\"&gt;tabledap&lt;i&gt;
-เอกสาร).
+ <p> กริดและ tabledap เสนอประเภทแฟ้มที่แตกต่างกัน
+ <br> ประเภทแฟ้มที่แสดงอยู่ด้านบน เป็นประเภทแฟ้ม ERDDAP สามารถใช้ในการตอบสนอง
+ชนิดของการร้องขอแบบออนไลน์ (ตัวอย่างเช่น สืบค้นเมื่อร้องขอ) . ERDDAP สนับสนุน
+ประเภทแฟ้มอื่นสําหรับข้อมูลวิทยาศาสตร์ (ยกตัวอย่างเช่น ดาวเทียมและปลิง
+ข้อมูล) ต้องการ (ดู
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> ตารางกริด </a> ถึง
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> เอกสาร) .
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt; &lt;a คลาส= elflink\" id=\"Office\"Everf=\"\". ROUNDURLLLS\" rel=\"bookmarks\". ที่อยู่ URL สําหรับเข้าใช้งานERDDAPบริการ
-ERDDAPมีตําแหน่ง URL เหล่านี้สําหรับโปรแกรมคอมพิวเตอร์:
-&lt;l&gt;
-&lt;li&gt; เพื่อเรียกดูรายการที่อยู่ URL ของทรัพยากรหลัก (*), ใช้
-&lt;br /&gt;&plainLinkExamples1;&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อขอรายการข้อมูลปัจจุบันของ &lt;// backages [_BAR_], ใช้
-&lt;br /&gt;&plainLinkExamples2;&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อรับข้อมูล &lt;/i&gt;Metadada (_) สําหรับชุดข้อมูลเฉพาะ
-(รายการของตัวแปรและคุณลักษณะของพวกเขา) ใช้
-&lt;br /&gt;&tErddapUrl;/ ข้อมูล/ &lt;i&gt;datasetID&lt;i&gt;/ndex &lt;i&gt;.fileType&lt;i&gt;
-ยกตัวอย่างนะ
-&lt;br /&gt;&plainLinkExamples3;&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อรับผลการค้นหาข้อความเต็ม &lt;/ backage &gt; สําหรับข้อมูล
-(ใช้)"searchFor=wind%20speed"เป็นตัวอย่าง ใช้
-&lt;br /&gt;&plainLinkExamples4;&lt;br /&gt;
-&lt;a คลาส = \"N\" rel= \"help\" (htttpss/wikipedia.org/vikincent-encing\"). percent-encdown
-&externalLinkHtml;&lt;i&gt;
-ค่าในการค้นหา)
-&lt;br /&gt;&nbsp;หรือใช้
-&lt;a rel=\"bookmark\"Exef=\"&tErddapUrl;/  opensearch 1.1/ndex.html\"&gt;OpenSearch1. 1.1
-มาตรฐานที่จะใช้ค้นหาข้อมูลแบบเต็มข้อความ
-&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อดูผลการค้นหา &lt;/ backanized
-(ใช้)"searchFor=wind%20speed"เป็นตัวอย่าง ใช้
-&lt;br /&gt;&plainLinkExamples5;&lt;br /&gt;แต่ทดลองกับ
-&lt;i&gt;&tErddapUrl;- สืบค้นหรือแก้ไข?&encodedDefaultPIppQuery;\"\"--&advancedSearch;&lt;i&gt;
-ในเบราว์เซอร์เพื่อหาตัวแปรที่ต้องการทั้งหมด
-(โปรแกรมหรือสคริปต์ของคุณอาจจะจําเป็น
-&lt;a คลาส = \"N\" rel= \"help\" (htttpss/wikipedia.org/vikincent-encing\"). percent-encdown
-&externalLinkHtml;&lt;i&gt;
-ค่าในการค้นหา)
-&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อเอารายชื่อของ &lt;//i&gt;categoryAttributes&lt;i&gt;
-(ตัวอย่าง เช่น สถาบันlong_name_ชื่อมาตรฐาน) ใช้
-&lt;br /&gt;&plainLinkExamples6;&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อเรียกดูรายการของ &lt;stand &gt; หมวดหมู่สําหรับหมวดหมู่เฉพาะ แอททริบิวต์
-ใช้
-&lt;br /&gt;&plainLinkExamples7;&lt;br /&gt;&nbsp;&lt;li&gt; เพื่อขอรายการของ &lt;////////////////////////////////////////ค่ะ
-(ใช้ \"มาตรฐาน_ชื่อ=เวลา\" เป็นตัวอย่าง) ใช้
-&lt;br /&gt;&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> ที่อยู่ URL สําหรับเข้าใช้งาน ERDDAP บริการ </a>  </h3>  ERDDAP มีตําแหน่ง URL เหล่านี้สําหรับโปรแกรมคอมพิวเตอร์:
+ <ul>  <li> เพื่อไปเอารายชื่อ <strong> ตําแหน่ง URL ของทรัพยากรหลัก </strong> ใช้
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> เพื่อหารายการปัจจุบันของ <strong> ชุดข้อมูลทั้งหมด </strong> ใช้
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> เพื่อให้ได้ <strong> ข้อมูลกํากับภาพ </strong> สําหรับชุดข้อมูลเฉพาะ
+ (รายชื่อตัวแปรและคุณลักษณะ) ใช้
+ <br>  &tErddapUrl; ข้อมูล / ข้อมูล <i>  datasetID  </i> อินเดกซ์ <i>  .fileType  </i>  <br> ยกตัวอย่างเช่น
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> เพื่อให้ได้ผล <strong> ค้นหาข้อความเต็มรูปแบบ </strong> สําหรับชุดข้อมูล
+ (ใช้ "searchFor=wind%20speed" อย่างตัวอย่าง) ใช้
+ <br>  &plainLinkExamples4;  <br>  (โปรแกรมหรือสคริปต์ของคุณอาจจะจําเป็น
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> โค้ด%
+ &externalLinkHtml;  </a> ค่าในการค้นหา)  <br>  &nbsp;  <br> หรือ ใช้
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1. 1 </a> มาตรฐานที่จะใช้ค้นหาข้อมูลแบบเต็มข้อความ
+ <br>  &nbsp;  <li> เพื่อให้ได้ผล <strong> การค้นหาอย่างละเอียด </strong> สําหรับชุดข้อมูล
+ (ใช้ "searchFor=wind%20speed" อย่างตัวอย่าง) ใช้
+ <br>  &plainLinkExamples5;  <br> แต่การทดลองกับ
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> ในเบราว์เซอร์เพื่อหาตัวแปรที่ต้องการทั้งหมด
+ (โปรแกรมหรือสคริปต์ของคุณอาจจะจําเป็น
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> โค้ด%
+ &externalLinkHtml;  </a> ค่าในการค้นหา)  <br>  &nbsp;  <li> เพื่อไปเอารายชื่อ <strong>  categoryAttributes  </strong>  (ยกตัวอย่างเช่น สถาบัน long_name _ชื่อมาตรฐาน) ใช้
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> เพื่อไปเอารายชื่อ <strong> หมวดหมู่สําหรับหมวดหมู่เฉพาะ แอททริบิวต์ </strong>  (ใช้ \"ชื่อมาตรฐาน\" เป็นตัวอย่าง) ใช้
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> เพื่อไปเอารายชื่อ <strong> ชุดข้อมูลในหมวดหมู่ที่ระบุ </strong>  (ใช้ \"มาตรฐาน_ชื่อ=เวลา\" เป็นตัวอย่าง) ใช้
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

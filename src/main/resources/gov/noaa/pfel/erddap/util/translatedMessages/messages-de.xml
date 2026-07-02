@@ -4186,231 +4186,164 @@ Unterschiedliche Protokolle sind für unterschiedliche Datentypen und für unter
 <resourceNotFound>Ressource nicht gefunden:</resourceNotFound>
 <restfulWebServices>RESTful-Webdienste</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPist beides:
-&lt;= &lt;= &lt;====================================================================================================================================================================================================================
-&lt;li&gt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_application\"&gt; Eine Web-Anwendung
-&externalLinkHtml;&lt;/a&gt;
-&ndash; eine Webseite mit einem Formular, das der Mensch mit Browsern verwenden kann (in diesem Fall, um Daten, Graphen oder Informationen über Datensätze zu erhalten).
-&lt;&nbsp;&lt;li&gt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_service\"&gt;ARESTfulWebservice
-&externalLinkHtml;&lt;/a&gt;
-&ndash; eine URL, die Computerprogramme verwenden können (in diesem Fall, um Daten, Graphen und Informationen über Datensätze zu erhalten).
-&lt;/ul&gt;
-Für jedenERDDAPWebseite mit einem Formular, dass Sie als Mensch mit einem Browser verwenden können, gibt es eine
-entsprechendERDDAPWebservice, der für Computerprogramme und Skripte einfach zu bedienen ist.
+ ERDDAP ist beides:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Eine Web-Anwendung
+ &externalLinkHtml;  </a> &ndash; eine Webseite mit einem Formular, dass Menschen mit Browsern verwenden können (in diesem Fall, um Daten, Grafiken oder Informationen über Datensätze zu erhalten) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful Webservice
+ &externalLinkHtml;  </a> &ndash; eine URL, die Computerprogramme verwenden können (in diesem Fall, um Daten, Diagramme und Informationen über Datensätze zu erhalten) .
+ </ul> Für jeden ERDDAP Webseite mit einem Formular, dass Sie als Mensch mit einem Browser verwenden können, gibt es eine
+entsprechend ERDDAP Webservice, der für Computerprogramme und Skripte einfach zu bedienen ist.
 Zum Beispiel, Menschen können diese URL verwenden, um eine Volltextsuche für interessante Datensätze zu tun:
-&lt;br&gt;&gt;&htmlQueryUrl;&gt;&htmlQueryUrl;&lt;/a&gt;
-&lt;br&gt;Durch Änderung der Dateierweiterung in der URL von .html auf.json(oder .csv oder.htmlTable, oder.jsonlCSV1, oder.xhtml, ...
-&lt;br&gt;&gt;&jsonQueryUrl;&gt;&jsonQueryUrl;&lt;/a&gt;
-&lt;br&gt;we erhalten eine URL, die ein Computerprogramm oderJavaScript Skript kann verwenden, um das gleiche zu erhalten
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Durch Änderung der Dateierweiterung in der URL von .html auf .json  (oder .csv, oder .htmlTable , oder .jsonlCSV1 , oder .xhtml ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> wir erhalten eine URL, die ein Computerprogramm oder Java Script Skript kann verwenden, um das gleiche zu erhalten
 Informationen in einem computerprogrammfreundlicheren Format wie
-&lt;a rel=\"help\" href=\"https://www.json.org/\"&gt;JSON
-&externalLinkHtml;&lt;/a&gt;
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> .
 
-&lt;h3&gt;a class=\"selfLink\" id=\"BuildThings\" href=\"#BuildThings\" rel=\"bookmark\"&gt; Bauen Dinge auf TopERDDAP&lt; a&gt;/h3&gt;
-Es gibt viele Funktionen inERDDAPdie von Computerprogrammen oder Skripten verwendet werden können
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Bauen Dinge auf Top ERDDAP  </a>  </h3> Es gibt viele Funktionen in ERDDAP die von Computerprogrammen oder Skripten verwendet werden können
 das du schreibst. Sie können sie verwenden, um andere Web-Anwendungen oder Web-Dienste auf
-Oberteil vonERDDAP, machenERDDAPdie meiste Arbeit&#33;
-Also, wenn Sie eine Idee für eine bessere Schnittstelle zu den Daten haben,ERDDAPdient oder eine Bahn
+Oberteil von ERDDAP , machen ERDDAP die meiste Arbeit&#33;
+Also, wenn Sie eine Idee für eine bessere Schnittstelle zu den Daten haben, ERDDAP dient oder eine Bahn
 Seite, die eine einfache Möglichkeit zum Zugriff auf Daten benötigt, wir ermutigen Sie, Ihre eigenen zu bauen
-Web-Anwendung, Web-Service oder Webseite und NutzungERDDAPals Stiftung.
-Ihr System kann Daten, Grafiken und andere Informationen vonERD'ERDDAPoder
-andereERDDAPInstallationen oder Sie können
-... Setup immer von Coastwatch's erddap --&gt;
-&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/deploy-install\"&gt;set auf eigene FaustERDDAPServer&lt;/a&gt;
+Web-Anwendung, Web-Service oder Webseite und Nutzung ERDDAP als Stiftung.
+Ihr System kann Daten, Grafiken und andere Informationen von ERD ' ERDDAP oder
+andere ERDDAP Installationen oder Sie können
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Ihr eigenes ERDDAP Server </a> ,
 die
 öffentlich zugänglich oder nur privat zugänglich.
 
 
-&lt;h3&gt;a class=\"selfLink\" id=\"requests\" href=\"#requests\" rel=\"bookmark\"&gt;RESTfulURL Anfragen&lt;/a&gt;/h3&gt;
-Anfragen an Benutzerinterface-Informationen vonERDDAP(zum Beispiel Suchergebnisse)
-Verwenden Sie den universellen Standard des Webs für Anfragen:
-&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Uniform_Resource_Locator\"&gt;URLs
-&externalLinkHtml;&lt;/a&gt;
-per E-Mail
-&lt;a href=\"https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3\"&gt;HTTP GET&externalLinkHtml;&lt;/a&gt;
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL Anfragen </a>  </h3> Anfragen an Benutzerinterface-Informationen von ERDDAP  (zum Beispiel, Suchergebnisse) Verwenden Sie den universellen Standard des Webs für Anfragen:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URLs
+ &externalLinkHtml;  </a> per E-Mail
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Dies ist derselbe Mechanismus, den Ihr Browser verwendet, wenn Sie ein Formular ausfüllen
-auf einer Webseite und klicken Sie auf<kbd>Submit</kbd>Zur VerwendungHTTP GET, Sie erzeugen eine speziell gebildete URL (die eine Abfrage enthalten kann)
-und sende es mitHTTP GET. Sie können diese URLs per Hand eingeben und in
-das Adresstextfeld Ihres Browsers (z.B.
-&lt;br&gt;&gt;&jsonQueryUrl;&gt;&jsonQueryUrl;&lt;/a&gt;
-&lt;br&gt;Or, Sie können ein Computerprogramm oder Web-Seitenskript schreiben, um eine URL zu erstellen, senden Sie es,
-und die Antwort bekommen. URLs überHTTP GETwurden gewählt, weil
-&lt;= &lt;= &lt;====================================================================================================================================================================================================================
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Sie sind einfach zu bedienen.
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Sie arbeiten gut.
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Sie werden universell unterstützt (in Browsern, Computersprachen, Betriebssystem
-Werkzeuge usw.).
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Sie sind ein Fundament
-&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Representational_State_Transfer\"&gt;Representational Staatliche Transfers (REST)
-&externalLinkHtml;&lt;/a&gt; und
-&lt;a rel=\"help\" href=\"https://www.crummy.com/writing/RESTful-Web-Services\"&gt;Resource Oriented Architecture (ROA)
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Sie erleichtern die Nutzung des World Wide Web als große verteilte Anwendung,
+auf einer Webseite und klicken Sie auf <kbd> Einreichung </kbd> Zur Verwendung HTTP GET , Sie erzeugen eine speziell gebildete URL (die eine Abfrage umfassen kann) und sende es mit HTTP GET . Sie können diese URLs per Hand eingeben und in
+das Adresstextfeld Ihres Browsers (zum Beispiel,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Oder Sie können ein Computerprogramm oder ein Web-Seiten-Skript schreiben, um eine URL zu erstellen, es zu senden,
+und die Antwort bekommen. URLs über HTTP GET wurden gewählt, weil
+ <ul>  <li> Sie sind einfach zu bedienen.
+ <li> Sie arbeiten gut.
+ <li> Sie werden universell unterstützt (in Browsern, Computersprachen, Betriebssystem
+Werkzeuge, usw.) .
+ <li> Sie sind ein Fundament
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Vertretung des Staates ( REST )  &externalLinkHtml;  </a> und
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Ressourcenorientierte Architektur ( ROA )  &externalLinkHtml;  </a>  <li> Sie erleichtern die Nutzung des World Wide Web als große verteilte Anwendung,
 z. B. über
-&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\"&gt;mashups&externalLinkHtml;&lt;/a&gt;
-&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Ajax_%28programming%29\"&gt;AJAXAnwendungen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Sie sind &lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Stateless_protocol\"&gt;stateless
-&externalLinkHtml;&lt;/a&gt;
-wieERDDAP, die das System einfacher macht.
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Eine URL definiert eine bestimmte Anfrage vollständig, so dass Sie sie in Ihrem Browser registrieren können,
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX Anwendungen
+ &externalLinkHtml;  </a>  <li> Sie sind <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Zustandslos
+ &externalLinkHtml;  </a> wie ERDDAP , die das System einfacher macht.
+ <li> Eine URL definiert eine bestimmte Anfrage vollständig, so dass Sie sie in Ihrem Browser registrieren können,
 Schreiben Sie es in Ihren Notizen, E-Mail an einen Freund, etc.
-&lt;/ul&gt;
-
-&lt;h3&gt;a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark\"&gt; Prozentsatz der Kodierung &lt;/a&gt;/h3&gt;
-In URLs sind einige Zeichen nicht erlaubt (z.B. Leerzeichen) und andere Zeichen
-haben besondere Bedeutungen (z.B. '&amp;' trennt Schlüssel=Wertpaare in einer Abfrage).
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> % Kodierung </a>  </h3> In URLs sind einige Zeichen nicht erlaubt (beispielsweise Räume) und andere Zeichen
+haben besondere Bedeutungen (z.B. '&amp' trennt Schlüssel=Wertpaare in einer Abfrage) .
 Wenn Sie ein Formular auf einer Webseite ausfüllen und auf Senden klicken, Ihr Browser automatisch
-&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;percent encodes
-&externalLinkHtml;&lt;/a&gt;
-die Sonderzeichen in der URL (z.B. Raum wird %20), z.B.
-&lt;br&gt;&gt;&htmlQueryUrlWithSpaces;&gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Aber wenn Ihr Computerprogramm oder Skript die URLs generiert, muss es wahrscheinlich die Prozent tun
-kodiert sich. Wenn ja, dann wahrscheinlich alle anderen Zeichen als A-Za-z0-9_-&#33;.~'()*
-in den Werten der Abfrage (die Teile nach dem'='Zeichen) müssen kodiert werden
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> prozentuale Encodes
+ &externalLinkHtml;  </a> die Sonderzeichen in der URL (zum Beispiel, Raum wird %20) z.B.
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Aber wenn Ihr Computerprogramm oder Skript die URLs generiert, muss es wahrscheinlich die Prozent tun
+kodiert sich. Wenn ja, dann wahrscheinlich alle Zeichen andere als A-Za-z0-9_-&#33;.~ ' () *
+in den Werten der Abfrage (die Teile nach dem '=' Zeichen) muss kodiert werden
 als %HH, wobei HH der 2stellige hexadezimale Wert des Zeichens ist, wird beispielsweise der Raum zu %20.
 Zeichen über #127 müssen in UTF-8 Bytes umgewandelt werden, dann muss jeder UTF-8 Byte prozentual kodiert sein
-(ein Programmierer für Hilfe). Programmiersprachen haben dazu Werkzeuge (siehe z.B.Java'
-&lt;a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\"&gt;java.net.URLEncoder&externalLinkHtml;&lt;/a&gt; undJavaSchrift
-&lt;a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"&gt;encodeURIComponent()&externalLinkHtml;&lt;/a&gt;) und
-&lt;a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\"&gt;websites that Prozent encode/decode for you
-&externalLinkHtml;&lt;/a&gt;
-
-
-&lt;h3&gt;a class=\"selfLink\" id=\"responses\" href=\"#responses\" rel=\"bookmark\"&gt; Antwort Dateitypen &lt;/a&gt;/h3&gt;
-Obwohl Menschen mit Browsern Benutzer-Interface-Ergebnisse empfangen möchten (z.B.
-Suchergebnisse) als HTML-Dokumente, Computerprogramme bevorzugen oft Ergebnisse in
-einfache, leicht parsierte, weniger verbose Dokumente.ERDDAPBenutzeroberfläche zurückgeben
+ (einen Programmierer um Hilfe bitten) . Programmiersprachen haben Werkzeuge, um dies zu tun (zum Beispiel, siehe Java '
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> und Java Schrift
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponent ()  &externalLinkHtml;  </a> ) und es gibt
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> Webseiten, die prozentual encode/decode für Sie
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Antwort Dateitypen </a>  </h3> Obwohl Menschen mit Browsern Benutzer-Interface-Ergebnisse erhalten möchten (zum Beispiel,
+Ergebnisse) als HTML-Dokumente, Computerprogramme bevorzugen häufig Ergebnisse in
+einfache, leicht parsierte, weniger verbose Dokumente. ERDDAP Benutzeroberfläche zurückgeben
 Ergebnisse als Datentabelle in diesen gemeinsamen, computerprogrammfreundlichen, Dateitypen:
-&lt;= &lt;= &lt;====================================================================================================================================================================================================================
-&lt;li&gt;.csv - eine gemeinschaftlich getrennte ASCII-Texttabelle.
-(&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Comma-separated_values\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.htmlTable- eine .html-Webseite mit den Daten in einer Tabelle.
-(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\"&gt; mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.itx- eine Igor Textdatei mit einer Welle für jede Datenspalte.
-(&lt;a rel=\"help\" href=\"https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.json- eine tischartige JSON-Datei.
-(&lt;a rel=\"help\" href=\"https://www..json.org/\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt; oder
-&lt;a rel=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#json\"&gt;ERDDAP-spezifische Informationen &lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.jsonlCSV1- eine \"Better als CSV\" JSON Lines-Datei mit Spaltennamen auf der ersten Zeile.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.jsonlCSV- eine \"Better als CSV\" JSON Lines-Datei ohne Spaltennamen.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.jsonlKVP- eine JSON Lines-Datei mit Key:Value-Paare.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.mat- eine MATLAB binäre Datei.
-(&lt;a rel=\"help\" href=\"https://www..mathworks.com/\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.nc- flach, tischartig,NetCDF-3 Binärdatei.
-(&lt;a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.nccsv- flach, tischartig,NetCDF- Wie ASCII CSV-Datei.
-(&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-1.20\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.nco Json - eine JSON-Datei (NCO-style) nur mit den Metadaten des Datensatzes (globale Attribute,
+ <ul>  <li> .csv - eine komparierte ASCII-Texttabelle.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - eine .html-Webseite mit den Daten in einer Tabelle.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .itx - eine Igor Textdatei mit einer Welle für jede Datenspalte.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .json - eine tischartige JSON-Datei.
+ ( <a rel="help" href="https://www.json.org/"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> oder
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP -spezifische Informationen </a> )  <li>  .jsonlCSV1 - eine \"Better als CSV\" JSON Lines-Datei mit Spaltennamen auf der ersten Zeile.
+ ( <a rel="help" href="https://jsonlines.org/"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - eine \"Better als CSV\" JSON Lines-Datei ohne Spaltennamen.
+ ( <a rel="help" href="https://jsonlines.org/"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - eine JSON Lines-Datei mit Key:Value-Paare.
+ ( <a rel="help" href="https://jsonlines.org/"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .mat - eine MATLAB binäre Datei.
+ ( <a rel="help" href="https://www.mathworks.com/"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .nc - flach, tischartig, NetCDF -3 Binärdatei.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .nccsv - flach, tischartig, NetCDF - Wie ASCII CSV-Datei.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .nc o Json - eine JSON-Datei ( NCO - Stil) nur mit den Metadaten des Datensatzes (globale Attribute,
 Abmessungen und Variablen mit ihren Attributen, Typ und Form) und keine Datenwerte.
-(&lt;a rel=\"help\" href=\"https://nco.sourceforge.net/nco.html#json\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.tsv- eine tab getrennte ASCII-Texttabelle.
-(&lt;a rel=\"help\" href=\"https://jkorpela.fi/TSV.html\"&gt;mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt;.xhtml- eine XHTML-Datei mit den Daten in einer Tabelle.
-(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\"&gt; mehr&nbsp;Informationen
-&externalLinkHtml;&lt;/a&gt;
-&lt;/ul&gt;
-In jedem Ergebnistabellenformat (außer.jsonlKVP, wo Spaltennamen in jeder Zeile sind:
-&lt;= &lt;= &lt;====================================================================================================================================================================================================================
-&lt;li&gt;Each Spalte hat einen Spaltennamen und eine Art von Informationen.
-&lt;li&gt;Die erste Zeile der Tabelle hat die Spaltennamen.
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Nachfolgende Zeilen haben die gewünschten Informationen.
-&lt;/ul&gt;
-&lt;= &lt;= &lt;============================================================================================================================================================================================================================================= Der Inhalt in diesen einfachen Dateitypen ist auch etwas anders als der .html
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .tsv - eine tab getrennte ASCII-Texttabelle.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  <li>  .xhtml - ein XHTML (XML) Datei mit den Daten in einer Tabelle.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> mehr &nbsp; Informationen
+ &externalLinkHtml;  </a> )  </ul> In jedem Ergebnis Tischformat (ausgenommen .jsonlKVP , wo Spaltennamen in jeder Zeile) :
+ <ul>  <li> Jede Spalte hat einen Spaltennamen und eine Art von Informationen.
+ <li> Die erste Zeile der Tabelle enthält die Spaltennamen.
+ <li> Nachfolgende Zeilen haben die gewünschten Informationen.
+ </ul>  <p> Der Inhalt in diesen einfachen Dateitypen ist auch etwas anders als der .html
 Antwort &mdash; es ist absichtlich bare-boniert, so dass es einfacher für einen Computer
 Programm zu arbeiten.
 
-&lt;p&gt;a class=\"selfLink\" id=\"DataStructure\" href=\"#DataStructure\" rel=\"bookmark\"&gt;A Consistent Data Structure for the Responses&lt;/a&gt;
-&lt;br&gt;Alle auf dieser Seite beschriebenen User-Interface-Dienste können eine Tabelle von
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Eine konsistente Datenstruktur für die Antworten </a>  <br> Alle auf dieser Seite beschriebenen User-Interface-Dienste können eine Tabelle von
 Daten in einem der oben aufgeführten gemeinsamen Dateiformate. Hoffentlich können Sie schreiben
 nur ein Verfahren, um eine Datentabelle in einem der Formate zu vergleichen. Dann kannst du
 Wiederverwendung dieses Verfahrens, um die Antwort von einem dieser Dienste zu begleichen. Das
-sollte es einfacher machen, mitERDDAP.
+sollte es einfacher machen, mit ERDDAP .
 
 
-&lt;p&gt;a class=\"selfLink\".tsvArtikel&lt;ul&gt;
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Hat ein Datum in einer .csv-Datei interne Doppel-Zitate oder Kommas,ERDDAPfolgt:
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> und .tsv Details <ul>  <li> Hat ein Datum in einer .csv-Datei interne Doppel-Zitate oder Kommas, ERDDAP folgt:
 .csv Spezifikation streng: es setzt doppelte Zitate um das Datum und die Doppel
 die internen doppelten Zitate.
-&lt;li&gt;Special Zeichen in einem .csv oder.tsvDatei wird wie codiert
-&lt;a rel=\"help\" href=\"https://www.json.org/\"&gt;JSON
-&externalLinkHtml;&lt;/a&gt;
-Backslash-codierte Zeichen:
-\n (newline), \\ (backslash), \f (formfeed), \t (tab), \r (carriage return)
-oder mit der Syntax \\u&lt;i&gt;hhh&lt;/i&gt;.
-&lt;/ul&gt;
-
-
-&lt;p&gt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\"&gt;jsonp&lt;/a&gt;
-&lt;br&gt;Requests für.jsonDateien können jetzt eine optionale
-&lt;a href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\"&gt;jsonp
-&externalLinkHtml;&lt;/a&gt; Anfrage
-Hinzufügen von \"&amp;.jsonp=&lt;i&gt;FunktionName&lt;/i&gt;\" bis zum Ende der Abfrage. Im Grunde sagt das:
-ERDDAP\"&lt;i&gt;functionName&lt;/i&gt;(\" zu Beginn der Antwort und \")\" zu dem
-Ende der Antwort. Der erste Charakter von &lt;i&gt;FunktionName&lt;/i&gt; muss ein ISO 8859 Buchstaben oder \"_\" sein.
+ <li> Sonderzeichen in einer .csv oder .tsv Datei wird wie codiert
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> Backslash-codierte Zeichen:
+Waren (Neuheit) , \\ (Zurück zur Übersicht) , \f (Formvorschub) , \t (Register) , \r (Wagenrückgabe) oder mit der <i> h </i> Syntax.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> Jsonat </a>  <br> Anträge auf .json Dateien können jetzt eine optionale
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> Jsonat
+ &externalLinkHtml;  </a> auf Anfrage
+Hinzufügen von \"&amp; .json = <i> Funktion Name </i> \" bis zum Ende der Abfrage. Im Grunde sagt das:
+ ERDDAP \" <i> Funktion Name </i>  (\" zu Beginn der Antwort und \") \"
+Ende der Antwort. Der erste Charakter <i> Funktion Name </i> muss ein ISO 8859 Buchstaben oder \"_\" sein.
 Jedes optionale Nachzeichen muss ein ISO 8859 Buchstaben \"_\", eine Ziffer oder \" sein.
 Wenn es ursprünglich keine Abfrage gab, lassen Sie die \"&amp\" in Ihrer Anfrage.
 
 
-&lt;p&gt;gridap undtabledapAngebot verschiedene Dateitypen
-&lt;br&gt;Die oben aufgeführten Dateitypen sind DateitypenERDDAPkann nutzen, um zu reagieren
-Benutzeroberflächentypen von Anfragen (z.B. Suchanfragen).ERDDAPStützen
-eine andere Menge von Dateitypen für wissenschaftliche Daten (z.B. Satellit und Boje)
-Daten) Anfragen (siehe
-&lt;a rel=\"help\" href=\"&tErddapUrl;/griddap/documentation.html#fileTyp\"&gt;gridddap&lt;/a&gt; und
-&lt;a rel=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#fileTyp\"&gt;tabledap&lt;/a&gt;
-Dokumentation).
+ <p> Gridap und tabledap Angebot verschiedene Dateitypen
+ <br> Die oben aufgeführten Dateitypen sind Dateitypen ERDDAP kann nutzen, um zu reagieren
+Benutzeroberflächentypen von Anfragen (zum Beispiel Suchanfragen) . ERDDAP Stützen
+eine andere Menge von Dateitypen für wissenschaftliche Daten (zum Beispiel Satellit und Boje
+Daten) Anträge (siehe
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> Netzteil </a> und
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> Dokumentation) .
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"bookmark\"&gt; Zugriff auf URLs fürERDDAP„Dienstleistungen &lt;/a&gt;/h3&gt;
-ERDDAPhat diese URL-Zugriffspunkte für Computerprogramme:
-&lt;= &lt;= &lt;====================================================================================================================================================================================================================
-&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die Liste der &lt;strong&gt;main-Ressourcenzugriffs-URLs&lt;/strong&gt; zu erhalten, verwenden
-&lt;&plainLinkExamples1;&lt;&nbsp;&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die aktuelle Liste von &lt;strong&gt;all datasets&lt;/strong&gt; zu erhalten, verwenden Sie
-&lt;&plainLinkExamples2;&lt;&nbsp;&lt;li&gt;To get &lt;strong&gt;metadata&lt;/strong&gt; für einen bestimmten Datensatz
-(die Liste der Variablen und deren Attribute)
-&lt;&tErddapUrl;/info/&lt;i&gt;datasetID&lt;/i&gt;/index&lt;i&gt;.fileType&lt;/i&gt;
-&lt;br&gt; z.B.
-&lt;&plainLinkExamples3;&lt;&nbsp;&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die Ergebnisse von &lt;strong&gt;full text searches&lt;/strong&gt; für Datensätze zu erhalten
-(verwenden"searchFor=wind%20speed"als Beispiel, verwenden
-&lt;&plainLinkExamples4;&lt;br&gt;(Ihre Programme oder Skripte müssen
-&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
-&externalLinkHtml;&lt;/a&gt;
-den Wert in der Abfrage.)
-&lt;&nbsp;&lt;br&gt;Or,
-&lt;a rel=\"bookmark\" href=\"&tErddapUrl;/opensearch1.1/index.html\"&gt;OpenSearch1.1&lt;/a&gt;
-Standard für die Volltextsuche nach Datensätzen.
-&lt;&nbsp;&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die Ergebnisse von &lt;strong&gt;advanced searches&lt;/strong&gt; für Datensätze zu erhalten
-(verwenden"searchFor=wind%20speed"als Beispiel, verwenden
-&lt;&plainLinkExamples5;&lt;br&gt;Aber Experiment mit
-&lt;a href=\"&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;&gt;&advancedSearch;&lt;/a&gt;
-in einem Browser alle optionalen Parameter herausfinden.
-(Ihre Programm oder Skript muss
-&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
-&externalLinkHtml;&lt;/a&gt;
-den Wert in der Abfrage.)
-&lt;&nbsp;&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die Liste der &lt;strong&gt; zu erhaltencategoryAttributes&lt;/stark &gt;
-(z. B. Institution,long_name, standard_name), verwenden
-&lt;&plainLinkExamples6;&lt;&nbsp;&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die Liste der &lt;strong&gt;kategorien für eine bestimmte Kategorie zu erhalten Attribut&lt;/stark&gt;
-(mit \"Standard_Name\" als Beispiel)
-&lt;&plainLinkExamples7;&lt;&nbsp;&lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; &lt; Um die Liste der &lt;strong&gt;datasets in einer bestimmten Kategorie zu erhalten &lt;strong&gt;
-(mit \"standard_name=time\" als Beispiel)
-&lt;&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Zugriff auf URLs für ERDDAP Dienstleistungen </a>  </h3>  ERDDAP hat diese URL-Zugriffspunkte für Computerprogramme:
+ <ul>  <li> Um die Liste der <strong> Hauptquellenzugriff URLs </strong> , Verwendung
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Um die aktuelle Liste zu erhalten <strong> alle Datensätze </strong> , Verwendung
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Zu bekommen <strong> Metadaten </strong> für einen bestimmten Datensatz
+ (die Liste der Variablen und deren Attribute) , Verwendung
+ <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /Index <i>  .fileType  </i>  <br> zum Beispiel,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Um die Ergebnisse von <strong> Volltextsuche </strong> für Datensätze
+ (Verwendung "searchFor=wind%20speed" als Beispiel) , Verwendung
+ <br>  &plainLinkExamples4;  <br>  (Ihr Programm oder Skript muss möglicherweise
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> prozentualer Code
+ &externalLinkHtml;  </a> den Wert in der Abfrage.)  <br>  &nbsp;  <br> Oder benutzen Sie die
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1. </a> Standard für die Volltextsuche nach Datensätzen.
+ <br>  &nbsp;  <li> Um die Ergebnisse von <strong> Erweiterte Suche </strong> für Datensätze
+ (Verwendung "searchFor=wind%20speed" als Beispiel) , Verwendung
+ <br>  &plainLinkExamples5;  <br> Aber experimentieren Sie mit
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> in einem Browser alle optionalen Parameter herausfinden.
+ (Ihr Programm oder Skript muss möglicherweise
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> prozentualer Code
+ &externalLinkHtml;  </a> den Wert in der Abfrage.)  <br>  &nbsp;  <li> Um die Liste zu erhalten <strong>  categoryAttributes  </strong>  (z. B. Institution, long_name , standard_name) , Verwendung
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Um die Liste zu erhalten <strong> Kategorien für eine bestimmte Kategorie Attribute </strong>  (mit \"Standard_name\" als Beispiel) , Verwendung
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Um die Liste zu erhalten <strong> Datensätze in einer bestimmten Kategorie </strong>  (mit \"Standard_name=time\" als Beispiel) , Verwendung
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

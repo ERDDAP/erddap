@@ -4513,231 +4513,164 @@ A különböző típusú adatokhoz és a különböző kliens alkalmazásokhoz k
 <resourceNotFound>Az erőforrás nem található:</resourceNotFound>
 <restfulWebServices>RESTful webszolgáltatások</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAPmindkettő:
-&lt;ul&gt;
-&lt;li&gt;&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Web_application\" Webes alkalmazás
-&externalLinkHtml;&lt;/a&gt;
-&ndash; egy weboldal olyan formával, amelyet a böngészőkkel rendelkező emberek használhatnak (ebben az esetben, hogy adatokat, grafikonokat vagy információkat kapjanak az adatkészletekről).
-&lt;br&gt;&nbsp;&lt;li&gt;&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Web_service\"&gt;ARESTfulwebszolgáltatás
-&externalLinkHtml;&lt;/a&gt;
-&ndash; egy URL, amelyet a számítógépes programok használhatnak (ebben az esetben, hogy adatokat, grafikonokat és információkat kapjanak az adatkészletekről).
-&lt;/ul&gt;
-MindenERDDAPweboldal egy olyan formával, amelyet Ön, mint egy böngészővel rendelkező ember használhat, van egy
-megfelelőERDDAPwebszolgáltatás, amelyet úgy terveztek, hogy könnyen használhatók a számítógépes programok és írások számára.
+ ERDDAP mindkettő:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Webes alkalmazás
+ &externalLinkHtml;  </a> &ndash; egy weboldal olyan formával, amelyet a böngészőkkel rendelkező emberek használhatnak (ebben az esetben, hogy adatokat, grafikonokat vagy információkat kapjon az adatkészletekről) ...
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful webszolgáltatás
+ &externalLinkHtml;  </a> &ndash; egy URL, amelyet a számítógépes programok használhatnak (ebben az esetben, hogy adatokat, grafikonokat és információkat kapjon az adatkészletekről) ...
+ </ul> Minden ERDDAP weboldal egy olyan formával, amelyet Ön, mint egy böngészővel rendelkező ember használhat, van egy
+megfelelő ERDDAP webszolgáltatás, amelyet úgy terveztek, hogy könnyen használhatók a számítógépes programok és írások számára.
 Például az emberek használhatják ezt az URL-t, hogy egy teljes szöveges keresést végezzenek érdekes adatkészletekért:
-&lt;br&gt;&lt;a href=\"&htmlQueryUrl;\"&gt;&gt;&gt;&htmlQueryUrl;&lt;/a&gt;
-&lt;br&gt;A fájl kiterjesztésének megváltoztatása az URL-ben .html-től.json(vagy .csv, vagy.htmlTablevagy.jsonlCSV1vagy.xhtml,...):
-&lt;br&gt;&lt;a href=\"&jsonQueryUrl;\"&gt;&gt;&gt;&jsonQueryUrl;&lt;/a&gt;
-&lt;br&gt; kapunk egy URL-t, hogy egy számítógépes program vagyJavaScript script használhatja, hogy ugyanazt kapja
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Az URL fájl kiterjesztésének megváltoztatásával .html-ről .json  (vagy .csv, vagy .htmlTable vagy .jsonlCSV1 vagy .xhtml ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> URL-t kapunk, hogy egy számítógépes program vagy Java Script script használhatja, hogy ugyanazt kapja
 információ egy számítógép-program-barát formátumban, mint például
-&lt;a rel=\"help\" href=\"https/www.json.org/\"&gt; JSON
-&externalLinkHtml;&lt;/a&gt;.
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> ...
 
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"BuildThings\" href=\"#BuildThings\" rel=\"bookmark\"&gt; Épület Dologok a Top of Top ofERDDAP&lt;/a&gt;&lt;/h3&gt;
-Számos funkció létezikERDDAPamelyet számítógépes programok vagy scriptek használhatnak
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Épület Dologok a Top of Top of ERDDAP  </a>  </h3> Számos funkció létezik ERDDAP amelyet számítógépes programok vagy scriptek használhatnak
 írsz. Használhatja őket, hogy más webes alkalmazásokat vagy webes szolgáltatásokat építsenek
-TopERDDAPkészítésERDDAPa legtöbb munkát&#33;
-Tehát, ha van egy ötlet egy jobb interfész az adatok, hogyERDDAPszerviz vagy web
+Top ERDDAP készítés ERDDAP a legtöbb munkát&#33;
+Tehát, ha van egy ötlet egy jobb interfész az adatok, hogy ERDDAP szerviz vagy web
 olyan oldal, amely egyszerű módja van az adatokhoz való hozzáférésnek, arra bátorítjuk Önt, hogy saját építse fel
-webes alkalmazás, webszolgáltatás vagy weboldal és használatERDDAPmint alapítvány.
-A rendszer adatokat, grafikonokat és egyéb információkat kaphatERDAERDDAPvagy
-EgyébERDDAPtelepítések, vagy lehet
-&lt;&#33;-- beállítás mindig a partwatch erddapjától -&gt;
-&lt;a rel=\"help\" href=\"https/erddap.github.io/docs/server-admin/deploy-install\"&gt;set SajátERDDAPszerver&lt;/a&gt;,
+webes alkalmazás, webszolgáltatás vagy weboldal és használat ERDDAP mint alapítvány.
+A rendszer adatokat, grafikonokat és egyéb információkat kaphat ERD A ERDDAP vagy
+Egyéb ERDDAP telepítések, vagy lehet
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Készítsd fel saját magad ERDDAP szerver </a> ,
 amely lehet
 nyilvánosan hozzáférhető vagy csak privátan hozzáférhető.
 
 
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"requests\" href=\"#requests\" rel=\"bookmark\"&gt;RESTfulURL kérések&lt;/a&gt;&lt;/h3&gt;
-A felhasználói felület információinak kéréseiERDDAP(például keresési eredmények)
-használja az internet univerzális szabványát kérésekhez:
-&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Uniform_Resource_Locator\"&gt;URLs
-&externalLinkHtml;&lt;/a&gt;
-küldött
-&lt;a href=\"https/www.w3.org/Protokollok/rfc2616/rfc2616-sec9.html#sec9.3\"HTTP GET&externalLinkHtml;&lt;/a&gt;.
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL kérések </a>  </h3> A felhasználói felület információinak kérései ERDDAP  (például keresési eredmények) használja az internet univerzális szabványát kérésekhez:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URL-ek
+ &externalLinkHtml;  </a> küldött
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> ...
 Ez ugyanaz a mechanizmus, amelyet a böngésző használ, ha kitölt egy formát
-egy weboldalon, és kattintson<kbd>Submit</kbd>HasználniHTTP GETspeciálisan kialakított URL-t generál (amely magában foglalhat egy lekérdezést)
-küldje elHTTP GET... Ezeket az URL-eket kézzel formálhatja, és beléphet hozzájuk
-a böngésző szövegmezője (például
-&lt;br&gt;&lt;a href=\"&jsonQueryUrl;\"&gt;&gt;&gt;&jsonQueryUrl;&lt;/a&gt;)
-&lt;br&gt;Or, írhat egy számítógépes programot vagy weboldal scriptet, hogy létrehozzon egy URL-t, küldje el,
-és kapja meg a választ. URL-ek keresztülHTTP GETválasztották, mert
-&lt;ul&gt;
-&lt;li&gt; Egyszerűen használhatók.
-&lt;li&gt; Jól működnek.
-&lt;li&gt; Ők univerzálisan támogatott (böngészőkben, számítógépes nyelveken, operációs rendszerben
-eszközök, stb.).
-&lt;li&gt; Ők egy alapja annak, hogy
-&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Representational_State_Transfer\"&gt;Representational Állami átvitel ( State Transfer)REST)
-&externalLinkHtml;&lt;/a&gt; és
-&lt;a rel=\"help\" href=\"https/www.crummy.com/writing/RESTfulWeb-Services\"&gt;Resource Oriented Architecture (Resource Oriented Architecture)ROA)
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt; megkönnyítik a World Wide Web használatát nagy elosztott alkalmazásként,
+egy weboldalon, és kattintson <kbd> Bejelentkezés </kbd> Használni HTTP GET Ön speciálisan kialakított URL-t generál (amely magában foglalhat egy lekérdezést) küldje el HTTP GET ... Ezeket az URL-eket kézzel formálhatja, és beléphet hozzájuk
+a böngésző szövegmezője (például,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Vagy írhat egy számítógépes programot vagy weboldalszkriptet, hogy létrehozzon egy URL-t, küldje el,
+és kapja meg a választ. URL-ek keresztül HTTP GET választották, mert
+ <ul>  <li> Egyszerűen használhatók.
+ <li> Jól működnek.
+ <li> Ők egyetemesen támogatott (böngészők, számítógépes nyelvek, operációs rendszer
+eszközök, stb.) ...
+ <li> Ők egy alapja annak, hogy
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Reprezentatív állami transzfer ( REST )  &externalLinkHtml;  </a> és
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Erőforrásorientált építészet ( ROA )  &externalLinkHtml;  </a>  <li> megkönnyítik a World Wide Web használatát nagy elosztott alkalmazásként,
 például keresztül
-&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\"mashups&externalLinkHtml;&lt;/a&gt;
-&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Ajax_%28 programozás%29\"AJAXalkalmazások
-&externalLinkHtml;&lt;/a&gt;
-&lt;li&gt; Ezek &lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Stateless_protokoll\"&gt;államtalan
-&externalLinkHtml;&lt;/a&gt;
-mintERDDAPEz megkönnyíti a rendszert.
-&lt;li&gt; Az URL teljesen meghatároz egy adott kérést, így a böngészőben foglalhatja le,
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX alkalmazások
+ &externalLinkHtml;  </a>  <li> Ők azok <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Rendkívül
+ &externalLinkHtml;  </a> mint ERDDAP Ez megkönnyíti a rendszert.
+ <li> Az URL teljesen meghatároz egy adott kérést, így a böngészőben foglalhatja le,
 írja le a jegyzeteiben, e-mailt küldjön egy barátnak, stb.
-&lt;/ul&gt;
-
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark\"&gt; Percent Encoding&lt;/a&gt;&lt;/h3&gt;
-Az URL-ekben egyes karakterek nem engedélyezettek (például űrek) és más karakterek
-speciális jelentésekkel rendelkezik (például a '&amp;' elválasztja a kulcs=érték párokat egy lekérdezésben).
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> százalékkódolás </a>  </h3> Az URL-ekben egyes karakterek nem engedélyezettek (például helyek) más karakterek
+különleges jelentések (Például a „&amp;” elválasztja a kulcs=érték párokat egy lekérdezésben) ...
 Ha kitölt egy formát egy weboldalon, és kattintson a Benyújtásra, a böngésző automatikusan
-&lt;a class=\"N\" rel=\"help\" href=\"https/en.wikipedia.org/wiki/Percent-encoding\"&gt; százalék kódok
-&externalLinkHtml;&lt;/a&gt;
-a különleges karakterek az URL-ben (például a tér lesz %20), például,
-&lt;br&gt;&lt;a href=\"&htmlQueryUrlWithSpaces;\"&gt;&gt;&gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
-&lt;br&gt; De ha a számítógépes program vagy script generálja az URL-eket, valószínűleg meg kell tennie a százalékot
-kódolja magát. Ha igen, akkor valószínűleg minden karakter más, mint az A-Za-z0-9_-&#33;.
-a lekérdezés értékeiben (a részek után'='jeleket kell kódolni
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> százalék enkódok
+ &externalLinkHtml;  </a> az URL speciális karakterei (Például, a tér válik %20) Például,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> De ha a számítógépes program vagy script generálja az URL-eket, valószínűleg meg kell tennie a százalékot
+kódolja magát. Ha igen, akkor valószínűleg minden karakter más, mint az A-Za-z0-9_-&#33; \"...\" () *
+a lekérdezés értékeiben (a részek után '=' jelek) kódolni kell
 %HH, ahol a HH a karakter két számjegyű hexadecimális értéke, például a tér %-20 lesz.
 A #127 feletti karaktereket UTF-8 byte-re kell átalakítani, majd minden UTF-8 byte-t százalékosan kódolni kell
-(kérjen segítséget egy programozót). A programozási nyelveknek van eszközük erre (például lásdJavaA
-&lt;a rel=\"help\" href=\"https/docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\"&gt;java.net.URLEncoder&externalLinkHtml;&lt;/a&gt; ésJavaScript's
-&lt;a rel=\"help\" href=\"https/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"encodeURIComponent()&externalLinkHtml;&lt;/a&gt; és vannak
-&lt;a class=\"N\" rel=\"help\" href=\"https/www.url-encode-decode.com\"&gt;websites that százalék kód/decode for you
-&externalLinkHtml;&lt;/a&gt;
-
-
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"responses\" href=\"#responses\" rel=\"bookmark\"&gt; Válasz: File Types&lt;/a&gt;&lt;/h3&gt;
-Bár az emberek a böngészők akarnak kapni felhasználói felület eredmények (például,
-keresési eredmények) mint HTML dokumentumok, a számítógépes programok gyakran inkább az eredményeket
-egyszerű, könnyen párosított, kevésbé verbose dokumentumok.ERDDAPvisszatérhet a felhasználó-interface
+ (kérjen programozót segítségért) ... A programozási nyelveknek van eszközük erre (Például lásd Java A
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> és Java Script's
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponens ()  &externalLinkHtml;  </a> ) és vannak
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> olyan webhelyek, amelyek százalékos kódot / dekódot mutatnak Önnek
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Válasz fájltípusok </a>  </h3> Bár az emberek a böngészők akarnak kapni felhasználói felület eredmények (például,
+keresési eredmények) HTML dokumentumokként a számítógépes programok gyakran előnyben részesítik az eredményeket
+egyszerű, könnyen párosított, kevésbé verbose dokumentumok. ERDDAP visszatérhet a felhasználó-interface
 az adatok táblája ezekben a közös, számítógép-program-barát, fájltípusokban:
-&lt;ul&gt;
-&lt;li&gt;.csv - egy párosított ASCII szöveges táblázat.
-(&lt;a rel=\"help\" href=\"https/en.wikipedia.org/wiki/Comma-elválasztott_értékek\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.htmlTable- egy .html weboldal az adatokkal egy táblázatban.
-(&lt;a rel=\"help\" href=\"https/www.w3schools.com/html/html_tables.asp\"&gt; Több&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.itx- Igor Text File hullámmal minden adatoszlophoz.
-(&lt;a rel=\"help\" href=\"https/www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.json- egy táblázatszerű JSON fájl.
-(&lt;a rel=\"help\" href=\"https/www).json.org/\"&gt; több&nbsp;információ
-&externalLinkHtml;&lt;/a&gt; vagy
-&lt;a rel=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#json\"ERDDAP-specifikus információk&lt;/a&gt;)
-&lt;li&gt;.jsonlCSV1- egy \"Better, mint CSV\" JSON Lines fájl oszlop nevekkel az első sorban.
-(&lt;a rel=\"help\" href=\"https/jsonlines.org/\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.jsonlCSV- egy \"Better, mint CSV\" JSON Lines fájl oszlop nevek nélkül.
-(&lt;a rel=\"help\" href=\"https/jsonlines.org/\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.jsonlKVP- egy JSON Lines fájl a Key:Value párokkal.
-(&lt;a rel=\"help\" href=\"https/jsonlines.org/\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.mat- MATLAB bináris fájl.
-(&lt;a rel=\"help\" href=\"https/www).mathworks.com/\"&gt; több&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.nc- lapos, asztali,NetCDF-3 bináris fájl.
-(&lt;a rel=\"help\" href=\"https/www.unidata.ucar.edu/software/netcdf/\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.nccsv- lapos, asztali,NetCDF- mint például az ASCII CSV fájl.
-(&lt;a rel=\"help\" href=\"https/erddap.github.io/docs/user/nccsv-1.20\")&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.ncÓ Json - JSON fájl (JSON)NCO-stílus) az adatkészlet metaadatával csak (globális tulajdonságok,
-dimenziók és változók saját tulajdonságaik, típusa és alakja) és nem adatértékek.
-(&lt;a rel=\"help\" href=\"https/nco.sourceforge.net/nco.html#json\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.tsv- egy tab-választott ASCII szöveges táblázat.
-(&lt;a rel=\"help\" href=\"https/jkorpela.fi/TSV.html\"&gt;&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;li&gt;.xhtml- XHTML (XML) fájl az adatokkal egy táblázatban.
-(&lt;a rel=\"help\" href=\"https/www.w3schools.com/html/html_tables.asp\"&gt; Több&nbsp;információ
-&externalLinkHtml;&lt;/a&gt;)
-&lt;/ul&gt;
-Minden eredmény táblázat formátumban (kivéve.jsonlKVP, ahol az oszlop nevek minden sorban vannak):
-&lt;ul&gt;
-&lt;li&gt;Minden oszlopnak van egy oszlop neve és egyfajta információ.
-&lt;li&gt; Az asztal első sora az oszlop neve.
-&lt;li&gt; Az alábbi sorok tartalmazzák az Ön által kért információkat.
-&lt;/ul&gt;
-&lt;p&gt; Az ilyen egyszerű fájltípusok tartalma szintén kissé különbözik a .html-től.
+ <ul>  <li> .csv - egy párosított ASCII szöveges táblázat.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - egy .html weboldal az adatokkal egy táblázatban.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .itx - Igor Text File hullámmal minden adatoszlophoz.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .json - egy táblázatszerű JSON fájl.
+ ( <a rel="help" href="https://www.json.org/"> Több &nbsp; információ
+ &externalLinkHtml;  </a> vagy
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP -specifikus információk </a> )  <li>  .jsonlCSV1 - egy \"Better, mint CSV\" JSON Lines fájl oszlop nevekkel az első sorban.
+ ( <a rel="help" href="https://jsonlines.org/"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - egy \"Better, mint CSV\" JSON Lines fájl oszlop nevek nélkül.
+ ( <a rel="help" href="https://jsonlines.org/"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - egy JSON Lines fájl a Key:Value párokkal.
+ ( <a rel="help" href="https://jsonlines.org/"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .mat - MATLAB bináris fájl.
+ ( <a rel="help" href="https://www.mathworks.com/"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .nc - lapos, asztali, NetCDF -3 bináris fájl.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .nccsv - lapos, asztali, NetCDF - mint például az ASCII CSV fájl.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .nc Ó Json - egy JSON fájl ( NCO - stílus) az adatkészlet metaadatával csak (globális tulajdonságok,
+dimenziók és változók tulajdonságaik, típusuk és alakjuk) és nem adatértékek.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .tsv - egy tab-választott ASCII szöveges táblázat.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) fájl az adatokkal egy táblázatban.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Több &nbsp; információ
+ &externalLinkHtml;  </a> )  </ul> Minden eredmény táblázat formátum (kivéve, kivéve .jsonlKVP , ahol az oszlop nevek minden sorban vannak) :
+ <ul>  <li> Minden oszlopnak van egy oszlop neve és egyfajta információ.
+ <li> Az asztal első sorában van az oszlop neve.
+ <li> Az alábbi sorok tartalmazzák az Ön által kért információkat.
+ </ul>  <p> Az ilyen egyszerű fájltípusok tartalma szintén kissé különbözik a .html-től.
 válasz & mdash; szándékosan csupa kötés, hogy könnyebb legyen egy számítógép
 program dolgozni.
 
-&lt;p&gt;&lt;a class=\"selfLink\" id=\"DataStructure\" href=\"#DataStructure\" rel=\"bookmark\"&gt; A válaszok megfelelő adatstruktúrája &lt;/a&gt;
-&lt;br&gt; Az ezen az oldalon leírt felhasználó-interface szolgáltatások mindegyike visszatérhet az asztalhoz
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Konzisztens adatstruktúra a válaszokra </a>  <br> Az ezen az oldalon leírt összes felhasználói felületi szolgáltatás visszatérhet egy táblázatba
 a fent felsorolt közös fájlformátumokban található adatok. Remélhetőleg írhatsz
 csak egy eljárás, hogy egy táblázatot az adatok egyik formátumban. Akkor lehet
 újrahasznosítani ezt az eljárást, hogy felvázolja a választ bármely ilyen szolgáltatásból. Ez a
-megkönnyíti a kezeléstERDDAP...
+megkönnyíti a kezelést ERDDAP ...
 
 
-&lt;p&gt;&lt;a class=\"selfLink\" id=\"csvIssues\" href=\"#csvIssues\" rel=\"bookmark\"&gt;.csv&lt;/a&gt; és.tsvRészletek&lt;ul&gt;
-&lt;li&gt; Ha egy datum egy .csv fájlban van belső kettős idézet vagy commas,ERDDAPköveti a
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> és .tsv Részletek <ul>  <li> Ha egy datum egy .csv fájlban van belső kettős idézet vagy commas, ERDDAP követi a
 .csv specifikáció szigorúan: dupla idézeteket tesz a datum és duplák körül
 a belső kettős idézetek.
-&lt;li&gt;Különleges karakterek egy .csv-ben vagy.tsvfájl kódolva vannak, mint
-&lt;a rel=\"help\" href=\"https/www.json.org/\"&gt; JSON
-&externalLinkHtml;&lt;/a&gt;
-backslash kódolt karakterek:
-\n (newline), \\ (backslash), \f (formfeed), \t (ab), \r (szállítási visszatérés)
-vagy a \\u&lt;i&gt;hhhh&lt;/i&gt; szintax.
-&lt;/ul&gt;
-
-
-&lt;p&gt;&lt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\"&gt; dsonp&lt;/a&gt;
-&lt;br&gt; Kérések.jsonfájlok most tartalmazhatnak egy opcionális
-&lt;a href=\"https/niryariv.wordpress.com/2009/05/jsonp-quickly/\"&gt; dsonp
-&externalLinkHtml;&lt;/a&gt; kérés
-hozzáadva a „&amp;.jsonp=&lt;i&gt; funkcionalitásName&lt;/i&gt;” a lekérdezés végén. Alapvetően ez azt mondja
-ERDDAP\"&lt;i&gt;funkcióName&lt;/i&gt;(\" a válasz kezdetéhez és a \")\" hozzáadásához
-a válasz vége. Az első karakter &lt;i&gt; funkcionalitásName&lt;/i&gt; ISO 8859 betűnek vagy „_nek” kell lennie.
+ <li> Különleges karakterek egy .csv vagy .tsv fájl kódolva vannak, mint
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> backslash kódolt karakterek:
+\n (újdonság) , \" (backslash) , \f (Forrás) , \\ t (lap) , \r (szállítási visszatérés) vagy a \\u <i> hhhh </i> Szintax.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> Kérések .json fájlok most tartalmazhatnak egy opcionális
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
+ &externalLinkHtml;  </a> kérés
+hozzáadva a „&amp; .json p= <i> funkció név </i> \"A lekérdezés végére. Alapvetően ez azt mondja
+ ERDDAP hozzáadni \" <i> funkció név </i>  (\"A válasz kezdetére és \") \"A
+a válasz vége. Az első karakter <i> funkció név </i> ISO 8859 betűnek vagy „_nek” kell lennie.
 Minden opcionális későbbi karakternek ISO 8859 betűnek kell lennie, \"_\", egy számjegynek vagy \".
 Ha eredetileg nem volt lekérdezés, hagyja ki a \"&amp;\" a lekérdezés.
 
 
-&lt;p&gt; griddap éstabledapKülönböző fájltípusok
-&lt;br&gt; A fent felsorolt fájltípusok fájltípusokERDDAPfelhasználhat a válaszra
-felhasználó-interface típusú kérések (például keresési kérések).ERDDAPtámogatás
+ <p> griddap és tabledap Különböző fájltípusok
+ <br> A fent felsorolt fájltípusok fájltípusok ERDDAP felhasználhat a válaszra
+felhasználó-interface típusú kérések (például keresési kérések) ... ERDDAP támogatás
 más fájltípusok a tudományos adatokhoz (például műholdas és buoy
-adat) kérelmek (lásd a
-&lt;a rel=\"help\" href=\"&tErddapUrl;/griddap/documentation.html#fileType\"&gt; griddap&lt;/a&gt; és
-&lt;a rel=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#fileType\"tabledap&lt;/a&gt;
-dokumentáció).
+adatok) kérések (lásd:
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> griddap </a> és
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> dokumentáció) ...
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;&lt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"bookmark\"&gt; Hozzáférési URL-ekERDDAPSzolgáltatások&lt;/a&gt;&lt;/h3&gt;
-ERDDAPrendelkezik ezekkel az URL hozzáférési pontokkal a számítógépes programokhoz:
-&lt;ul&gt;
-&lt;li&gt; Ahhoz, hogy a listát a &lt;strong&gt; fő erőforrás hozzáférés URLs&lt;/strong&gt;, használat
-&lt;br&gt;&plainLinkExamples1;&lt;br&gt;&nbsp;&lt;li&gt; Ahhoz, hogy a jelenlegi listát a &lt;strong&gt; minden adatkészlet&lt;/strong&gt;, használat
-&lt;br&gt;&plainLinkExamples2;&lt;br&gt;&nbsp;&lt;li&gt; Ahhoz, hogy &lt;strong&gt;metadat&lt;/strong&gt; egy adott adatkészlethez
-(a változók és tulajdonságaik listája), használat
-&lt;br&gt;&tErddapUrl;/info/&lt;i&gt;datasetID&lt;/i&gt;/index&lt;i&gt;.fileType&lt;/i&gt;
-&lt;br&gt; például,
-&lt;br&gt;&plainLinkExamples3;&lt;br&gt;&nbsp;&lt;li&gt; A &lt;strong&gt; teljes szöveges keresések eredményeihez&lt;/strong&gt; az adatkészletekhez
-(felhasználás"searchFor=wind%20speed"mint például) használja
-&lt;br&gt;&plainLinkExamples4;&lt;br&gt; (Az Ön programjának vagy szkriptjének szüksége lehet
-&lt;a class=\"N\" rel=\"help\" href=\"https/en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
-&externalLinkHtml;&lt;/a&gt;
-a lekérdezés értéke.)
-&lt;br&gt;&nbsp;&lt;br&gt;Or, használja a
-&lt;a rel=\"bookmark\" href=\"&tErddapUrl;/opensearch1.1/index.html\"OpenSearch1.1&lt;/a&gt;
-szabvány az adatkészletek teljes szöveges kereséséhez.
-&lt;br&gt;&nbsp;&lt;li&gt; A &lt;strong&gt;fejlett keresések eredményeihez&lt;/strong&gt; adatkészletek
-(felhasználás"searchFor=wind%20speed"mint például) használja
-&lt;br&gt;&plainLinkExamples5;&lt;br&gt;De kísérlet a
-href=\"&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;\"&gt;&gt;&gt;&advancedSearch;&lt;/a&gt;
-egy böngészőben, hogy kitalálja az összes opcionális paramétert.
-(A program vagy a forgatókönyv szükséges
-&lt;a class=\"N\" rel=\"help\" href=\"https/en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
-&externalLinkHtml;&lt;/a&gt;
-a lekérdezés értéke.)
-&lt;br&gt;&nbsp;&lt;li&gt; Ahhoz, hogy a listát a &lt;strong&gt;categoryAttributes&lt;/strong&gt;
-(például intézmény,long_name, standard_name), használat
-&lt;br&gt;&plainLinkExamples6;&lt;br&gt;&nbsp;&lt;li&gt; Ahhoz, hogy a listát a &lt;strong&gt; kategóriák egy adott kategóriában tulajdonság&lt;/strong&gt;
-(a \"standard_name\" használatával, mint a példa), használat
-&lt;br&gt;&plainLinkExamples7;&lt;br&gt;&nbsp;&lt;li&gt; Ahhoz, hogy a listát a &lt;strong&gt;datasets egy adott kategóriában&lt;/strong&gt;
-(a \"standard_name=time\" használatával, mint a példa), használat
-&lt;br&gt;&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Hozzáférési URL-ek ERDDAP Szolgáltatások </a>  </h3>  ERDDAP rendelkezik ezekkel az URL hozzáférési pontokkal a számítógépes programokhoz:
+ <ul>  <li> Ahhoz, hogy megkapja a listát <strong> fő erőforrás-hozzáférési URL-ek </strong> Használat
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Ahhoz, hogy megkapja a jelenlegi listát <strong> minden adatkészlet </strong> Használat
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Ahhoz, hogy megkapja <strong> metadata </strong> egy adott adatkészlethez
+ (a változók és tulajdonságaik listája) Használat
+ <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /index <i>  .fileType  </i>  <br> például,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Hogy elérje az eredményeket <strong> teljes szöveges keresések </strong> adatkészletek
+ (használat "searchFor=wind%20speed" mint példa) Használat
+ <br>  &plainLinkExamples4;  <br>  (A program vagy a script szükség lehet
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> százalék-ecode
+ &externalLinkHtml;  </a> a lekérdezés értéke.)  <br>  &nbsp;  <br> Vagy használd a
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1. </a> szabvány az adatkészletek teljes szöveges kereséséhez.
+ <br>  &nbsp;  <li> Hogy elérje az eredményeket <strong> fejlett keresések </strong> adatkészletek
+ (használat "searchFor=wind%20speed" mint példa) Használat
+ <br>  &plainLinkExamples5;  <br> De kísérlet a
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> egy böngészőben, hogy kitalálja az összes opcionális paramétert.
+ (A program vagy a script szükség lehet
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> százalék-ecode
+ &externalLinkHtml;  </a> a lekérdezés értéke.)  <br>  &nbsp;  <li> Hogy megkapja a listát <strong>  categoryAttributes  </strong>  (például intézmény, long_name , standard_name) Használat
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Hogy megkapja a listát <strong> Egy adott kategóriába tartozó kategóriák tulajdonság </strong>  (\"standard_name\" használata, mint a példa) Használat
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Hogy megkapja a listát <strong> adatkészletek egy adott kategóriában </strong>  (\"standard_name=time\" használatával, mint a példa) Használat
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

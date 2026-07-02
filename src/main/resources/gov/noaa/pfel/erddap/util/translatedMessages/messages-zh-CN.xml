@@ -3657,231 +3657,164 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <resourceNotFound>未找到资源：</resourceNotFound>
 <restfulWebServices>REST 风格的 Web 服务</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAP两者均为:
-ưμ㼯A
-&lt;li&gt;&lt;a rel=\"帮助\"href=\"https://en.wikipedia.org/wiki/Web_application\" (中文(简体) ). 一个网络应用程序
-&externalLinkHtml;&lt;/a&gt; 语句
-&ndash; 是一个网页, 有浏览器的人类可以使用的形式( 在这种情况下, 用于获取数据, 图表, 或关于数据集的信息) 。
-&lt; br&gt; (英语)&nbsp;https://en.wikipedia.org/wiki/Web_service\" (中文(简体) ).RESTful网络服务
-&externalLinkHtml;&lt;/a&gt; 语句
-&ndash; 计算机程序可以使用的URL( 在这种情况下, 用于获取数据、 图表和有关数据集的信息) 。
-&lt;/ul&gt; (法语)
-每笔ERDDAP网页中包含一个表格,作为人类的浏览器可以使用,有一个
-相应ERDDAP网络服务,旨在方便计算机程序和脚本使用.
+ ERDDAP 两者均为:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> 一个网络应用程序
+ &externalLinkHtml;  </a> &ndash; 网页, 有浏览器的人类可以使用的形式 (在这种情况下,获取有关数据集的数据、图表或信息) 。 。 。 。
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> 页:1 RESTful 网络服务
+ &externalLinkHtml;  </a> & dash; 计算机程序可以使用的 URL (在此情况下,获取有关数据集的数据、图表和信息) 。 。 。 。
+ </ul> 每笔 ERDDAP 网页中包含一个表格,作为人类的浏览器可以使用,有一个
+相应 ERDDAP 网络服务,旨在方便计算机程序和脚本使用.
 例如,人类可以使用这个URL来做一个有趣的数据集的全文本搜索:
-&#123;\fn黑体\fs22\bord1\\shad0\\3aHBE\\4aH00\fscx67\fscy66\\2cHFFFFFF\\3cH808080&#125;你觉得呢?&htmlQueryUrl;\" &gt;&htmlQueryUrl;&lt;/a&gt; 语句
-&lt;br&gt; 将 URL 中的文件扩展名从. html 更改为.json(或.csv,或.htmlTable,或.jsonlCSV1,或.xhtml, . : (中文(简体) ).
-&#123;\fn黑体\fs22\bord1\\shad0\\3aHBE\\4aH00\fscx67\fscy66\\2cHFFFFFF\\3cH808080&#125;你觉得呢?&jsonQueryUrl;\" &gt;&jsonQueryUrl;&lt;/a&gt; 语句
-&lt;br&gt; 我们得到一个计算机程序的 URL 或Java脚本可以用来获得相同的
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> 通过将 URL 文件扩展名从.html 更改为. .json  (或.csv,或 .htmlTable ,或 .jsonlCSV1 ,或 .xhtml ,, , , , , , , , , .) 数字 :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> 我们得到一个URL 一个计算机程序或 Java 脚本可以用来获得相同的
 以更便于计算机程序格式提供的信息
-&lt;a rel=\"帮助\" href=\"https://www..jsonorg/\" &gt; JSON (韩语).
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
+ <a rel="help" href="https://www.json.org/"> 贾森
+ &externalLinkHtml;  </a> 。 。 。 。
 
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"Build Things\" href=\"#Build Things\" rel=\"书签\" 构建 事情的顶端ERDDAP&lt;/a&gt;&lt;/h3&gt;
-里面有很多特征ERDDAP用于计算机程序或脚本
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> 构建 事情的顶端 ERDDAP  </a>  </h3> 里面有很多特征 ERDDAP 用于计算机程序或脚本
 你写。 您可以使用它们来构建其它网络应用程序或网络服务
-顶端ERDDAP,生成ERDDAP做大多数的工作&#33;
-因此,如果你有一个想法 更好的接口数据ERDDAP服务或网络
+顶端 ERDDAP ,生成 ERDDAP 做大多数的工作&#33;
+因此,如果你有一个想法 更好的接口数据 ERDDAP 服务或网络
 我们鼓励您建立自己的
-网页应用程序、网页服务、网页和使用ERDDAP作为基础。
-您的系统可以从ERD因为ERDDAP或从
-其他项目ERDDAP设施,或者你可以
-&#123;\fn华文仿宋\fs16\\1cHD1D1D1&#125; &lt; &#33; 总是从海岸观测站设置 - &gt;
-&lt;a rel=\"帮助\" href=\"https://erddap.github.io/docs/server-admin/depload-install\" (中文(简体) ). set 自己来ERDDAP服务器 &lt;/a&gt;,
+网页应用程序、网页服务、网页和使用 ERDDAP 作为基础。
+您的系统可以从 ERD 因为 ERDDAP 或从
+其他项目 ERDDAP 设施,或者你可以
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> 建立你自己 ERDDAP 服务器 </a> , (中文).
 这可能是
 公开或私下开放。
 
 
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"请求\" href=\"#请求\" rel=\"书签\"RESTfulURL 请求&lt;/a&gt;&lt;/h3&gt;
-用户界面信息请求ERDDAP(例如,搜索结果)
-对请求使用网络通用标准:
-&lt;a rel=\"帮助\" href=\"https://en.wikipedia.org/wiki/Uniform_Resource_Locator\"=URLs (中文(简体) ).
-&externalLinkHtml;&lt;/a&gt; 语句
-通过
-&lt;a href='https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3&gt;.HTTP GET&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL 请求 </a>  </h3> 用户界面信息请求 ERDDAP  (例如,搜索结果) 对请求使用网络通用标准:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URL( URL)
+ &externalLinkHtml;  </a> 通过
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> 。 。 。 。
 此机制与浏览器填写表格时所使用的相同
-在网页上点击<kbd>Submit</kbd>用于HTTP GET,您生成一个特别形成的 URL(其中可能包括查询)
-并发送它与HTTP GET。 。 。 您可以用手形成这些 URL 并输入其中
-浏览器的地址文本字段(例如,
-&#123;\fn黑体\fs22\bord1\\shad0\\3aHBE\\4aH00\fscx67\fscy66\\2cHFFFFFF\\3cH808080&#125;你觉得呢?&jsonQueryUrl;\" &gt;&jsonQueryUrl;&lt;/a&gt; (中文(简体) ).
-&lt;br&gt; 或者,你可以写一个计算机程序或网页脚本来创建URL,发送它,
-并获得回应。 通过 URLHTTP GET之所以选择,是因为
-ưμ㼯A
-&lt;li&gt; (韩语) 它们很容易使用。
-&lt;li&gt; (韩语) 他们工作得很好。
-&lt;li&gt; (韩语) 它们得到普遍支持(在浏览器、计算机语言、操作系统中)
-工具等).
-&lt;li&gt; (韩语) 它们是基础
-https://en.wikipedia.org/wiki/Representational_State_transfer\" 页面存档备份,存于互联网档案馆 互联网档案馆的存檔,存档日期2014-09-02. 国家转让REST页:1
-&externalLinkHtml;&lt;/a &gt; 和
-&lt;a rel=\"帮助\" href=\"https://www.crumy.com/writing/.RESTful- Web-Services\" &gt; 资源导向建筑(中文(简体) ).ROA页:1
-&externalLinkHtml;&lt;/a&gt; 语句
-&lt;li&gt; (韩语) 它们促进将万维网作为大型的分布式应用程序,
+在网页上点击 <kbd> 提交 </kbd> 用于 HTTP GET ,您生成一个特别形成的 URL (其中可能包括查询) 并发送它与 HTTP GET 。 。 。 您可以用手形成这些 URL 并输入其中
+浏览器的地址文本字段 (比如说,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> 或者,你可以写一个计算机程序或者网页脚本来创建一个URL,发送它,
+并获得回应。 通过 URL HTTP GET 之所以选择,是因为
+ <ul>  <li> 它们很容易使用。
+ <li> 他们工作得很好。
+ <li> 他们得到普遍支持 (在浏览器、计算机语言、操作系统中
+工具等) 。 。 。 。
+ <li> 它们是基础
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> 代表国家 ( REST )  &externalLinkHtml;  </a> 和
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> 资源导向架构 ( ROA )  &externalLinkHtml;  </a>  <li> 它们促进将万维网作为大型的分布式应用程序,
 例如通过
-&lt;a rel=\"帮助\" href=\"https://en.wikipedia.org/wiki/Mashup_%-28web_application_hybrid%29\" (中文(简体) ).mashups&externalLinkHtml;&lt;/a&gt; 语句
-&lt;a rel=\"帮助\" href=\"https://en.wikipedia.org/wiki/Ajax_%28programming%29\".AJAX应用程序
-&externalLinkHtml;&lt;/a&gt; 语句
-&lt;li&gt; (韩语) 它们是&lt;a rel=\"帮助\"href=\"https://en.wikipedia.org/wiki/ Stateless_protocol\"=无状态
-&externalLinkHtml;&lt;/a&gt; 语句
-一样ERDDAP,这使得系统更简单.
-&lt;li&gt; (韩语) URL 完全定义一个给定的请求,这样您就可以在浏览器中将其书签,
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX 应用程序
+ &externalLinkHtml;  </a>  <li> 他们是 <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> 无国籍人
+ &externalLinkHtml;  </a> 一样 ERDDAP ,这使得系统更简单.
+ <li> URL 完全定义一个给定的请求,这样您就可以在浏览器中将其书签,
 写在你的笔记, 电子邮件给朋友等等。
-&lt;/ul&gt; (法语)
-
-&lt;h3&gt;&lt;a class=\"selfLink\" id=\"percentEncode\" href=\"#percentEncode\" rel=\"书签\" 编码 &lt;/a&gt;&lt;/h3&gt;
-在 URL 中,一些字符不允许使用(例如空格)和其他字符
-具有特殊含义(例如,“ &amp;”在查询中将键=值对分开)。
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> 百分比编码 </a>  </h3> 在 URL 中,不允许使用一些字符 (例如,空间) 和其他字符
+有特殊的意义 (例如,“ & amp;” 在查询中将键=值对分开) 。 。 。 。
 当您在网页上填写表单并点击“提交”时,您的浏览器会自动
-&lt;a class=\"N\" rel=\"帮助\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\" 百分率编码
-&externalLinkHtml;&lt;/a&gt; 语句
-URL中的特殊字符(例如空间变为% 20),例如,
-&#123;\fn黑体\fs22\bord1\\shad0\\3aHBE\\4aH00\fscx67\fscy66\\2cHFFFFFF\\3cH808080&#125;你觉得呢?&htmlQueryUrlWithSpaces;\" &gt;&htmlQueryUrlWithSpaces;&lt;/a&gt; 语句
-&lt; br&gt; (英语) 但如果你的计算机程序或脚本生成URL,它可能需要完成百分比
-自我编码 如果有,那么除了A-Za-z0-9_&#33;~'()*之外,其他所有字符可能都一样.
-在查询的值中(在'='需要编码
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> 编码百分比
+ &externalLinkHtml;  </a> URL中的特殊字符 (例如, 空间变为% 20) 例如,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> 但如果你的计算机程序或脚本生成URL,它可能需要完成百分比
+自我编码 如果是这样,那么除了A-Za-z0-9_&#33; 可能还有其他所有字符&#33;  ' () * 《大会正式记录,第五十八届会议,补编第5号》(A/C.6/61/Rev.1)。
+在查询的值中 (之后的部件 '=' 标志) 需要编码
 作为 %HH,其中HH是字符的两位数十六进制值,例如空间变为% 20。
 # 127 以上字符必须转换为 UTF-8 字节, 然后每个 UTF-8 字节必须编码%
-(请程序员帮忙). 编程语言有这样做的工具(例如,见Java因为
-&lt;a rel=\"帮助\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLENcoder.html\".java.net.URLEncoder&externalLinkHtml;&lt;/a &gt; 和Java脚本
-&lt;a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/\" 互联网档案馆的存檔,存档日期2013-03-02.Java脚本/参考/ Global_Objects/encodeUR组件\"&gt;encodeURIComponent()&externalLinkHtml;&lt;/a&gt;),还有:
-&lt;a class=\"N\" rel=\"帮助\"href=\"https://www.url-encode-decode.com\" &gt; 网页中,有一定百分比的编码/decode为你服务.
-&externalLinkHtml;&lt;/a&gt; 语句
-
-
-&lt;h3&gt;&lt;a class=\"selfLink\"id=\"应答\"href=\"#应答\"rel=\"书签\". 反应文件类型&lt;/a&gt;&lt;/h3&gt;
-虽然使用浏览器的人类希望获得用户界面结果(例如,
-搜索结果)作为 HTML 文档,计算机程序往往倾向于在
-简单,容易解析, 少动词文档。ERDDAP可以返回用户界面
+ (请求程序员帮助) 。 。 。 编程语言有这样做的工具 (例如,见 Java 因为
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> 和 Java 脚本
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> 编码UR 组件 ()  &externalLinkHtml;  </a> ) 还有
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> 为您编码/解码的百分比网站
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> 响应文件类型 </a>  </h3> 虽然使用浏览器的人类想要收到用户界面结果 (比如说,
+搜索结果) 作为 HTML 文档,计算机程序往往倾向于在
+简单,容易解析, 少动词文档。 ERDDAP 可以返回用户界面
 结果作为这些常见、计算机程序友好的文件类型的数据表:
-ưμ㼯A
-&lt;li&gt;.csv - 一个逗号分隔的ASCII文本表.
-(&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Comma-separaded_values&gt; 更进一步.&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).htmlTable- 一个.html网页,在表格中提供数据。
-(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp&gt;). 更多&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).itx- 伊戈尔文本文件,每列数据都有波浪。
-(&lt;a rel=\"help\" href=\"https://www.wavemetrics.net/doc/igorman/II-09%20Data%20IMport%20Export.pdf&gt;更进一步.&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).json- 一个表状的JSON文件。
-(&lt;a rel=\"帮助\"href=\"https://www..json.org/\" &gt;更多&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; 或
-&lt;a rel=\"帮助\" href=\".&tErddapUrl;页:1tabledap/documentation.html#json\" (中文(简体) ).ERDDAP- 具体资料&lt;/a&gt;)
-&lt;li&gt; (韩语).jsonlCSV1- \"比CSV更好的\"JSON Lines文件,第一行有列名.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\" &gt; more.&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).jsonlCSV- \"比CSV更好的\"JSON Lines文件,没有列名.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\" &gt; more.&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).jsonlKVP- 一个JSON Lines文件,带有Key:Value对.
-(&lt;a rel=\"help\" href=\"https://jsonlines.org/\" &gt; more.&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).mat- 一个MATLAB二进制文件。
-(&lt;a rel=\"帮助\"href=\"https://www..mathworks.com/\" &gt; 更多内容&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).nc- 一个平坦的,桌状的,NetCDF-3个二进制文件
-(&lt;a rel=\"帮助\"href=\"https://www.unidata.ucar.edu/software/netcdf/\").&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).nccsv- 一个平坦的,桌状的,NetCDF-就像ASCII CSV档案
-(&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/user/ncsv-1.20&gt; &gt; 更进一步&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).nc(单位:千美元) Json - 一个JSON文件(NCO-type),仅与数据集的元数据(global属性,
-维度,以及带有属性、类型和形状的变量),没有数据值。
-(&lt;a rel=\"help\" href=\"https://nco.sourceforge.net/nco.html#json&gt; 更进一步.&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).tsv- 一个分页的ASCII文本表。
-(&lt;a rel=\"help\" href=\"https://jkorpela.fi/TSV.html&gt; 更进一步&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;li&gt; (韩语).xhtml- XHTML (XML) 文件, 表中的数据。
-(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp&gt;). 更多&nbsp;资料
-&externalLinkHtml;&lt;/a&gt; (中文(简体) ).
-&lt;/ul&gt; (法语)
-每个结果表格式(除.jsonlKVP,在每一行的列名中:
-ưμ㼯A
-&lt;li&gt;每列都有列名和一类信息.
-&lt;li&gt; 表格第一行有栏名。
-&lt;li&gt; (韩语) 随后的行有您要求的信息 。
-&lt;/ul&gt; (法语)
-&lt;p&gt; 语句 这些普通文件类型中的内容也与.html略有不同.
+ <ul>  <li> .csv - 一个逗号分隔的ASCII文本表.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - 一个.html网页,在表格中提供数据。
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .itx - 伊戈尔文本文件,每列数据都有波浪。
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .json - 一个表状的JSON文件。
+ ( <a rel="help" href="https://www.json.org/"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> 或
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - 具体资料 </a> )  <li>  .jsonlCSV1 - \"比CSV更好的\"JSON Lines文件,第一行有列名.
+ ( <a rel="help" href="https://jsonlines.org/"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"比CSV更好的\"JSON Lines文件,没有列名.
+ ( <a rel="help" href="https://jsonlines.org/"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - 一个JSON Lines文件,带有Key:Value对.
+ ( <a rel="help" href="https://jsonlines.org/"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .mat - 一个MATLAB二进制文件。
+ ( <a rel="help" href="https://www.mathworks.com/"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .nc - 一个平坦的,桌状的, NetCDF -3个二进制文件
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .nccsv - 一个平坦的,桌状的, NetCDF -就像ASCII CSV档案
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .nc (单位:千美元) Json - 一个JSON文件 ( NCO - 风格) 只有数据集的元数据 (全球属性,
+维度,及其属性、类型和形状的变量) 没有数据值。
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .tsv - 一个分页的ASCII文本表。
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  <li>  .xhtml - 一个XHTML (XML 数据) 中的数据。
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> 更多 &nbsp; 资料
+ &externalLinkHtml;  </a> )  </ul> 每种结果表格式 (除外 .jsonlKVP ,每行的栏名) 数字 :
+ <ul>  <li> 每栏都有栏名和一类信息.
+ <li> 表格第一行有栏名.
+ <li> 随后的行有您要求的信息 。
+ </ul>  <p> 这些普通文件类型中的内容也与.html略有不同.
 响应 & mdash; 故意赤骨化, 使计算机更容易使用
 (原始内容存档于2019-09-31). Program to work with.
 
-&lt;p&gt;&lt;a class=\"selfLink\" id=\"数据结构\"href=\"#数据结构\"rel=\"书签\"&gt;一个用于回复的一致数据结构&lt;/a&gt;
-&lt;br&gt; 本页面描述的所有用户界面服务都可以返回一个表格,其中包含
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> 答复的统一数据结构 </a>  <br> 本页面中描述的所有用户界面服务都可以返回一个表格,其中包含:
 以上述任何共同文件格式提供的数据。 希望你能写
 仅用一种格式分析数据表的程序。 那你可以这样
 重新使用该程序来分析任何这些服务的反应。 这个
-应该能更容易地处理ERDDAP。 。 。 。
+应该能更容易地处理 ERDDAP 。 。 。 。
 
 
-&lt;p&gt;&lt;a class=\"selfLink\" id=\"csvIssues\" href=\"#csvIssues\" rel=\"书签\" &gt;.csv &lt;/a&gt;和..tsv细节&lt;ul&gt;
-&lt;li&gt; (韩语) 如果.csv文件中的datum有内部双引号或逗号,ERDDAP沿着
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv (英语). </a> 和 .tsv 细节 <ul>  <li> 如果.csv文件中的datum有内部双引号或逗号, ERDDAP 沿着
 .csv 严格规格:它把双引号放在基准和双引号上
 内部的双引号。
-&lt;li&gt; 在 .csv 中的特殊字符或.tsv文件编码为
-&lt;a rel=\"帮助\" href=\"https://www..jsonorg/\" &gt; JSON (韩语).
-&externalLinkHtml;&lt;/a&gt; 语句
-反斜线编码字符 :
-\n(新线),\\(后斜线),\f(格式),\t(tab),\r(返回)
-或用\\u&lt;i&gt;hhh&lt;/i&gt;语法。
-&lt;/ul&gt; (法语)
-
-
-&lt;p&gt;&lt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"书签\" &gt;jsonp &lt;/a&gt;
-&lt;br&gt; 请求.json文件现在可能包含可选
-&lt;a href='https://niryariv.wordpress.com/2009/05/05/jsonp-q快速/'&gt;jsonp
-&externalLinkHtml;&lt;/a&gt; 请求人
-添加“ & amp;”.jsonp=&lt;i&gt;函数Name&lt;/i&gt; 到查询末尾。 基本上,这告诉
-ERDDAP在回复开头加上“&lt;i&gt;函数Name&lt;/i&gt;(”),并在“(”)”之前加上“&lt;i&gt;函数”
-回复结束。 &lt;i&gt;函数的首字符Name/i&gt; 必须是 ISO 8859 字母或“ _” 。
+ <li> .csv 中的特殊字符或 .tsv 文件编码为
+ <a rel="help" href="https://www.json.org/"> 贾森
+ &externalLinkHtml;  </a> 反斜线编码字符 :
+编号( N) (新线) 时, (反斜线) ,则\f (窗体输入) ,\t (选项卡) ,\r 时 (车厢返回) 或与\\u <i> 嘘 </i> 语法.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> 日语 </a>  <br> 请求 .json 文件现在可能包含可选
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> 日语
+ &externalLinkHtml;  </a> 请求人
+添加“ & amp;” .json p= (单位:千美元) <i> 函数 名称 </i> \" 至问末. 基本上,这告诉
+ ERDDAP 改为 \" <i> 函数 名称 </i>  (\" 直至答复的开头和 \") \" 致
+回复结束。 第一个角色 <i> 函数 名称 </i> 必须是 ISO 8859 字母或“ _” 。
 每个可选后续字符必须是ISO 8859字母,\"_\",一个数字,或\".
 如果最初没有查询, 请在查询中离开“ & amp; ” 。
 
 
-&lt;p&gt;网格dap and &gt;tabledap提供不同的文件类型
-&lt;br&gt; 上面列出的文件类型是文件类型ERDDAP可用于响应
-请求的用户界面类型(例如搜索请求)。ERDDAP支持
-科学数据的不同文件类型(例如卫星和浮标)
-请求(见E/CN.4/Sub.2/2003/L.10,附件)。
-&lt;a rel=\"帮助\" href=\".&tErddapUrl;/griddap/documentation.html#fileType\"&gt;griddap&lt;/a&gt;和
-&lt;a rel=\"帮助\" href=\".&tErddapUrl;页:1tabledap/documentation.html#fileType\"] (中文(简体) ).tabledap&lt;/a&gt; 语句
-(见A/C.5/49/70,附件)。
+ <p> 网格标签和 tabledap 提供不同的文件类型
+ <br> 上述文件类型为文件类型 ERDDAP 可用于响应
+请求的用户界面类型 (例如,搜索请求) 。 。 。 。 ERDDAP 支持
+科学数据的不同文件类型 (例如,卫星和浮标
+数据) 请求 (见
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> 格点 </a> 和
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> 文档) 。 。 。 。
 
 
-&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;&lt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"书签\" 访问 URL 用于ERDDAP's Services &lt;/a&gt;&lt;/h3 &gt;
-ERDDAP拥有计算机程序的这些 URL 访问点:
-ưμ㼯A
-&lt;li&gt; (韩语) 要获取 &lt; 强&gt; 主要资源访问 URL &lt;/ 强&gt; 列表, 请使用
-&lt; br&gt; (英语)&plainLinkExamples1;&lt; br&gt; (英语)&nbsp;&lt;li&gt; (韩语) 要获取当前 &lt; 强 &gt; 所有数据集的列表 &lt;/ 强 &gt; ,请使用
-&lt; br&gt; (英语)&plainLinkExamples2;&lt; br&gt; (英语)&nbsp;&lt;li&gt; 为特定数据集获取 &lt; 强&gt; 元数据 &lt;/ 强&gt;
-(变量列表及其属性),使用
-&lt; br&gt; (英语)&tErddapUrl;/ info/&lt;i&gt; (中文(简体) ).datasetID&lt;/i&gt;/索引&lt;i&gt;.fileType&lt;/i&gt; (法语)
-&lt;br&gt; 例如,
-&lt; br&gt; (英语)&plainLinkExamples3;&lt; br&gt; (英语)&nbsp;&lt;li&gt; (韩语) 获取数据集 &lt; 强 &gt; 全文搜索 &lt;/强 &gt; 的结果
-(使用时间)"searchFor=wind%20speed"作为示例),使用
-&lt; br&gt; (英语)&plainLinkExamples4;&lt;br&gt;(您的程序或脚本可能需要
-&lt;a class=\"N\" rel=\"帮助\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"=百分率-encode
-&externalLinkHtml;&lt;/a&gt; 语句
-查询中的值。 )
-&lt; br&gt; (英语)&nbsp;&lt;br&gt; 或者,使用
-&lt;a rel=\"书签\"href=\".&tErddapUrl;/opensearch1.1/index.html] (中文(简体) ).OpenSearch1.1 &lt;/a&gt; (中文(简体) ).
-用于对数据集进行全文搜索的标准。
-&lt; br&gt; (英语)&nbsp;&lt;li&gt; (韩语) 获取数据集 &lt; 强&gt; 高级搜索 &lt;/ 强&gt; 的结果
-(使用时间)"searchFor=wind%20speed"作为示例),使用
-&lt; br&gt; (英语)&plainLinkExamples5;&lt; br&gt; 但是实验
-&lt;a href=] (中文(简体) ).&tErddapUrl;(原始内容存档于2017-09-28). /search/advanced.html?&encodedDefaultPIppQuery;\" &gt;&advancedSearch;&lt;/a&gt; 语句
-在浏览器中查找所有可选参数。
-(您的程序或脚本可能需要
-&lt;a class=\"N\" rel=\"帮助\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"=百分率-encode
-&externalLinkHtml;&lt;/a&gt; 语句
-查询中的值。 )
-&lt; br&gt; (英语)&nbsp;&lt;li&gt; (韩语) 获取“ 强烈” 列表categoryAttributes&lt;/强&gt;
-(例如,机构,long_name,标准名称),使用
-&lt; br&gt; (英语)&plainLinkExamples6;&lt; br&gt; (英语)&nbsp;&lt;li&gt; (韩语) 获取特定类别的“ 强” 类别列表 属性 &lt;/强 &gt;
-(以“标准_名称”为例),使用
-&lt; br&gt; (英语)&plainLinkExamples7;&lt; br&gt; (英语)&nbsp;&lt;li&gt; (韩语) 将“强”数据集列表归入特定类别“/强”
-(以“标准_名称=时间”为例),使用
-&lt; br&gt; (英语)&plainLinkExamples8;
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> 访问 URL 用于 ERDDAP 服务 </a>  </h3>  ERDDAP 拥有计算机程序的这些 URL 访问点:
+ <ul>  <li> 获取列表 <strong> 主要资源访问 URL </strong> 编辑
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> 要获取当前列表 <strong> 所有数据集 </strong> 编辑
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> 为了得到 <strong> 元数据 </strong> 特定数据集
+ (变量列表及其属性) 编辑
+ <br>  &tErddapUrl; /info/ (帮助) <i>  datasetID  </i> /指数 <i>  .fileType  </i>  <br> 比如说,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> 要得到的结果 <strong> 全文搜索 </strong> 用于数据集
+ (使用 "searchFor=wind%20speed" 作为例子) 编辑
+ <br>  &plainLinkExamples4;  <br>  (您的程序或脚本可能需要
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> 编码百分比
+ &externalLinkHtml;  </a> 查询中的值。)  <br>  &nbsp;  <br> 或者,使用
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 国家 </a> 用于对数据集进行全文搜索的标准。
+ <br>  &nbsp;  <li> 要得到的结果 <strong> 高级搜索 </strong> 用于数据集
+ (使用 "searchFor=wind%20speed" 作为例子) 编辑
+ <br>  &plainLinkExamples5;  <br> 但实验
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> 在浏览器中查找所有可选参数。
+ (您的程序或脚本可能需要
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> 编码百分比
+ &externalLinkHtml;  </a> 查询中的值。)  <br>  &nbsp;  <li> 获取列表 <strong>  categoryAttributes  </strong>  (例如,机构, long_name ,标准名称) 编辑
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> 获取列表 <strong> 特定类别的类别 属性 </strong>  (使用“ 标准_ 名称” 作为示例) 编辑
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> 获取列表 <strong> 特定类别的数据集 </strong>  (使用“ 标准_ 名称=时间” 作为示例) 编辑
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[
