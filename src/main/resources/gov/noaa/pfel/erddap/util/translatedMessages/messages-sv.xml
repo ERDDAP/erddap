@@ -2791,6 +2791,8 @@ Till exempel:
 <fileHelp_nc4Header>Se UTF-8-huvudet (metadata) för NetCDF-4 .nc-filen.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>Visa datasetets metadata som den övre halvan av en 7-bitars ASCII NCCSV .csv-fil.</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>Ladda ner en UTF-8 NCO lvl=2 JSON-fil med COARDS/CF/ACDD-metadata.</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>Visa UTF-8-rubriken (metadata) för enNCOlvl=2 JSON-fil.
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>Ladda ner en NetCDF-3 CF Discrete Sampling Geometries-fil (Contiguous Ragged Array).</fileHelp_ncCF>
 <fileHelp_ncCFHeader>Se UTF-8-huvudet (metadatan) för .ncCF-filen.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Ladda ner en NetCDF-3 CF Discrete Sampling Geometries-fil (Multidimensional Array).</fileHelp_ncCFMA>
@@ -4140,160 +4142,232 @@ Olika protokoll är lämpliga för olika typer av data och för olika klientappl
 <resourceNotFound>Resurs hittades inte:</resourceNotFound>
 <restfulWebServices>RESTful webbtjänster</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAP är båda:
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">En webbapplikation &externalLinkHtml;</a> – en webbsida med ett formulär som människor med webbläsare kan använda (i det här fallet för att få data, grafer eller information om datamängder).
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">RESTful webbtjänst &externalLinkHtml;</a> – en URL som datorprogram kan använda (i detta fall för att få data, grafer och information om datamängder).
-</ul>
-För varje ERDDAP -webbsida med ett formulär som du som människa med en webbläsare kan använda finns en motsvarande ERDDAP -webbtjänst som är designad för att vara enkel att använda för datorprogram och skript.
-Människor kan till exempel använda den här webbadressen för att göra en fulltextsökning efter intressanta datauppsättningar:
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>Genom att ändra filtillägget i URL:en från .html till .json (eller .csv, eller .htmlTable, eller .jsonlCSV1, eller .xhtml, ...):
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>vi får en URL som ett datorprogram eller Java Script-skript kan använda för att få samma information i ett mer datorprogramvänligt format som
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> .
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">Bygg saker på toppen av ERDDAP</a></h3>
-Det finns många funktioner i ERDDAP som kan användas av datorprogram eller skript som du skriver.
-Du kan använda dem för att bygga andra webbapplikationer eller webbtjänster ovanpå ERDDAP, vilket får ERDDAP att göra det mesta av jobbet! Så om du har en idé om ett bättre gränssnitt till data som ERDDAP betjänar eller en webbsida som behöver ett enkelt sätt att komma åt data, uppmuntrar vi dig att bygga din egen webbapplikation, webbtjänst eller webbsida och använda ERDDAP som fundament.
-Ditt system kan hämta data, grafer och annan information från ERD :s ERDDAP eller från andra ERDDAP installationer, eller så kan du<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">ställ in din egen ERDDAP -server</a>, som kan vara allmänt tillgänglig eller bara privat tillgänglig.
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL-förfrågningar</a></h3>
-Förfrågningar om användargränssnittsinformation från ERDDAP (till exempel sökresultat) använder webbens universella standard för förfrågningar:
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs &externalLinkHtml;</a> skickas via
-<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a> .
-Detta är samma mekanism som din webbläsare använder när du fyller i ett formulär på en webbsida och klickar på <kbd>Submit</kbd> För att använda HTTP GET genererar du en speciellt utformad URL (som kan innehålla en fråga) och skickar den med HTTP GET .
-Du kan skapa dessa webbadresser för hand och ange dem i adressfältet i din webbläsare (t.ex.
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
-<br>Eller så kan du skriva ett datorprogram eller webbsidesskript för att skapa en URL, skicka den och få svaret.
-URL:er via HTTP GET valdes pga
-<ul>
-<li>De är enkla att använda.
-<li>De fungerar bra.
-<li>De stöds universellt (i webbläsare, datorspråk, operativsystemverktyg, etc).
-<li>De är en grund för
-<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">Representational State Transfer (REST ) &externalLinkHtml;</a> och
-<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">resursorienterad arkitektur (ROA ) &externalLinkHtml;</a>
-<li>De underlättar användningen av World Wide Web som en stor distribuerad applikation, till exempel via
-<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups &externalLinkHtml;</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX program &externalLinkHtml;</a>
-<li>De är
-<a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">statslösa &externalLinkHtml;</a> liksom ERDDAP, vilket gör systemet enklare.
-<li>En URL definierar helt en given begäran, så att du kan bokmärka den i din webbläsare, skriva den i dina anteckningar, e-posta den till en vän, etc.
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">Procentkodning</a></h3>
-I webbadresser är vissa tecken inte tillåtna (till exempel mellanslag) och andra tecken har speciella betydelser (till exempel &quot;&amp;&quot; separerar nyckel=värdepar i en fråga).
-När du fyller i ett formulär på en webbsida och klickar på Skicka,
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">kodar din webbläsare automatiskt &externalLinkHtml;</a> specialtecknen i URL:en (t.ex.
-mellanslag blir %20), till exempel,
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>Men om ditt datorprogram eller skript genererar webbadresserna måste det förmodligen göra procentkodningen själv.
-Om så är fallet måste förmodligen alla andra tecken än A-Za-z0-9_-!.~&#39;()* i frågans värden (delarna efter &#39;=&#39; -tecknen) kodas som %HH, där HH är 2-siffrigt hexadecimalt värde för tecknet, till exempel blir mellanslag %20.
-Tecken ovanför #127 måste konverteras till UTF-8-byte, sedan måste varje UTF-8-byte vara procentkodad (be en programmerare om hjälp).
-Programmeringsspråk har verktyg för att göra detta (se till exempel Java
-<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a> och Java
-<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml;</a>) och det finns
-<a class="N" rel="help" href="https://www.url-encode-decode.com">webbplatser som procentkodar/avkodar för dig &externalLinkHtml;</a>
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">Svarsfiltyper</a></h3>
-Även om människor som använder webbläsare vill ta emot resultat från användargränssnittet (till exempel sökresultat) som HTML-dokument, föredrar datorprogram ofta att få resultat i enkla, lätttolkade, mindre utförliga dokument.
-ERDDAP kan returnera användargränssnittsresultat som en datatabell i dessa vanliga, datorprogramvänliga filtyper:
-<ul>
-<li>.csv - en kommaseparerad ASCII-texttabell.
-(<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.htmlTable - en .html-webbsida med data i en tabell.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.itx - en Igor-textfil med en våg för varje kolumn med data.
-(<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.json - en tabellliknande JSON-fil.
-(<a rel="help" href="https://www.json.org/">mer&nbsp;information &externalLinkHtml;</a> eller
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP -specifik information</a>)
-<li>.jsonlCSV1 - en &quot;Bättre än CSV&quot; JSON Lines-fil med kolumnnamn på första raden.
-(<a rel="help" href="https://jsonlines.org/">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.jsonlCSV - en &quot;Bättre än CSV&quot; JSON Lines-fil utan kolumnnamn.
-(<a rel="help" href="https://jsonlines.org/">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.jsonlKVP - en JSON Lines-fil med Key:Value-par.
-(<a rel="help" href="https://jsonlines.org/">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.mat - en MATLAB binär fil.
-(<a rel="help" href="https://www.mathworks.com/">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.nc - en platt, NetCDF -3 binär fil.
-(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.nccsv - en platt, tabellliknande, NetCDF -liknande, ASCII CSV-fil.
-(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.tsv - en tabbseparerad ASCII-texttabell.
-(<a rel="help" href="https://jkorpela.fi/TSV.html">mer&nbsp;information &externalLinkHtml;</a>)
-<li>.xhtml - en XHTML-fil (XML) med data i en tabell.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">mer&nbsp;information &externalLinkHtml;</a>)
-</ul>
-I alla resultattabellformat (förutom .jsonlKVP, där kolumnnamn finns på varje rad):
-<ul>
-<li>Varje kolumn har ett kolumnnamn och en typ av information.
-<li>Den första raden i tabellen har kolumnnamnen.
-<li>Efterföljande rader har den information du begärde.
-</ul>
-<p>Innehållet i dessa vanliga filtyper skiljer sig också något från .html-svaret — det är avsiktligt blottat så att det är lättare för ett datorprogram att arbeta med.
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">En konsekvent datastruktur för svaren</a>
-<br>Alla användargränssnittstjänster som beskrivs på den här sidan kan returnera en tabell med data i något av de vanliga filformaten som anges ovan.
-Förhoppningsvis kan du bara skriva en procedur för att analysera en tabell med data i ett av formaten.
-Sedan kan du återanvända den proceduren för att analysera svaret från någon av dessa tjänster.
-Detta borde göra det lättare att hantera ERDDAP .
-<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> och .tsv Detaljer
-<ul>
-<li>Om ett datum i en .csv-fil har interna dubbla citattecken eller kommatecken, följer ERDDAP .csv-specifikationen strikt:
-den sätter dubbla citattecken runt datumet och dubblar de interna citattecken.
-<li>Specialtecken i en .csv- eller .tsv -fil kodas som
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> omvänt snedstreck-kodade tecken:
-\n (nyrad), \\ (omvänt snedstreck), \f (formfeed), \t (tab), \r (vagnretur) eller med \u <i>hhhh-</i> syntaxen.
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>Begäranden om .json filer kan nu innehålla en valfri
-<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp &externalLinkHtml;</a> begära genom att lägga till &quot;&amp; .json p= <i>functionName</i>&quot; i slutet av frågan.
-I grund och botten säger detta till ERDDAP att lägga till &quot;<i>functionName</i> (&quot; i början av svaret och &quot;)&quot; i slutet av svaret.
-Det första tecknet i <i>funktionsnamn</i> måste vara en ISO 8859-bokstav eller &quot;_&quot;.
-Varje valfritt efterföljande tecken måste vara en ISO 8859-bokstav, &quot;_&quot;, en siffra eller &quot;.&quot;.
-Om det inte fanns någon fråga från början, lämna &quot;&amp;&quot; i din fråga.
-<p>griddap och tabledap erbjuder olika filtyper
-<br>Filtyperna som anges ovan är filtyper som ERDDAP kan använda för att svara på användargränssnittstyper av förfrågningar (till exempel sökförfrågningar).
-ERDDAP stöder en annan uppsättning filtyper för förfrågningar om vetenskapliga data (till exempel satellit- och bojdata) (se
-<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap-</a> och
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a> dokumentationen).
-&acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">Få åtkomst till webbadresser för ERDDAP :s tjänster</a></h3>
-ERDDAP har dessa URL-åtkomstpunkter för datorprogram:
-<ul>
-<li>För att få en lista över <strong>webbadresserna för huvudresursåtkomst</strong>, använd
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li>För att få den aktuella listan över <strong>alla datauppsättningar</strong>, använd
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>För att få <strong>metadata</strong> för en specifik datamängd (listan över variabler och deras attribut), använd
-<br>&tErddapUrl; /info/ <i>datasetID</i> -ID /index <i>.fileType</i>
-<br>till exempel,
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>För att få resultat av <strong>fulltextsökningar efter</strong> datauppsättningar (med &quot;searchFor=wind%20speed&quot; som exempel), använd
-<br>&plainLinkExamples4;
-<br>(Ditt program eller skript kan behöva
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">procentkoda &externalLinkHtml;</a> värdet i frågan.)
-<br>&nbsp;
-<br>Eller använd
-<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1-</a> standarden för att göra en fulltextsökning efter datamängder.
-<br>&nbsp;
-<li>För att få resultaten av <strong>avancerade sökningar</strong> efter datauppsättningar (med &quot;searchFor=wind%20speed&quot; som exempel), använd
-<br>&plainLinkExamples5;
-<br>Men experimentera med
-<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a> i en webbläsare för att ta reda på alla valfria parametrar.
+ERDDAPär båda:
+&lt;ul&gt;
+&lt;li&gt;&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_application\"&gt; En webbapplikation
+&externalLinkHtml;&lt;/a&gt;
+&ndash; en webbsida med ett formulär som människor med webbläsare kan använda (i detta fall för att få data, grafer eller information om datamängder).
+&lt;br&gt;&nbsp;&lt;li&gt;&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_service\"&gt;ARESTfulWeb service
+&externalLinkHtml;&lt;/a&gt;
+&ndash; en URL som datorprogram kan använda (i detta fall för att få data, grafer och information om datamängder).
+&lt;/ul&gt;
+För varjeERDDAPwebbsida med ett formulär som du som människa med en webbläsare kan använda, det finns en
+motsvarandeERDDAPwebbtjänst som är utformad för att vara lätt för datorprogram och skript att använda.
+Till exempel kan människor använda den här webbadressen för att göra en fullständig textsökning efter intressanta datamängder:
+&lt;br&gt;&lt;a href=\"&htmlQueryUrl;\"&gt;&gt;&gt;&gt;&htmlQueryUrl;&lt;/a&gt;
+&lt;br&gt;Genom att ändra filändelsen i webbadressen från .html till.json(eller .csv eller.htmlTableeller.jsonlCSV1eller.xhtml,...):
+&lt;br&gt;&lt;a href=\"&jsonQueryUrl;\"&gt;&gt;&gt;&gt;&jsonQueryUrl;&lt;/a&gt;
+&lt;br&gt; Vi får en URL som ett datorprogram ellerJavaScript script kan använda för att få samma
+information i ett mer datorprogramvänligt format som
+&lt;a rel=\"help\" href=\"https://www.json.org/JSON
+&externalLinkHtml;&lt;/a&gt;.
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"BuildThings\" href=\"#BuildThings\" rel=\"bookmark\"&gt; Bygga Saker på Top OfERDDAP&lt;/a&gt;&lt;/h3&gt;
+Det finns många funktioner iERDDAPsom kan användas av datorprogram eller skript
+att du skriver. Du kan använda dem för att bygga andra webbapplikationer eller webbtjänster på
+överstERDDAPGöraERDDAPGör det mesta av arbetet&#33;
+Så om du har en idé för ett bättre gränssnitt till data somERDDAPTjänster eller en webb
+sida som behöver ett enkelt sätt att komma åt data, vi uppmuntrar dig att bygga din egen
+webbapplikation, webbtjänst eller webbsida och användningERDDAPsom grunden.
+Ditt system kan få data, grafer och annan information frånERD\"SERDDAPeller från
+andraERDDAPinstallationer, eller du kan
+&lt;&#33;--- Inställning alltid från kustwatch erddap -&gt;
+&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/deploy-install\"&gt;set upp din egenERDDAPserver&lt;/a&gt;,
+som kan vara
+Allmänt tillgänglig eller bara privat tillgänglig.
+
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"requests\" href=\"#requests\" rel=\"bookmark\"&gt;RESTfulURL-begäran&lt;/a&gt;&lt;/h3&gt;
+Begäran om användargränssnittsinformation frånERDDAP(till exempel sökresultat)
+Använd webbens universella standard för förfrågningar:
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Uniform_Resource_Locator\"&gt;URLs
+&externalLinkHtml;&lt;/a&gt;
+skickas via
+&lt;a href=\"https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3\"&gt;HTTP GET&externalLinkHtml;&lt;/a&gt;.
+Detta är samma mekanism som din webbläsare använder när du fyller i ett formulär
+på en webbsida och klicka på<kbd>Submit</kbd>Att användaHTTP GETDu genererar en speciellt bildad URL (som kan innehålla en fråga)
+och skicka den medHTTP GET. Du kan bilda dessa webbadresser för hand och ange dem i
+adresstextfältet för din webbläsare (till exempel
+&lt;br&gt;&lt;a href=\"&jsonQueryUrl;\"&gt;&gt;&gt;&gt;&jsonQueryUrl;&lt;/a&gt;)
+&lt;br&gt;Eller, du kan skriva ett datorprogram eller webbsidaskript för att skapa en URL, skicka den,
+och få svaret. URL:er viaHTTP GETvaldes för att
+&lt;ul&gt;
+&lt;li&gt; De är enkla att använda.
+&lt;li&gt; De fungerar bra.
+&lt;li&gt; De stöds universellt (i webbläsare, datorspråk, operativsystem
+verktyg etc.).
+&lt;li&gt; De är en grund för
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Representational_State_Transfer\"&gt;Representational Statlig överföring (REST) )
+&externalLinkHtml;&lt;/a&gt; och
+&lt;a rel=\"help\" href=\"https://www.crummy.com/writing/RESTfulWeb-service\"&gt;Resursorienterad arkitektur (Resursorienterad arkitektur)ROA) )
+&externalLinkHtml;&lt;/a&gt;
+&lt;li&gt; De underlättar att använda World Wide Web som en stor distribuerad applikation.
+till exempel via
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\"&gt;mashups&externalLinkHtml;&lt;/a&gt;
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Ajax_%28 programmering%29\"&gt;AJAXAnsökningar
+&externalLinkHtml;&lt;/a&gt;
+&lt;li&gt; De är &lt;a rel=\"hjälp\" href=\"https://en.wikipedia.org/wiki/Stateless_protocol\"&gt;stateless
+&externalLinkHtml;&lt;/a&gt;
+som ärERDDAPvilket gör systemet enklare.
+&lt;li&gt; En URL definierar helt en viss begäran, så att du kan bokmärka den i din webbläsare,
+Skriv det i dina anteckningar, maila det till en vän, etc.
+&lt;/ul&gt;
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark\"&gt; Procentkodning&lt;/a&gt;&lt;/h3&gt;
+I webbadresser är vissa tecken inte tillåtna (till exempel utrymmen) och andra tecken.
+har särskilda betydelser (till exempel \"&amp;\" separerar nyckel = värdepar i en fråga).
+När du fyller i ett formulär på en webbsida och klickar på Skicka, din webbläsare automatiskt
+&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;percent koder
+&externalLinkHtml;&lt;/a&gt;
+specialkaraktärerna i webbadressen (t.ex. utrymmet blir %20), till exempel
+&lt;br&gt;&lt;a href=\"&htmlQueryUrlWithSpaces;\"&gt;&gt;&gt;&gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
+&lt;br&gt; Men om ditt datorprogram eller skript genererar webbadresserna, behöver det förmodligen göra procenten
+kodar sig själv. Om så är fallet, troligen alla andra tecken än A-Za-z0-9_-&#33;.\"
+i frågans värderingar (delarna efter'='Tecken) måste kodas
+som % HH, där HH är karaktärens 2-siffriga hexadecimalvärde, till exempel, blir utrymmet %20.
+Tecken över #127 måste omvandlas till UTF-8 byte, då varje UTF-8 byte måste vara procent kodade
+(Fråga en programmerare om hjälp). Programspråk har verktyg för att göra detta (till exempel seJava\"S
+&lt;a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\"&gt;java.net.URLEncoder&externalLinkHtml;&lt;/a&gt; ochJavaSkriftens
+&lt;a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent”encodeURIComponent()&externalLinkHtml;&lt;/a&gt;) och det finns
+&lt;a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\"&gt;websites that percent encode/decode for you
+&externalLinkHtml;&lt;/a&gt;
+
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"responses\" href=\"#responses\" rel=\"bookmark\"&gt; Svarsfiltyper&lt;/a&gt;&lt;/h3&gt;
+Även om människor som använder webbläsare vill få användargränssnittsresultat (t.ex.
+sökresultat) som HTML-dokument föredrar datorprogram ofta att få resultat
+enkla, lätt parsed, mindre verbose dokument.ERDDAPkan returnera användargränssnitt
+resultat som en datatabell i dessa vanliga, datorprogramvänliga, filtyper:
+&lt;ul&gt;
+&lt;li&gt;.csv - ett komma-separerat ASCII textbord.
+(&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Comma-separated_values\"&gt;mer&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.htmlTable- en .html-webbsida med data i en tabell.
+(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\"&gt; mer mer mer&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.itxEn Igor Text File med en våg för varje kolumn av data.
+(&lt;a rel=\"help\" href=\"https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonEn tabellliknande JSON-fil.
+(&lt;a rel=\"help\" href=\"https://www.json.org/\"mer&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt; eller
+&lt;a rel=\"hjälp\" href=\"&tErddapUrl;///tabledap/documentation.html#json\"&gt;ERDDAPSpecifik information&lt;/a&gt;)
+&lt;li&gt;.jsonlCSV1- en \"Better than CSV\" JSON Lines-fil med kolumnnamn på första raden.
+(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonlCSV- en \"Better than CSV\" JSON Lines-fil utan kolumnnamn.
+(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonlKVPEn JSON Lines-fil med Key:Value pairs.
+(&lt;a rel=\"help\" href=\"https://jsonlines.org/\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.matEn MATLAB binär fil.
+(&lt;a rel=\"help\" href=\"https://www.mathworks.com/&gt;Mer&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.ncEn platt, bordsliknande,NetCDF-3 binär fil.
+(&lt;a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nccsvEn platt, bordsliknande,NetCDFSom ASCII CSV-fil.
+(&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-1.20\"&gt; mer&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nco o o Json - en JSON-filNCO-stil) med datamängdens metadata endast (globala attribut,
+dimensioner och variabler med sina attribut, typ och form) och inga datavärden.
+(&lt;a rel=\"help\" href=\"https://nco.sourceforge.net/nco.html#json\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.tsv- ett tab-separerat ASCII textbord.
+(&lt;a rel=\"help\" href=\"https://jkorpela.fi/TSV.html\"&gt;&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.xhtml- en XHTML (XML) fil med data i en tabell.
+(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\"&gt; mer mer mer&nbsp;Information om information
+&externalLinkHtml;&lt;/a&gt;)
+&lt;/ul&gt;
+I varje resultat tabellformat (förutom.jsonlKVPdär kolumnnamn finns på varje rad):
+&lt;ul&gt;
+Varje kolumn har ett kolumnnamn och en typ av information.
+&lt;li&gt; Den första raden av bordet har kolumnnamnen.
+&lt;li&gt; Efterföljande rader har den information du begärde.
+&lt;/ul&gt;
+&lt;p&gt; Innehållet i dessa vanliga filtyper är också något annorlunda än .html.
+Respons &mdash; Det är avsiktligt knutet så att det är lättare för en dator
+Programmet att arbeta med.
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"DataStructure\" href=\"#DataStructure\" rel=\"bookmark\"&gt;En konsekvent datastruktur för svaren&lt;/a&gt;
+Alla användargränssnittstjänster som beskrivs på denna sida kan returnera en tabell över
+data i någon av de vanliga filformat som anges ovan. Förhoppningsvis kan du skriva
+Bara ett förfarande för att parasera en datatabell i ett av formaten. Då kan du
+återanvända det förfarandet för att analysera svaret från någon av dessa tjänster. Detta detta
+bör göra det lättare att hanteraERDDAP.
+
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"csvIssues\" href=\"#csvIssues\" rel=\"bookmark\"&gt;.csv&lt;/a&gt; och.tsvDetaljer&lt;ul&gt;
+&lt;li&gt; Om ett datum i en .csv-fil har interna dubbla citat eller kommatecken,ERDDAPFöljer
+.csv specifikation strikt: det sätter dubbla citat runt datumet och dubblar
+interna dubbla citat.
+&lt;li&gt;Specialkaraktärer i .csv eller.tsvfilen kodas som
+&lt;a rel=\"help\" href=\"https://www.json.org/JSON
+&externalLinkHtml;&lt;/a&gt;
+backslash-kodade tecken:
+\n (newline), \\ (backslash), \f (formfeed), \t (tab), \r (vagnsavkastning)
+eller med \\u &lt;i&gt;hhh &lt;/i&gt; syntax.
+&lt;/ul&gt;
+
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\"&gt;jsonp&lt;/a&gt;
+&lt;br&gt; Förfrågningar om.jsonfiler kan nu inkludera en valfri
+&lt;a href=\"https://niryariv.wordpress.com/2009/05/jsonp-quickly/\"&gt;jsonp
+&externalLinkHtml;&lt;/a&gt; begäran av
+Lägga till \"&amp;.jsonp &lt;i&gt;funktionnamn&lt;/i&gt;\" till slutet av frågan. I grund och botten säger detta
+ERDDAPlägga till \"&lt;i&gt;funktionsnamn&lt;/i&gt;(\" i början av svaret och \")\" till
+Slutet på svaret. Den första karaktären av &lt;i&gt;funktionsnamn&lt;/i&gt; måste vara ett ISO 8859-brev eller \"_\".
+Varje valfri efterföljande karaktär måste vara ett ISO 8859-brev, \"_\", en siffra eller \".
+Om det ursprungligen inte fanns någon fråga, lämna \"&amp;\" i din fråga.
+
+
+&lt;p&gt;Griddap ochtabledapErbjuda olika filtyper
+&lt;br&gt;De filtyper som anges ovan är filtyperERDDAPkan använda för att svara på
+användargränssnittstyper av förfrågningar (t.ex. sökförfrågningar).ERDDAPstöd
+en annan uppsättning filtyper för vetenskapliga data (till exempel satellit och boj
+förfrågningar (se
+&lt;a rel=\"hjälp\" href=\"&tErddapUrl;/griddap/documentation.html#fileType\"&gt;griddap&lt;/a&gt; och
+&lt;a rel=\"hjälp\" href=\"&tErddapUrl;///tabledap/documentation.html#fileType\"&gt;tabledap&lt;/a&gt;
+dokumentation).
+
+
+&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;&lt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"bookmark\"&gt; Access-adresser förERDDAPTjänster&lt;/a&gt;&lt;/h3&gt;
+ERDDAPhar dessa URL-åtkomstpunkter för datorprogram:
+&lt;ul&gt;
+&lt;li&gt; För att få listan över &lt;strong&gt; huvudresursåtkomst URLs&lt;/strong&gt;, använd
+&lt;br&gt;&plainLinkExamples1;&lt;br&gt;&nbsp;&lt;li&gt; För att få den aktuella listan över &lt;strong&gt; alla dataset&lt;/strong&gt;, använd
+&lt;br&gt;&plainLinkExamples2;&lt;br&gt;&nbsp;&lt;li&gt;Att få &lt;strong&gt;metadata&lt;/strong&gt; för en specifik datauppsättning
+(förteckningen över variabler och deras attribut), användning
+&lt;br&gt;&tErddapUrl;/info/&lt;i&gt;datasetID&lt;/i&gt;/index&lt;i&gt;.fileType&lt;/i&gt;
+&lt;br&gt;till exempel,
+&lt;br&gt;&plainLinkExamples3;&lt;br&gt;&nbsp;&lt;li&gt; För att få resultaten av &lt;strong&gt;full textsökningar&lt;/strong&gt; för dataset
+(Att använda"searchFor=wind%20speed"som exempel), använda
+&lt;br&gt;&plainLinkExamples4;&lt;br&gt;(Ditt program eller skript kan behöva
+&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
+&externalLinkHtml;&lt;/a&gt;
+värdet i frågan.)
+&lt;br&gt;&nbsp;&lt;br&gt;Eller, använd
+&lt;a rel=\"bookmark\" href=\"&tErddapUrl;/opensearch1.1/index.html\"&gt;OpenSearch1.1&lt;/a&gt;
+standard för att göra en fullständig textsökning efter datamängder.
+&lt;br&gt;&nbsp;&lt;li&gt; För att få resultaten av &lt;strong&gt; avancerade sökningar &lt;/strong&gt; för dataset
+(Att använda"searchFor=wind%20speed"som exempel), använda
+&lt;br&gt;&plainLinkExamples5;&lt;br&gt; Men experimentera med
+&lt;a href=\"&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;\"&gt;&gt;&gt;&gt;&advancedSearch;&lt;/a&gt;
+i en webbläsare för att räkna ut alla valfria parametrar.
 (Ditt program eller skript kan behöva
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">procentkoda &externalLinkHtml;</a> värdet i frågan.)
-<br>&nbsp;
-<li>För att få listan över <strong>categoryAttributes</strong> (till exempel institution, long_name, standard_name), använd
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li>För att få listan över <strong>kategorier för ett specifikt kategoriattribut</strong> (med &quot;standardnamn&quot; som exempel), använd
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li>För att få listan över <strong>datauppsättningar i en specifik kategori</strong> (med &quot;standardnamn=tid&quot; som exempel), använd
-<br>&plainLinkExamples8;
+&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
+&externalLinkHtml;&lt;/a&gt;
+värdet i frågan.)
+&lt;br&gt;&nbsp;&lt;li&gt; För att få listan över &lt;strong&gt;categoryAttributes&lt;/stark&gt;
+(till exempel institution,long_namestandardnamn), använd
+&lt;br&gt;&plainLinkExamples6;&lt;br&gt;&nbsp;&lt;li&gt; För att få listan över &lt;strong&gt; kategorier för en specifik kategori Attribuera &lt;/stark&gt;
+(med \"standardnamn\" som exempel), använd
+&lt;br&gt;&plainLinkExamples7;&lt;br&gt;&nbsp;&lt;li&gt; För att få listan över &lt;strong&gt;dataset i en specifik kategori &lt;/stark&gt;
+(med \"standard_name=time\" som exempel), använd
+&lt;br&gt;&plainLinkExamples8;
+
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[
 

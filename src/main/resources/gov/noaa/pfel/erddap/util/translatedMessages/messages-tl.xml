@@ -2920,6 +2920,8 @@ Halimbawa:
 <fileHelp_nc4Header>Tingnan ang UTF-8 header (ang metadata) para sa NetCDF-4 .nc file.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>Tingnan ang metadata ng dataset bilang ang nangungunang kalahati ng isang 7-bit na ASCII NCCSV .csv file.</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>Mag-download ng UTF-8 NCO lvl=2 JSON file na may COARDS/CF/ACDD metadata.</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>Tingnan ang UTF-8 header (ang metadata) para sa isangNCOlvl=2 JSON file.
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>Mag-download ng NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).</fileHelp_ncCF>
 <fileHelp_ncCFHeader>Tingnan ang UTF-8 header (ang metadata) para sa .ncCF file.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Mag-download ng NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).</fileHelp_ncCFMA>
@@ -4363,161 +4365,231 @@ Ang iba&#39;t ibang mga protocol ay angkop para sa iba&#39;t ibang uri ng data a
 <resourceNotFound>Hindi nakita ang mapagkukunan:</resourceNotFound>
 <restfulWebServices>RESTful Web Services</restfulWebServices>
 <restfulHTML><![CDATA[
+ERDDAPay kapuwa:
+&lt;&gt;
+&lt;li&gt;&lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Web_application\"&gt; Isang web application
+&externalLinkHtml;&lt;/a&gt;
+&ndash; isang web page na may anyong magagamit ng mga taong may browser (sa kasong ito, upang makakuha ng datos, mga grap, o impormasyon tungkol sa mga datos).
+&lt;br&gt;&nbsp;&lt;li&gt;&lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Web_service\"&gt;A.RESTfulserbisyo ng web
+&externalLinkHtml;&lt;/a&gt;
+&ndash; isang URL na maaaring gamitin ng mga programang pangkompyuter (sa kasong ito, upang makakuha ng datos, mga grap, at impormasyon tungkol sa mga datos).
+&lt;/ulo&gt;
+Sa bawat isaERDDAPweb page na may anyong magagamit mo bilang isang tao na may browser, may isang browser
+katumbasERDDAPweb service na dinisenyo upang madaling gamitin sa mga programa at iskrip sa computer.
+Halimbawa, magagamit ng mga tao ang URL na ito upang gawin ang Buong Tekstong Paghahanap ng kawili-wiling datos:
+&lt;br&gt;&lt;a hrief=\"&htmlQueryUrl;\"&gt;&htmlQueryUrl;&lt;/a&gt;
+&lt;br&gt; Sa pamamagitan ng pagbabago ng extension ng file sa URL mula .html tungo sa .html.json(o .csv, o.htmlTable, o.jsonlCSV1, o.xhtml...):
+&lt;br&gt;&lt;a hrief=\"&jsonQueryUrl;\"&gt;&jsonQueryUrl;&lt;/a&gt;
+Ang &lt;br&gt;we ay nakakakuha ng isang URL na isang programa sa computer oJavaMaaaring gamitin ang script script upang makuha ang gayunding sulat
+nasa mas computer-program-friendly format tulad ng
+&lt;a rel=\"tulong\"  hr=\"htps://www.json.org/\"&gt;JSON
+&externalLinkHtml;&lt;/a&gt;.
 
-ERDDAP ay pareho:
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">Isang web application na &externalLinkHtml;</a> – isang web page na may form na magagamit ng mga taong may mga browser (sa kasong ito, upang makakuha ng data, mga graph, o impormasyon tungkol sa mga dataset).
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">Isang RESTful na serbisyo sa web &externalLinkHtml;</a> – isang URL na maaaring gamitin ng mga computer program (sa kasong ito, upang makakuha ng data, mga graph, at impormasyon tungkol sa mga dataset).
-</ul>
-Para sa bawat web page ng ERDDAP na may form na magagamit mo bilang isang tao na may browser, mayroong kaukulang serbisyo sa web ERDDAP na idinisenyo upang maging madali para sa mga computer program at script na gamitin.
-Halimbawa, maaaring gamitin ng mga tao ang URL na ito para gumawa ng Full Text Search para sa mga kawili-wiling dataset:
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>Sa pamamagitan ng pagpapalit ng extension ng file sa URL mula .html patungong .json (o .csv, o .htmlTable, o .jsonlCSV1, o .xhtml, ...):
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>nakakakuha kami ng URL na magagamit ng isang computer program o Java Script script upang makuha ang parehong impormasyon sa isang mas computer-program-friendly na format tulad ng
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> .
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">Bumuo ng Mga Bagay sa Itaas ng ERDDAP</a></h3>
-Mayroong maraming mga tampok sa ERDDAP na maaaring magamit ng mga programa sa computer o mga script na iyong isinusulat.
-Maaari mong gamitin ang mga ito upang bumuo ng iba pang mga web application o mga serbisyo sa web sa ibabaw ng ERDDAP, na ginagawang ERDDAP ang halos lahat ng gawain! Kaya kung mayroon kang ideya para sa isang mas mahusay na interface sa data na inihahain ERDDAP o isang web page na nangangailangan ng madaling paraan upang ma-access ang data, hinihikayat ka naming bumuo ng iyong sariling web application, web service, o web page at gamitin ERDDAP bilang pundasyon.
-Ang iyong system ay maaaring makakuha ng data, mga graph, at iba pang impormasyon mula sa ERD &#39;s ERDDAP o mula sa iba pang ERDDAP installation, o maaari kang<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">i-set up ang iyong sariling ERDDAP server</a>, na maaaring ma-access ng publiko o ma-access lamang nang pribado.
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL Requests</a></h3>
-Ang mga kahilingan para sa impormasyon ng user-interface mula sa ERDDAP (halimbawa, mga resulta ng paghahanap) ay gumagamit ng pangkalahatang pamantayan ng web para sa mga kahilingan:
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">mga URL &externalLinkHtml;</a> ipinadala sa pamamagitan ng
-<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a> .
-Ito ang parehong mekanismo na ginagamit ng iyong browser kapag pinunan mo ang isang form sa isang web page at nag-click sa <kbd>Submit</kbd> Upang gamitin HTTP GET, bumuo ka ng isang espesyal na nabuong URL (na maaaring may kasamang query) at ipadala ito gamit ang HTTP GET .
-Maaari mong buuin ang mga URL na ito sa pamamagitan ng kamay at ilagay ang mga ito sa field ng teksto ng address ng iyong browser (halimbawa,
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
-<br>O, maaari kang magsulat ng isang computer program o web page script upang lumikha ng isang URL, ipadala ito, at makuha ang tugon.
-Ang mga URL sa pamamagitan ng HTTP GET ay pinili dahil
-<ul>
-<li>Ang mga ito ay simpleng gamitin.
-<li>Gumagana sila ng maayos.
-<li>Pangkalahatang suportado ang mga ito (sa mga browser, wika ng computer, mga tool sa operating system, atbp).
-<li>Ang mga ito ay isang pundasyon ng
-<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">Representational State Transfer (REST ) &externalLinkHtml;</a> at
-<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">Resource Oriented Architecture (ROA ) &externalLinkHtml;</a>
-<li>Pinapadali nila ang paggamit ng World Wide Web bilang isang malaking distributed na application, halimbawa sa pamamagitan
-<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups &externalLinkHtml;</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">Mga AJAX application &externalLinkHtml;</a>
-<li>Ang mga ito ay
-<a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">stateless &externalLinkHtml;</a> tulad ng ERDDAP, na ginagawang mas simple ang system.
-<li>Ang isang URL ay ganap na tumutukoy sa isang ibinigay na kahilingan, upang mai-bookmark mo ito sa iyong browser, isulat ito sa iyong mga tala, i-email ito sa isang kaibigan, atbp.
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">Porsyento ng Encoding</a></h3>
-Sa mga URL, ang ilang mga character ay hindi pinapayagan (halimbawa, mga puwang) at iba pang mga character ay may mga espesyal na kahulugan (halimbawa, ang &#39;&amp;&#39; ay naghihiwalay sa mga pares ng key=value sa isang query).
-Kapag pinunan mo ang isang form sa isang web page at nag-click sa Isumite, awtomatikong
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">ine-encode ng porsyento ng iyong browser &externalLinkHtml;</a> ang mga espesyal na character sa URL (halimbawa, ang espasyo ay nagiging %20), halimbawa,
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>Ngunit kung ang iyong computer program o script ay bubuo ng mga URL, malamang na kailangan nitong gawin ang porsyentong pag-encode mismo.
-Kung gayon, malamang na ang lahat ng mga character maliban sa A-Za-z0-9_-!.~&#39;()* sa mga halaga ng query (ang mga bahagi pagkatapos ng &#39;=&#39; na mga palatandaan) ay kailangang i-encode bilang %HH, kung saan ang HH ay ang 2 digit na hexadecimal value ng character, halimbawa, nagiging %20 ang space.
-Ang mga character sa itaas ng #127 ay dapat na ma-convert sa UTF-8 byte, pagkatapos ang bawat UTF-8 byte ay dapat na porsyentong naka-encode (humingi ng tulong sa isang programmer).
-Ang mga programming language ay may mga tool upang gawin ito (halimbawa, tingnan Java &#39;s
-<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a> at Java Script&#39;s
-<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml;</a>) at may
-<a class="N" rel="help" href="https://www.url-encode-decode.com">mga website na porsyentong nag-encode/nagde-decode para sa iyo &externalLinkHtml;</a>
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">Mga Uri ng File ng Tugon</a></h3>
-Bagama&#39;t ang mga taong gumagamit ng mga browser ay gustong makatanggap ng mga resulta ng user-interface (halimbawa, mga resulta ng paghahanap) bilang mga HTML na dokumento, kadalasang mas gusto ng mga computer program na makakuha ng mga resulta sa simple, madaling ma-parse, at hindi gaanong verbose na mga dokumento.
-Maaaring ibalik ERDDAP ang mga resulta ng user-interface bilang isang talahanayan ng data sa mga karaniwang uri ng file na ito, madaling gamitin sa computer-program,:
-<ul>
-<li>.csv - isang comma-separated ASCII text table.
-(<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.htmlTable - isang .html web page na may data sa isang talahanayan.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.itx - isang Igor Text File na may wave para sa bawat column ng data.
-(<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.json - isang JSON file na tulad ng talahanayan.
-(<a rel="help" href="https://www.json.org/">higit pa&nbsp;impormasyon &externalLinkHtml;</a> o
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP -tiyak na impormasyon</a>)
-<li>.jsonlCSV1 - isang file na &quot;Mas mahusay kaysa sa CSV&quot; na JSON Lines na may mga pangalan ng column sa unang linya.
-(<a rel="help" href="https://jsonlines.org/">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.jsonlCSV - isang file na &quot;Mas mahusay kaysa sa CSV&quot; na JSON Lines na walang mga pangalan ng column.
-(<a rel="help" href="https://jsonlines.org/">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.jsonlKVP - isang JSON Lines file na may Key:Value pairs.
-(<a rel="help" href="https://jsonlines.org/">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.mat - isang MATLAB binary file.
-(<a rel="help" href="https://www.mathworks.com/">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.nc - isang flat, mala-table, NetCDF -3 binary file.
-(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.nccsv - isang flat, parang mesa, NetCDF -like, ASCII CSV file.
-(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.tsv - isang tab-separated ASCII text table.
-(<a rel="help" href="https://jkorpela.fi/TSV.html">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-<li>.xhtml - isang XHTML (XML) file na may data sa isang talahanayan.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">higit pa&nbsp;impormasyon &externalLinkHtml;</a>)
-</ul>
-Sa bawat format ng talahanayan ng mga resulta (maliban sa .jsonlKVP, kung saan ang mga pangalan ng column ay nasa bawat row):
-<ul>
-<li>Ang bawat column ay may pangalan ng column at isang uri ng impormasyon.
-<li>Ang unang hilera ng talahanayan ay may mga pangalan ng hanay.
-<li>Ang mga kasunod na hilera ay mayroong impormasyong iyong hiniling.
-</ul>
-<p>Ang nilalaman sa mga payak na uri ng file na ito ay bahagyang naiiba din sa .html na tugon — sadyang ito ay walang buto upang mas madaling gamitin ang isang computer program.
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">Isang Pare-parehong Istraktura ng Data para sa Mga Tugon</a>
-<br>Ang lahat ng mga serbisyo ng user-interface na inilarawan sa pahinang ito ay maaaring magbalik ng isang talahanayan ng data sa alinman sa mga karaniwang format ng file na nakalista sa itaas.
-Sana, maaari kang sumulat ng isang pamamaraan lamang upang mai-parse ang isang talahanayan ng data sa isa sa mga format.
-Pagkatapos ay maaari mong muling gamitin ang pamamaraang iyon upang i-parse ang tugon mula sa alinman sa mga serbisyong ito.
-Dapat nitong gawing mas madali ang pakikitungo sa ERDDAP .
-<p>Mga Detalye ng
-<a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> at .tsv
-<ul>
-<li>Kung ang isang datum sa isang .csv file ay may panloob na double quote o kuwit, mahigpit na sinusunod ERDDAP ang .csv na detalye:
-naglalagay ito ng mga double quote sa paligid ng datum at dinodoble ang panloob na double quote.
-<li>Ang mga espesyal na character sa isang .csv o .tsv file ay naka-encode tulad ng
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> backslash-encoded na mga character:
-\n (newline), \\ (backslash), \f (formfeed), \t (tab), \r (carriage return) o may \u <i>hhhh</i> syntax.
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>Ang mga kahilingan para sa .json file ay maaari na ngayong magsama ng opsyonal
-<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">na jsonp &externalLinkHtml;</a> kahilingan sa pamamagitan ng pagdaragdag ng &quot;&amp; .json p= <i>functionName</i>&quot; sa dulo ng query.
-Karaniwan, sinasabi nito ERDDAP na magdagdag ng &quot;<i>functionName</i> (&quot; sa simula ng tugon at &quot;)&quot; sa dulo ng tugon.
-Ang unang character ng <i>functionName</i> ay dapat na isang ISO 8859 na titik o &quot;_&quot;.
-Ang bawat opsyonal na kasunod na character ay dapat na isang ISO 8859 na titik, &quot;_&quot;, isang digit, o &quot;.&quot;.
-Kung orihinal na walang query, iwanan ang &quot;&amp;&quot; sa iyong query.
-<p>griddap at tabledap Nag-aalok ng Iba&#39;t ibang Uri ng File
-<br>Ang mga uri ng file na nakalista sa itaas ay mga uri ng file na maaaring gamitin ERDDAP upang tumugon sa mga uri ng user-interface ng mga kahilingan (halimbawa, mga kahilingan sa paghahanap).
-Sinusuportahan ERDDAP ang iba&#39;t ibang hanay ng mga uri ng file para sa siyentipikong data (halimbawa, satellite at buoy data) na mga kahilingan (tingnan ang
-<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a> at
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a> na dokumentasyon).
-&acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">I-access ang mga URL para sa Mga Serbisyo ng ERDDAP</a></h3>
-ERDDAP ay mayroong mga URL access point na ito para sa mga computer program:
-<ul>
-<li>Upang makuha ang listahan ng mga <strong>pangunahing mapagkukunan ng access URL</strong>, gamitin
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li>Upang makuha ang kasalukuyang listahan ng <strong>lahat ng mga dataset</strong>, gamitin
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>Upang makakuha <strong>ng metadata</strong> para sa isang partikular na set ng data (ang listahan ng mga variable at mga katangian ng mga ito), gamitin
-<br>&tErddapUrl; /info/ <i>datasetID</i> /index <i>.fileType</i>
-<br>Halimbawa,
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>Upang makuha ang mga resulta ng <strong>buong paghahanap ng teksto</strong> para sa mga dataset (gamit ang &quot;searchFor=wind%20speed&quot; bilang halimbawa), gamitin
-<br>&plainLinkExamples4;
-<br>(Maaaring kailanganin ng iyong program o script na
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">i-encode ng porsyento &externalLinkHtml;</a> ang halaga sa query.)
-<br>&nbsp;
-<br>O kaya, gamitin ang pamantayang
-<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a> para gumawa ng buong paghahanap ng teksto para sa mga dataset.
-<br>&nbsp;
-<li>Upang makuha ang mga resulta ng <strong>mga advanced na paghahanap</strong> para sa mga dataset (gamit ang &quot;searchFor=wind%20speed&quot; bilang halimbawa), gamitin
-<br>&plainLinkExamples5;
-<br>Ngunit mag-eksperimento sa
-<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a> sa isang browser upang malaman ang lahat ng mga opsyonal na parameter.
-(Maaaring kailanganin ng iyong program o script na
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">i-encode ng porsyento &externalLinkHtml;</a> ang halaga sa query.)
-<br>&nbsp;
-<li>Upang makuha ang listahan ng <strong>categoryAttributes</strong> (halimbawa, institusyon, long_name, standard_name), gamitin
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li>Upang makuha ang listahan ng <strong>mga kategorya para sa isang partikular na kategoryaAttribute</strong> (gamit ang &quot;standard_name&quot; bilang halimbawa), gamitin
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li>Upang makuha ang listahan ng <strong>mga dataset sa isang partikular na kategorya</strong> (gamit ang &quot;standard_name=time&quot; bilang halimbawa), gamitin
-<br>&plainLinkExamples8;
+&lt;3&gt;&lt;'a class=\"selfLink\" id=\" Build Build  hr\"  hr  hr  hr  hr  hr e e e e e e e l l=\" # # e e e e e e e e = = ==\"# # Build l l l l l l=\" l=\" l l l=\". Magtayo Mga Bagay na Nasa IbabawERDDAP&lt;/a&gt;&lt;/h3&gt;
+Maraming bahagi saERDDAPna magagamit ng mga programa o iskrip sa computer
+na isinusulat mo. Maaari mong gamitin ang mga ito sa pagtatayo ng iba pang gamit sa web o mga serbisyo sa web
+itaas ngERDDAP, paggawaERDDAPang karamihan ng gawain&#33;
+Kaya kung may ideya ka para sa mas mabuting pag - uugnay sa impormasyon naERDDAPo isang web
+pahina na nangangailangan ng madaling pagkuha ng impormasyon, hinihimok ka namin na gumawa ng iyong sariling impormasyon
+web application, web service, o web page at paggamitERDDAPbilang pundasyon.
+Ang iyong sistema ay makakakuha ng impormasyon, mga graph, at iba pang impormasyon mula saERD'ERDDAPo galing
+iba paERDDAPmga instalasyon, o maaari
+&lt;&#33;- Laging naka-setup mula sa erddap ng coastwatch-&gt;
+&lt;a rel=\"tulong\"  hr=\"htps://erddap.github.io/docs/server-admin/deploy-install\"&gt;set sa iyong sariliERDDAPserver&lt;/a&gt;,
+alin ang
+sa publiko o sa pribadong lugar lamang.
+
+
+&lt;3&gt;&lt;a class=\"selfLink\" id=\"requests\" href=\"#requests\" rel=\"bookmark\"&gt;RESTfulURL Requests&lt;/a&gt;&lt;/h3&gt;
+Mga kahilingan para sa user-interface na impormasyon mula saERDDAP(halimbawa, ang resulta ng paghahanap)
+gamitin ang pamantayan ng web para sa mga kahilingan:
+&lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Uniform_Resource_Locator\"&gt;URLs
+&externalLinkHtml;&lt;/a&gt;
+ipinadala sa pamamagitan
+&lt;a href=\"htps://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3\"&gt;&gt;HTTP GET&externalLinkHtml;&lt;/a&gt;.
+Ito rin ang mekanismo na ginagamit ng iyong browser kapag pinupunan mo ang isang anyo
+sa web page at click<kbd>Submit</kbd>GinagamitHTTP GET, lumilikha ka ng isang pantanging binuong URL (na maaaring may kalakip na query)
+at ipadala itoHTTP GET. Maaari mong buuin ang mga URL na ito sa pamamagitan ng kamay at pasukin ito
+address text field ng browser (halimbawa, sa address)
+&lt;br&gt;&lt;a hrief=\"&jsonQueryUrl;\"&gt;&jsonQueryUrl;&lt;/a&gt;)
+&lt;br&gt;Or, maaari kang sumulat ng isang programa sa computer o web page script upang lumikha ng isang URL, ipadala ito,
+at kunin ang tugon. Mga URL sa Pamamagitan ngHTTP GETpinili sapagkat
+&lt;&gt;
+&lt;li&gt; Ang mga ito ay madaling gamitin.
+&lt;li&gt; Mabisa ang kanilang paggawa.
+&lt;li&gt; Ang mga ito ay suportado ng lahat (sa mga browser, computer language, operating system
+mga kasangkapan, atbp).
+&lt;li&gt; Ang mga ito ay pundasyon ng
+&lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Representasyonal_State_Transfer\"&gt;Representasyonal Paglipat ng Estado (Talahulugan ng EstadoREST)
+&externalLinkHtml;&lt;/a&gt; at
+&lt;a rel=\"tulong\"  hr=\"htps://www.crummy.com/writing/writing/RESTful-Web-Services\"&gt;Rource Oriented Arkitektura (&gt; vi)ROA)
+&externalLinkHtml;&lt;/a&gt;
+&lt;li&gt; Pinadadali nila ang paggamit sa World Wide Web bilang isang malaking ipinamamahaging aplikasyon,
+halimbawa sa pamamagitan ng
+&lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\"&gt;mashups&externalLinkHtml;&lt;/a&gt;
+&lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Ajax_%28programming%29\"&gt;AJAXmga aplikasyon
+&externalLinkHtml;&lt;/a&gt;
+&lt;li&gt; Ang mga ito ay &lt;a rel=\"tulong\"  hr=\"htps://en.wikipedia.org/wiki/Stateless_protocol\"&gt;stateless
+&externalLinkHtml;&lt;/a&gt;
+gayundin angERDDAP, na gumagawa sa sistema na mas simple.
+&lt;li&gt; Lubusang binibigyan - kahulugan ng isang URL ang isang ibinigay na kahilingan, kaya maaari mo itong i - bookmark sa iyong browser,
+isulat ito sa iyong nota, i-mail ito sa isang kaibigan, atbp.
+&lt;/ulo&gt;
+
+&lt;3&gt;=\"selfLink\" id=\"PercentEncode\" hryef=\"#PercentEncode\" rel=\"bookmark\"&gt; Percent Encoding&lt;/a&gt;&lt;/h3&gt;
+Sa mga URL, ang ilang mga karakter ay hindi pinapayagan (halimbawa, mga espasyo) at iba pang mga karakter
+magkaroon ng mga natatanging kahulugan (halimbawa, 'pampaaga;' ihiwalay ang key=halagang pares sa isang query).
+Kapag pinuno mo ang isang porma sa isang web page at nag - click sa submile, awtomatikong mapapansin ang iyong browser
+&lt;/en.wikipedia.org/wiki/Percent-encoding\"&gt;percent roles
+&externalLinkHtml;&lt;/a&gt;
+ang mga natatanging karakter sa URL (halimbawa, ang espasyo ay nagiging %20), halimbawa,
+&lt;br&gt;&lt;a hrief=\"&htmlQueryUrlWithSpaces;\"&gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
+&lt;br&gt; Subalit kung ang iyong programa sa computer o iskrip ay lumilikha ng mga URL, malamang na kailangang gawin nito ang porsiyento
+Suriin ang sarili. Kung gayon, malamang na lahat ng mga karakter maliban sa A-Za-z0-9_-&#33;
+sa mga pamantayan ng query (ang mga bahagi pagkatapos ng'='mga palatandaan) ay kailangang isaayos
+bilang %HH, kung saan ang HH ang 2 digit na hexadecimal na halaga ng karakter, halimbawa, ang espasyo ay nagiging %20.
+Ang mga katangian sa itaas ng #127 ay dapat na gawing UTF-8 byte, pagkatapos ang bawat UTF-8 byte ay dapat na maging porsiyentong naka-sign
+( Humingi ng tulong sa isang programmer). Ang mga wikang pamprograma ay may mga kasangkapan upang magawa ito (halimbawa, tingnanJava'
+&lt;a rel=\"tulong\"  hr=\"htps://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLencoder.html\"&gt;&gt;java.net.URLEncoder&externalLinkHtml;&lt;/a&gt; atJavaMga Script'
+&lt;a rel=\"help\" fef=\"htps://pagpapaunlad.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"&gt;encodeURIComponent()&externalLinkHtml;&lt;/a&gt;) at mayroon
+&lt;/www.url-encode-decode.com\"&gt;websites na porsiyentong nag-ebolb/decode para sa iyo
+&externalLinkHtml;&lt;/a&gt;
+
+
+&lt;3&gt;&lt;a class=\"selfLink\" id=\"responses\" hrief=\"#responses\" l=\"bookmark\"&gt; Response Film Types&lt;/a&gt;&lt;/h3&gt;
+Bagaman nais ng mga taong gumagamit ng browser na makatanggap ng mga resultang user-interface (halimbawa,
+mga resulta ng paghahanap) bilang mga dokumento ng HTML, kadalasang pinipili ng mga programa sa computer na makakuha ng mga resulta
+Simple, madaling ipinta, mas kaunting mga dokumentong verose.ERDDAPay maaaring bumalik sa user-interface
+ay nagbubunga bilang isang talaan ng mga datos sa mga pangkaraniwan, kompyuter-program palakaibigan, mga uri ng talaksan:
+&lt;&gt;
+&lt;li&gt;.csv - isang comma-publishd ASCII text table.
+(&lt;a rel=\"tulong\"  hr f=\"htps://en.wikipedia.org/wiki/Comma-published_halaga\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.htmlTable- isang .html web page na may datos sa isang mesa.
+(&lt;a rel=\"tulong\"  hr=\"htps://www.w3schools.com/html/html_tables.asp\"&gt; higit pa&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.itx- Isang Igor Text File na may alon sa bawat kolum ng datos.
+(&lt;a rel=\"tulong\"  hr=\"htps://www.wavemetrics.net/doc/iorman/II-09%20Data%20Import%20Export.pdf\"&gt;more.&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.json- isang table-tulad ng JSON.
+(&lt;a rel=\"tulong\"  hr=\"htps://www.json.org/\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt; o
+&lt;a rel=\"tulong\"  hr=\"&tErddapUrl;/tabledap/documentation.html#json\"&gt;ERDDAP-specific information&lt;/a&gt;)
+&lt;li&gt;.jsonlCSV1- isang \"Mas mabuti sa CSV\" na file JSON Lines na may mga pangalan ng hanay sa unang linya.
+(&lt;a rel=\"tulong\"  hr=\"htps://jsonlines.org/\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonlCSV- isang \"Mas mabuti sa CSV\" na talaksang JSON Lines na walang mga pangalan ng kolum.
+(&lt;a rel=\"tulong\"  hr=\"htps://jsonlines.org/\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonlKVP- isang talaksan ng JSON Lines na may Key:Value pares.
+(&lt;a rel=\"tulong\"  hr=\"htps://jsonlines.org/\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.mat- isang talaksang binaryo ng MATLAB.
+(&lt;a rel=\"tulong\"  hr=\"htps://www.mathworks.com/\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nc- isang patag, parang mesa,NetCDF-3 talaksang binary.
+(&lt;a rel=\"tulong\"  hrf=\"htps://www.unidota.ucar.edu/software/netcdf/\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nccsv- isang patag, parang mesa,NetCDF- Tulad ng, ASCII CSV file.
+(&lt;a rel=\"tulong\"  hr=\"htps://erddap.github.io/docs/user/ncsv-1.20\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nco Json - isang file ng JSON (NCO-style) na may metadata lamang ng dataset (pangglobong mga katangian,
+Mga dimensiyon, at mga pabagu-bago sa kanilang mga katangian, uri, at hugis) at walang data value.
+(&lt;a rel=\"tulong\"  hr=\"htps://nco.sourceforge.net/nco.html#json\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.tsv- isang tab-based ASCII text table.
+(&lt;a rel=\"tulong\"  hr=\"htps://jkorpela.fi/TSV.html\"&gt;more&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.xhtml- Isang XHTML (XML) na talaksan na may datos sa isang mesa.
+(&lt;a rel=\"tulong\"  hr=\"htps://www.w3schools.com/html/html_tables.asp\"&gt; higit pa&nbsp;impormasyon
+&externalLinkHtml;&lt;/a&gt;)
+&lt;/ulo&gt;
+Sa bawat resulta ang ayos ng mesa (maliban sa.jsonlKVP, kung saan ang mga pangalan ng tudling ay nasa bawat hanay):
+&lt;&gt;
+&lt;li&gt; Ang bawat kolum ay may pangalan at isang uri ng impormasyon.
+&lt;li&gt; Ang unang hanay ng mesa ay may mga pangalan ng tudling.
+&lt;li&gt; Ang sumunod na mga hanay ang may impormasyong hiniling mo.
+&lt;/ulo&gt;
+&lt;P&gt; Ang nilalaman sa payak na mga uri ng talaksang ito ay bahagya ring naiiba sa .html
+tugon &mdash; ito ay sadyang walang laman upang ito ay mas madali para sa isang computer
+na tutulong.
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"DataStructure\" hryef=\"#DataStructure\" rel=\"bookmark\"&gt;A Configent Data Structure for the Responses&lt;/a&gt;
+&lt;br&gt; Lahat ng mga serbisyong user-interface na inilarawan sa pahinang ito ay maaaring bumalik ng isang mesa ng
+datos sa alinman sa karaniwang format ng talaksan na nakatala sa itaas. Sana, makapagsulat ka
+Isa lamang pamamaraan upang i-parse ang isang talaan ng mga datos sa isa sa mga format. Kung gayon ay magagawa mo
+Gamitin muli ang pamamaraang iyon upang i-parse ang tugon mula sa alinman sa mga serbisyong ito. Ito
+dapat na gawing mas madali ang pakikitungoERDDAP.
+
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"csvIssues\" href=\"#csvIssues\" rel=\"bookmark\"&gt;.csv&lt;/a&gt; at&gt;.tsvDetail&gt;
+&lt;li&gt; Kung ang isang datum sa isang .csv file ay may internasyunal na dobleng mga quote o komma,ERDDAPSusunod
+.csv na tiyak: ito ay naglalagay ng dobleng mga sinipi sa palibot ng datum at mga doble
+ang panloob na dobleng mga sinipi.
+&lt;li&gt;Special characters in a .csv o.tsvang talaksang naka-instol na gaya ng
+&lt;a rel=\"tulong\"  hr=\"htps://www.json.org/\"&gt;JSON
+&externalLinkHtml;&lt;/a&gt;
+Mga tauhang backslash-encoded:
+\n (newline), \\ (backslash), \f (porma), \\ (tab), \\ (carriage return)
+o kasama ng `u&lt;i&gt;hhh&lt;/i&gt; composed.
+&lt;/ulo&gt;
+
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmark\"&gt;jsonp&lt;/a&gt;
+Mga Tanong Para sa &lt;br&gt;.jsonmaaari na ngayong isama sa mga talaksan ang opsyonal
+&lt;a href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-shellly/\"&gt;jsonp
+&externalLinkHtml;&lt;/a&gt; kahilingan ni
+dagdag pa \"kabatiran;.jsonp=&lt;i&gt;functionName&lt;/i&gt;\" hanggang sa dulo ng query. Pangunahin na, ito'y nagsasabi
+ERDDAPupang idagdag ang \"&lt;i&gt;functionName&lt;/i&gt;(\"sa simula ng tugon at \")\" sa
+katapusan ng pagtugon. Ang unang karakter ng &lt;i&gt;functionName&lt;/i&gt; ay dapat na isang ISO 8859 na titik o \"_\".
+Ang bawat opsyonal na kasunod na karakter ay dapat na isang ISO 8859 na titik, \"_\", a digit, o \".\"
+Kung sa simula ay walang query, iwan ang \"pampasa;\" sa iyong query.
+
+
+&lt;P&gt;griddap attabledapMag - alok ng Iba't Ibang Uri ng File
+&lt;br&gt; Ang mga uri ng talaksan na nakatala sa itaas ay mga uri ng talaksanERDDAPay maaaring gamitin upang tumugon
+mga user-interface na uri ng mga kahilingan (halimbawa, mga kahilingan sa paghahanap).ERDDAPsuporta
+ibang set ng mga uri ng talaksan para sa siyentipikong impormasyon (halimbawa, satelayt at boya
+mga kahilingan ng datos (tingnan ang
+&lt;a rel=\"tulong\"  hr=\"&tErddapUrl;/griddap/dokumentasyon.html##Type\"&gt;griddap&lt;/a&gt; at&gt;
+&lt;a rel=\"tulong\"  hr=\"&tErddapUrl;/tabledap/documentation.html#fileType\"&gt;tabledap&lt;/a&gt;
+Mga dokumento).
+
+
+&acceptEncodingHtmlh3tErddapUrl;&lt;3&gt;&lt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"bookmark\"&gt; Makakakuha ng URL para saERDDAP'Mga Serbisyo&lt;/a&gt;&lt;/h3&gt;
+ERDDAPay may ganitong mga URL access point para sa mga programa sa computer:
+&lt;&gt;
+&lt;li&gt; Upang makuha ang talaan ng &lt;strong&gt;main source access URLs&lt;/malakas na&gt;, gamitin
+&lt;br&gt;&plainLinkExamples1;&lt;br&gt;&nbsp;&lt;li&gt; Upang makuha ang kasalukuyang talaan ng &lt;malakas na&gt;all datasets&lt;/malakas na&gt;, gamitin
+&lt;br&gt;&plainLinkExamples2;&lt;br&gt;&nbsp;&lt;li&gt; Upang makakuha ng &lt;malakas na&gt;metada&lt;/malakas na&gt; para sa espesipikong set ng datos
+(ang talaan ng mga pagkakaiba - iba at ng kanilang mga katangian), gamitin
+&lt;br&gt;&tErddapUrl;/info/&lt;i&gt;datasetID&lt;/i&gt;/index&lt;i&gt;.fileType&lt;/i&gt;
+&lt;br&gt; Halimbawa,
+&lt;br&gt;&plainLinkExamples3;&lt;br&gt;&nbsp;&lt;li&gt; Upang makuha ang mga resulta ng malakas na&gt; full text search&lt;/malakas na&gt; para sa datasets
+(dalo"searchFor=wind%20speed"bilang halimbawa), gamitin
+&lt;br&gt;&plainLinkExamples4;&lt;br&gt;(Ang iyong programa o iskrip ay maaaring kailanganin
+&lt;/en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
+&externalLinkHtml;&lt;/a&gt;
+ang halaga sa query.)
+&lt;br&gt;&nbsp;&lt;br&gt;Or, gamitin ang
+&lt;a rel=\"bookmark\"  hr=\"&tErddapUrl;/pensearch1.1/index.html\"&gt;OpenSearch1.1&lt;/a&gt;
+Pamantayan upang gawin ang isang buong teksto paghahanap ng datasets.
+&lt;br&gt;&nbsp;&lt;li&gt; Upang makuha ang mga resulta ng malakas na &lt;&gt;advanced search&lt;/malakas na&gt; para sa datasets
+(dalo"searchFor=wind%20speed"bilang halimbawa), gamitin
+&lt;br&gt;&plainLinkExamples5;&lt;br&gt;Ngunit mag - eksperimento
+&lt;A href=\"&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;\"&gt;&advancedSearch;&lt;/a&gt;
+sa isang browser upang bilangin ang lahat ng opsyonal na parameter.
+( Maaaring kailanganin ang iyong programa o iskrip
+&lt;/en.wikipedia.org/wiki/Percent-encoding\"&gt;percent-encode
+&externalLinkHtml;&lt;/a&gt;
+ang halaga sa query.)
+&lt;br&gt;&nbsp;&lt;li&gt; Upang makuha ang talaan ng &lt;malakas&gt;categoryAttributes&lt;/malakas&gt;
+(halimbawa, sa institusyon,long_name, pamantayan_name), gamitin
+&lt;br&gt;&plainLinkExamples6;&lt;br&gt;&nbsp;&lt;li&gt; Upang makuha ang talaan ng &lt;malakas na&gt;categories para sa isang espesipikong kategorya Attribute&lt;/malakas&gt;
+(paggamit ng \"stand_name\" bilang halimbawa), gamitin
+&lt;br&gt;&plainLinkExamples7;&lt;br&gt;&nbsp;&lt;li&gt; Upang makuha ang talaan ng &lt;malakas na&gt;dasets sa isang espesipikong kategoryang&lt;/malakas na&gt;
+(gamit ang \"stand_name=time\" bilang halimbawa), gamitin
+&lt;br&gt;&plainLinkExamples8;
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

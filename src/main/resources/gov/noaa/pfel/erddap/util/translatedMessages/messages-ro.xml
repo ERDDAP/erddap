@@ -2778,6 +2778,8 @@ De exemplu:
 <fileHelp_nc4Header>Vizualizați antetul UTF-8 (metadatele) pentru fișierul NetCDF-4 .nc.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>Vedeți metadatele setului de date ca jumătatea superioară a unui fișier .csv ASCII NCCSV pe 7 biți.</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>Descărcați un fișier JSON UTF-8 NCO lvl=2 cu metadate COARDS/CF/ACDD.</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>Vizualizați antetul UTF-8 (metadatele) pentru oNCODosarul JSON.
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>Descărcați un fișier NetCDF-3 CF Discrete Sampling Geometries (Contiguous Ragged Array).</fileHelp_ncCF>
 <fileHelp_ncCFHeader>Vizualizați antetul UTF-8 (metadatele) pentru fișierul .ncCF.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Descărcați un fișier NetCDF-3 CF Discrete Sampling Geometries (Multidimensional Array).</fileHelp_ncCFMA>
@@ -4139,165 +4141,232 @@ Diferite protocoale sunt adecvate pentru diferite tipuri de date și pentru dife
 <resourceNotFound>Resursa nu a fost gasita:</resourceNotFound>
 <restfulWebServices>Servicii web RESTful</restfulWebServices>
 <restfulHTML><![CDATA[
-ERDDAP este atât:
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">O aplicație web &externalLinkHtml;</a> – o pagină web cu un formular pe care oamenii cu browsere îl pot folosi (în acest caz, pentru a obține date, grafice sau informații despre seturi de date).
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">Un serviciu web RESTful &externalLinkHtml;</a> – o adresă URL pe care programele de calculator o pot folosi (în acest caz, pentru a obține date, grafice și informații despre seturile de date).
-</ul>
-Pentru fiecare pagină web ERDDAP cu un formular pe care tu, în calitate de om cu un browser, îl poți folosi, există un serviciu web ERDDAP corespunzător care este conceput pentru a fi ușor de utilizat pentru programe și scripturi de calculator.
-De exemplu, oamenii pot folosi această adresă URL pentru a căuta seturi de date interesante:
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>Prin schimbarea extensiei de fișier din adresa URL de la .html la .json (sau .csv, sau .htmlTable, sau .jsonlCSV1, sau .xhtml, ...):
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>primim o adresă URL pe care un program de calculator sau un script Java Script o poate folosi pentru a obține aceleași informații într-un format mai ușor de utilizat, cum ar fi
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> .
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">Construiți lucruri pe partea de sus a ERDDAP</a></h3>
-Există multe caracteristici în ERDDAP care pot fi utilizate de programele de calculator sau scripturile pe care le scrieți.
-Le puteți folosi pentru a construi alte aplicații web sau servicii web pe deasupra ERDDAP, făcându-le ERDDAP să facă cea mai mare parte a muncii! Deci, dacă aveți o idee pentru o interfață mai bună pentru datele pe care le deservește ERDDAP sau o pagină web care are nevoie de o modalitate ușoară de a accesa date, vă încurajăm să vă creați propria aplicație web, serviciu web sau pagină web și să utilizați ERDDAP ca fundație.
-Sistemul dumneavoastră poate obține date, grafice și alte informații de la ERDDAP al ERD sau de la alte instalații ERDDAP sau puteți<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">configurați-vă propriul server ERDDAP</a>, care poate fi accesibil public sau doar accesibil privat.
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Solicitări URL RESTful</a></h3>
-Solicitările de informații despre interfața cu utilizatorul de la ERDDAP (de exemplu, rezultatele căutării) utilizează standardul universal web pentru solicitări:
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL-uri &externalLinkHtml;</a> trimis prin
-<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a> .
-Acesta este același mecanism pe care îl folosește browserul dvs.
-atunci când completați un formular pe o pagină web și faceți clic pe <kbd>Submit</kbd> Pentru a utiliza HTTP GET, generați o adresă URL special formată (care poate include o interogare) și o trimiteți cu HTTP GET .
-Puteți forma aceste adrese URL manual și le puteți introduce în câmpul de text al adresei din browser (de exemplu,
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
-<br>Sau puteți scrie un program de calculator sau un script de pagină web pentru a crea o adresă URL, a o trimite și a obține răspunsul.
-Adresele URL prin HTTP GET au fost alese deoarece
-<ul>
-<li>Sunt simplu de utilizat.
-<li>Ele funcționează bine.
-<li>Sunt acceptate universal (în browsere, limbaje de calculator, instrumente ale sistemului de operare etc.).
-<li>Ele reprezintă o bază a transferului de
-<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">stat reprezentativ (REST ) &externalLinkHtml;</a> și
-<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">arhitectură orientată spre resurse (ROA ) &externalLinkHtml;</a>
-<li>Ele facilitează utilizarea World Wide Web ca o aplicație mare distribuită, de exemplu prin
-<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups -uri &externalLinkHtml;</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">Aplicații AJAX &externalLinkHtml;</a>
-<li>Sunt
-<a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">apatride &externalLinkHtml;</a> la fel și ERDDAP, ceea ce face sistemul mai simplu.
-<li>O adresă URL definește complet o solicitare dată, astfel încât să o puteți marca în browser, să o scrieți în notele dvs., să o puteți trimite prin e-mail unui prieten etc.
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">Codare procentuală</a></h3>
-În adrese URL, unele caractere nu sunt permise (de exemplu, spații), iar alte caractere au semnificații speciale (de exemplu, „&amp;” separă perechile cheie=valoare într-o interogare).
-Când completați un formular pe o pagină web și faceți clic pe Trimitere, browserul dvs.
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">codifică automat în procente &externalLinkHtml;</a> caracterele speciale din URL (de exemplu, spațiul devine %20), de exemplu,
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>Dar dacă programul sau scriptul dvs.
-de computer generează adresele URL, probabil că trebuie să facă singur codificarea procentuală.
-Dacă da, atunci probabil că toate caracterele, altele decât A-Za-z0-9_-!.~&#39;()* din valorile interogării (părțile de după semnele &#39;=&#39; ) trebuie să fie codificate ca %HH, unde HH este Valoarea hexazecimală de 2 cifre a caracterului, de exemplu, spațiul devine %20.
-Caracterele de peste #127 trebuie convertite în UTF-8 octeți, apoi fiecare octet UTF-8 trebuie să fie codificat în procente (cereți ajutor unui programator).
-Limbajele de programare au instrumente pentru a face acest lucru (de exemplu, consultați Java Script
-<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a> și Java Script
-<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml;</a>) și există
-<a class="N" rel="help" href="https://www.url-encode-decode.com">site-uri web care codifică/decodifică procentual pentru dvs.
-&externalLinkHtml;</a>
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">Tipuri de fișiere de răspuns</a></h3>
-Deși oamenii care folosesc browsere doresc să primească rezultate ale interfeței cu utilizatorul (de exemplu, rezultatele căutării) ca documente HTML, programele de calculator preferă adesea să obțină rezultate în documente simple, ușor de analizat și mai puțin detaliate.
-ERDDAP poate returna rezultatele interfeței cu utilizatorul ca un tabel de date în aceste tipuri de fișiere comune, prietenoase cu programele de calculator:
-<ul>
-<li>.csv - un tabel text ASCII separat prin virgulă.
-(<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.htmlTable - o pagină web .html cu datele într-un tabel.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.itx - un fișier text Igor cu un val pentru fiecare coloană de date.
-(<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.json - un fișier JSON asemănător tabelului.
-(<a rel="help" href="https://www.json.org/">mai mult&nbsp;informații &externalLinkHtml;</a> sau
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">informații specifice ERDDAP</a>)
-<li>.jsonlCSV1 - un fișier JSON Lines „Better than CSV” cu nume de coloane pe prima linie.
-(<a rel="help" href="https://jsonlines.org/">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.jsonlCSV - un fișier JSON Lines „Better than CSV” fără nume de coloane.
-(<a rel="help" href="https://jsonlines.org/">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.jsonlKVP - un fișier JSON Lines cu perechi Cheie:Valoare.
-(<a rel="help" href="https://jsonlines.org/">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.mat - un fișier binar MATLAB.
-(<a rel="help" href="https://www.mathworks.com/">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.nc - un fișier binar plat, asemănător tabelului, NetCDF -3.
-(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.nccsv - un fișier CSV ASCII plat, asemănător unui tabel, asemănător NetCDF .
-(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.tsv - un tabel text ASCII separat de tabulatori.
-(<a rel="help" href="https://jkorpela.fi/TSV.html">mai mult&nbsp;informații &externalLinkHtml;</a>)
-<li>.xhtml - un fișier XHTML (XML) cu datele dintr-un tabel.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">mai mult&nbsp;informații &externalLinkHtml;</a>)
-</ul>
-În fiecare format de tabel cu rezultate (cu excepția .jsonlKVP, unde numele coloanelor sunt pe fiecare rând):
-<ul>
-<li>Fiecare coloană are un nume de coloană și un tip de informații.
-<li>Primul rând al tabelului are numele coloanelor.
-<li>Rândurile următoare au informațiile pe care le-ați solicitat.
-</ul>
-<p>Conținutul acestor tipuri de fișiere simple este, de asemenea, ușor diferit de răspunsul .html - este în mod intenționat complet, astfel încât să fie mai ușor pentru un program de calculator să lucreze cu.
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">O structură de date consistentă pentru răspunsuri</a>
-<br>Toate serviciile de interfață cu utilizatorul descrise în această pagină pot returna un tabel de date în oricare dintre formatele de fișiere comune enumerate mai sus.
-Sperăm că puteți scrie o singură procedură pentru a analiza un tabel de date într-unul dintre formatele.
-Apoi puteți reutiliza acea procedură pentru a analiza răspunsul de la oricare dintre aceste servicii.
-Acest lucru ar trebui să faciliteze tratarea cu ERDDAP .
-<p>Detalii
-<a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> și .tsv
-<ul>
-<li>Dacă un datum dintr-un fișier .csv are ghilimele interne sau virgule, ERDDAP urmează strict specificația .csv:
-pune ghilimele duble în jurul datei și dublează ghilimelele interne.
-<li>Caracterele speciale dintr-un fișier .csv sau .tsv sunt codificate ca
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> Caractere codificate cu bară oblică inversă:
-\n (linie nouă), \\ (bară oblică inversă), \f (formfeed), \t (tab), \r (retur car) sau cu sintaxa \u <i>hhhh</i> .
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>Solicitările pentru fișiere .json pot include acum un
-<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp opțional &externalLinkHtml;</a> cerere prin adăugarea „&amp; .json p= <i>functionName</i> ” la sfârșitul interogării.
-Practic, aceasta îi spune ERDDAP să adauge „<i>functionName</i> (“la începutul răspunsului și „)” la sfârșitul răspunsului.
-Primul caracter al <i>functionName</i> trebuie să fie o literă ISO 8859 sau „_”.
-Fiecare caracter ulterior opțional trebuie să fie o literă ISO 8859, „_”, o cifră sau „.”.
-Dacă inițial nu a existat nicio interogare, omiteți „&amp;” din interogare.
-<p>griddap și tabledap oferă diferite tipuri de fișiere
-<br>Tipurile de fișiere enumerate mai sus sunt tipuri de fișiere pe care ERDDAP le poate folosi pentru a răspunde la tipurile de solicitări ale interfeței cu utilizatorul (de exemplu, solicitări de căutare).
-ERDDAP acceptă un set diferit de tipuri de fișiere pentru cererile de date științifice (de exemplu, date prin satelit și geamanduri) (consultați documentația
-<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a> și
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a>).
-&acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">Accesați URL-uri pentru ERDDAP</a></h3>
-ERDDAP are aceste puncte de acces URL pentru programe de calculator:
-<ul>
-<li>Pentru a obține lista <strong>principalelor adrese URL de acces la resurse</strong>, utilizați
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li>Pentru a obține lista curentă cu <strong>toate seturile</strong> de date, utilizați
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>Pentru a obține <strong>metadate</strong> pentru un anumit set de date (lista de variabile și atributele acestora), utilizați
-<br>&tErddapUrl; /info/ <i>datasetID</i> /index <i>.fileType</i>
-<br>de exemplu,
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>Pentru a obține rezultatele <strong>căutărilor de text complet</strong> pentru seturi de date (folosind &quot;searchFor=wind%20speed&quot; ca exemplu), utilizați
-<br>&plainLinkExamples4;
-<br>(Programul sau scriptul dvs.
-poate avea nevoie să
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">codifice procentual &externalLinkHtml;</a> valoarea din interogare.)
-<br>&nbsp;
-<br>Sau, utilizați standardul
-<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a> pentru a căuta seturi de date cu text complet.
-<br>&nbsp;
-<li>Pentru a obține rezultatele <strong>căutărilor avansate</strong> pentru seturi de date (folosind &quot;searchFor=wind%20speed&quot; ca exemplu), utilizați
-<br>&plainLinkExamples5;
-<br>Dar experimentați cu
-<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a> într-un browser pentru a afla toți parametrii opționali.
-(Programul sau scriptul dvs.
-poate avea nevoie să
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">codifice procentual &externalLinkHtml;</a> valoarea din interogare.)
-<br>&nbsp;
-<li>Pentru a obține lista de atribute <strong>categoryAttributes</strong> (de exemplu, instituție, long_name, nume_standard), utilizați
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li>Pentru a obține lista de <strong>categorii pentru un anumit atribut categorie</strong> (folosind „nume_standard” ca exemplu), utilizați
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li>Pentru a obține lista de <strong>seturi de date dintr-o anumită categorie</strong> (folosind „standard_name=time” ca exemplu), utilizați
-<br>&plainLinkExamples8;
+ERDDAPeste atât:
+&lt;ul &gt;
+&lt;li&gt; &lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_application O aplicație web
+&externalLinkHtml;&lt;/a&gt;
+&ndash; o pagină web cu o formă pe care oamenii cu browsere o pot folosi (în acest caz, pentru a obține date, grafice sau informații despre seturi de date).
+&lt;br&gt;&nbsp;&lt;li &gt; &lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_service [52]ARESTfulserviciu web
+&externalLinkHtml;&lt;/a&gt;
+&ndash; un URL pe care programele de calculator îl pot utiliza (în acest caz, pentru a obține date, grafice și informații despre seturi de date).
+&lt;/ul &gt;
+Pentru fiecareERDDAPpagina web cu un formular pe care tu ca om cu un browser îl poți folosi, există un
+corespunzătoareERDDAPserviciu web care este conceput pentru a fi ușor de utilizat pentru programe de calculator și scripturi.
+De exemplu, oamenii pot folosi acest URL pentru a face o căutare text complet pentru seturi de date interesante:
+&lt;br&gt; &lt;a href=\"&htmlQueryUrl;\"&gt;&htmlQueryUrl;&lt;/a&gt;
+&lt;br&gt;Modificând extensia fișierului în URL de la .html la.json(sau .csv sau.htmlTable, sau.jsonlCSV1, sau.xhtml, ...):
+&lt;br&gt; &lt;a href=\"&jsonQueryUrl;\"&gt;&jsonQueryUrl;&lt;/a&gt;
+&lt;br&gt; obţinem un URL pe care un program de calculator sauJavaScript-ul poate folosi pentru a obține același
+informații într-un format mai prietenos pentru programe informatice, cum ar fi
+&lt;a rel=\"help\" href=\"https://www.jsonJSON
+&externalLinkHtml;&lt;/a&gt;.
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"BuildThings\" href=\"#BuildThings\" rel=\"bookmark vulgaris Construiește Lucruri pe partea de sus aERDDAP&lt;/a&gt; &lt;/h3&gt;
+Există multe caracteristici înERDDAPcare poate fi folosit de programe sau scripturi de calculator
+pe care le scrii. Le puteți folosi pentru a construi alte aplicații web sau servicii web pe
+sus deERDDAP, faceERDDAPface cea mai mare parte a muncii&#33;
+Deci, dacă aveți o idee pentru o interfață mai bună la datele careERDDAPservire sau web
+pagina care are nevoie de o modalitate usoara de accesare a datelor, va incurajam sa va construiti propria pagina
+aplicație web, serviciu web sau pagină web și utilizareERDDAPca fundaţie.
+Sistemul dumneavoastră poate obține date, grafice și alte informații de laERD'sERDDAPsau de la
+alteleERDDAPinstalații, sau puteți
+&lt;&#33;-- configurarea întotdeauna de la Erddap Coastwatch --&gt;
+&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/server-admin/play-installrückset până propria taERDDAPserver &lt;/a&gt;,
+care poate fi
+accesibile publicului sau doar private accesibile.
+
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"quests\" href=\"#requests\" rel=\"bookmarkrückRESTfulCereri URL&lt;/a&gt; &lt;/h3&gt;
+Solicitări de informații de la utilizator-interfațăERDDAP(de exemplu, rezultate de căutare)
+utilizarea standardului universal al web pentru cereri:
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Uniform_Resource_Locator 2016/13URLs
+&externalLinkHtml;&lt;/a&gt;
+trimis prin
+&lt;a href=\"https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3 [59]HTTP GET&externalLinkHtml;&lt;/a&gt;.
+Acesta este același mecanism pe care îl utilizează browser-ul dvs. atunci când completați un formular
+pe o pagină web și faceți clic pe<kbd>Submit</kbd>UtilizareaHTTP GET, generezi un URL format special (care poate include o interogare)
+şi trimite-l cuHTTP GET. Puteți forma aceste URL-uri de mână și le introduceți în
+câmpul de text al adresei browser-ului (de exemplu,
+&lt;br&gt; &lt;a href=\"&jsonQueryUrl;\"&gt;&jsonQueryUrl;&lt;/a&gt;)
+&lt;br&gt;Sau, puteți scrie un program de calculator sau un script de pagini web pentru a crea un URL, trimite-l,
+şi obţine răspunsul. URL- uri prin intermediulHTTP GETau fost alese deoarece
+&lt;ul &gt;
+&lt;li&gt; Sunt simplu de folosit.
+&lt;li&gt; Funcţionează bine.
+&lt;li&gt; Acestea sunt universal susținute (în browsere, limbaje informatice, sistem de operare)
+instrumente etc.).
+&lt;li&gt; Sunt o fundaţie a
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Representational_State_Transfer/2012Representational Transfer de stat (REST)
+&externalLinkHtml;&lt;/a&gt; și
+&lt;a rel=\"help\" href=\"https://www.crummy.com/writing/RESTful-Web-Services [62]Resource Oriented Architecture (ROA)
+&externalLinkHtml;&lt;/a&gt;
+&lt;li&gt; Ei facilitează utilizarea World Wide Web ca o aplicație mare distribuită,
+de exemplu prin
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29 [62]mashups&externalLinkHtml;&lt;/a&gt;
+&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Ajax_%28programming%29AJAXcereri
+&externalLinkHtml;&lt;/a&gt;
+&lt;li&gt; Acestea sunt &lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Stateless_protocolrückstateless
+&externalLinkHtml;&lt;/a&gt;
+cum esteERDDAP, ceea ce face sistemul mai simplu.
+&lt;li&gt; Un URL complet defini o cerere dată, astfel încât să puteți marca în browser-ul dvs.,
+Scrie-l în notiţe, trimite-l unui prieten, etc.
+&lt;/ul &gt;
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"PercentEncode\" href=\"#PercentEncode\" rel=\"bookmark vulgaris Procentul de codare &lt;/a&gt; &lt;/h3&gt;
+În URL-uri, unele caractere nu sunt permise (de exemplu, spații) și alte caractere
+au sensuri speciale (de exemplu, '&amp;' separă perechile de valori într-o interogare).
+Când completați un formular pe o pagină web și faceți clic pe Trimite, browserul dvs. automat
+&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding [57]% encodes
+&externalLinkHtml;&lt;/a&gt;
+caracterele speciale din URL (de exemplu, spațiul devine über), de exemplu;
+&lt;br&gt; &lt;a href=\"&htmlQueryUrlWithSpaces;\"&gt;&htmlQueryUrlWithSpaces;&lt;/a&gt;
+&lt;br&gt; Dar dacă programul de calculator sau script-ul generează URL-urile, probabil trebuie să facă procentul
+codare în sine. Dacă da, atunci probabil toate personajele, altele decât A-Za-z0-9_-&#33;~'() *
+în valorile interogării (piesele după'='semne) trebuie codificate
+ca %HH, în cazul în care HH este valoarea hexazecimală de 2 cifre a caracterului, de exemplu, spațiul devine [62].
+Caracterele de mai sus #127 trebuie convertite în octeți UTF-8, apoi fiecare octet UTF-8 trebuie codificat la sută
+(Cere un programator de ajutor). Limbile de programare au instrumente pentru a face acest lucru (de exemplu, a se vedeaJava's
+&lt;a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.htmljava.net.URLEncoder&externalLinkHtml;&lt;/a&gt; șiJavaScenariul
+&lt;a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/codeURIComponent [59]encodeURIComponent()&externalLinkHtml;&lt;/a&gt;) și există
+&lt;a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com [68]websites that la sută encode/decode for you
+&externalLinkHtml;&lt;/a&gt;
+
+
+&lt;h3&gt;&lt;a class=\"selfLink\" id=\"responses\" href=\"#respondes\" rel=\"bookmark] Tipuri de fișiere de răspuns &lt;/a&gt; &lt;/h3&gt;
+Deși oamenii care utilizează browsere doresc să primească rezultate de interfață (de exemplu,
+rezultate căutare) ca documente HTML, programe de calculator preferă adesea pentru a obține rezultate în
+documente simple, uşor parsed, mai puţin verboase.ERDDAPpoate returna interfaţa utilizatorului
+rezultate ca un tabel de date în aceste tipuri de fișiere comune, computer-program prietenos:
+&lt;ul &gt;
+&lt;li&gt;.csv - un tabel text ASCII separat de virgulă.
+(&lt;a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Comma-separat_values [51]more&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.htmlTable- o pagină web .html cu datele într-un tabel.
+(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asprück mai mult&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.itx- un fişier text Igor cu un val pentru fiecare coloană de date.
+(&lt;a rel=\"help\" href=\"https://www.wavemetrics.net/doc/igorman/II-09/2012/235/02Import vinohrad.pdf&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.json- un dosar JSON de masă.
+(&lt;a rel=\"help\" href=\"https://www.json.org/ianuarie&nbsp;informații
+&externalLinkHtml;&lt;/a&gt; sau
+&lt;a rel=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#json [59]ERDDAP- informaţii specifice &lt;/a&gt;
+&lt;li&gt;.jsonlCSV1- un fişier \"Better than CSV\" JSON Lines cu nume de coloane pe prima linie.
+(&lt;a rel=\"help\" href=\"https://jsonlines.org/ 2016/13more&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonlCSV- un fişier JSON Lines \"Better than CSV\" fără nume de coloană.
+(&lt;a rel=\"help\" href=\"https://jsonlines.org/ 2016/13more&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.jsonlKVP- un fișier JSON Lines cu Key:Value pairs.
+(&lt;a rel=\"help\" href=\"https://jsonlines.org/ 2016/13more&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.mat- un fişier binar MATLAB.
+(&lt;a rel=\"help\" href=\"https://www.mathworks.com/ 2016/13more&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nc- un plat, ca o masă,NetCDF- 3 fişiere binare.
+(&lt;a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/rückmore&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nccsv- un plat, ca o masă,NetCDF- Precum dosarul ASCII CSV.
+(&lt;a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-13.20more&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.nco Json - un fișier JSON (NCO-stil) numai cu metadatele setului de date ( atribute globale,
+dimensiuni și variabile cu atributele, tipul și forma lor) și fără valori de date.
+(&lt;a rel=\"help\" href=\"https://nco.sourceforge.net/nco.html#json übermore&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.tsv- un tabel text ASCII separat.
+(&lt;a rel=\"help\" href=\"https://jkorpela.fi/TSV.html&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;li&gt;.xhtml- un fişier XHTML (XML) cu datele într-un tabel.
+(&lt;a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asprück mai mult&nbsp;informații
+&externalLinkHtml;&lt;/a&gt;)
+&lt;/ul &gt;
+În fiecare format de tabel de rezultate (cu excepția.jsonlKVP, în cazul în care numele coloanei sunt pe fiecare rând:
+&lt;ul &gt;
+&lt;li&gt;Fiecare coloană are un nume de coloană și un tip de informații.
+&lt;li&gt;Primul rând al tabelului are numele coloanei.
+&lt;li&gt; Rândurile următoare au informațiile pe care le-ați solicitat.
+&lt;/ul &gt;
+&lt;p&gt; Conținutul în aceste tipuri de fișiere simple este, de asemenea, ușor diferit de .html
+răspuns &mdash; este în mod intenționat gol-dezosate astfel încât este mai ușor pentru un calculator
+program de lucru cu.
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"DataStructure\" href=\"#DataStructure\" rel=\"bookmarkrückA Consistent Data Structure for the Responses&lt;/a&gt;
+&lt;br&gt;Toate serviciile de interfaţă de utilizator descrise pe această pagină pot returna un tabel de
+date în oricare dintre formatele de fișiere comune enumerate mai sus. Să sperăm că poţi scrie.
+doar o procedură pentru a analiza un tabel de date într-unul dintre formate. Atunci poţi
+să reutilizeze această procedură pentru a analiza răspunsul de la oricare dintre aceste servicii. Asta.
+ar trebui să facă mai ușor să se ocupe deERDDAP.
+
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"csvIssues\" href=\"#csvIssues\" rel=\"bookmark über.csv&lt;/a&gt; și.tsvDetalii &lt;ul&gt;
+&lt;li&gt; În cazul în care un datum într-un fișier .csv are citate interne duble sau virgule,ERDDAPurmează
+.csv specificație strict: pune ghilimele duble în jurul datum și duble
+ghilimelele duble interne.
+&lt;li&gt; Caractere speciale într-un .csv sau.tsvfișier sunt codificate ca
+&lt;a rel=\"help\" href=\"https://www.jsonJSON
+&externalLinkHtml;&lt;/a&gt;
+backslash-codated caractere:
+\n (newline), \\ (backslash), \f (formfeed), \t (tab), \r (carry return)
+sau cu sintaxa.
+&lt;/ul &gt;
+
+
+&lt;p&gt;&lt;a class=\"selfLink\" id=\"jsonp\" href=\"#jsonp\" rel=\"bookmarkłakjsonp&lt;/a&gt;
+&lt;br&gt; Solicitări pentru.jsonfișierele pot include acum o opțiune
+&lt;a href=\"https://niryiv.wordpress.com/2009/05/05/jsonp-quickly/Eurojsonp
+&externalLinkHtml;&lt;/a &gt; cerere de
+adăugarea \"&amp;.jsonp=&lt;i&gt;functionName&lt;/i&gt;\" to the end of the interoction. Practic, asta spune
+ERDDAPpentru a adăuga \"&lt;i&gt;functionName&lt;/i&gt;(\" la începutul răspunsului și \") \" la
+Sfârşitul răspunsului. Primul caracter al &lt;i&gt;functionName&lt;/i&gt; trebuie să fie o literă ISO 8859 sau \"_.\"
+Fiecare caracter ulterior opțional trebuie să fie o literă ISO 8859, \"_,\" o cifră sau \".\"
+În cazul în care inițial nu a existat nici o cerere, lăsați \"&amp;\" în interogare.
+
+
+&lt;p&gt;griddap șitabledapOferă diferite tipuri de fișiere
+&lt;br&gt;Tipurile de fișiere enumerate mai sus sunt tipuri de fișiereERDDAPpoate folosi pentru a răspunde la
+tipuri de cereri interfaţă utilizator (de exemplu, cereri de căutare).ERDDAPSuporturi
+un set diferit de tipuri de fișiere pentru date științifice (de exemplu, satelit și geamandură)
+cereri de date (a se vedea
+&lt;a rel=\"help\" href=\"&tErddapUrl;/griddap/documentation.html#fileType 2016/13griddap&lt;/a&gt; și
+&lt;a rel=\"help\" href=\"&tErddapUrl;/tabledap/documentation.html#fileType [59]tabledap&lt;/a&gt;
+documentaţie).
+
+
+&acceptEncodingHtmlh3tErddapUrl;&lt;h3&gt;&lt;a class=\"selfLink\" id=\"accessUrls\" href=\"#accessUrls\" rel=\"bookmark vulgaris URL-uri de acces pentruERDDAP\"s Services&lt;/a&gt;&lt;/h3&gt;
+ERDDAPare aceste puncte de acces URL pentru programe de calculator:
+&lt;ul &gt;
+&lt;li&gt; Pentru a obține lista URL-urilor &lt;strong&gt;main resurse access&lt;/strong&gt;, utilizați
+&lt;br&gt;&plainLinkExamples1;&lt;br&gt;&nbsp;&lt;li&gt; Pentru a obține lista curentă a tuturor seturilor de date &lt;/strong&gt;, utilizați
+&lt;br&gt;&plainLinkExamples2;&lt;br&gt;&nbsp;&lt;li&gt;Pentru a obține &lt;strong&gt;metadate&lt;/strong&gt; pentru un set specific de date
+(lista variabilelor și atributele acestora), utilizarea
+&lt;br&gt;&tErddapUrl;/info/&lt;i&gt;datasetID&lt;/i&gt;/index&lt;i&gt;.fileType&lt;/i&gt;
+&lt;br&gt; de exemplu,
+&lt;br&gt;&plainLinkExamples3;&lt;br&gt;&nbsp;&lt;li&gt; Pentru a obține rezultatele căutărilor text complet &lt;/strong&gt; pentru seturi de date
+(folosind"searchFor=wind%20speed"ca exemplu), utilizare
+&lt;br&gt;&plainLinkExamples4;&lt;br&gt; (Programul sau scriptul dumneavoastră ar putea necesita
+&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encode
+&externalLinkHtml;&lt;/a&gt;
+valoarea din cerere.)
+&lt;br&gt;&nbsp;&lt;br&gt;Sau, utilizați
+&lt;a rel=\"bookmark\" href=\"&tErddapUrl;/opensearch1.1/index.htmlOpenSearch1,1&lt;/a&gt;
+standard pentru a face o căutare completă text pentru seturi de date.
+&lt;br&gt;&nbsp;&lt;li&gt; Pentru a obține rezultatele căutărilor avansate &lt;/strong&gt; pentru seturi de date
+(folosind"searchFor=wind%20speed"ca exemplu), utilizare
+&lt;br&gt;&plainLinkExamples5;&lt;br&gt;Dar experiment cu
+&lt;a href=\"&tErddapUrl;/search/avansat.html?&encodedDefaultPIppQuery;\"&gt;&advancedSearch;&lt;/a&gt;
+într-un browser pentru a determina toți parametrii opționali.
+(Programul sau script-ul dumneavoastră ar putea necesita să
+&lt;a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encode
+&externalLinkHtml;&lt;/a&gt;
+valoarea din cerere.)
+&lt;br&gt;&nbsp;&lt;li&gt; Pentru a obține lista de &lt;strong&gt;categoryAttributes&lt;/strong&gt;
+(de exemplu, instituție,long_name, standard_name), utilizare
+&lt;br&gt;&plainLinkExamples6;&lt;br&gt;&nbsp;&lt;li&gt; Pentru a obține lista de categorii &lt;strong&gt; pentru o categorie specifică Atribute&lt;/strong&gt;
+(folosind \"standard_name\" ca exemplu), utilizați
+&lt;br&gt;&plainLinkExamples7;&lt;br&gt;&nbsp;&lt;li&gt; Pentru a obține lista de seturi de date &lt;strong&gt; într-o categorie specifică &lt;/strong&gt;
+(folosind \"standard_name=time\" ca exemplu), utilizați
+&lt;br&gt;&plainLinkExamples8;
+
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[
 

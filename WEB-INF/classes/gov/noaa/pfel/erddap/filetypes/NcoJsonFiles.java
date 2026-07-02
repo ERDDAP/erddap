@@ -396,7 +396,9 @@ public class NcoJsonFiles extends TableWriterFileType {
       if (jsonp != null) writer.write(")");
       writer.flush(); // essential
     } finally {
-      twawm.releaseResources();
+      if (twawm != null) {
+        twawm.releaseResources();
+      }
     }
 
     if (EDDTable.reallyVerbose)
