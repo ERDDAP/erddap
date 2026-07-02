@@ -7185,6 +7185,7 @@ class JettyTests extends WireMockLifecycle {
 <option>.nccsv - Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata.
 <option>.nccsvMetadata - View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file.
 <option>.ncoJson - Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.
+<option>.ncoJsonHeader - View the UTF-8 header (the metadata) for an NCO lvl=2 JSON file.
 <option>.odvTxt - Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt).
 <option>.parquet - Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;).
 <option>.parquetWMeta - Download as a parquet file with detailed metadata.
@@ -7201,7 +7202,8 @@ class JettyTests extends WireMockLifecycle {
 <option>.smallPdf - View a small .pdf image file with a graph or map.
 <option>.smallPng - View a small .png image file with a graph or map.
 <option>.transparentPng - View a .png image file (just the data, without axes, landmask, or legend).
-            """));
+            """),
+        "results=\n" + results);
 
     results =
         SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/griddap/testGriddedNcFiles.html");
@@ -7235,6 +7237,7 @@ class JettyTests extends WireMockLifecycle {
 <option>.nccsvMetadata - View the dataset&#39;s metadata as the top half of a 7-bit ASCII NCCSV .csv file.
 <option>.ncml - View the dataset&#39;s structure and metadata as a UTF-8 NCML .xml file.
 <option>.ncoJson - Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.
+<option>.ncoJsonHeader - View the UTF-8 header (the metadata) for an NCO lvl=2 JSON file.
 <option>.odvTxt - Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt).
 <option>.parquet - Download as a parquet file. Metadata contains column names (&quot;column_names&quot;) and units (&quot;column_units&quot;).
 <option>.parquetWMeta - Download as a parquet file with detailed metadata.
@@ -7253,7 +7256,8 @@ class JettyTests extends WireMockLifecycle {
 <option>.smallPdf - View a small .pdf image file with a graph or map.
 <option>.smallPng - View a small .png image file with a graph or map.
 <option>.transparentPng - View a .png image file (just the data, without axes, landmask, or legend).
-            """));
+            """),
+        "results=\n" + results);
   }
 
   /**

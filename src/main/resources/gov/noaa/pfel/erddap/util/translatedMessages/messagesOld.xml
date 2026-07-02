@@ -3084,6 +3084,7 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 <fileHelp_nc4Header>View the UTF-8 header (the metadata) for the NetCDF-4 .nc file.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>View the dataset's metadata as the top half of a 7-bit ASCII NCCSV .csv file.</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>Download a UTF-8 NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>View the UTF-8 header (the metadata) for an NCO lvl=2 JSON file.</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).</fileHelp_ncCF>
 <fileHelp_ncCFHeader>View the UTF-8 header (the metadata) for the .ncCF file.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).</fileHelp_ncCFMA>
