@@ -1,16 +1,7 @@
-
 import argostranslate.package
 import argostranslate.translate
 import re
 from lxml import etree
-# This assumes you are running it from the project base directory not the translation directory.
-
-# Notes for future use. I believe this system may have some edge case problems (adding spaces to href).
-# There's an extension for argostranslate that is supposed to help handle translating html:
-# pip install translatehtml
-# However I ran into other issues with it. Since I'm not re-translating all existing messages,
-# this problem is puntable for now. When translating HTML it will be worth more careful checking
-# of the output to make sure it's good.
 
 # NOTES These are machine translations, and so are inherently imperfect. The use of ERDDAP and
 # domain-related jargon makes it even harder. Most of the translated text hasn't even be
@@ -769,28 +760,182 @@ dont_translate_strings = [
     "Zulu"
 ]
 
+# --- PARSING MATCHERS FROM TRANSLATE_DOCS.PY ---
+
+class ImageMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"[!]\[(.*?)\]\((.*?)\)", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(self.match.group(1))
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + "![{" + str(len(processed_line["translate_text"]) - 2) + "}](" + self.match.group(2) + "){" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class LinkMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"\[((?:[^][]|\[[^]]*\])*)]\(([^)]*?)\)", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(self.match.group(1))
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " [{" + str(len(processed_line["translate_text"]) - 2) + "}](" + self.match.group(2) + ") {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class TagMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"<(.*?)>", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " " + self.match.group(0) + " {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class EscapedTagMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"\&lt\;(.*?)\&gt\;", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " " + self.match.group(0) + "{" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class StarEmphasisMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"\\\*(.*?)\\\*", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(self.match.group(1))
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + "\\*" + "{" + str(len(processed_line["translate_text"]) - 2) + "}\\*{" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class BoldMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"\*\*(.*?)\*\*", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(self.match.group(1))
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " **" + "{" + str(len(processed_line["translate_text"]) - 2) + "}** {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class ItalicMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"\*(.*?)\*", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(self.match.group(1))
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " *" + "{" + str(len(processed_line["translate_text"]) - 2) + "}* {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class ParenthesisMatcher:
+    def getMatch(self, chunk):
+        stack = []
+        start_index = -1
+        self.start, self.end = -1, -1
+        for i, char in enumerate(chunk):
+            if char == '(':
+                if not stack: start_index = i
+                stack.append(i)
+            elif char == ')' and stack:
+                stack.pop()
+                if not stack:
+                    self.start = start_index
+                    self.end = i + 1
+                    return
+    def getStart(self): return self.start
+    def getEnd(self): return self.end
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.start]
+        processed_line["translate_text"].append(chunk[(self.start + 1):(self.end - 1)])
+        processed_line["translate_text"].append(chunk[self.end:])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " (" + "{" + str(len(processed_line["translate_text"]) - 2) + "}) {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class InlineCodeMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"`(.*?)`", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(self.match.group(1))
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " `" + "{" + str(len(processed_line["translate_text"]) - 2) + "}` {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+class UrlMatcher:
+    def getMatch(self, chunk):
+        self.match = re.search(r"(?:http|https|ftp)://[^ \)<]+(?<![.,?!])", chunk)
+    def getStart(self): return self.match.start() if self.match else -1
+    def getEnd(self): return self.match.end() if self.match else -1
+    def processMatch(self, processed_line, idx, chunk):
+        processed_line["translate_text"][idx] = chunk[:self.match.start()]
+        processed_line["translate_text"].append(chunk[self.match.end():])
+        placeholder = "{" + str(idx) + "}"
+        processed_line["format"] = processed_line["format"].replace(
+            placeholder, placeholder + " " + self.match.group(0) + " {" + str(len(processed_line["translate_text"]) - 1) + "}"
+        )
+        return processed_line
+
+markdown_matchers = [
+    ImageMatcher(), LinkMatcher(), TagMatcher(), EscapedTagMatcher(),
+    StarEmphasisMatcher(), BoldMatcher(), ItalicMatcher(), InlineCodeMatcher(),
+    ParenthesisMatcher(), UrlMatcher()
+]
+
+# --- END OF MATCHERS ---
+
 def find_and_install_langauge_package(target):
     package_to_install = next(
-        filter(
-            lambda x: x.from_code == from_code and x.to_code == target, available_packages
-        )
+        filter(lambda x: x.from_code == from_code and x.to_code == target, available_packages)
     )
     argostranslate.package.install_from_path(package_to_install.download())
 
 def is_index_in_tag(string, index, opening_tag, closing_tag):
-    """
-    Checks if a given index in a string is within a specific tag.
-
-    Args:
-        string: The string to search.
-        index: The index to check.
-        opening_tag: The opening tag (e.g., "<div>").
-        closing_tag: The closing tag (e.g., "</div>").
-
-    Returns:
-        bool: True if the index is within a tag, False otherwise.
-    """
-
     tag_stack = []
     for i, char in enumerate(string):
         if i == index:
@@ -853,30 +998,24 @@ def preprocess_tag(text):
         "translate_text": [text],
     }
 
-    # # Handle translation placeholders
-    # for idx, chunk in enumerate(processed_line["translate_text"]):
-    #     match = re.search(r"{(.*?)}", chunk)
-    #     if match:
-    #         # before tag text
-    #         processed_line["translate_text"][idx] = chunk[:match.start()]
-    #         # text after the tag
-    #         processed_line["translate_text"].append(chunk[match.end():])
-    #         # update format {idx} -> {idx} + "<" + match.group(0) + ">" + "{length-1}"
-    #         placeholder = "{"+ str(idx) +"}"
-    #         processed_line["format"] = processed_line["format"].replace(placeholder, placeholder + match.group(0) + "{" + str(len(processed_line["translate_text"]) -1) + "}")
+    # Process matchers loop just like translate_docs.py
+    idx = 0
+    while idx < len(processed_line["translate_text"]):
+        chunk = processed_line["translate_text"][idx]
+        best_match = None
+        for matcher in markdown_matchers:
+            matcher.getMatch(chunk)
+            if matcher.getStart() > -1:
+                if not best_match:
+                    best_match = matcher
+                elif matcher.getStart() > -1 and (matcher.getStart() < best_match.getStart() or (matcher.getStart() == best_match.getStart() and matcher.getEnd() > best_match.getEnd())):
+                    best_match = matcher
+        if best_match:
+            processed_line = best_match.processMatch(processed_line, idx, chunk)
+        else:
+            idx = idx + 1
 
-    # # handle html tags
-    # for idx, chunk in enumerate(processed_line["translate_text"]):
-    #     match = re.search(r"<(.*?)>", chunk)
-    #     if match:
-    #         # before tag text
-    #         processed_line["translate_text"][idx] = chunk[:match.start()]
-    #         # text after the tag
-    #         processed_line["translate_text"].append(chunk[match.end():])
-    #         # update format {idx} -> {idx} + "<" + match.group(0) + ">" + "{length-1}"
-    #         placeholder = "{"+ str(idx) +"}"
-    #         processed_line["format"] = processed_line["format"].replace(placeholder, placeholder + match.group(0) + "{" + str(len(processed_line["translate_text"]) -1) + "}")
-
+    # Extract non-translatable string constants
     for no_translate in dont_translate_strings:
         for idx, chunk in enumerate(processed_line["translate_text"]):
             index = chunk.find(no_translate)
@@ -885,8 +1024,10 @@ def preprocess_tag(text):
                 # this iterates over chunks that are appended during the iteration
                 processed_line["translate_text"][idx] = chunk[:index]
                 processed_line["translate_text"].append(chunk[index+len(no_translate):])
-                placeholder = "{"+ str(idx) +"}"
-                processed_line["format"] = processed_line["format"].replace(placeholder, placeholder + no_translate + "{" + str(len(processed_line["translate_text"]) -1) + "}")
+                placeholder = "{" + str(idx) + "}"
+                processed_line["format"] = processed_line["format"].replace(
+                    placeholder, placeholder + " " + no_translate + " {" + str(len(processed_line["translate_text"]) - 1) + "}"
+                )
 
     return processed_line
 
@@ -906,7 +1047,6 @@ def fix_invalid_escapes(text):
         text = text[:match.start()] + "\\" + text[match.start():]
     else:
         break
-  
   return text
 
 def postprocess_line(format, chunks):
@@ -919,7 +1059,6 @@ def postprocess_line(format, chunks):
         chunks[idx] = chunks[idx].replace('}', '&#125;')
     index = 0
     end_span = 0
-    count = 0
     while index > -1 and end_span > -1:
         index = format.find("{", index)
         end_span = format.find("}", index)
@@ -928,7 +1067,6 @@ def postprocess_line(format, chunks):
             if index + 5 > end_span and chunk_id.isdigit() and int(chunk_id) < len(chunks):
                 chunk = chunks[int(chunk_id)]
                 format = format[0:index] + chunk + format[end_span+1:]
-                count = count + 1
                 index = index + len(chunk)
             else:
                 index = index + 1
@@ -973,7 +1111,7 @@ def make_tag_dict(path):
     tree = etree.parse(path, etree.XMLParser(strip_cdata=False))
     root = tree.getroot()
     for i in range(len(root)):
-    # for element in root.iter():
+        # for element in root.iter():
         element = root[i]
         if isinstance(element.tag, str):
             if "<![CDATA[" in str(etree.tostring(element)):
@@ -994,12 +1132,9 @@ messages_dict = make_tag_dict(util_dir + "messages.xml")
 
 for lang_code in language_code_list:
     code_for_filename = lang_code
-    if lang_code == "zh":
-        code_for_filename = "zh-CN"
-    if lang_code == "zt":
-        code_for_filename = "zh-TW"
-    if lang_code == "nb":
-        code_for_filename = "no"
+    if lang_code == "zh": code_for_filename = "zh-CN"
+    if lang_code == "zt": code_for_filename = "zh-TW"
+    if lang_code == "nb": code_for_filename = "no"
     print("Translating to language: " + lang_code)
     find_and_install_langauge_package(lang_code)
 
@@ -1025,9 +1160,6 @@ for lang_code in language_code_list:
         else:
             # do the translation
             print("translating key: " + key)
-            print(str(key in old_tags_dict) + " " + str(key in translated_tag_dict))
-            if key in old_tags_dict and key in translated_tag_dict:
-                print(str(messages_dict[key] == old_tags_dict[key]))
             translated_tag_dict[key] = translate_tag(to_translate, lang_code, key)
         translate_count = translate_count + 1
     with open(util_dir + "translatedMessages/messages-" + code_for_filename + ".xml", "w", encoding='utf-8') as translated_file:
@@ -1037,7 +1169,7 @@ for lang_code in language_code_list:
 
         # Iterate over the messages keys to have text in the same order as the original messages file.
         for key in messages_dict.keys():
-            to_write = translated_tag_dict[key]
+            to_write = translated_tag_dict.get(key, "")
             if not to_write:
                 to_write = ""
             if key.startswith("comment"):
@@ -1047,6 +1179,3 @@ for lang_code in language_code_list:
                     to_write = escape_text(to_write)
                 translated_file.write("<" + key + ">" + to_write + "</" + key + ">\n")
         translated_file.write("</erddapMessages>\n")
-        
-
-

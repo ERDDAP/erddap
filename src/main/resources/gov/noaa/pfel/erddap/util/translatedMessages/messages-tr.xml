@@ -2993,6 +2993,8 @@ Uzak bir ERDDAP üzerinde yeni bir özellik kullanmak istiyorsanız, ERDDAP sür
 <fileHelp_nc4Header>NetCDF-4 .nc dosyasının UTF-8 üstbilgisini (meta verileri) görüntüleyin.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>Veri kümesinin meta verilerini 7 bitlik ASCII NCCSV .csv dosyasının üst yarısı olarak görüntüleyin.</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>COARDS/CF/ACDD meta verilerini içeren bir UTF-8 NCO lvl=2 JSON dosyası indirin.</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>UTF-8 başlığını ( metadata) bir an içinNCOlvl=2 JSON dosyası.
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>NetCDF-3 CF Ayrık Örnekleme Geometrileri dosyasını (Bitişik Düzensiz Dizi) indirin.</fileHelp_ncCF>
 <fileHelp_ncCFHeader>.ncCF dosyasının UTF-8 üstbilgisini (meta verileri) görüntüleyin.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>NetCDF-3 CF Ayrık Örnekleme Geometrileri dosyasını (Çok Boyutlu Dizi) indirin.</fileHelp_ncCFMA>
@@ -4468,162 +4470,164 @@ Farklı veri türleri ve farklı istemci uygulamaları için farklı protokoller
 <resourceNotFound>Kaynak bulunamadı:</resourceNotFound>
 <restfulWebServices>RESTful Web Hizmetleri</restfulWebServices>
 <restfulHTML><![CDATA[
+ ERDDAP Her ikisi de:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Bir web uygulaması
+ &externalLinkHtml;  </a> &ndash; tarayıcılarla insanların kullanabileceği bir formla bir web sayfası kullanabilir (Bu durumda, veri, grafikler veya veri setleri hakkında bilgi almak için) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A RESTful web hizmeti
+ &externalLinkHtml;  </a> &ndash; bilgisayar programlarının kullanabileceği bir URL (Bu durumda, veri, grafikler ve datasets hakkında bilgi almak için) .
+ </ul> Her şey için ERDDAP Bir tarayıcı ile bir insan olarak kullanabileceğiniz bir formla web sayfası, orada bir tane var
+İlgili ERDDAP Bilgisayar programları ve senaryolar için kolay olmak için tasarlanmış web servisi.
+Örneğin, insanlar bu URL'yi ilginç veri setleri için Full Text Arama yapmak için kullanabilir:
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> URL'deki dosya uzantısını .html'dan .html'den değiştirmek için .json  (veya .htmlTable Ya da .jsonlCSV1 Ya da .xhtml ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> Bir URL'yi bilgisayar programı veya bilgisayar programına veya Java Senaryo senaryosu aynı şeyi elde etmek için kullanabilir
+Daha fazla bilgisayar programlı formatta bilgi
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> .
 
-ERDDAP her ikisidir:
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">Bir web uygulaması &externalLinkHtml;</a> – tarayıcıları olan insanların kullanabileceği bir form içeren bir web sayfası (bu durumda veri kümeleri hakkında veri, grafik veya bilgi almak için).
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">RESTful bir web hizmeti &externalLinkHtml;</a> – bilgisayar programlarının kullanabileceği bir URL (bu durumda veri kümeleri hakkında veri, grafik ve bilgi almak için).
-</ul>
-Tarayıcı sahibi bir insan olarak kullanabileceğiniz bir forma sahip her ERDDAP web sayfası için, bilgisayar programlarının ve komut dosyalarının kullanımını kolaylaştıracak şekilde tasarlanmış, karşılık gelen bir ERDDAP web hizmeti vardır.
-Örneğin, insanlar bu URL&#39;yi ilginç veri kümeleri için Tam Metin Araması yapmak amacıyla kullanabilir:
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>URL&#39;deki dosya uzantısını .html&#39;den .json (veya .csv veya .htmlTable veya .jsonlCSV1 veya .xhtml, ...) değiştirerek:
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>bir bilgisayar programının veya Java Script betiğinin aynı bilgiyi
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> .
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">ERDDAP Üstüne Bir Şeyler İnşa Edin</a></h3>
-ERDDAP bilgisayar programlarının veya yazdığınız scriptlerin kullanabileceği pek çok özellik bulunmaktadır.
-Bunları, ERDDAP üzerine başka web uygulamaları veya web hizmetleri oluşturmak için kullanabilirsiniz; böylece işin çoğunu ERDDAP yapar! Bu nedenle, ERDDAP sunduğu verilere yönelik daha iyi bir arayüz veya verilere erişmenin kolay bir yoluna ihtiyaç duyan bir web sayfası fikriniz varsa, kendi web uygulamanızı, web hizmetinizi veya web sayfanızı oluşturmanızı ve ERDDAP kaynak olarak kullanmanızı öneririz.
-temel.
-Sisteminiz ERD ERDDAP veya diğer ERDDAP kurulumlarından veri, grafik ve diğer bilgileri alabilir veya<!-- setup always from coastwatch's erddap --> Herkese açık veya yalnızca özel olarak erişilebilen
-<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">kendi ERDDAP sunucunuzu kurun</a> .
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL İstekleri</a></h3>
-ERDDAP gelen kullanıcı arayüzü bilgilerine yönelik talepler (örneğin, arama sonuçları), istekler için web&#39;in evrensel standardını kullanır:
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs &externalLinkHtml;</a>
-<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a> aracılığıyla gönderilir .
-Bu, bir web sayfasındaki formu doldurup <kbd>Submit</kbd> tıkladığınızda tarayıcınızın kullandığı mekanizmanın aynısıdır HTTP GET kullanmak için, özel olarak oluşturulmuş bir URL (bir sorgu içerebilir) oluşturur ve bunu HTTP GET ile gönderirsiniz.
-Bu URL&#39;leri elle oluşturabilir ve tarayıcınızın adres metin alanına girebilirsiniz (örneğin,
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
-<br>Veya bir URL oluşturmak, göndermek ve yanıt almak için bir bilgisayar programı veya web sayfası komut dosyası yazabilirsiniz.
-HTTP GET yoluyla URL&#39;ler seçildi çünkü
-<ul>
-<li>Kullanımı basittir.
-<li>İyi çalışıyorlar.
-<li>Evrensel olarak desteklenirler (tarayıcılarda, bilgisayar dillerinde, işletim sistemi araçlarında vb.).
-<li>Bunlar
-<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">Temsili Durum Transferinin (REST ) &externalLinkHtml;</a> ve
-<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">Kaynak Odaklı Mimari (ROA ) &externalLinkHtml;</a>
-<li>World Wide Web&#39;in büyük bir dağıtılmış uygulama olarak kullanılmasını kolaylaştırırlar, örneğin
-<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups &externalLinkHtml;</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX uygulamaları &externalLinkHtml;</a>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">Vatansızdırlar &externalLinkHtml;</a> sistemi daha basit hale getiren ERDDAP gibi.
-<li>Bir URL, belirli bir isteği tamamen tanımlar; böylece onu tarayıcınızda favorilerinize ekleyebilir, notlarınıza yazabilir, bir arkadaşınıza e-postayla gönderebilirsiniz vb.
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">Yüzde Kodlama</a></h3>
-URL&#39;lerde bazı karakterlere izin verilmez (örneğin boşluklar) ve diğer karakterlerin özel anlamları vardır (örneğin, &#39;&amp;&#39; bir sorgudaki anahtar=değer çiftlerini ayırır).
-Bir web sayfasındaki formu doldurup Gönder&#39;e tıkladığınızda, tarayıcınız otomatik olarak
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">yüzde olarak &externalLinkHtml;</a> URL&#39;deki özel karakterler (örneğin, boşluk %20 olur), örneğin,
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>Ancak bilgisayar programınız veya komut dosyanız URL&#39;leri oluşturuyorsa, muhtemelen yüzde kodlamasını kendisinin yapması gerekir.
-Eğer öyleyse, o zaman muhtemelen sorgu değerlerindeki (&#39;=&#39; işaretlerinden sonraki kısımlar) A-Za-z0-9_-!.~&#39;()* dışındaki tüm karakterlerin %HH olarak kodlanması gerekir; burada HH, Karakterin 2 haneli hexadecimal değeri örneğin boşluk %20 olur.
-#127&#39;nin üzerindeki karakterler UTF-8 bayta dönüştürülmeli, ardından her UTF-8 bayt yüzde olarak kodlanmalıdır (bir programcıdan yardım isteyin).
-Programlama dillerinde bunu yapacak araçlar bulunur (örneğin, Java
-<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a> ve Java Script&#39;in
-<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml;</a> bakın) ve
-<a class="N" rel="help" href="https://www.url-encode-decode.com">sizin için yüzde olarak kodlayan/kod çözen &externalLinkHtml; web siteleri</a> vardır.
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">Yanıt Dosyası Türleri</a></h3>
-Tarayıcı kullanan insanlar, kullanıcı arayüzü sonuçlarını (örneğin, arama sonuçları) HTML belgeleri olarak almak isteseler de, bilgisayar programları genellikle sonuçları basit, kolayca ayrıştırılan, daha az ayrıntılı belgeler olarak almayı tercih eder.
-ERDDAP kullanıcı arayüzü sonuçlarını şu yaygın, bilgisayar programı dostu dosya türlerinde bir veri tablosu olarak döndürebilir:
-<ul>
-<li>.csv - virgülle ayrılmış bir ASCII metin tablosu.
-(<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.htmlTable - verileri bir tabloda içeren bir .html web sayfası.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.itx - her veri sütunu için bir dalga içeren bir Igor Metin Dosyası.
-(<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.json - tablo benzeri bir JSON dosyası.
-(<a rel="help" href="https://www.json.org/">Daha&nbsp;bilgi &externalLinkHtml;</a> veya
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP özgü bilgiler</a>)
-<li>.jsonlCSV1 - ilk satırında sütun adlarının bulunduğu &quot;CSV&#39;den Daha İyi&quot; JSON Satırları dosyası.
-(<a rel="help" href="https://jsonlines.org/">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.jsonlCSV - sütun adı olmayan &quot;CSV&#39;den Daha İyi&quot; JSON Satırları dosyası.
-(<a rel="help" href="https://jsonlines.org/">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.jsonlKVP - Anahtar:Değer çiftlerini içeren bir JSON Satırları dosyası.
-(<a rel="help" href="https://jsonlines.org/">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.mat - bir MATLAB ikili dosyası.
-(<a rel="help" href="https://www.mathworks.com/">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.nc - düz, tablo benzeri bir NetCDF -3 ikili dosyası.
-(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.nccsv - düz, tablo benzeri, NetCDF benzeri, ASCII CSV dosyası.
-(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.tsv - sekmeyle ayrılmış bir ASCII metin tablosu.
-(<a rel="help" href="https://jkorpela.fi/TSV.html">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-<li>.xhtml - bir tablodaki verileri içeren bir XHTML (XML) dosyası.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">Daha&nbsp;bilgi &externalLinkHtml;</a>)
-</ul>
-Her sonuç tablosu biçiminde (sütun adlarının her satırda yer aldığı .jsonlKVP hariç):
-<ul>
-<li>Her sütunun bir sütun adı ve bir tür bilgi vardır.
-<li>Tablonun ilk satırında sütun adları bulunur.
-<li>Sonraki satırlarda istediğiniz bilgiler bulunur.
-</ul>
-<p>Bu düz dosya türlerindeki içerik de .html yanıtından biraz farklıdır; bir bilgisayar programının çalışmasını kolaylaştırmak için kasıtlı olarak sadeleştirilmiştir.
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">Yanıtlar için Tutarlı Bir Veri Yapısı</a>
-<br>Bu sayfada açıklanan tüm kullanıcı arayüzü hizmetleri, yukarıda listelenen yaygın dosya formatlarından herhangi birinde bir veri tablosu döndürebilir.
-Umarım, bir veri tablosunu formatlardan birinde ayrıştırmak için yalnızca bir prosedür yazabilirsiniz.
-Daha sonra bu hizmetlerin herhangi birinden gelen yanıtı ayrıştırmak için bu prosedürü yeniden kullanabilirsiniz.
-Bu, ERDDAP ile başa çıkmayı kolaylaştıracaktır.
-<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> ve .tsv Ayrıntıları
-<ul>
-<li>Bir .csv dosyasındaki bir verinin dahili çift tırnakları veya virgülleri varsa, ERDDAP .csv spesifikasyonunu sıkı bir şekilde takip eder:
-verinin etrafına çift tırnak koyar ve dahili çift tırnakları iki katına çıkarır.
-<li>.csv veya .tsv dosyasındaki özel karakterler
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> gibi kodlanır.
-ters eğik çizgi ile kodlanmış karakterler:
-\n (yeni satır), \\ (ters eğik çizgi), \f (formfeed), \t (sekme), \r (satır başı) veya \u <i>hhhh</i> sözdizimiyle.
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>.json dosyalarına yönelik istekler artık isteğe bağlı bir
-<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp &externalLinkHtml;</a> içerebilir.
-sorgunun sonuna &quot;&amp; .json p= <i>functionName</i>&quot; ekleyerek istek yapın.
-Temel olarak bu, ERDDAP yanıtın başına &quot;<i>functionName</i> (&quot; ve yanıtın sonuna &quot;)&quot; eklemesini söyler.
-<i>FunctionName&#39;in</i> ilk karakteri bir ISO 8859 harfi veya &quot;_&quot; olmalıdır.
-Her isteğe bağlı sonraki karakter bir ISO 8859 harfi, &quot;_&quot;, bir rakam veya &quot;.&quot; olmalıdır.
-Başlangıçta hiçbir sorgu yoksa sorgunuzda &quot;&amp;&quot; işaretini bırakın.
-<p>griddap ve tabledap Farklı Dosya Türleri Sunuyor
-<br>Yukarıda listelenen dosya türleri ERDDAP kullanıcı arayüzü türlerindeki isteklere (örneğin, arama istekleri) yanıt vermek için kullanabileceği dosya türleridir.
-ERDDAP bilimsel veri (örneğin uydu ve şamandıra verileri) istekleri için farklı dosya türlerini destekler (<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a> ve
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a> belgelerine bakın).
-&acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">ERDDAP Hizmetlerine İlişkin URL&#39;lere Erişim</a></h3>
-ERDDAP bilgisayar programları için şu URL erişim noktalarına sahiptir:
-<ul>
-<li><strong>Ana kaynak erişim URL&#39;lerinin</strong> listesini almak için şunu kullanın:
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li><strong>Tüm veri kümelerinin</strong> geçerli listesini almak için şunu kullanın:
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>Belirli bir veri kümesine (değişkenlerin listesi ve niteliklerinin listesi) ilişkin <strong>meta verileri</strong> almak için şunu kullanın:
-<br>&tErddapUrl; /info/ <i>datasetID</i> /index <i>.fileType</i>
-<br>Örneğin,
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>Veri kümelerine yönelik <strong>tam metin aramalarının</strong> sonuçlarını almak için (örnek olarak &quot;searchFor=wind%20speed&quot; kullanılarak), şunu kullanın:
-<br>&plainLinkExamples4;
-<br>(Programınızın veya komut dosyanızın sorgudaki
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; değerini yüzde olarak kodlaması</a> gerekebilir.)
-<br>&nbsp;
-<br>Veya veri kümelerinde tam metin araması yapmak için
-<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a> standardını kullanın.
-<br>&nbsp;
-<li>Veri kümelerine yönelik <strong>gelişmiş aramaların</strong> sonuçlarını almak için (örnek olarak &quot;searchFor=wind%20speed&quot; kullanılarak), şunu kullanın:
-<br>&plainLinkExamples5;
-<br>Ancak
-<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a> ile denemeler yapın.
-tüm isteğe bağlı parametreleri bulmak için bir tarayıcıda.
-(Programınızın veya komut dosyanızın sorgudaki
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; değerini yüzde olarak kodlaması</a> gerekebilir.)
-<br>&nbsp;
-<li><strong>categoryAttributes</strong> listesini almak için (örneğin, kurum, long_name, standart_ad), şunu kullanın:
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li><strong>Belirli bir kategoriAttribute&#39;a ilişkin kategorilerin</strong> listesini almak için (örnek olarak &quot;standart_ad&quot; kullanılarak), şunu kullanın:
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li><strong>Belirli bir kategorideki veri kümelerinin</strong> listesini almak için (örnek olarak &quot;standart_adı=zaman&quot; kullanılarak), şunu kullanın:
-<br>&plainLinkExamples8;
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Build Build Build Build Build Top of Top of Things ERDDAP  </a>  </h3> İçinde birçok özellik var ERDDAP Bu bilgisayar programları veya senaryolar tarafından kullanılabilir
+Yazıyorsunuz. Diğer web uygulamaları veya web hizmetleri oluşturmak için onları kullanabilirsiniz
+En üst kısmı ERDDAP , yapmak ERDDAP işin çoğunu yapın&#33;
+Bu yüzden daha iyi bir arayüz için bir fikir varsa, verilere daha iyi bir arayüz için ERDDAP hizmet veya bir web sitesi
+Verilere erişmek için kolay bir yol ihtiyacı olan sayfa, sizi kendi inşa etmeye teşvik ediyoruz
+web uygulaması, web hizmeti veya web sayfası ve kullanımı ERDDAP Temel olarak.
+Sisteminiz veri, grafikler ve diğer bilgiler alabilir ERD \" ERDDAP veya
+Diğer diğer diğer diğer diğer diğer diğer diğer ERDDAP Kurulumlar veya yapabilirsiniz
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Kendin kurdun ERDDAP server sunucusu </a> ,
+hangisi olabilir
+Açık erişilebilir veya sadece özel olarak erişilebilir.
+
+
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL İstekleri </a>  </h3> Kullanıcıyla ilgili bilgiler için istekler ERDDAP  (Örneğin, arama sonuçları) Web'in talepleri için evrensel standardı kullanın:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URL'ler
+ &externalLinkHtml;  </a> Gönder via via via sent via
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
+Bu, tarayıcınızın bir form doldurmadığınızda kullandığı aynı mekanizmadır
+Bir web sayfasında ve tıklayın <kbd> Gönder </kbd> kullanmak için kullanmak HTTP GET , özel olarak kurulmuş bir URL yaratırsınız (Hangi bir sorgu içerebilir) Ve onu ile gönder HTTP GET . Bu URL'leri el ile oluşturabilir ve içeri girebilirsiniz
+Tarayıcınızın adresi metin alanı (Örneğin,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Ya da, bir URL oluşturmak için bir bilgisayar programı veya web sayfası senaryosu yazabilirsiniz, gönder,
+Ve cevabı alın. URL'ler aracılığıyla HTTP GET Seçildi çünkü
+ <ul>  <li> Kullanımı basittir.
+ <li> İyi çalışıyorlar.
+ <li> Evrensel olarak destekleniyorlar (Tarayıcılarda, bilgisayar dilleri, işletim sistemi
+Araçlar, vb.) .
+ <li> Onlar bir temeldir
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Temsil Durumu ( REST )  &externalLinkHtml;  </a> ve
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Kaynak Odaklı Mimari ( ROA )  &externalLinkHtml;  </a>  <li> Dünya Wide Web'i büyük bir dağıtılmış uygulama olarak kullanmayı kolaylaştırdılar,
+Örneğin,
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX Başvuru uygulamaları
+ &externalLinkHtml;  </a>  <li> Onlardır <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Devletsiz
+ &externalLinkHtml;  </a> Sanki ERDDAP Sistemi daha basit kılan.
+ <li> Bir URL tamamen verilen bir istek tanımlar, bu yüzden tarayıcınızda bunu söyleyebilirsiniz,
+Notlarınızda, bir arkadaşınıza e-posta yazın, vs.
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Percent Encoding </a>  </h3> URL'lerde, bazı karakterler izin verilmez (Örneğin, uzaylar) Ve diğer karakterler
+Özel anlamları var (Örneğin, '&amp;' bir sorguda anahtar=değer çiftleri) .
+Bir web sayfasında bir form doldurduğunuzda ve gönderine tıkladığınızda, tarayıcınız otomatik olarak otomatik olarak
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> Yüzde encodes
+ &externalLinkHtml;  </a> URL'deki özel karakterler (Örneğin, uzay% 20 olur) Örneğin,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Ancak bilgisayar programınız veya senaryonuz URL'leri oluşturursa, muhtemelen yüzde yüzde yüzde yüzde 40'ı yapmak gerekir.
+Kendini tehlikeye at. Eğer öyleyse, muhtemelen A-Za-z0-9_'dan başka tüm karakterler&#33; ~ ‘ ‘ ‘ () * * *
+Sorunun değerleri (Sonra parçalar '=' işaretler) Encoded
+%HHH olarak, HH'nin karakterin 2 sayısal hexadecimal değeri olduğu, örneğin uzay% 20 olur.
+1.27'nin üzerindeki karakterler UTF-8 bytes'e dönüştürülmelidir, sonra her UTF-8 byte yüzde encoded olmalıdır.
+ (Yardım için bir programcı sormak) . Programlama dillerinin bunu yapmak için araçları vardır (Örneğin, bakınız Java \"
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> ve Java script's
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> EncodeURIComponent ()  &externalLinkHtml;  </a> ) Ve orada da var
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> Yüzde encode/decode sizin için
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Yanıt Dosya Türleri </a>  </h3> Tarayıcıları kullanan insanlar kullanıcı-interface sonuçlarını almak isterlerse (Örneğin,
+Arama sonuçları) HTML belgeleri olarak, bilgisayar programları genellikle sonuçları almayı tercih ediyor
+Basit, kolayca parsed, daha az fiilose belgeleri. ERDDAP Kullanıcı-interface geri dönebilir
+Bu yaygın, bilgisayar programı arkadaş canlısı, dosya türleri:
+ <ul>  <li> .csv – a comma-separated ASCII text table.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - bir masadaki verilerle bir .html web sayfası.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .itx - her veri sütunu için bir dalga ile bir Igor Text File.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .json - bir masa benzeri JSON dosyası.
+ ( <a rel="help" href="https://www.json.org/"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> veya
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - Özel bilgi </a> )  <li>  .jsonlCSV1 - ilk satırdaki sütun isimleri ile \"Better than CSV\" JSON Lines dosyası.
+ ( <a rel="help" href="https://jsonlines.org/"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - bir \"Better Than CSV\" JSON Lines dosyası hiçbir sütun adı olmadan.
+ ( <a rel="help" href="https://jsonlines.org/"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - Key ile bir JSON Hat dosyası:Value çiftleri.
+ ( <a rel="help" href="https://jsonlines.org/"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .mat - bir MATLAB ikili dosyası.
+ ( <a rel="help" href="https://www.mathworks.com/"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .nc - düz, masa gibi, NetCDF -3 ikili dosya.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .nccsv - düz, masa gibi, NetCDF gibi, ASCII CSV dosyası.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .nc O Json - bir JSON dosyası ( NCO -) Dataset'in metadata ile sadece (Küresel özellikler,
+boyutları ve değişkenleri kendi özellikleri, türü ve şekli,) ve veri değerleri yoktur.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .tsv - bir sekme-separated ASCII text table.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  <li>  .xhtml - bir XHTML (XML) Bir masadaki verilerle dosya.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Daha fazla daha fazlası &nbsp; Bilgi Bilgileri
+ &externalLinkHtml;  </a> )  </ul> Her sonuçlarda tablo formatı (hariç hariç hariç hariç hariç hariç .jsonlKVP Her satırda sütun isimleri nerededir) :
+ <ul>  <li> Her sütunun bir sütun adı ve bir tür bilgi vardır.
+ <li> Masanın ilk sırası sütun isimlerine sahiptir.
+ <li> Sonraki satırlar talep ettiğiniz bilgilere sahiptir.
+ </ul>  <p> Bu düz dosya türlerindeki içerik aynı zamanda .html'den biraz farklıdır.
+Cevap &mdash; kasıtlı olarak çıplaktır, böylece bir bilgisayar için daha kolaydır
+Çalışmak için program.
+
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Yanıtlar için Consistent Data Structure </a>  <br> Bu sayfada açıklanan tüm kullanıcı-interface hizmetleri bir masa geri dönebilir
+Yukarıda listelenen ortak dosya formatlarından herhangi birinde veriler. Umarım yazabilirsiniz
+Sadece formatlardan birinde bir veri masasını parlamak için bir prosedür. O zaman yapabilirsin
+Bu prosedürün yanıtını bu hizmetlerin herhangi birinden ayırmak için tekrar kullanın. Bu Bu Bu Bu
+onunla uğraşmak daha kolay yapmalı ERDDAP .
+
+
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> ve .tsv Detaylar <ul>  <li> Bir .csv dosyasında bir datum dahili iki alıntı veya commas varsa, ERDDAP Takip et
+.csv şartnamesi kesinlikle: datum ve çiftlerin etrafında çift alıntılar koyar
+İç çift alıntılar.
+ <li> Bir .csv veya özel karakterler .tsv Dosya kodlanmış gibi
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> backslash-encoded karakterleri:
+\nn (Yeniline) , (backslash) \f (form besleme formu) , (sekmesi) , (vagon geri dönüş) Ya da \\u <i> hhhh </i> Kelimeler.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> İstekler için .json dosyalar artık bir opsiyonel içeriyor olabilir
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
+ &externalLinkHtml;  </a> Talep Tarafından
+\"&amp; .json p= <i> fonksiyon fonksiyonu Name Name Name Name Name Name Name Name Name Name Name </i> Sorunun sonuna kadar. Temel olarak, bu diyor
+ ERDDAP eklemek \" <i> fonksiyon fonksiyonu Name Name Name Name Name Name Name Name Name Name Name </i>  (\" cevabın başlangıcında ve \") \"Buna
+Cevabın sonu. İlk karakterin <i> fonksiyon fonksiyonu Name Name Name Name Name Name Name Name Name Name Name </i> ISO 8859 mektubu veya \"_\" olmalıdır.
+Bir sonraki karakter ISO 8859 harf, \"_\", bir sayısal veya \" olmalıdır.
+Başlangıçta hiçbir sorgu olmasaydı, sorgunuzda \"&amp;\"i terk et.
+
+
+ <p> griddap ve tabledap Farklı Dosya Türleri
+ <br> Yukarıda listelenen dosya türleri dosya türleri ERDDAP yanıt vermek için kullanabilir
+Kullanıcı-interface istekleri (Örneğin, arama istekleri) . ERDDAP destek desteği destek desteği
+Bilimsel veriler için farklı bir dosya türü (Örneğin, uydu ve buoy
+Data data data data data data) İstek talep istekler (Görmeyi gör
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> network </a> ve
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> Belge belgeleri) .
+
+
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Erişim URL'leri için ERDDAP “Hizmetler </a>  </h3>  ERDDAP Bu URL erişim noktaları bilgisayar programları için vardır:
+ <ul>  <li> Listeyi almak için <strong> main resource access URLs </strong> , kullanımı
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Mevcut listeyi almak için <strong> Tüm datasets </strong> , kullanımı
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> almak için <strong> metadata </strong> Belirli bir veri seti için
+ (Değişkenlerin listesi ve nitelikleri) , kullanımı
+ <br>  &tErddapUrl; / <i>  datasetID  </i> /index <i>  .fileType  </i>  <br> Örneğin,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Sonuçları elde etmek için <strong> Full text aramaları </strong> Datasets için
+ (using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using "searchFor=wind%20speed" Örnek olarak) , kullanımı
+ <br>  &plainLinkExamples4;  <br>  (Programınız veya senaryonuza ihtiyacınız olabilir
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> yüzde-encode
+ &externalLinkHtml;  </a> Sorudaki değer.)  <br>  &nbsp;  <br> Ya da, kullanın
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> Datasets için tam bir metin arama yapmak standart.
+ <br>  &nbsp;  <li> Sonuçları elde etmek için <strong> Gelişmiş aramalar </strong> Datasets için
+ (using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using using "searchFor=wind%20speed" Örnek olarak) , kullanımı
+ <br>  &plainLinkExamples5;  <br> Ama deneyle deney
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> Bir tarayıcıda tüm opsiyonel parametreleri anlamak.
+ (Programınız veya senaryonuza ihtiyacınız olabilir
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> yüzde-encode
+ &externalLinkHtml;  </a> Sorudaki değer.)  <br>  &nbsp;  <li> Listeyi almak için <strong>  categoryAttributes  </strong>  (Örneğin, kurum, long_name , standard_name) , kullanımı
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Listeyi almak için <strong> Belirli bir kategori için kategoriler Attribute </strong>  (Örneğin \"standart_name\" kullanmak) , kullanımı
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Listeyi almak için <strong> Belirli bir kategorideki veri kümeleri </strong>  (Örneğin \"standart_name=time\" kullanmak) , kullanımı
+ <br>  &plainLinkExamples8; 
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[
