@@ -16,8 +16,11 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.HashSet;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import tags.TagSlowTests;
@@ -31,6 +34,13 @@ class EDDTableFromHttpGetTests {
   @BeforeAll
   static void init() {
     Initialization.edStatic();
+  }
+
+  @AfterEach
+  void tearDown() {
+    // Wait for all background tasks to finish to avoid interference between tests
+    // e.g. TASK_CREATE_SUBSET_TABLE
+    Awaitility.await().atMost(Duration.ofSeconds(30)).until(() -> EDStatic.nUnfinishedTasks() <= 0);
   }
 
   @org.junit.jupiter.api.Test
@@ -261,7 +271,6 @@ class EDDTableFromHttpGetTests {
     // ****** from here on are the non-hammer, static tests
     // *** test insertOrDelete
     String2.log("\n>> insertOrDelete #1: insert 1 row");
-    Math2.sleep(2);
     results =
         EDDTableFromHttpGet.insertOrDelete(
             language,
@@ -382,7 +391,6 @@ class EDDTableFromHttpGetTests {
     // *** change all values in a row
     String2.log("\n>> insertOrDelete #3: change all values in a row");
     Math2.sleep(2);
-    Math2.sleep(2);
     results =
         EDDTableFromHttpGet.insertOrDelete(
             language,
@@ -435,6 +443,7 @@ class EDDTableFromHttpGetTests {
     Test.ensureEqual(results, expected, "results=" + results);
 
     // *** change values in a row but only specify a few
+    Math2.sleep(2);
     String2.log("\n>> insertOrDelete #4: change a few values in a row");
     results =
         EDDTableFromHttpGet.insertOrDelete(
@@ -1293,6 +1302,7 @@ class EDDTableFromHttpGetTests {
     // push a bunch of data into the dataset: 2 stations, 2 time periods
     for (int i = 0; i < 4; i++) {
       // apr
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1309,6 +1319,7 @@ class EDDTableFromHttpGetTests {
               dir,
               eddTable.className() + "_insert1_" + i,
               ".insert");
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1327,6 +1338,7 @@ class EDDTableFromHttpGetTests {
               ".insert");
 
       // may
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1343,6 +1355,7 @@ class EDDTableFromHttpGetTests {
               dir,
               eddTable.className() + "_insert3_" + i,
               ".insert");
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1465,6 +1478,7 @@ class EDDTableFromHttpGetTests {
     // overwrite and delete a bunch of data
     for (int i = 0; i < 2; i++) {
       // overwrite the first 2
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1482,6 +1496,7 @@ class EDDTableFromHttpGetTests {
               eddTable.className() + "_insert5_" + i,
               ".insert");
       // delete the first 2
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1496,6 +1511,7 @@ class EDDTableFromHttpGetTests {
               ".delete");
 
       // overwrite the first 2
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
@@ -1513,6 +1529,7 @@ class EDDTableFromHttpGetTests {
               eddTable.className() + "_insert7_" + i,
               ".insert");
       // delete the first 2
+      Math2.sleep(2);
       tName =
           eddTable.makeNewFileForDapQuery(
               language,
