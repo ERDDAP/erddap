@@ -48,7 +48,7 @@
         <error-prone.version>2.50.0</error-prone.version>
         <prometheusVersion>1.8.0</prometheusVersion>
         <parquetVersion>1.17.1</parquetVersion>
-        <awssdkVersion>2.46.17</awssdkVersion>
+        <awssdkVersion>2.46.19</awssdkVersion>
         <luceneVersion>10.5.0</luceneVersion>
         <nettyVersion>4.2.15.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.6</mavenTestPluginVersion>
@@ -735,7 +735,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>6.1.0</version>
+                <version>6.1.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -1100,7 +1100,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.6.3</version>
+            <version>3.6.4</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -1108,7 +1108,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.11</version>
+            <version>42.7.12</version>
         </dependency>
 
         <!-- CASSANDRA 

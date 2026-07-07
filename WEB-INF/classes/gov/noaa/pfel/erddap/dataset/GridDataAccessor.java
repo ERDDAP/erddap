@@ -92,6 +92,18 @@ public class GridDataAccessor implements AutoCloseable {
 
   protected Table tDirTable, tFileTable; // null, unless eddGrid is EDDGridFromFiles
 
+  /** GridDataAccessor with default tAddToHistory=true. See full constructor for details. */
+  public GridDataAccessor(
+      int tLanguage,
+      EDDGrid tEDDGrid,
+      String tRequestUrl,
+      String tUserDapQuery,
+      boolean tRowMajor,
+      boolean tConvertToNaN)
+      throws Throwable {
+    this(tLanguage, tEDDGrid, tRequestUrl, tUserDapQuery, tRowMajor, tConvertToNaN, true);
+  }
+
   /**
    * This is the constructor. This constructor sets everything up, but doesn't get any grid data.
    *
@@ -105,6 +117,8 @@ public class GridDataAccessor implements AutoCloseable {
    * @param tConvertToNaN set this to true if you want the GridDataAccessor to convert stand-in
    *     missing values (e.g., -9999999.0, as identified by the missing_value or _FillValue
    *     metadata) to NaNs.
+   * @param tAddToHistory whether the history global attribute should be updated with info about
+   *     this request
    * @throws Throwable if trouble
    */
   public GridDataAccessor(
@@ -113,7 +127,8 @@ public class GridDataAccessor implements AutoCloseable {
       String tRequestUrl,
       String tUserDapQuery,
       boolean tRowMajor,
-      boolean tConvertToNaN)
+      boolean tConvertToNaN,
+      boolean tAddToHistory)
       throws Throwable {
 
     language = tLanguage;
@@ -151,12 +166,18 @@ public class GridDataAccessor implements AutoCloseable {
     globalAttributes = eddGrid.combinedGlobalAttributes().toAttributes(language); // make a copy
 
     // fix up global attributes  (always to a local COPY of global attributes)
-    EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
-    EDD.addToHistory(
-        globalAttributes,
-        EDStatic.config.baseUrl
-            + tRequestUrl
-            + (tUserDapQuery == null || tUserDapQuery.length() == 0 ? "" : "?" + tUserDapQuery));
+    if (tAddToHistory) {
+      EDD.addToHistory(globalAttributes, eddGrid.publicSourceUrl(language));
+      if (tRequestUrl != null) {
+        EDD.addToHistory(
+            globalAttributes,
+            EDStatic.config.baseUrl
+                + tRequestUrl
+                + (tUserDapQuery == null || tUserDapQuery.length() == 0
+                    ? ""
+                    : "?" + tUserDapQuery));
+      }
+    }
 
     // make axisValues and axisAttributes
     nAxisVariables = eddGrid.axisVariables.length;

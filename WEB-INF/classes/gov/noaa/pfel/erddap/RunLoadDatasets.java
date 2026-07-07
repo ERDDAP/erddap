@@ -28,7 +28,7 @@ public class RunLoadDatasets extends Thread {
   public static boolean verbose = false;
 
   // *** things set by constructor
-  protected Erddap erddap;
+  public Erddap erddap;
 
   // *** things set by run()
   public LoadDatasets loadDatasets;

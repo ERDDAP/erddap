@@ -12679,6 +12679,7 @@ public class Table {
     boolean getString[] = new boolean[nCol];
     boolean getInt[] = new boolean[nCol];
     boolean getLong[] = new boolean[nCol];
+    boolean getFloat[] = new boolean[nCol];
     boolean getDouble[] = new boolean[nCol];
     boolean getDate[] = new boolean[nCol]; // read as String, then convert to seconds since epoch
     for (int col = 0; col < nCol; col++) {
@@ -12689,6 +12690,7 @@ public class Table {
       if (tPAType == PAType.STRING) getString[col] = true;
       else if (colType == Types.DATE || colType == Types.TIMESTAMP) getDate[col] = true;
       else if (tPAType == PAType.DOUBLE) getDouble[col] = true;
+      else if (tPAType == PAType.FLOAT) getFloat[col] = true;
       else if (tPAType == PAType.LONG) getLong[col] = true;
       else getInt[col] = true;
 
@@ -12705,10 +12707,23 @@ public class Table {
         if (getString[col]) {
           String ts = rs.getString(1 + col);
           paArray[col].addString(ts == null ? "" : ts);
-        } else if (getInt[col]) paArray[col].addInt(rs.getInt(1 + col));
-        else if (getLong[col]) ((LongArray) paArray[col]).add(rs.getLong(1 + col));
-        else if (getDouble[col]) paArray[col].addDouble(rs.getDouble(1 + col));
-        // date string is always in form yyyy-mm-dd
+        } else if (getInt[col]) {
+          int i = rs.getInt(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else paArray[col].addInt(i);
+        } else if (getLong[col]) {
+          long l = rs.getLong(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else ((LongArray) paArray[col]).add(l);
+        } else if (getFloat[col]) {
+          float f = rs.getFloat(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else paArray[col].addFloat(f);
+        } else if (getDouble[col]) {
+          double d = rs.getDouble(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else paArray[col].addDouble(d);
+        } // date string is always in form yyyy-mm-dd
         // timestamp string is always in form yyyy-mm-dd hh:mm:ss.fffffffff
         else if (getDate[col]) {
           // convert timestamp and date to epochSeconds
@@ -13112,8 +13127,10 @@ public class Table {
     // If a search pattern argument is set to null, that argument's criterion will be dropped from
     // the search.
     DatabaseMetaData dm = con.getMetaData();
+    if (dm.storesUpperCaseIdentifiers()) schema = schema.toUpperCase();
+    else if (dm.storesLowerCaseIdentifiers()) schema = schema.toLowerCase();
     Table tables = new Table(); // works with "posttest", "public", "names", null
-    tables.readSqlResultSet(dm.getTables(null, schema.toLowerCase(), null, types));
+    tables.readSqlResultSet(dm.getTables(null, schema, null, types));
     return (StringArray) tables.getColumn(2); // table name is always col (0..) 2
   }
 
@@ -13140,9 +13157,15 @@ public class Table {
     // If a search pattern argument is set to null, that argument's criterion will be dropped from
     // the search.
     DatabaseMetaData dm = con.getMetaData();
+    if (dm.storesUpperCaseIdentifiers()) {
+      schema = schema.toUpperCase();
+      tableName = tableName.toUpperCase();
+    } else if (dm.storesLowerCaseIdentifiers()) {
+      schema = schema.toLowerCase();
+      tableName = tableName.toLowerCase();
+    }
     Table tables = new Table(); // works with "posttest", "public", "names", null
-    tables.readSqlResultSet(
-        dm.getTables(null, schema.toLowerCase(), tableName.toLowerCase(), null));
+    tables.readSqlResultSet(dm.getTables(null, schema, tableName, null));
     if (tables.nRows() == 0) return null;
     return tables.getStringData(3, 0); // table type is always col (0..) 3
   }
