@@ -50,6 +50,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
+import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
 import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -97,8 +98,12 @@ import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetadataBuilder {
+  private static final Logger log = LoggerFactory.getLogger(MetadataBuilder.class);
+
   public static Metadata buildMetadata(
       int language,
       String datasetId,
@@ -452,11 +457,14 @@ public class MetadataBuilder {
         List.of(responsiblePartyWithRole(creatorParty, Role.POINT_OF_CONTACT)));
     dataId.setDescriptiveKeywords(getKeywords(language, attributes, standardNames));
     if (String2.isSomething(license)) {
-      DefaultSecurityConstraints resourceConstraints = new DefaultSecurityConstraints(license);
       if (String2.isSomething(classification)) {
+        DefaultSecurityConstraints resourceConstraints = new DefaultSecurityConstraints(license);
         resourceConstraints.setClassification(Classification.valueOf(classification.toUpperCase()));
+        dataId.setResourceConstraints(List.of(resourceConstraints));
+      } else {
+        DefaultConstraints resourceConstraints = new DefaultConstraints(license);
+        dataId.setResourceConstraints(List.of(resourceConstraints));
       }
-      dataId.setResourceConstraints(List.of(resourceConstraints));
     }
     List<DefaultAssociatedResource> resources = new ArrayList<>();
     if (String2.isSomething(project)) {
