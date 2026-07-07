@@ -403,8 +403,8 @@ public class MetadataBuilder {
     String project = attributes.getString(language, "project");
     String license = attributes.getString(language, "license");
     String classification = attributes.getString(language, "classification");
-    String topicCategory = attributes.getString(language, "topicCategory");
-    String maintenanceFrequency = attributes.getString(language, "maintenanceFrequency");
+    String topicCategory = attributes.getString(language, "topic_category");
+    String maintenanceFrequency = attributes.getString(language, "maintenance_frequency");
     creatorType = String2.validateAcddContactType(creatorType);
     if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName))
       creatorType = String2.guessAcddContactType(creatorName);
