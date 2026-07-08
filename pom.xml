@@ -44,7 +44,7 @@
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.10.0</netcdfJavaVersion>
         <test.resources.version>test1.06</test.resources.version>
-        <jettyVersion>12.1.10</jettyVersion>
+        <jettyVersion>12.1.11</jettyVersion>
         <error-prone.version>2.50.0</error-prone.version>
         <prometheusVersion>1.8.0</prometheusVersion>
         <parquetVersion>1.17.1</parquetVersion>
