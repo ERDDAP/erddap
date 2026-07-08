@@ -541,6 +541,7 @@ public class MetadataBuilder {
       coupledResource.setResources(List.of(dataId));
       DefaultOperationMetadata operationMetadata = new DefaultOperationMetadata();
       operationMetadata.setOperationName("ERDDAPtabledapDatasetQueryAndAccess");
+      operationMetadata.setDistributedComputingPlatforms(DistributedComputingPlatform.VALUES);
       DefaultOnlineResource connectPoint = new DefaultOnlineResource();
       connectPoint.setLinkage(URI.create(datasetUrl));
       connectPoint.setProtocol("ERDDAP:tabledap");
