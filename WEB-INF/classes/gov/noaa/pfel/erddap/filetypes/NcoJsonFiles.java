@@ -269,7 +269,7 @@ public class NcoJsonFiles extends TableWriterFileType {
       writer.write("{\n");
 
       // write the global attributes
-      writer.write(njtmp.globalAttributes().toNcoJsonString("  ", true));
+      writer.write(njtmp.globalAttributes().toNcoJsonString("  ", true, true));
 
       // write row dimension
       // {
@@ -330,7 +330,7 @@ public class NcoJsonFiles extends TableWriterFileType {
                 + tType
                 + "\",\n");
         // if twawm is not null, we need to write data as well
-        writer.write(atts.toNcoJsonString("      ", twawm != null));
+        writer.write(atts.toNcoJsonString("      ", twawm != null, true));
         if (twawm != null) {
           writer.write("      \"data\": [");
           try (DataInputStream dis = twawm.dataInputStream(col)) {
@@ -444,7 +444,7 @@ public class NcoJsonFiles extends TableWriterFileType {
         writer.write("{\n");
 
         // write the global attributes
-        writer.write(ada.globalAttributes().toNcoJsonString("  ", true));
+        writer.write(ada.globalAttributes().toNcoJsonString("  ", true, true));
 
         // write dimensions
         // {
@@ -498,7 +498,7 @@ public class NcoJsonFiles extends TableWriterFileType {
                   + "      \"type\": \""
                   + tType
                   + "\",\n");
-          writer.write(ada.axisAttributes(avi).toNcoJsonString("      ", writeData));
+          writer.write(ada.axisAttributes(avi).toNcoJsonString("      ", writeData, true));
           if (writeData) {
             writer.write("      \"data\": [");
             writer.write(ada.axisValues(avi).toJsonCsvString());
@@ -533,7 +533,7 @@ public class NcoJsonFiles extends TableWriterFileType {
       writer.write("{\n");
 
       // write the global attributes
-      writer.write(gda.globalAttributes().toNcoJsonString("  ", true));
+      writer.write(gda.globalAttributes().toNcoJsonString("  ", true, true));
 
       // write dimensions
       // {
@@ -607,7 +607,7 @@ public class NcoJsonFiles extends TableWriterFileType {
                 + tType
                 + "\",\n");
 
-        writer.write(gda.axisAttributes(avi).toNcoJsonString("      ", writeData));
+        writer.write(gda.axisAttributes(avi).toNcoJsonString("      ", writeData, true));
 
         if (writeData) {
           writer.write("      \"data\": [");
@@ -660,7 +660,7 @@ public class NcoJsonFiles extends TableWriterFileType {
                 + "      \"type\": \""
                 + tType
                 + "\",\n");
-        writer.write(atts.toNcoJsonString("      ", writeData));
+        writer.write(atts.toNcoJsonString("      ", writeData, true));
         if (writeData) {
           writer.write("      \"data\":\n");
           for (int avi = 0; avi < nAV; avi++) writer.write("[ ");
