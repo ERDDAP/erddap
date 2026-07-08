@@ -51,6 +51,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
+import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
@@ -81,6 +82,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.constraint.Classification;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.extent.Extent;
@@ -90,12 +92,18 @@ import org.opengis.metadata.identification.InitiativeType;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.TopicCategory;
+import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MetadataBuilder {
+  private static final Logger log = LoggerFactory.getLogger(MetadataBuilder.class);
+
   public static Metadata buildMetadata(
       int language,
       String datasetId,
@@ -399,6 +407,9 @@ public class MetadataBuilder {
     }
     String project = attributes.getString(language, "project");
     String license = attributes.getString(language, "license");
+    String classification = attributes.getString(language, "classification");
+    String topicCategory = attributes.getString(language, "topic_category");
+    String maintenanceFrequency = attributes.getString(language, "maintenance_frequency");
     creatorType = String2.validateAcddContactType(creatorType);
     if (!String2.isSomething2(creatorType) && String2.isSomething2(creatorName))
       creatorType = String2.guessAcddContactType(creatorName);
@@ -446,7 +457,14 @@ public class MetadataBuilder {
         List.of(responsiblePartyWithRole(creatorParty, Role.POINT_OF_CONTACT)));
     dataId.setDescriptiveKeywords(getKeywords(language, attributes, standardNames));
     if (String2.isSomething(license)) {
-      dataId.setResourceConstraints(List.of(new DefaultConstraints(license)));
+      if (String2.isSomething(classification)) {
+        DefaultSecurityConstraints resourceConstraints = new DefaultSecurityConstraints(license);
+        resourceConstraints.setClassification(Classification.valueOf(classification.toUpperCase()));
+        dataId.setResourceConstraints(List.of(resourceConstraints));
+      } else {
+        DefaultConstraints resourceConstraints = new DefaultConstraints(license);
+        dataId.setResourceConstraints(List.of(resourceConstraints));
+      }
     }
     List<DefaultAssociatedResource> resources = new ArrayList<>();
     if (String2.isSomething(project)) {
@@ -474,7 +492,11 @@ public class MetadataBuilder {
       resources.add(cdmResource);
     }
     dataId.setAssociatedResources(resources);
-    dataId.setTopicCategories(List.of(TopicCategory.GEOSCIENTIFIC_INFORMATION));
+    if (String2.isSomething(topicCategory)) {
+      dataId.setTopicCategories(List.of(TopicCategory.valueOf(topicCategory.toUpperCase())));
+    } else {
+      dataId.setTopicCategories(List.of(TopicCategory.GEOSCIENTIFIC_INFORMATION));
+    }
     dataId.setExtents(List.of(extent));
 
     String datasetUrl =
@@ -498,6 +520,7 @@ public class MetadataBuilder {
       coupledResource.setResources(List.of(dataId));
       DefaultOperationMetadata operationMetadata = new DefaultOperationMetadata();
       operationMetadata.setOperationName("ERDDAPgriddapDatasetQueryAndAccess");
+      operationMetadata.setDistributedComputingPlatforms(DistributedComputingPlatform.VALUES);
       DefaultOnlineResource connectPoint = new DefaultOnlineResource();
       connectPoint.setLinkage(URI.create(datasetUrl));
       connectPoint.setProtocol("ERDDAP:griddap");
@@ -518,6 +541,7 @@ public class MetadataBuilder {
       coupledResource.setResources(List.of(dataId));
       DefaultOperationMetadata operationMetadata = new DefaultOperationMetadata();
       operationMetadata.setOperationName("ERDDAPtabledapDatasetQueryAndAccess");
+      operationMetadata.setDistributedComputingPlatforms(DistributedComputingPlatform.VALUES);
       DefaultOnlineResource connectPoint = new DefaultOnlineResource();
       connectPoint.setLinkage(URI.create(datasetUrl));
       connectPoint.setProtocol("ERDDAP:tabledap");
@@ -542,6 +566,7 @@ public class MetadataBuilder {
     openResource.setResources(List.of(dataId));
     DefaultOperationMetadata openOperationMetadata = new DefaultOperationMetadata();
     openOperationMetadata.setOperationName("OPeNDAPDatasetQueryAndAccess");
+    openOperationMetadata.setDistributedComputingPlatforms(DistributedComputingPlatform.VALUES);
     DefaultOnlineResource openConnectPoint = new DefaultOnlineResource();
     openConnectPoint.setLinkage(URI.create(datasetUrl));
     openConnectPoint.setProtocol("OPeNDAP:OPeNDAP");
@@ -566,6 +591,7 @@ public class MetadataBuilder {
       wmsResource.setResources(List.of(dataId));
       DefaultOperationMetadata wmsOperationMetadata = new DefaultOperationMetadata();
       wmsOperationMetadata.setOperationName("GetCapabilities");
+      wmsOperationMetadata.setDistributedComputingPlatforms(DistributedComputingPlatform.VALUES);
       DefaultOnlineResource wmsConnectPoint = new DefaultOnlineResource();
       wmsConnectPoint.setLinkage(
           URI.create(
@@ -658,6 +684,10 @@ public class MetadataBuilder {
             new EDDInternationalString(
                 "This record was created from dataset metadata by ERDDAP Version "
                     + EDStatic.erddapVersion)));
+    if (String2.isSomething(maintenanceFrequency)) {
+      maintenanceInfo.setMaintenanceAndUpdateFrequency(
+          MaintenanceFrequency.valueOf(maintenanceFrequency.toUpperCase()));
+    }
     metadata.setMetadataMaintenance(maintenanceInfo);
 
     String coverageType = attributes.getString(language, "coverage_content_type"); // used by GOES-R
@@ -891,5 +921,27 @@ public class MetadataBuilder {
       throw new ParseException("Unable to parse date: " + dateInput, 0);
     }
     return parsedDate;
+  }
+
+  // https://wiki.esipfed.org/ISO_19115-3_Codelists#DCPList
+  private static class DistributedComputingPlatform extends CodeList<DistributedComputingPlatform> {
+    private static final List<DistributedComputingPlatform> VALUES = new ArrayList<>();
+    public static final DistributedComputingPlatform HTTP =
+        new DistributedComputingPlatform("HTTP");
+
+    private DistributedComputingPlatform(String name) {
+      super(name, VALUES);
+    }
+
+    public static DistributedComputingPlatform valueOf(String code) {
+      return valueOf(DistributedComputingPlatform.class, code);
+    }
+
+    @Override
+    public DistributedComputingPlatform[] family() {
+      synchronized (VALUES) {
+        return VALUES.toArray(new DistributedComputingPlatform[0]);
+      }
+    }
   }
 }
