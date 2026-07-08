@@ -1,5 +1,5 @@
 # Build the ERDDAP war from source
-FROM --platform=$BUILDPLATFORM maven:3.9.16-eclipse-temurin-25-noble AS build
+FROM --platform=$BUILDPLATFORM maven:3-eclipse-temurin-26-noble AS build
 
 # install zip so certain tests can pass
 RUN apt-get update && \
