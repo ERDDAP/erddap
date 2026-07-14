@@ -920,10 +920,12 @@ public class Attributes {
    *
    * @param indent a String a spaces for the start of each line
    * @param includeTrailingComma if true, a comma is included after the closing } of the attributes
+   * @param includeWrapper if true, the attributes are wrapped in "attributes": { ... }
    * @return a string with all of the attributes for a variable (or *GLOBAL*) formatted for NCO
    *     JSON, with a comma after the closing }.
    */
-  public String toNcoJsonString(String indent, boolean includeTrailingComma) {
+  public String toNcoJsonString(
+      String indent, boolean includeTrailingComma, boolean includeWrapper) {
     StringBuilder sb = new StringBuilder();
 
     // "attributes": {
@@ -938,7 +940,10 @@ public class Attributes {
     //  "double_att": { "type": "double", "data": [73.0, 72.0, 71.0, 70.010, 69.0010, 68.010,
     // 67.0100010]}
     // },
-    sb.append(indent + "\"attributes\": {\n");
+    if (includeWrapper) {
+      sb.append(indent + "\"attributes\": ");
+    }
+    sb.append("{\n");
 
     // each of the attributes
     String names[] = getNames();
@@ -960,7 +965,7 @@ public class Attributes {
       }
       sb.append(
           (somethingWritten ? ",\n" : "")
-              + indent
+              + (includeWrapper ? indent : "")
               + "  "
               + String2.toJson(tName)
               + ": {\"type\": \""
@@ -986,7 +991,7 @@ public class Attributes {
     sb.append(
         (somethingWritten ? "\n" : "")
             + // end previous line
-            indent
+            (includeWrapper ? indent : "")
             + "}"
             + (includeTrailingComma ? "," : "")
             + "\n");

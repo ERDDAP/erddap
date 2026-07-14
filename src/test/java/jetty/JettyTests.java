@@ -70,6 +70,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Year;
@@ -84,6 +85,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.apache.http.HttpStatus;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.Jetty;
@@ -4984,6 +4986,302 @@ class JettyTests extends WireMockLifecycle {
             + String2.differentLine(
                 testEDDGridFromNcFilesUnpackedNcoJsonResponse.toString(2),
                 dataResponse.toString(2)));
+  }
+
+  /** Test Erddap.doSuggestVariableAttributes */
+  @org.junit.jupiter.api.Test
+  @TagJetty
+  void testSuggestVariableAttributes() throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+    URI uri = server.getURI().resolve("/erddap/suggestVariableAttributes");
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "application/json",
+        null,
+        """
+        {
+          "variables": {
+            "air_temperature": {
+              "attributes": {
+                "name": {"type": "char", "data": "Air Temperature at station"},
+                "units": {"type": "char", "data": "degrees_Celsius"}
+              }
+            },
+            "wind_speed": {
+              "long_name": "The speed of the wind",
+              "units": "m/s"
+            }
+          }
+        }
+        """,
+        null,
+        null,
+        HttpStatus.SC_OK,
+        "application/json",
+        """
+        {
+          "variables": {
+            "air_temperature": {
+              "attributes": {
+                "ioos_category": "Temperature",
+                "standard_name": "air_temperature",
+                "units": "degree_C",
+                "long_name": "Air Temperature"
+              }
+            },
+            "wind_speed": {
+              "attributes": {
+                "ioos_category": "Wind",
+                "standard_name": "wind_speed"
+              }
+            }
+          }
+        }
+        """);
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "application/json",
+        null,
+        """
+        {
+          "variables": {
+            "air_temperature": {
+              "attributes": {
+                "name": {"type": "char", "data": "Air Temperature at station"},
+                "units": {"type": "char", "data": "degrees_Celsius"}
+              }
+            },
+            "wind_speed": {
+              "long_name": "The speed of the wind",
+              "units": "m/s"
+            }
+          }
+        }
+        """,
+        null,
+        "2",
+        HttpStatus.SC_OK,
+        "application/json",
+        """
+        {
+          "variables": {
+            "air_temperature": {
+              "attributes": {
+                "ioos_category": {
+                  "data": "Temperature",
+                  "type": "char"
+                },
+                "standard_name": {
+                  "data": "air_temperature",
+                  "type": "char"
+                },
+                "units": {
+                  "data": "degree_C",
+                  "type": "char"
+                },
+                "long_name": {
+                  "data": "Air Temperature",
+                  "type": "char"
+                }
+              }
+            },
+            "wind_speed": {
+              "attributes": {
+                "ioos_category": {
+                  "data": "Wind",
+                  "type": "char"
+                },
+                "standard_name": {
+                  "data": "wind_speed",
+                  "type": "char"
+                }
+              }
+            }
+          }
+        }
+        """);
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "application/json",
+        null,
+        """
+        {"variables": {"sea_water_temperature":{"name":"water_t"}}}
+        """,
+        "jsonpcallback",
+        null,
+        HttpStatus.SC_OK,
+        "application/javascript;charset=iso-8859-1",
+        """
+        jsonpcallback({"variables":{"sea_water_temperature":{"attributes":{"ioos_category":"Temperature","standard_name":"sea_water_temperature","long_name":"Sea Water Temperature"}}}});""");
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "application/json",
+        "application/javascript",
+        """
+        {"variables": {"sea_water_temperature":{"name":"water_t"}}}
+        """,
+        "jsonpcallback",
+        null,
+        HttpStatus.SC_OK,
+        "application/javascript;charset=iso-8859-1",
+        """
+        jsonpcallback({"variables":{"sea_water_temperature":{"attributes":{"ioos_category":"Temperature","standard_name":"sea_water_temperature","long_name":"Sea Water Temperature"}}}});""");
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "application/json",
+        "application/javascript",
+        """
+        {"variables": {"sea_water_temperature":{"name":"water_t"}}}
+        """,
+        null,
+        null,
+        HttpStatus.SC_OK,
+        "application/javascript;charset=iso-8859-1",
+        """
+        callback({"variables":{"sea_water_temperature":{"attributes":{"ioos_category":"Temperature","standard_name":"sea_water_temperature","long_name":"Sea Water Temperature"}}}});""");
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "application/json",
+        "application/javascript",
+        """
+        {"variables": {"sea_water_temperature":{"name":"water_t"}}}
+        """,
+        "1-invalid-jsonp",
+        null,
+        HttpStatus.SC_BAD_REQUEST,
+        "application/json;charset=utf-8",
+        """
+        {
+          "error" :
+          {
+            "code" : 400,
+            "message" : "Unsafe jsonp parameter: 1-invalid-jsonp",
+            "details" : ["jsonp parameter must be a valid JavaScript callback function name."]
+          }
+        }
+        """);
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        null,
+        null,
+        """
+        {"variables": {"sea_water_temperature":{"name":"water_t"}}}
+        """,
+        null,
+        null,
+        HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE,
+        "application/json;charset=utf-8",
+        """
+        {
+          "error" :
+          {
+            "code" : 415,
+            "message" : "Unsupported Content-Type: (unset). Expected: application/json",
+            "details" : [null]
+          }
+        }
+        """);
+
+    verifySuggestVariableAttributes(
+        client,
+        uri,
+        "bad/content-type",
+        null,
+        """
+        {"variables": {"sea_water_temperature":{"name":"water_t"}}}
+        """,
+        null,
+        null,
+        HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE,
+        "application/json;charset=utf-8",
+        """
+        {
+          "error" :
+          {
+            "code" : 415,
+            "message" : "Unsupported Content-Type: bad/content-type. Expected: application/json",
+            "details" : [null]
+          }
+        }
+        """);
+  }
+
+  /**
+   * Verify the response of the /erddap/suggestVariableAttributes endpoint with the given
+   * parameters.
+   *
+   * @param client the HttpClient to use for sending the request
+   * @param uri the URI of the /erddap/suggestVariableAttributes endpoint
+   * @param contentTypeHeader the value of the Content-Type header to set in the request
+   * @param acceptHeader the value of the Accept header to set in the request
+   * @param requestJson the JSON string to send in the request body
+   * @param jsonp the value of the jsonp query parameter to include in the request
+   * @param ncoJsonLevel the value of the ncoJsonLevel query parameter to include in the request
+   * @param expectedStatusCode the expected HTTP status code of the response
+   * @param expectedResponseContentType the expected Content-Type of the response
+   * @param expectedResponseBody the expected body of the response (will be compacted for comparison
+   *     if the expected response is json)
+   * @throws Exception if an error occurs while sending the request or verifying the response
+   */
+  private void verifySuggestVariableAttributes(
+      HttpClient client,
+      URI uri,
+      String contentTypeHeader,
+      String acceptHeader,
+      String requestJson,
+      String jsonp,
+      String ncoJsonLevel,
+      int expectedStatusCode,
+      String expectedResponseContentType,
+      String expectedResponseBody)
+      throws Exception {
+
+    List<String> params = new ArrayList<>();
+    if (jsonp != null) {
+      params.add("jsonp=" + jsonp);
+    }
+    if (ncoJsonLevel != null) {
+      params.add("ncoJsonLevel=" + ncoJsonLevel);
+    }
+    if (!params.isEmpty()) {
+      uri = URI.create(uri.toString() + "?" + String.join("&", params));
+    }
+
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri);
+    if (contentTypeHeader != null) {
+      requestBuilder.header("Content-Type", contentTypeHeader);
+    }
+    if (acceptHeader != null) {
+      requestBuilder.header("Accept", acceptHeader);
+    }
+    HttpResponse<String> response =
+        client.send(
+            requestBuilder.POST(BodyPublishers.ofString(requestJson)).build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(expectedStatusCode, response.statusCode());
+    assertEquals(
+        expectedResponseContentType, response.headers().firstValue("Content-Type").orElse(null));
+    String responseBody = response.body();
+    // compact the response bodies for comparison if the expected content type is application/json
+    if (expectedResponseContentType.equals("application/json")) {
+      responseBody = new JSONObject(responseBody).toString(0);
+      expectedResponseBody = new JSONObject(expectedResponseBody).toString(0);
+    }
+    assertEquals(expectedResponseBody, responseBody, "Response does not match expected.");
   }
 
   /* FileVisitorDNLS */

@@ -102,6 +102,7 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -118,6 +119,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.semver4j.Semver;
@@ -938,6 +940,8 @@ public class Erddap extends HttpServlet {
         doVersion(request, response);
       } else if (endOfRequest.equals("version_string")) {
         doVersionString(request, response);
+      } else if (endOfRequest.equals("suggestVariableAttributes")) {
+        doSuggestVariableAttributes(language, requestNumber, request, response);
       } else {
         sendResourceNotFoundError(
             requestNumber,
@@ -1061,6 +1065,187 @@ public class Erddap extends HttpServlet {
       } catch (Throwable t2) {
         String2.log("Caught: " + MustBe.throwableToString(t2));
       }
+    }
+  }
+
+  /**
+   * Make ERDDAP's variable attribute suggestions available as a web service for dataset
+   * configuration use cases. Accept an ncoJson style request payload of variables with attributes
+   * and return variable attribute suggestions provided by
+   * EDD.makeReadyToUseAddVariableAttributesForDatasetsXml
+   *
+   * @param language the language index
+   * @param requestNumber the request number
+   * @param request the HttpServletRequest
+   * @param response the HttpServletResponse
+   * @throws Throwable if an error is encountered during request processing
+   */
+  private void doSuggestVariableAttributes(
+      int language, int requestNumber, HttpServletRequest request, HttpServletResponse response)
+      throws Throwable {
+    String contentType = request.getHeader("Content-Type");
+    String applicationJson = "application/json";
+    if (contentType == null || !contentType.toLowerCase().startsWith(applicationJson)) {
+      contentType = contentType == null ? "(unset)" : contentType;
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+          "Unsupported Content-Type: " + contentType + ". Expected: " + applicationJson,
+          null);
+      return;
+    }
+
+    String jsonp = request.getParameter("jsonp");
+    if (jsonp != null && !String2.isJsonpNameSafe(jsonp)) {
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Unsafe jsonp parameter: " + jsonp,
+          "jsonp parameter must be a valid JavaScript callback function name.");
+      return;
+    }
+
+    String acceptHeader = request.getHeader("Accept");
+    if (acceptHeader != null && !acceptHeader.equals("*/*")) {
+      acceptHeader = acceptHeader.toLowerCase();
+      if (acceptHeader.equals("application/json")) {
+        jsonp = null; // if Accept header is application/json, ignore jsonp parameter
+      } else if (acceptHeader.equals("application/javascript")) {
+        if (jsonp == null)
+          jsonp =
+              "callback"; // default callback name if Accept header is application/javascript and no
+        // jsonp parameter is provided
+      } else {
+        sendGeoServicesRestError(
+            requestNumber,
+            request,
+            response,
+            true,
+            HttpServletResponse.SC_BAD_REQUEST,
+            "Unsupported Accept header: " + acceptHeader,
+            "Allowed values: application/json, application/javascript");
+        return;
+      }
+    }
+
+    String ncoJsonLevel = Objects.requireNonNullElse(request.getParameter("ncoJsonLevel"), "0");
+    if (!ncoJsonLevel.equals("0") && !ncoJsonLevel.equals("2")) {
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Unsupported ncoJsonLevel",
+          "Allowed values: 0, 2");
+      return;
+    }
+
+    // read request body as JSON
+    JSONObject requestJson;
+    try {
+      JSONTokener tokener = new JSONTokener(request.getReader());
+      if (!tokener.more()) {
+        sendGeoServicesRestError(
+            requestNumber,
+            request,
+            response,
+            true,
+            HttpServletResponse.SC_BAD_REQUEST,
+            "Request body must not be empty.",
+            """
+                Provide an ncoJson style request body containing a "variables" object with attributes. Example:
+                {"variables": {"air_temp": {"name": "Air Temperature", "units": "degrees_Celsius"}}}
+                """);
+        return;
+      }
+      requestJson = new JSONObject(tokener);
+    } catch (JSONException e) {
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Error parsing json",
+          e.getMessage());
+      return;
+    }
+
+    // load global attributes
+    // NOTE: global attributes are only used for some corner case podaac datasets in variable
+    // attribute suggestion,
+    // so we can accept them but don't need to suggest their inclusion in the request payload
+    Attributes globalAtts = new Attributes();
+    if (requestJson.has("attributes")) {
+      JSONObject globalAttsJson = requestJson.getJSONObject("attributes");
+      globalAttsJson.keySet().forEach(key -> globalAtts.add(key, globalAttsJson.get(key)));
+    }
+
+    JSONObject processedVariablesJson = new JSONObject();
+
+    if (requestJson.has("variables")) {
+      JSONObject variablesJson = requestJson.getJSONObject("variables");
+      for (String varName : variablesJson.keySet()) {
+        Attributes varAtts = new Attributes();
+        JSONObject varJson = variablesJson.getJSONObject(varName);
+
+        // unwrap attributes if they are wrapped in an "attributes" object (standard ncoJson)
+        JSONObject varAttsJson =
+            varJson.has("attributes") ? varJson.getJSONObject("attributes") : varJson;
+
+        // load provided var attributes into Attributes
+        for (String att : varAttsJson.keySet()) {
+          if (varAttsJson.get(att) instanceof JSONObject
+              && ((JSONObject) varAttsJson.get(att)).has("data")) {
+            // unwrap ncoJson level 1 or 2 "data" attribute
+            varAtts.add(att, ((JSONObject) varAttsJson.get(att)).get("data"));
+          } else {
+            varAtts.add(att, varAttsJson.get(att));
+          }
+        }
+
+        // get suggested attributes
+        Attributes suggestedVarAttrs =
+            EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                globalAtts, varAtts, null, varName, true, false, true);
+
+        JSONObject processedVariableJson = new JSONObject();
+        if (ncoJsonLevel.equals("2")) {
+          // ncoJson level 2: use Attributes.toNcoJsonString
+          processedVariableJson.put(
+              "attributes", new JSONObject(suggestedVarAttrs.toNcoJsonString("", false, false)));
+        } else {
+          // ncoJson level 0: use simple key value pairs
+          JSONObject suggestedVarAttrsJson = new JSONObject();
+          for (String attr : suggestedVarAttrs.getNames()) {
+            suggestedVarAttrsJson.put(attr, suggestedVarAttrs.get(attr));
+          }
+          processedVariableJson.put("attributes", suggestedVarAttrsJson);
+        }
+
+        processedVariablesJson.put(varName, processedVariableJson);
+      }
+    }
+
+    JSONObject resultJson = new JSONObject();
+    resultJson.put("variables", processedVariablesJson);
+
+    try (Writer writer = response.getWriter()) {
+      if (jsonp != null) {
+        writer.write(jsonp + "(");
+        response.setContentType("application/javascript");
+      } else {
+        response.setContentType(applicationJson);
+      }
+      writer.write(resultJson.toString(0));
+      if (jsonp != null) writer.write(");");
     }
   }
 
@@ -12084,8 +12269,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // json
     if (fParamIsJson) {
-
-      try (Writer writer = getJsonWriter(request, response, "error", ".jsonText")) {
+      response.setStatus(httpErrorNumber);
+      try (Writer writer = getJsonWriter(request, response, "error", ".json")) {
         writer.write(
             "{\n"
                 + "  \"error\" :\n"
