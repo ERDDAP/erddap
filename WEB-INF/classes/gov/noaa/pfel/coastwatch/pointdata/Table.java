@@ -23,6 +23,7 @@ import com.cohort.array.ULongArray;
 import com.cohort.array.UShortArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.LinkHelper;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -4933,45 +4934,48 @@ public class Table {
                       + (needEncodingAsHtml ? XML.encodeAsHTML(s) : s)
                       + // just the fileName
                       "</a>";
-            } else if (needEncodingAsHtml && String2.containsUrl(s)) {
-              List<String> separatedText = String2.extractUrls(s);
+            } else if (needEncodingAsHtml) {
               StringBuilder output = new StringBuilder();
-              for (String text : separatedText) {
-                if (String2.containsUrl(text)) {
-                  output.append(
-                      "<a href=\""
-                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
-                          + "\">"
-                          + XML.encodeAsHTML(text)
-                          + "</a>");
-                } else {
-                  output.append(XML.encodeAsHTML(text));
-                }
+              if (LinkHelper.linkify(
+                  s,
+                  (text, isUrl) -> {
+                    if (isUrl) {
+                      output.append(
+                          "<a href=\""
+                              + XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(text))
+                              + "\">"
+                              + XML.encodeAsHTML(text)
+                              + "</a>");
+                    } else {
+                      output.append(XML.encodeAsHTML(text));
+                    }
+                  })) {
+                s = output.toString();
+              } else {
+                s = XML.encodeAsHTML(s);
               }
-              s = output.toString();
 
               // Check for href and mouseover to see if there's something like an anchor tag which
               // the url extraction will mangle.
-            } else if (!needEncodingAsHtml
-                && !s.contains("href=")
-                && !s.contains("onmouseover")
-                && String2.containsUrl(XML.decodeEntities(s))) {
-              s = XML.decodeEntities(s);
-              List<String> separatedText = String2.extractUrls(s);
+            } else if (!needEncodingAsHtml && !s.contains("href=") && !s.contains("onmouseover")) {
+              String decodedS = XML.decodeEntities(s);
               StringBuilder output = new StringBuilder();
-              for (String text : separatedText) {
-                if (String2.containsUrl(text)) {
-                  output.append(
-                      "<a href=\""
-                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
-                          + "\">"
-                          + XML.encodeAsHTML(text)
-                          + "</a>");
-                } else {
-                  output.append(XML.encodeAsHTML(text));
-                }
+              if (LinkHelper.linkify(
+                  decodedS,
+                  (text, isUrl) -> {
+                    if (isUrl) {
+                      output.append(
+                          "<a href=\""
+                              + XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(text))
+                              + "\">"
+                              + XML.encodeAsHTML(text)
+                              + "</a>");
+                    } else {
+                      output.append(XML.encodeAsHTML(text));
+                    }
+                  })) {
+                s = output.toString();
               }
-              s = output.toString();
             } else if (!needEncodingAsHtml && String2.isUrl(XML.decodeEntities(s))) {
               s = XML.decodeEntities(s);
               s =
