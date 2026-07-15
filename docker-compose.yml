@@ -154,7 +154,7 @@ services:
       - nginx-proxy
 
   acme-companion:
-    image: nginxproxy/acme-companion:2.7
+    image: nginxproxy/acme-companion:2.8
     volumes_from:
       - nginx-proxy
     volumes:
