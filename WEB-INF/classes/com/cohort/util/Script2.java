@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlFeatures;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlSandbox;
@@ -88,12 +89,17 @@ public class Script2 {
       jsandbox.allow("com.cohort.util.ScriptRow");
       jsandbox.allow("java.lang.String");
       jsandbox.allow("com.cohort.util.ScriptString2");
+      JexlFeatures features =
+          new JexlFeatures()
+              .sideEffect(true) // Allow assignments
+              .sideEffectGlobal(true); // Allow assignments to global variables
       jexlEngine =
           new JexlBuilder()
               .permissions(Script2.permissions)
               .sandbox(jsandbox)
               .strict(true)
               .silent(false)
+              .features(features)
               .create();
     }
     return jexlEngine;
