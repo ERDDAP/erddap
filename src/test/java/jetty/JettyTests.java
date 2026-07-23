@@ -25,9 +25,6 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
-import dods.dap.DAS;
-import dods.dap.DConnect;
-import dods.dap.DDS;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -85,6 +82,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import opendap.dap.DAS;
+import opendap.dap.DConnect2;
+import opendap.dap.DDS;
 import org.apache.http.HttpStatus;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
@@ -11250,7 +11250,7 @@ class JettyTests extends WireMockLifecycle {
     // !!! I also tested this with
     // <sourceCanConstrainStringRegex>~=</sourceCanConstrainStringRegex>
     // but it fails:
-    // Exception in thread "main" dods.dap.DODSException: "Your Query Produced No
+    // Exception in thread "main" opendap.dap.DODSException: "Your Query Produced No
     // Matching Results."
     // and it isn't an encoding problem, opera encodes unencoded request as
     // https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.dods?lon,NO3,datetime_epoch,ship,lat&lat%3E0&datetime_epoch%3E=1.0286784E9&datetime_epoch%3C=1.0287E9&ship~=%22(zztop|.*Horiz.*)%22
@@ -14259,9 +14259,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
     String threddsUrl = baseUrl + "/dods/public_data/SODA/soda_pop2.2.4";
     String erddapUrl =
         EDStatic.erddapUrl + "/griddap/hawaii_d90f_20ee_c4cb"; // in tests, always non-https url
-    DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
-    DConnect erddapConnect = new DConnect(erddapUrl, true, 1, 1); // in tests, always non-https url
-    DAS das = erddapConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
+    DConnect2 threddsConnect = new DConnect2(threddsUrl, true);
+    DConnect2 erddapConnect = new DConnect2(erddapUrl, true); // in tests, always non-https url
+    DAS das = erddapConnect.getDAS();
     PrimitiveArray tpas[], epas[];
 
     // get global attributes
@@ -18465,481 +18465,6 @@ netcdf EDDTableFromNcFiles_Data.nc {
 
   /** OpendapHelper */
 
-  /** This tests dapToNc DGrid. */
-  @org.junit.jupiter.api.Test
-  @TagJetty
-  void testDapToNcDGrid() throws Throwable {
-    String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
-    String fileName, expected, results;
-
-    // There was a bug where loading the wms page for this dataset would cause the altitude value to
-    // increase by 10 every time. To verify that isn't happening, load the wms page.
-    SSR.getUrlResponseStringUnchanged(
-        "http://localhost:" + PORT + "/erddap/wms/erdQSwindmday_LonPM180/index.html");
-    fileName = TEMP_DIR.toAbsolutePath() + "/testDapToNcDGrid.nc";
-    System.out.println(fileName);
-    String dGridUrl = "http://localhost:8080/erddap/griddap/erdQSwindmday";
-    OpendapHelper.dapToNc(
-        dGridUrl,
-        // note that request for zztop is ignored (because not found)
-        new String[] {"zztop", "x_wind", "y_wind"},
-        "[1][0][0:200:1200][0:200:2880]", // projection
-        fileName,
-        false); // jplMode
-    results = NcHelper.ncdump(fileName, ""); // printData
-    expected =
-        "netcdf testDapToNcDGrid.nc {\n"
-            + "  dimensions:\n"
-            + "    time = 1;\n"
-            + "    altitude = 1;\n"
-            + "    latitude = 7;\n"
-            + "    longitude = 15;\n"
-            + "  variables:\n"
-            + "    double time(time=1);\n"
-            + "      :_CoordinateAxisType = \"Time\";\n"
-            + "      :actual_range = 9.348048E8, 9.3744E8; // double\n"
-            + "      :axis = \"T\";\n"
-            + "      :fraction_digits = 0; // int\n"
-            + "      :ioos_category = \"Time\";\n"
-            + "      :long_name = \"Centered Time\";\n"
-            + "      :standard_name = \"time\";\n"
-            + "      :time_origin = \"01-JAN-1970 00:00:00\";\n"
-            + "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n"
-            + "\n"
-            + "    double altitude(altitude=1);\n"
-            + "      :_CoordinateAxisType = \"Height\";\n"
-            + "      :_CoordinateZisPositive = \"up\";\n"
-            + "      :actual_range = 10.0, 10.0; // double\n"
-            + "      :axis = \"Z\";\n"
-            + "      :fraction_digits = 0; // int\n"
-            + "      :ioos_category = \"Location\";\n"
-            + "      :long_name = \"Altitude\";\n"
-            + "      :positive = \"up\";\n"
-            + "      :standard_name = \"altitude\";\n"
-            + "      :units = \"m\";\n"
-            + "\n"
-            + "    double latitude(latitude=7);\n"
-            + "      :_CoordinateAxisType = \"Lat\";\n"
-            + "      :actual_range = -75.0, 75.0; // double\n"
-            + "      :axis = \"Y\";\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 2; // int\n"
-            + "      :ioos_category = \"Location\";\n"
-            + "      :long_name = \"Latitude\";\n"
-            + "      :point_spacing = \"even\";\n"
-            + "      :standard_name = \"latitude\";\n"
-            + "      :units = \"degrees_north\";\n"
-            + "\n"
-            + "    double longitude(longitude=15);\n"
-            + "      :_CoordinateAxisType = \"Lon\";\n"
-            + "      :actual_range = 0.0, 360.0; // double\n"
-            + "      :axis = \"X\";\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 2; // int\n"
-            + "      :ioos_category = \"Location\";\n"
-            + "      :long_name = \"Longitude\";\n"
-            + "      :point_spacing = \"even\";\n"
-            + "      :standard_name = \"longitude\";\n"
-            + "      :units = \"degrees_east\";\n"
-            + "\n"
-            + "    float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n"
-            + "      :_FillValue = -9999999.0f; // float\n"
-            + "      :colorBarMaximum = 15.0; // double\n"
-            + "      :colorBarMinimum = -15.0; // double\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 1; // int\n"
-            + "      :ioos_category = \"Wind\";\n"
-            + "      :long_name = \"Zonal Wind\";\n"
-            + "      :missing_value = -9999999.0f; // float\n"
-            + "      :standard_name = \"x_wind\";\n"
-            + "      :units = \"m s-1\";\n"
-            + "\n"
-            + "    float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n"
-            + "      :_FillValue = -9999999.0f; // float\n"
-            + "      :colorBarMaximum = 15.0; // double\n"
-            + "      :colorBarMinimum = -15.0; // double\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 1; // int\n"
-            + "      :ioos_category = \"Wind\";\n"
-            + "      :long_name = \"Meridional Wind\";\n"
-            + "      :missing_value = -9999999.0f; // float\n"
-            + "      :standard_name = \"y_wind\";\n"
-            + "      :units = \"m s-1\";\n"
-            + "\n"
-            + "  // global attributes:\n"
-            + "  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n"
-            + "  :cdm_data_type = \"Grid\";\n"
-            + "  :composite = \"true\";\n"
-            + "  :contributor_name = \"Remote Sensing Systems, Inc.\";\n"
-            + "  :contributor_role = \"Source of level 2 data.\";\n"
-            + "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n"
-            + "  :creator_email = \"erd.data@noaa.gov\";\n"
-            + "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n"
-            + "  :creator_type = \"institution\";\n"
-            + "  :creator_url = \"https://www.pfeg.noaa.gov\";\n"
-            + "  :date_created = \"2010-07-02\";\n"
-            + "  :date_issued = \"2010-07-02\";\n"
-            + "  :defaultGraphQuery = \"&.draw=vectors\";\n"
-            + "  :Easternmost_Easting = 360.0; // double\n"
-            + "  :geospatial_lat_max = 75.0; // double\n"
-            + "  :geospatial_lat_min = -75.0; // double\n"
-            + "  :geospatial_lat_resolution = 0.125; // double\n"
-            + "  :geospatial_lat_units = \"degrees_north\";\n"
-            + "  :geospatial_lon_max = 360.0; // double\n"
-            + "  :geospatial_lon_min = 0.0; // double\n"
-            + "  :geospatial_lon_resolution = 0.125; // double\n"
-            + "  :geospatial_lon_units = \"degrees_east\";\n"
-            + "  :geospatial_vertical_max = 10.0; // double\n"
-            + "  :geospatial_vertical_min = 10.0; // double\n"
-            + "  :geospatial_vertical_positive = \"up\";\n"
-            + "  :geospatial_vertical_units = \"m\";\n"
-            + "  :history = \"Remote Sensing Systems, Inc.\n";
-    // "2010-07-02T15:33:37Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-    // today + "T"; // + time "
-    // https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
-    // today + "
-    // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
-    String expected2 =
-        "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n"
-            + "  :institution = \"NOAA NMFS SWFSC ERD\";\n"
-            + "  :keywords = \"altitude, atmosphere, atmospheric, coast, coastwatch, data, degrees, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Winds > Surface Winds, global, noaa, node, ocean, oceans, QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n"
-            + "  :keywords_vocabulary = \"GCMD Science Keywords\";\n"
-            + "  :license = \"The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\";\n"
-            + "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n"
-            + "  :Northernmost_Northing = 75.0; // double\n"
-            + "  :origin = \"Remote Sensing Systems, Inc.\";\n"
-            + "  :processing_level = \"3\";\n"
-            + "  :project = \"CoastWatch (https://coastwatch.noaa.gov/)\";\n"
-            + "  :projection = \"geographic\";\n"
-            + "  :projection_type = \"mapped\";\n"
-            + "  :publisher_email = \"erd.data@noaa.gov\";\n"
-            + "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n"
-            + "  :publisher_type = \"institution\";\n"
-            + "  :publisher_url = \"https://www.pfeg.noaa.gov\";\n"
-            + "  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n"
-            + "  :satellite = \"QuikSCAT\";\n"
-            + "  :sensor = \"SeaWinds\";\n"
-            + "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n"
-            + "  :sourceUrl = \"(local files)\";\n"
-            + "  :Southernmost_Northing = -75.0; // double\n"
-            + "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n"
-            + "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n"
-            + "  :time_coverage_end = \"1999-09-16T00:00:00Z\";\n"
-            + "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n"
-            + "  :title = \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)\";\n"
-            + "  :Westernmost_Easting = 0.0; // double\n"
-            + "\n"
-            + "  data:\n"
-            + "    time = \n"
-            + "      {9.3744E8}\n"
-            + "    altitude = \n"
-            + "      {10.0}\n"
-            + "    latitude = \n"
-            + "      {-75.0, -50.0, -25.0, 0.0, 25.0, 50.0, 75.0}\n"
-            + "    longitude = \n"
-            + "      {0.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0}\n"
-            + "    x_wind = \n"
-            + "      {\n"
-            + "        {\n"
-            + "          {\n"
-            + "            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n"
-            + "            {5.37559, 4.890142, 7.2589297, 9.556187, 8.795169, 7.448987, 5.1217284, 3.063305, 7.1047883, 8.3327, 4.615649, 4.7593627, 4.229129, 4.941825, 6.0496373},\n"
-            + "            {-4.8218846, -9999999.0, -4.280867, -5.7957973, -2.3290896, -9999999.0, -9999999.0, -6.2962894, -5.830912, -1.0914159, -3.277562, -2.4311755, -9999999.0, -1.9688762, -4.3181567},\n"
-            + "            {1.2137312, -9999999.0, 0.580993, 2.9145997, -9999999.0, -0.64948285, -3.6313703, -4.4887543, -5.22869, -4.8397746, -2.1917553, -0.028488753, -9999999.0, -5.5228443, -1.7843572},\n"
-            + "            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -1.8343765, -3.5090168, -4.262698, -5.7764935, -2.5673227, 1.6767642, -1.4483238, -3.166254, -5.655119, -9999999.0},\n"
-            + "            {2.4442203, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 3.1239662, 2.6691868, 3.1933768, 3.221914, -9999999.0, -9999999.0, -0.9400238, 5.3579793, 4.102313},\n"
-            + "            {1.5308881, 1.0626484, 1.5728527, 2.6770988, -9999999.0, 1.4636179, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 4.63886, -9999999.0, -0.15158409}\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    y_wind = \n"
-            + "      {\n"
-            + "        {\n"
-            + "          {\n"
-            + "            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n"
-            + "            {-1.0215688, -2.0144277, -1.6640459, 0.20531581, -2.8249598, -2.1731012, -0.9963559, -0.27347103, 1.4820775, -0.1159739, -2.2770288, -1.9554303, 0.46956384, -0.26609817, -1.5246246},\n"
-            + "            {4.5096793, -9999999.0, -2.8698754, 1.8055042, 3.670552, -9999999.0, -9999999.0, 1.61813, 1.7241648, 0.72208166, 0.5931774, 3.794394, -9999999.0, -2.2662532, 2.211184},\n"
-            + "            {5.7195344, -9999999.0, 5.430522, 0.839178, -9999999.0, 1.5903727, 0.98022115, 1.7958285, 0.76642656, 2.768356, 1.579939, 5.841542, -9999999.0, 4.4927044, 4.5466847},\n"
-            + "            {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -1.790581, 0.23016424, -0.68734455, -0.94961494, -2.897025, 1.1826204, -1.8149276, 1.8312448, -1.619819, -9999999.0},\n"
-            + "            {3.5336227, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 1.8418659, 1.0235088, 0.5227146, 1.7917304, -9999999.0, -9999999.0, 3.551546, -4.5639772, 2.8214545},\n"
-            + "            {-0.70053107, 2.0271564, 0.66666394, 1.197742, -9999999.0, -1.0166361, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 5.88275, -9999999.0, -6.4992795}\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "}\n";
-    /*
-     * From .asc request:
-     * https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.asc?x_wind[5][0
-     * ][0:200:1200][0:200:2880],y_wind[5][0][0:200:1200][0:200:2880]
-     * x_wind.x_wind[1][1][7][15]
-     * [0][0][0], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, 0.76867574, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, -9999999.0, -9999999.0
-     * [0][0][1], 6.903795, 7.7432585, 8.052648, 7.375461, 8.358787, 7.5664454,
-     * 4.537408, 4.349131, 2.4506109, 2.1340106, 6.4230127, 8.5656395, 5.679372,
-     * 5.775274, 6.8520603
-     * [0][0][2], -3.513153, -9999999.0, -5.7222853, -4.0249896, -4.6091595,
-     * -9999999.0, -9999999.0, -3.9060166, -1.821446, -2.0546885, -2.349195,
-     * -4.2188687, -9999999.0, -0.7905332, -3.715024
-     * [0][0][3], 0.38850072, -9999999.0, -2.8492346, 0.7843591, -9999999.0,
-     * -0.353197, -0.93183184, -5.3337674, -7.8715024, -5.2341905, -2.1567967,
-     * 0.46681255, -9999999.0, -3.7223456, -1.3264368
-     * [0][0][4], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -4.250928, -1.9779109, -2.3081408, -6.070514, -3.4209945, 2.3732827,
-     * -3.4732149, -3.2282434, -3.99131, -9999999.0
-     * [0][0][5], 2.3816996, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, 1.9863724, 1.746363, 5.305478, 2.3346918, -9999999.0, -9999999.0,
-     * 2.0079596, 3.4320266, 1.8692436
-     * [0][0][6], 0.83961326, -3.4395192, -3.1952338, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, -9999999.0, -2.9099085
-     * y_wind.y_wind[1][1][7][15]
-     * [0][0][0], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, 3.9745862, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, -9999999.0, -9999999.0
-     * [0][0][1], -1.6358501, -2.1310546, -1.672539, -2.8083494, -1.7282568,
-     * -2.5679686, -0.032763753, 0.6524638, 0.9784334, -2.4545083, 0.6344165,
-     * -0.5887741, -0.6837046, -0.92711323, -1.9981208
-     * [0][0][2], 3.7522712, -9999999.0, -0.04178731, 1.6603879, 5.321683,
-     * -9999999.0, -9999999.0, 1.5633415, -0.50912154, -2.964269, -0.92438585,
-     * 3.959174, -9999999.0, -2.2249718, 0.46982485
-     * [0][0][3], 4.8992314, -9999999.0, -4.7178936, -3.2770228, -9999999.0,
-     * -2.8111093, -0.9852706, 0.46997508, 0.0683085, 0.46172503, 1.2998049,
-     * 3.5235379, -9999999.0, 1.1354263, 4.7139735
-     * [0][0][4], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -5.092368, -3.3667018, -0.60028434, -0.7609817, -1.114303, -3.6573937,
-     * -0.934499, -0.40036556, -2.5770886, -9999999.0
-     * [0][0][5], 0.56877106, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -3.2394278, 0.45922723, -0.8394715, 0.7333555, -9999999.0,
-     * -9999999.0, -2.3936603, 3.725975, 0.09879057
-     * [0][0][6], -6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0,
-     * -9999999.0, -9999999.0, -11.026609
-     */
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
-    int po = results.indexOf("  :infoUrl =");
-    Test.ensureEqual(results.substring(po), expected2, "results=" + results);
-    File2.delete(fileName);
-
-    // test 1D var should be ignored if others are 2+D
-    String2.log("\n*** test 1D var should be ignored if others are 2+D");
-    fileName = TEMP_DIR.toAbsolutePath() + "/testDapToNcDGrid1D2D.nc";
-    OpendapHelper.dapToNc(
-        dGridUrl,
-        new String[] {"zztop", "x_wind", "y_wind", "latitude"},
-        "[1][0][0:200:1200][0:200:2880]", // projection
-        fileName,
-        false); // jplMode
-    results = NcHelper.ncdump(fileName, "-h"); // printData
-    expected =
-        "netcdf testDapToNcDGrid1D2D.nc {\n"
-            + "  dimensions:\n"
-            + "    time = 1;\n"
-            + "    altitude = 1;\n"
-            + "    latitude = 7;\n"
-            + "    longitude = 15;\n"
-            + "  variables:\n"
-            + "    double time(time=1);\n"
-            + "      :_CoordinateAxisType = \"Time\";\n"
-            + "      :actual_range = 9.348048E8, 9.3744E8; // double\n"
-            + "      :axis = \"T\";\n"
-            + "      :fraction_digits = 0; // int\n"
-            + "      :ioos_category = \"Time\";\n"
-            + "      :long_name = \"Centered Time\";\n"
-            + "      :standard_name = \"time\";\n"
-            + "      :time_origin = \"01-JAN-1970 00:00:00\";\n"
-            + "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n"
-            + "\n"
-            + "    double altitude(altitude=1);\n"
-            + "      :_CoordinateAxisType = \"Height\";\n"
-            + "      :_CoordinateZisPositive = \"up\";\n"
-            + "      :actual_range = 10.0, 10.0; // double\n"
-            + "      :axis = \"Z\";\n"
-            + "      :fraction_digits = 0; // int\n"
-            + "      :ioos_category = \"Location\";\n"
-            + "      :long_name = \"Altitude\";\n"
-            + "      :positive = \"up\";\n"
-            + "      :standard_name = \"altitude\";\n"
-            + "      :units = \"m\";\n"
-            + "\n"
-            + "    double latitude(latitude=7);\n"
-            + "      :_CoordinateAxisType = \"Lat\";\n"
-            + "      :actual_range = -75.0, 75.0; // double\n"
-            + "      :axis = \"Y\";\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 2; // int\n"
-            + "      :ioos_category = \"Location\";\n"
-            + "      :long_name = \"Latitude\";\n"
-            + "      :point_spacing = \"even\";\n"
-            + "      :standard_name = \"latitude\";\n"
-            + "      :units = \"degrees_north\";\n"
-            + "\n"
-            + "    double longitude(longitude=15);\n"
-            + "      :_CoordinateAxisType = \"Lon\";\n"
-            + "      :actual_range = 0.0, 360.0; // double\n"
-            + "      :axis = \"X\";\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 2; // int\n"
-            + "      :ioos_category = \"Location\";\n"
-            + "      :long_name = \"Longitude\";\n"
-            + "      :point_spacing = \"even\";\n"
-            + "      :standard_name = \"longitude\";\n"
-            + "      :units = \"degrees_east\";\n"
-            + "\n"
-            + "    float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n"
-            + "      :_FillValue = -9999999.0f; // float\n"
-            + "      :colorBarMaximum = 15.0; // double\n"
-            + "      :colorBarMinimum = -15.0; // double\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 1; // int\n"
-            + "      :ioos_category = \"Wind\";\n"
-            + "      :long_name = \"Zonal Wind\";\n"
-            + "      :missing_value = -9999999.0f; // float\n"
-            + "      :standard_name = \"x_wind\";\n"
-            + "      :units = \"m s-1\";\n"
-            + "\n"
-            + "    float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n"
-            + "      :_FillValue = -9999999.0f; // float\n"
-            + "      :colorBarMaximum = 15.0; // double\n"
-            + "      :colorBarMinimum = -15.0; // double\n"
-            + "      :coordsys = \"geographic\";\n"
-            + "      :fraction_digits = 1; // int\n"
-            + "      :ioos_category = \"Wind\";\n"
-            + "      :long_name = \"Meridional Wind\";\n"
-            + "      :missing_value = -9999999.0f; // float\n"
-            + "      :standard_name = \"y_wind\";\n"
-            + "      :units = \"m s-1\";\n"
-            + "\n"
-            + "  // global attributes:\n"
-            + "  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n"
-            + "  :cdm_data_type = \"Grid\";\n"
-            + "  :composite = \"true\";\n"
-            + "  :contributor_name = \"Remote Sensing Systems, Inc.\";\n"
-            + "  :contributor_role = \"Source of level 2 data.\";\n"
-            + "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n"
-            + "  :creator_email = \"erd.data@noaa.gov\";\n"
-            + "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n"
-            + "  :creator_type = \"institution\";\n"
-            + "  :creator_url = \"https://www.pfeg.noaa.gov\";\n"
-            + "  :date_created = \"2010-07-02\";\n"
-            + "  :date_issued = \"2010-07-02\";\n"
-            + "  :defaultGraphQuery = \"&.draw=vectors\";\n"
-            + "  :Easternmost_Easting = 360.0; // double\n"
-            + "  :geospatial_lat_max = 75.0; // double\n"
-            + "  :geospatial_lat_min = -75.0; // double\n"
-            + "  :geospatial_lat_resolution = 0.125; // double\n"
-            + "  :geospatial_lat_units = \"degrees_north\";\n"
-            + "  :geospatial_lon_max = 360.0; // double\n"
-            + "  :geospatial_lon_min = 0.0; // double\n"
-            + "  :geospatial_lon_resolution = 0.125; // double\n"
-            + "  :geospatial_lon_units = \"degrees_east\";\n"
-            + "  :geospatial_vertical_max = 10.0; // double\n"
-            + "  :geospatial_vertical_min = 10.0; // double\n"
-            + "  :geospatial_vertical_positive = \"up\";\n"
-            + "  :geospatial_vertical_units = \"m\";\n"
-            + "  :history = \"Remote Sensing Systems, Inc.\n";
-    // "2010-07-02T15:33:37Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-    // today + "T"; // time https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n"
-    // +
-    // today + time "
-    // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
-    expected2 =
-        "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n"
-            + "  :institution = \"NOAA NMFS SWFSC ERD\";\n"
-            + "  :keywords = \"altitude, atmosphere, atmospheric, coast, coastwatch, data, degrees, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Winds > Surface Winds, global, noaa, node, ocean, oceans, QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n"
-            + "  :keywords_vocabulary = \"GCMD Science Keywords\";\n"
-            + "  :license = \"The data may be used and redistributed for free but is not intended\n"
-            + "for legal use, since it may contain inaccuracies. Neither the data\n"
-            + "Contributor, ERD, NOAA, nor the United States Government, nor any\n"
-            + "of their employees or contractors, makes any warranty, express or\n"
-            + "implied, including warranties of merchantability and fitness for a\n"
-            + "particular purpose, or assumes any legal liability for the accuracy,\n"
-            + "completeness, or usefulness, of this information.\";\n"
-            + "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n"
-            + "  :Northernmost_Northing = 75.0; // double\n"
-            + "  :origin = \"Remote Sensing Systems, Inc.\";\n"
-            + "  :processing_level = \"3\";\n"
-            + "  :project = \"CoastWatch (https://coastwatch.noaa.gov/)\";\n"
-            + "  :projection = \"geographic\";\n"
-            + "  :projection_type = \"mapped\";\n"
-            + "  :publisher_email = \"erd.data@noaa.gov\";\n"
-            + "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n"
-            + "  :publisher_type = \"institution\";\n"
-            + "  :publisher_url = \"https://www.pfeg.noaa.gov\";\n"
-            + "  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n"
-            + "  :satellite = \"QuikSCAT\";\n"
-            + "  :sensor = \"SeaWinds\";\n"
-            + "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n"
-            + "  :sourceUrl = \"(local files)\";\n"
-            + "  :Southernmost_Northing = -75.0; // double\n"
-            + "  :standard_name_vocabulary = \"CF Standard Name Table v70\";\n"
-            + "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n"
-            + "  :time_coverage_end = \"1999-09-16T00:00:00Z\";\n"
-            + "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n"
-            + "  :title = \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)\";\n"
-            + "  :Westernmost_Easting = 0.0; // double\n"
-            + "}\n";
-    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
-    po = results.indexOf("  :infoUrl =");
-    Test.ensureEqual(results.substring(po), expected2, "results=" + results);
-    File2.delete(fileName);
-
-    /* */
-    String2.log("\n*** OpendapHelper.testDapToNcDGrid finished.");
-  }
-
-  /** This tests findVarsWithSharedDimensions. */
-  @org.junit.jupiter.api.Test
-  @TagJetty
-  void testFindVarsWithSharedDimensions() throws Throwable {
-    String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
-    String expected, results;
-    DConnect dConnect;
-    DDS dds;
-
-    // test of Sequence DAP dataset
-    String2.log("\n*** test of Sequence DAP dataset");
-    String sequenceUrl =
-        System.getProperty("test.coastwatch.pfegUrl", "https://coastwatch.pfeg.noaa.gov")
-            + "/erddap/tabledap/erdGlobecMoc1";
-    dConnect = new DConnect(sequenceUrl, true, 1, 1);
-    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-    results = String2.toCSSVString(OpendapHelper.findVarsWithSharedDimensions(dds));
-    expected = "";
-    Test.ensureEqual(results, expected, "results=" + results);
-
-    // test of DArray DAP dataset
-    // 2018-09-13 https: works in browser by not yet in Java
-    String dArrayUrl =
-        System.getProperty("test.coaps.fsuUrl", "https://tds.coaps.fsu.edu")
-            + "/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
-    String2.log("\n*** test of DArray DAP dataset\n" + dArrayUrl);
-    dConnect = new DConnect(dArrayUrl, true, 1, 1);
-    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-    results = String2.toCSSVString(OpendapHelper.findVarsWithSharedDimensions(dds));
-    expected =
-        "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag";
-    Test.ensureEqual(results, expected, "results=" + results);
-
-    // ***** test of DGrid DAP dataset
-    String2.log("\n*** test of DGrid DAP dataset");
-    String dGridUrl = "http://localhost:8080/erddap/griddap/erdQSwindmday";
-    dConnect = new DConnect(dGridUrl, true, 1, 1);
-    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-    results = String2.toCSSVString(OpendapHelper.findVarsWithSharedDimensions(dds));
-    expected = "x_wind, y_wind";
-    Test.ensureEqual(results, expected, "results=" + results);
-
-    /* */
-    String2.log("\n*** OpendapHelper.testFindVarsWithSharedDimensions finished.");
-  }
-
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
   @TagJetty
@@ -18947,7 +18472,6 @@ netcdf EDDTableFromNcFiles_Data.nc {
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
-    DConnect dConnect;
     DDS dds;
     String url;
 
@@ -18955,8 +18479,8 @@ netcdf EDDTableFromNcFiles_Data.nc {
      * //test of Sequence DAP dataset
      * String2.log("\n*** test of Sequence DAP dataset");
      * url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
-     * dConnect = new DConnect(url, true, 1, 1);
-     * dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+     * dConnect = new DConnect2(url, true);
+     * dds = dConnect.getDDS();
      * results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
      * expected =
      * "zztop";
@@ -18969,8 +18493,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
     url =
         "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
     String2.log("\n*** test of DArray DAP dataset\n" + url);
-    dConnect = new DConnect(url, true, 1, 1);
-    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    try (DConnect2 dConnect = new DConnect2(url, true)) {
+      dds = dConnect.getDDS();
+    }
     results = String2.toCSSVString(OpendapHelper.findAllScalarOrMultiDimVars(dds));
     expected =
         "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag, history";
@@ -18979,8 +18504,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
     // ***** test of DGrid DAP dataset
     String2.log("\n*** test of DGrid DAP dataset");
     url = "http://localhost:8080/erddap/griddap/erdQSwindmday";
-    dConnect = new DConnect(url, true, 1, 1);
-    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    try (DConnect2 dConnect2 = new DConnect2(url, true)) {
+      dds = dConnect2.getDDS();
+    }
     results = String2.toCSSVString(OpendapHelper.findAllScalarOrMultiDimVars(dds));
     expected = "time, altitude, latitude, longitude, x_wind, y_wind";
     Test.ensureEqual(results, expected, "results=" + results);
@@ -18990,7 +18516,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
      * 2020-10-26 disabled because source is unreliable String2.log("\n*** test of NODC template
      * dataset"); url =
      * "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
-     * dConnect = new DConnect(url, true, 1, 1); dds = dConnect.getDDS(DEFAULT_TIMEOUT); results =
+     * dConnect = new DConnect2(url, true); dds = dConnect.getDDS(); results =
      * String2.toCSSVString(findAllScalarOrMultiDimVars(dds)); expected = "time, lat, lon, alt,
      * station_name, temperature, salinity, density, conductivity, " + "turbidity, fluorescence,
      * platform1, temperature_qc, salinity_qc, density_qc, " + "conductivity_qc, turbidity_qc,
@@ -19001,8 +18527,9 @@ netcdf EDDTableFromNcFiles_Data.nc {
     // ***** test of sequence dataset (no vars should be found
     String2.log("\n*** test of sequence dataset");
     url = "http://localhost:8080/erddap/tabledap/erdCAMarCatLY";
-    dConnect = new DConnect(url, true, 1, 1);
-    dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    try (DConnect2 dConnect3 = new DConnect2(url, true)) {
+      dds = dConnect3.getDDS();
+    }
     results = String2.toCSSVString(OpendapHelper.findAllScalarOrMultiDimVars(dds));
     expected = "";
     Test.ensureEqual(results, expected, "results=" + results);

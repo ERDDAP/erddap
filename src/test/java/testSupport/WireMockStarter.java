@@ -2,13 +2,19 @@ package testSupport;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /** Simple WireMock starter for tests. Starts on port 8089 and stubs a few endpoints. */
 public class WireMockStarter {
   private static WireMockServer server;
+
+  public record Pair<L, R>(L left, R right) {}
 
   public static int port() {
     return 8089;
@@ -26,26 +32,6 @@ public class WireMockStarter {
     System.setProperty("test.coastwatch.pfegUrl", "http://localhost:" + port());
 
     // Stub basic SODA responses from resources/mock/apdrc/
-    stubFromResourceDap(
-        "/dods/public_data/SODA/soda_pop2.2.4.das", "/mock/apdrc/soda_pop2.2.4.das");
-    stubFromResourceDap(
-        "/dods/public_data/SODA/soda_pop2.2.4.dds", "/mock/apdrc/soda_pop2.2.4.dds");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.dods?time", "/mock/apdrc/soda_pop2.2.4_time.dods");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.dods?lat", "/mock/apdrc/soda_pop2.2.4_lat.dods");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.asc?lat", "/mock/apdrc/soda_pop2.2.4.asc_lat.txt");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.asc?lat%5B10%3A2%3A20%5D",
-        "/mock/apdrc/soda_pop2.2.4.asc_lat_subset.txt");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.dods?lat%5B10%3A2%3A20%5D",
-        "/mock/apdrc/soda_pop2.2.4_lat_subset.dods");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.dods?lon", "/mock/apdrc/soda_pop2.2.4_lon.dods");
-    stubFromResourceData(
-        "/dods/public_data/SODA/soda_pop2.2.4.dods?lev", "/mock/apdrc/soda_pop2.2.4_lev.dods");
     stubFromResourceData(
         "/dods/public_data/SODA/soda_pop2.2.4.dods?temp%5B1571:1571%5D%5B0:18%5D%5B197:197%5D%5B370:370%5D",
         "/mock/apdrc/soda_pop2.2.4_temp_subset.dods");
@@ -112,6 +98,27 @@ public class WireMockStarter {
         "/dods/public_data/SODA/soda_pop2.2.4.dods?w%5B1571:1571%5D%5B0:18%5D%5B197:197%5D%5B370:370%5D",
         "/mock/apdrc/soda_pop2.2.4_w_subset.dods");
 
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.asc?lat%5B10%3A2%3A20%5D",
+        "/mock/apdrc/soda_pop2.2.4.asc_lat_subset.txt");
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.dods?lat%5B10%3A2%3A20%5D",
+        "/mock/apdrc/soda_pop2.2.4_lat_subset.dods");
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.dods?lon", "/mock/apdrc/soda_pop2.2.4_lon.dods");
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.dods?lev", "/mock/apdrc/soda_pop2.2.4_lev.dods");
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.dods?time", "/mock/apdrc/soda_pop2.2.4_time.dods");
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.dods?lat", "/mock/apdrc/soda_pop2.2.4_lat.dods");
+    stubFromResourceData(
+        "/dods/public_data/SODA/soda_pop2.2.4.asc?lat", "/mock/apdrc/soda_pop2.2.4.asc_lat.txt");
+    stubFromResourceDap(
+        "/dods/public_data/SODA/soda_pop2.2.4.das", "/mock/apdrc/soda_pop2.2.4.das");
+    stubFromResourceDap(
+        "/dods/public_data/SODA/soda_pop2.2.4.dds", "/mock/apdrc/soda_pop2.2.4.dds");
+
     stubFromResource("/dods/public_data/SODA/soda_pop2.2.4.html", "/mock/apdrc/soda_pop2.2.4.html");
 
     stubFromResource(
@@ -148,7 +155,7 @@ public class WireMockStarter {
 
     // also stub base path requests
     WireMock.stubFor(
-        WireMock.get(WireMock.urlEqualTo("/dods/public_data/SODA/soda_pop2.2.4"))
+        WireMock.get(WireMock.urlPathEqualTo("/dods/public_data/SODA/soda_pop2.2.4"))
             .willReturn(WireMock.aResponse().withStatus(200).withBody("APDRC SODA mock root")));
 
     stubFromResourceDap(
@@ -157,50 +164,113 @@ public class WireMockStarter {
     stubFromResourceDap("/erddap/tabledap/erdGlobecMoc1.dds", "/mock/coastwatch/erdGlobecMoc1.dds");
   }
 
-  private static void stubFromResource(String urlPath, String resourcePath) {
+  private static void stubFromResource(String requestUrl, String resourcePath) {
+    Pair<String, Map<String, StringValuePattern>> parsed = parseRequestUrl(requestUrl);
+    stubFromResource(parsed.left(), parsed.right(), resourcePath);
+  }
+
+  private static void stubFromResource(
+      String path, Map<String, StringValuePattern> queryParams, String resourcePath) {
     try (InputStream is = WireMockStarter.class.getResourceAsStream(resourcePath)) {
       if (is == null) return;
       String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+      var builder = WireMock.get(WireMock.urlPathEqualTo(path));
+      if (!queryParams.isEmpty()) {
+        builder = builder.withQueryParams(queryParams);
+      }
       WireMock.stubFor(
-          WireMock.get(WireMock.urlEqualTo(urlPath))
-              .willReturn(WireMock.aResponse().withStatus(200).withBody(body)));
+          builder
+              .willReturn(WireMock.aResponse().withStatus(200).withBody(body))
+              .atPriority(queryParams.isEmpty() ? 100 : 10));
     } catch (IOException e) {
       // ignore
     }
   }
 
-  private static void stubFromResourceDap(String urlPath, String resourcePath) {
+  private static void stubFromResourceDap(String requestUrl, String resourcePath) {
+    Pair<String, Map<String, StringValuePattern>> parsed = parseRequestUrl(requestUrl);
+    stubFromResourceDap(parsed.left(), parsed.right(), resourcePath);
+  }
+
+  private static void stubFromResourceDap(
+      String path, Map<String, StringValuePattern> queryParams, String resourcePath) {
     try (InputStream is = WireMockStarter.class.getResourceAsStream(resourcePath)) {
       if (is == null) return;
       String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+      var builder = WireMock.get(WireMock.urlPathEqualTo(path));
+      if (!queryParams.isEmpty()) {
+        builder = builder.withQueryParams(queryParams);
+      }
       WireMock.stubFor(
-          WireMock.get(WireMock.urlEqualTo(urlPath))
+          builder
               .willReturn(
                   WireMock.aResponse()
                       .withStatus(200)
                       .withBody(body)
                       .withHeader("XDODS-Server", "dods/3.7")
-                      .withHeader("Content-Description", "dods_das")));
+                      .withHeader("Content-Description", "dods_das"))
+              .atPriority(queryParams.isEmpty() ? 100 : 10));
     } catch (IOException e) {
       // ignore
     }
   }
 
-  private static void stubFromResourceData(String urlPath, String resourcePath) {
+  private static void stubFromResourceData(String requestUrl, String resourcePath) {
+    Pair<String, Map<String, StringValuePattern>> parsed = parseRequestUrl(requestUrl);
+    stubFromResourceData(parsed.left(), parsed.right(), resourcePath);
+  }
+
+  private static void stubFromResourceData(
+      String path, Map<String, StringValuePattern> queryParams, String resourcePath) {
     try (InputStream is = WireMockStarter.class.getResourceAsStream(resourcePath)) {
       if (is == null) return;
       byte[] body = is.readAllBytes();
+      var builder = WireMock.get(WireMock.urlPathEqualTo(path));
+      if (!queryParams.isEmpty()) {
+        builder = builder.withQueryParams(queryParams);
+      }
       WireMock.stubFor(
-          WireMock.get(WireMock.urlEqualTo(urlPath))
+          builder
               .willReturn(
                   WireMock.aResponse()
                       .withStatus(200)
                       .withBody(body)
                       .withHeader("XDODS-Server", "dods/3.7")
-                      .withHeader("Content-Description", "dods_data")));
+                      .withHeader("Content-Description", "dods_data"))
+              .atPriority(queryParams.isEmpty() ? 100 : 10));
     } catch (IOException e) {
       // ignore
     }
+  }
+
+  private static Pair<String, Map<String, StringValuePattern>> parseRequestUrl(String requestUrl) {
+    int queryIndex = requestUrl.indexOf('?');
+    if (queryIndex < 0) {
+      return new Pair<>(requestUrl, Map.of());
+    }
+
+    String path = requestUrl.substring(0, queryIndex);
+    String queryString = requestUrl.substring(queryIndex + 1);
+    if (queryString.isEmpty()) {
+      return new Pair<>(path, Map.of());
+    }
+
+    Map<String, StringValuePattern> queryParams = new LinkedHashMap<>();
+    for (String entry : queryString.split("&")) {
+      if (entry.isEmpty()) continue;
+      String[] parts = entry.split("=", 2);
+      String key = decode(parts[0]);
+      if (parts.length == 1) {
+        queryParams.put(key, WireMock.matching(".*"));
+      } else {
+        queryParams.put(key, WireMock.equalTo(decode(parts[1])));
+      }
+    }
+    return new Pair<>(path, queryParams);
+  }
+
+  private static String decode(String value) {
+    return URLDecoder.decode(value, StandardCharsets.UTF_8);
   }
 
   public static synchronized void stop() {

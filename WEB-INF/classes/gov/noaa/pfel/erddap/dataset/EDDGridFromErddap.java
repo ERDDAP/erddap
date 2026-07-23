@@ -19,13 +19,6 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.BaseType;
-import dods.dap.DArray;
-import dods.dap.DArrayDimension;
-import dods.dap.DConnect;
-import dods.dap.DDS;
-import dods.dap.DGrid;
-import dods.dap.NoSuchVariableException;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -56,6 +49,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Queue;
+import opendap.dap.BaseType;
+import opendap.dap.DArray;
+import opendap.dap.DArrayDimension;
+import opendap.dap.DConnect2;
+import opendap.dap.DDS;
+import opendap.dap.DGrid;
+import opendap.dap.NoSuchVariableException;
 import org.semver4j.Semver;
 
 /**
@@ -283,251 +283,251 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
     }
 
-    // open the connection to the opendap source
-    DConnect dConnect = null;
-    if (quickRestartAttributes == null)
-      dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
+    try (DConnect2 dConnect =
+        quickRestartAttributes == null ? new DConnect2(localSourceUrl, acceptDeflate) : null) {
 
-    // setup via info.json
-    // source https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
-    // json   https://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
-    String jsonUrl = String2.replaceAll(localSourceUrl, "/griddap/", "/info/") + "/index.json";
-    String sourceInfoString = null;
-    if (quickRestartAttributes != null) {
-      PrimitiveArray sourceInfoBytes = quickRestartAttributes.get("sourceInfoBytes");
-      if (sourceInfoBytes instanceof ByteArray ba)
-        sourceInfoString = new String(ba.toArray(), StandardCharsets.UTF_8);
-    }
-    if (sourceInfoString == null) sourceInfoString = SSR.getUrlResponseStringNewline(jsonUrl);
-    Table table = new Table();
-    table.readJson("sourceInfoString", new BufferedReader(new StringReader(sourceInfoString)));
+      // setup via info.json
+      // source https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
+      // json   https://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
+      String jsonUrl = String2.replaceAll(localSourceUrl, "/griddap/", "/info/") + "/index.json";
+      String sourceInfoString = null;
+      if (quickRestartAttributes != null) {
+        PrimitiveArray sourceInfoBytes = quickRestartAttributes.get("sourceInfoBytes");
+        if (sourceInfoBytes instanceof ByteArray ba)
+          sourceInfoString = new String(ba.toArray(), StandardCharsets.UTF_8);
+      }
+      if (sourceInfoString == null) sourceInfoString = SSR.getUrlResponseStringNewline(jsonUrl);
+      Table table = new Table();
+      table.readJson("sourceInfoString", new BufferedReader(new StringReader(sourceInfoString)));
 
-    // go through the rows of table from bottom to top
-    int nRows = table.nRows();
-    Attributes tSourceAttributes = new Attributes();
-    ArrayList<EDVGridAxis> tAxisVariables = new ArrayList<>();
-    ArrayList<EDV> tDataVariables = new ArrayList<>();
-    for (int row = nRows - 1; row >= 0; row--) {
+      // go through the rows of table from bottom to top
+      int nRows = table.nRows();
+      Attributes tSourceAttributes = new Attributes();
+      ArrayList<EDVGridAxis> tAxisVariables = new ArrayList<>();
+      ArrayList<EDV> tDataVariables = new ArrayList<>();
+      for (int row = nRows - 1; row >= 0; row--) {
 
-      // "columnNames": ["Row Type", "Variable Name", "Attribute Name", "Data Type", "Value"],
-      // "columnTypes": ["String", "String", "String", "String", "String"],
-      // "rows": [
-      //     ["attribute", "NC_GLOBAL", "acknowledgement", "String", "NOAA NESDIS COASTWATCH, NOAA
-      // SWFSC ERD"],
-      //     ["dimension", "longitude", "", "double", "nValues=8640, evenlySpaced=true,
-      // averageSpacing=0.04166667052552379"],
-      //     atts...
-      //     ["variable", "chlorophyll", "", "float", "time, altitude, latitude, longitude"],
-      //     atts...
-      String rowType = table.getStringData(0, row);
-      String varName = table.getStringData(1, row);
-      String attName = table.getStringData(2, row);
-      String dataType = table.getStringData(3, row);
-      String value = table.getStringData(4, row);
+        // "columnNames": ["Row Type", "Variable Name", "Attribute Name", "Data Type", "Value"],
+        // "columnTypes": ["String", "String", "String", "String", "String"],
+        // "rows": [
+        //     ["attribute", "NC_GLOBAL", "acknowledgement", "String", "NOAA NESDIS COASTWATCH, NOAA
+        // SWFSC ERD"],
+        //     ["dimension", "longitude", "", "double", "nValues=8640, evenlySpaced=true,
+        // averageSpacing=0.04166667052552379"],
+        //     atts...
+        //     ["variable", "chlorophyll", "", "float", "time, altitude, latitude, longitude"],
+        //     atts...
+        String rowType = table.getStringData(0, row);
+        String varName = table.getStringData(1, row);
+        String attName = table.getStringData(2, row);
+        String dataType = table.getStringData(3, row);
+        String value = table.getStringData(4, row);
 
-      switch (rowType) {
-        case "attribute" -> {
-          if (dataType.equals("String")) {
-            tSourceAttributes.add(attName, value);
-          } else {
-            PAType tPAType = PAType.fromCohortString(dataType);
-            PrimitiveArray pa = PrimitiveArray.csvFactory(tPAType, value);
-            tSourceAttributes.add(attName, pa);
+        switch (rowType) {
+          case "attribute" -> {
+            if (dataType.equals("String")) {
+              tSourceAttributes.add(attName, value);
+            } else {
+              PAType tPAType = PAType.fromCohortString(dataType);
+              PrimitiveArray pa = PrimitiveArray.csvFactory(tPAType, value);
+              tSourceAttributes.add(attName, pa);
+            }
           }
-        }
-        case "dimension" -> {
-          PrimitiveArray tSourceValues =
-              quickRestartAttributes == null
-                  ? OpendapHelper.getPrimitiveArray(dConnect, "?" + varName)
-                  : quickRestartAttributes.get(
-                      "sourceValues_" + String2.encodeVariableNameSafe(varName));
+          case "dimension" -> {
+            PrimitiveArray tSourceValues =
+                quickRestartAttributes == null
+                    ? OpendapHelper.getPrimitiveArray(dConnect, "?" + varName)
+                    : quickRestartAttributes.get(
+                        "sourceValues_" + String2.encodeVariableNameSafe(varName));
 
-          // deal with remote not having ioos_category, but this ERDDAP requiring it
-          LocalizedAttributes tAddAttributes = new LocalizedAttributes();
-          if (EDStatic.config.variablesMustHaveIoosCategory
-              && tSourceAttributes.getString("ioos_category") == null) {
+            // deal with remote not having ioos_category, but this ERDDAP requiring it
+            LocalizedAttributes tAddAttributes = new LocalizedAttributes();
+            if (EDStatic.config.variablesMustHaveIoosCategory
+                && tSourceAttributes.getString("ioos_category") == null) {
 
-            // guess ioos_category   (alternative is always assign "Unknown")
-            Attributes tAtts =
-                EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    null, // sourceGlobalAtts not yet known
-                    tSourceAttributes,
-                    null,
-                    varName,
-                    true, // tryToAddStandardName
-                    false,
-                    true); // tryToAddColorBarMinMax, tryToFindLLAT
-            tAddAttributes.set(language, "ioos_category", tAtts.getString("ioos_category"));
-          }
+              // guess ioos_category   (alternative is always assign "Unknown")
+              Attributes tAtts =
+                  EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                      null, // sourceGlobalAtts not yet known
+                      tSourceAttributes,
+                      null,
+                      varName,
+                      true, // tryToAddStandardName
+                      false,
+                      true); // tryToAddColorBarMinMax, tryToFindLLAT
+              tAddAttributes.set(language, "ioos_category", tAtts.getString("ioos_category"));
+            }
 
-          // make an axisVariable
-          tAxisVariables.add(
-              makeAxisVariable(
-                  tDatasetID,
-                  -1,
-                  varName,
-                  varName,
-                  tSourceAttributes,
-                  tAddAttributes,
-                  tSourceValues));
-
-          // make new tSourceAttributes
-          tSourceAttributes = new Attributes();
-
-          // a grid variable
-        }
-        case "variable" -> {
-
-          // deal with remote not having ioos_category, but this ERDDAP requiring it
-          LocalizedAttributes tAddAttributes = new LocalizedAttributes();
-          if (EDStatic.config.variablesMustHaveIoosCategory
-              && tSourceAttributes.getString("ioos_category") == null) {
-
-            // guess ioos_category   (alternative is always assign "Unknown")
-            Attributes tAtts =
-                EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    null, // sourceGlobalAtts not yet known
-                    tSourceAttributes,
-                    null,
-                    varName,
-                    false, // tryToAddStandardName  since just getting ioos_category
-                    false,
-                    false); // tryToAddColorBarMinMax, tryToFindLLAT
-            tAddAttributes.set(language, "ioos_category", tAtts.getString("ioos_category"));
-          }
-
-          // make a data variable
-          EDV edv;
-          if (varName.equals(EDV.TIME_NAME))
-            throw new RuntimeException(
-                errorInMethod
-                    + "No EDDGrid dataVariable may have destinationName="
-                    + EDV.TIME_NAME);
-          else if (EDVTime.hasTimeUnits(language, tSourceAttributes, tAddAttributes))
-            edv =
-                new EDVTimeStamp(
-                    datasetID, varName, varName, tSourceAttributes, tAddAttributes, dataType);
-          else
-            edv =
-                new EDV(
-                    datasetID,
+            // make an axisVariable
+            tAxisVariables.add(
+                makeAxisVariable(
+                    tDatasetID,
+                    -1,
                     varName,
                     varName,
                     tSourceAttributes,
                     tAddAttributes,
-                    dataType,
-                    PAOne.fromDouble(Double.NaN),
-                    PAOne.fromDouble(Double.NaN)); // hard to get min and max
-          edv.extractAndSetActualRange(language);
-          tDataVariables.add(edv);
+                    tSourceValues));
 
-          // make new tSourceAttributes
-          tSourceAttributes = new Attributes();
+            // make new tSourceAttributes
+            tSourceAttributes = new Attributes();
 
-          // unexpected type
-        }
-        default -> throw new RuntimeException("Unexpected rowType=" + rowType + ".");
-      }
-    }
-    if (tAxisVariables.size() == 0) throw new RuntimeException("No axisVariables found!");
-    sourceGlobalAttributes = tSourceAttributes; // at the top of table, so collected last
-    addGlobalAttributes = new LocalizedAttributes();
-    combinedGlobalAttributes =
-        new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
-    combinedGlobalAttributes.removeValue("\"null\"");
-
-    int nav = tAxisVariables.size();
-    axisVariables = new EDVGridAxis[nav];
-    for (int av = 0; av < nav; av++) {
-      // reverse the order, since read (above) from bottom to top
-      axisVariables[av] = (EDVGridAxis) tAxisVariables.get(nav - av - 1);
-      String tName = axisVariables[av].destinationName();
-      switch (tName) {
-        case EDV.LON_NAME -> lonIndex = av;
-        case EDV.LAT_NAME -> latIndex = av;
-        case EDV.ALT_NAME, EDV.PRESSURE_NAME -> altIndex = av;
-        case EDV.DEPTH_NAME -> depthIndex = av;
-        case EDV.TIME_NAME -> timeIndex = av;
-      }
-      String ioosCategory = axisVariables[av].sourceAttributes().getString("ioos_category");
-      if (ioosCategory.equals(EDV.PRESSURE_LONGNAME)) altIndex = av;
-    }
-
-    int ndv = tDataVariables.size();
-    dataVariables = new EDV[ndv];
-    for (int dv = 0; dv < ndv; dv++)
-      // reverse the order, since read (above) from bottom to top
-      dataVariables[dv] = (EDV) tDataVariables.get(ndv - dv - 1);
-
-    // ensure the setup is valid
-    ensureValid(); // this ensures many things are set, e.g., sourceUrl
-
-    // finalize accessibleViaFiles
-    sourceErddapVersion = getRemoteErddapVersion(localSourceUrl);
-    if (accessibleViaFiles) {
-      if (sourceErddapVersion.isLowerThan(EDStatic.getSemver("2.10"))) {
-        accessibleViaFiles = false;
-        String2.log(
-            "accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .");
-
-      } else {
-        try {
-          // this will only work if remote ERDDAP is v2.10+
-          int po = localSourceUrl.indexOf("/griddap/");
-          Test.ensureTrue(po > 0, "localSourceUrl doesn't have /griddap/.");
-          InputStream is =
-              SSR.getUrlBufferedInputStream(
-                  String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + "/.csv");
-          try {
-            is.close();
-          } catch (Exception e2) {
+            // a grid variable
           }
-        } catch (Exception e) {
-          String2.log(
-              "accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :\n"
-                  + MustBe.throwableToString(e));
+          case "variable" -> {
+
+            // deal with remote not having ioos_category, but this ERDDAP requiring it
+            LocalizedAttributes tAddAttributes = new LocalizedAttributes();
+            if (EDStatic.config.variablesMustHaveIoosCategory
+                && tSourceAttributes.getString("ioos_category") == null) {
+
+              // guess ioos_category   (alternative is always assign "Unknown")
+              Attributes tAtts =
+                  EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                      null, // sourceGlobalAtts not yet known
+                      tSourceAttributes,
+                      null,
+                      varName,
+                      false, // tryToAddStandardName  since just getting ioos_category
+                      false,
+                      false); // tryToAddColorBarMinMax, tryToFindLLAT
+              tAddAttributes.set(language, "ioos_category", tAtts.getString("ioos_category"));
+            }
+
+            // make a data variable
+            EDV edv;
+            if (varName.equals(EDV.TIME_NAME))
+              throw new RuntimeException(
+                  errorInMethod
+                      + "No EDDGrid dataVariable may have destinationName="
+                      + EDV.TIME_NAME);
+            else if (EDVTime.hasTimeUnits(language, tSourceAttributes, tAddAttributes))
+              edv =
+                  new EDVTimeStamp(
+                      datasetID, varName, varName, tSourceAttributes, tAddAttributes, dataType);
+            else
+              edv =
+                  new EDV(
+                      datasetID,
+                      varName,
+                      varName,
+                      tSourceAttributes,
+                      tAddAttributes,
+                      dataType,
+                      PAOne.fromDouble(Double.NaN),
+                      PAOne.fromDouble(Double.NaN)); // hard to get min and max
+            edv.extractAndSetActualRange(language);
+            tDataVariables.add(edv);
+
+            // make new tSourceAttributes
+            tSourceAttributes = new Attributes();
+
+            // unexpected type
+          }
+          default -> throw new RuntimeException("Unexpected rowType=" + rowType + ".");
+        }
+      }
+      if (tAxisVariables.size() == 0) throw new RuntimeException("No axisVariables found!");
+      sourceGlobalAttributes = tSourceAttributes; // at the top of table, so collected last
+      addGlobalAttributes = new LocalizedAttributes();
+      combinedGlobalAttributes =
+          new LocalizedAttributes(
+              addGlobalAttributes, sourceGlobalAttributes); // order is important
+      combinedGlobalAttributes.removeValue("\"null\"");
+
+      int nav = tAxisVariables.size();
+      axisVariables = new EDVGridAxis[nav];
+      for (int av = 0; av < nav; av++) {
+        // reverse the order, since read (above) from bottom to top
+        axisVariables[av] = (EDVGridAxis) tAxisVariables.get(nav - av - 1);
+        String tName = axisVariables[av].destinationName();
+        switch (tName) {
+          case EDV.LON_NAME -> lonIndex = av;
+          case EDV.LAT_NAME -> latIndex = av;
+          case EDV.ALT_NAME, EDV.PRESSURE_NAME -> altIndex = av;
+          case EDV.DEPTH_NAME -> depthIndex = av;
+          case EDV.TIME_NAME -> timeIndex = av;
+        }
+        String ioosCategory = axisVariables[av].sourceAttributes().getString("ioos_category");
+        if (ioosCategory.equals(EDV.PRESSURE_LONGNAME)) altIndex = av;
+      }
+
+      int ndv = tDataVariables.size();
+      dataVariables = new EDV[ndv];
+      for (int dv = 0; dv < ndv; dv++)
+        // reverse the order, since read (above) from bottom to top
+        dataVariables[dv] = (EDV) tDataVariables.get(ndv - dv - 1);
+
+      // ensure the setup is valid
+      ensureValid(); // this ensures many things are set, e.g., sourceUrl
+
+      // finalize accessibleViaFiles
+      sourceErddapVersion = getRemoteErddapVersion(localSourceUrl);
+      if (accessibleViaFiles) {
+        if (sourceErddapVersion.isLowerThan(EDStatic.getSemver("2.10"))) {
           accessibleViaFiles = false;
+          String2.log(
+              "accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .");
+
+        } else {
+          try {
+            // this will only work if remote ERDDAP is v2.10+
+            int po = localSourceUrl.indexOf("/griddap/");
+            Test.ensureTrue(po > 0, "localSourceUrl doesn't have /griddap/.");
+            InputStream is =
+                SSR.getUrlBufferedInputStream(
+                    String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + "/.csv");
+            try {
+              is.close();
+            } catch (Exception e2) {
+            }
+          } catch (Exception e) {
+            String2.log(
+                "accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :\n"
+                    + MustBe.throwableToString(e));
+            accessibleViaFiles = false;
+          }
         }
       }
-    }
 
-    // save quickRestart info
-    if (quickRestartAttributes == null) { // i.e., there is new info
-      try {
-        quickRestartAttributes = new Attributes();
-        quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
-        quickRestartAttributes.set(
-            "sourceInfoBytes", ByteArray.fromString(sourceInfoString)); // String -> UTF-8 bytes
-        for (EDVGridAxis axisVariable : axisVariables) {
+      // save quickRestart info
+      if (quickRestartAttributes == null) { // i.e., there is new info
+        try {
+          quickRestartAttributes = new Attributes();
+          quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
           quickRestartAttributes.set(
-              "sourceValues_" + String2.encodeVariableNameSafe(axisVariable.sourceName()),
-              axisVariable.sourceValues());
+              "sourceInfoBytes", ByteArray.fromString(sourceInfoString)); // String -> UTF-8 bytes
+          for (EDVGridAxis axisVariable : axisVariables) {
+            quickRestartAttributes.set(
+                "sourceValues_" + String2.encodeVariableNameSafe(axisVariable.sourceName()),
+                axisVariable.sourceValues());
+          }
+          File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
+          NcHelper.writeAttributesToNc3(quickRestartFullFileName(), quickRestartAttributes);
+        } catch (Throwable t) {
+          String2.log(MustBe.throwableToString(t));
         }
-        File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
-        NcHelper.writeAttributesToNc3(quickRestartFullFileName(), quickRestartAttributes);
-      } catch (Throwable t) {
-        String2.log(MustBe.throwableToString(t));
       }
+
+      // try to subscribe to the remote ERDDAP dataset
+      tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset, localSourceUrl);
+
+      // finally
+      long cTime = System.currentTimeMillis() - constructionStartMillis;
+      if (verbose)
+        String2.log(
+            (debugMode ? "\n" + this : "")
+                + "\n*** EDDGridFromErddap "
+                + datasetID
+                + " constructor finished. TIME="
+                + cTime
+                + "ms"
+                + (cTime >= 600000 ? "  (>10m!)" : cTime >= 10000 ? "  (>10s!)" : "")
+                + "\n");
+
+      // very last thing: saveDimensionValuesInFile
+      if (!dimensionValuesInMemory) saveDimensionValuesInFile();
     }
-
-    // try to subscribe to the remote ERDDAP dataset
-    tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset, localSourceUrl);
-
-    // finally
-    long cTime = System.currentTimeMillis() - constructionStartMillis;
-    if (verbose)
-      String2.log(
-          (debugMode ? "\n" + this : "")
-              + "\n*** EDDGridFromErddap "
-              + datasetID
-              + " constructor finished. TIME="
-              + cTime
-              + "ms"
-              + (cTime >= 600000 ? "  (>10m!)" : cTime >= 10000 ? "  (>10s!)" : "")
-              + "\n");
-
-    // very last thing: saveDimensionValuesInFile
-    if (!dimensionValuesInMemory) saveDimensionValuesInFile();
   }
 
   /**
@@ -553,242 +553,247 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
     // read dds
-    DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
-    byte ddsBytes[] = SSR.getUrlResponseBytes(localSourceUrl + ".dds");
-    DDS dds = new DDS();
-    dds.parse(new ByteArrayInputStream(ddsBytes));
+    try (DConnect2 dConnect = new DConnect2(localSourceUrl, acceptDeflate)) {
+      byte ddsBytes[] = SSR.getUrlResponseBytes(localSourceUrl + ".dds");
+      DDS dds = new DDS();
+      dds.parse(new ByteArrayInputStream(ddsBytes));
 
-    // has edvga[0] changed size?
-    EDVGridAxis edvga = axisVariables[0];
-    EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis t ? t : null;
-    PrimitiveArray oldValues = edvga.sourceValues();
-    int oldSize = oldValues.size();
+      // has edvga[0] changed size?
+      EDVGridAxis edvga = axisVariables[0];
+      EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis t ? t : null;
+      PrimitiveArray oldValues = edvga.sourceValues();
+      int oldSize = oldValues.size();
 
-    // get mainDArray
-    BaseType bt = dds.getVariable(dataVariables[0].sourceName()); // throws NoSuchVariableException
-    DArray mainDArray = null;
-    if (bt instanceof DGrid dgrid) {
-      mainDArray = (DArray) dgrid.getVar(0); // first element is always main array
-    } else if (bt instanceof DArray darray) {
-      mainDArray = darray;
-    } else {
-      String2.log(
-          msg
-              + String2.ERROR
-              + ": Unexpected "
-              + dataVariables[0].destinationName()
-              + " source type="
-              + bt.getTypeName()
-              + ".");
-      // requestReloadASAP()+WaitThenTryAgain might lead to endless cycle of full reloads
-      requestReloadASAP();
-      return false;
-    }
-
-    // get the leftmost dimension
-    DArrayDimension dad = mainDArray.getDimension(0);
-    int newSize = dad.getSize();
-    if (newSize < oldSize)
-      throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-              + "\n("
-              + msg
-              + "["
-              + edvga.destinationName()
-              + "] newSize="
-              + newSize
-              + " < oldSize="
-              + oldSize
-              + ")");
-    if (newSize == oldSize) {
-      if (reallyVerbose) String2.log(msg + "leftmost dimension size hasn't changed");
-      return false; // finally{} below sets lastUpdate = startUpdateMillis
-    }
-
-    // newSize > oldSize, get last old value (for testing below) and new values
-    PrimitiveArray newValues = null;
-    if (edvga.sourceDataPAType() == PAType.INT
-        && // not a perfect test
-        "count".equals(edvga.sourceAttributes().getString("units")))
-      newValues = new IntArray(oldSize - 1, newSize - 1); // 0 based
-    else {
-      try {
-        newValues =
-            OpendapHelper.getPrimitiveArray(
-                dConnect,
-                "?" + edvga.sourceName() + "[" + (oldSize - 1) + ":" + (newSize - 1) + "]");
-      } catch (NoSuchVariableException nsve) {
-        // hopefully avoided by testing for units=count and int datatype above
+      // get mainDArray
+      BaseType bt =
+          dds.getVariable(dataVariables[0].sourceName()); // throws NoSuchVariableException
+      DArray mainDArray = null;
+      if (bt instanceof DGrid dgrid) {
+        mainDArray = (DArray) dgrid.getVar(0); // first element is always main array
+      } else if (bt instanceof DArray darray) {
+        mainDArray = darray;
+      } else {
         String2.log(
             msg
-                + "caught NoSuchVariableException for sourceName="
-                + edvga.sourceName()
-                + ". Using index numbers.");
-        newValues = new IntArray(oldSize - 1, newSize - 1); // 0 based
-      } // but other exceptions aren't caught
-    }
-
-    // ensure newValues is valid
-    if (newValues == null || newValues.size() < (newSize - oldSize + 1)) {
-      String2.log(
-          msg
-              + String2.ERROR
-              + ": Too few "
-              + edvga.destinationName()
-              + " values were received (got="
-              + (newValues == null ? "null" : "" + (newValues.size() - 1))
-              + "expected="
-              + (newSize - oldSize)
-              + ").");
-      return false;
-    }
-    if (oldValues.elementType() != newValues.elementType())
-      throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-              + "\n("
-              + msg
-              + edvga.destinationName()
-              + " dataType changed: "
-              + " new="
-              + newValues.elementTypeString()
-              + " != old="
-              + oldValues.elementTypeString()
-              + ")");
-
-    // ensure last old value is unchanged
-    if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) // they should be exactly equal
-    throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-              + "\n("
-              + msg
-              + edvga.destinationName()
-              + "["
-              + (oldSize - 1)
-              + "] changed!  old="
-              + oldValues.getDouble(oldSize - 1)
-              + " != new="
-              + newValues.getDouble(0));
-
-    // prepare changes to update the dataset
-    PAOne newMin = new PAOne(oldValues, 0);
-    PAOne newMax = new PAOne(newValues, newValues.size() - 1);
-    if (edvtsga != null) {
-      newMin = PAOne.fromDouble(edvtsga.sourceTimeToEpochSeconds(newMin.getDouble()));
-      newMax = PAOne.fromDouble(edvtsga.sourceTimeToEpochSeconds(newMax.getDouble()));
-    } else if (edvga.scaleAddOffset()) {
-      newMin = PAOne.fromDouble(newMin.getDouble() * edvga.scaleFactor() + edvga.addOffset());
-      newMax = PAOne.fromDouble(newMax.getDouble() * edvga.scaleFactor() + edvga.addOffset());
-    }
-
-    // first, calculate newAverageSpacing (destination units, will be negative if isDescending)
-    double newAverageSpacing = (newMax.getDouble() - newMin.getDouble()) / (newSize - 1);
-
-    // second, test for min>max after extractScaleAddOffset, since order may have changed
-    if (newMin.compareTo(newMax) > 0) {
-      PAOne d = newMin;
-      newMin = newMax;
-      newMax = d;
-    }
-
-    // test isAscending  (having last old value is essential)
-    String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
-    if (error.length() > 0)
-      throw new WaitThenTryAgainException(
-          EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-              + "\n("
-              + edvga.destinationName()
-              + " was "
-              + (edvga.isAscending() ? "a" : "de")
-              + "scending, but the newest values aren't ("
-              + error
-              + ").)");
-
-    // if was isEvenlySpaced, test that new values are and have same averageSpacing
-    // (having last old value is essential)
-    boolean newIsEvenlySpaced = edvga.isEvenlySpaced(); // here, this is actually oldIsEvenlySpaced
-    if (newIsEvenlySpaced) {
-      error = newValues.isEvenlySpaced();
-      if (error.length() > 0) {
-        String2.log(
-            msg
-                + "changing "
-                + edvga.destinationName()
-                + ".isEvenlySpaced from true to false: "
-                + error);
-        newIsEvenlySpaced = false;
-
-        // new spacing != old spacing ?  (precision=5, but times will be exact)
-      } else if (!Math2.almostEqual(5, newAverageSpacing, edvga.averageSpacing())) {
-        String2.log(
-            msg
-                + "changing "
-                + edvga.destinationName()
-                + ".isEvenlySpaced from true to false: newSpacing="
-                + newAverageSpacing
-                + " oldSpacing="
-                + edvga.averageSpacing());
-        newIsEvenlySpaced = false;
+                + String2.ERROR
+                + ": Unexpected "
+                + dataVariables[0].destinationName()
+                + " source type="
+                + bt.getTypeName()
+                + ".");
+        // requestReloadASAP()+WaitThenTryAgain might lead to endless cycle of full reloads
+        requestReloadASAP();
+        return false;
       }
+
+      // get the leftmost dimension
+      DArrayDimension dad = mainDArray.getDimension(0);
+      int newSize = dad.getSize();
+      if (newSize < oldSize)
+        throw new WaitThenTryAgainException(
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                + "\n("
+                + msg
+                + "["
+                + edvga.destinationName()
+                + "] newSize="
+                + newSize
+                + " < oldSize="
+                + oldSize
+                + ")");
+      if (newSize == oldSize) {
+        if (reallyVerbose) String2.log(msg + "leftmost dimension size hasn't changed");
+        return false; // finally{} below sets lastUpdate = startUpdateMillis
+      }
+
+      // newSize > oldSize, get last old value (for testing below) and new values
+      PrimitiveArray newValues = null;
+      if (edvga.sourceDataPAType() == PAType.INT
+          && // not a perfect test
+          "count".equals(edvga.sourceAttributes().getString("units")))
+        newValues = new IntArray(oldSize - 1, newSize - 1); // 0 based
+      else {
+        try {
+          newValues =
+              OpendapHelper.getPrimitiveArray(
+                  dConnect,
+                  "?" + edvga.sourceName() + "[" + (oldSize - 1) + ":" + (newSize - 1) + "]");
+        } catch (NoSuchVariableException nsve) {
+          // hopefully avoided by testing for units=count and int datatype above
+          String2.log(
+              msg
+                  + "caught NoSuchVariableException for sourceName="
+                  + edvga.sourceName()
+                  + ". Using index numbers.");
+          newValues = new IntArray(oldSize - 1, newSize - 1); // 0 based
+        } // but other exceptions aren't caught
+      }
+
+      // ensure newValues is valid
+      if (newValues == null || newValues.size() < (newSize - oldSize + 1)) {
+        String2.log(
+            msg
+                + String2.ERROR
+                + ": Too few "
+                + edvga.destinationName()
+                + " values were received (got="
+                + (newValues == null ? "null" : "" + (newValues.size() - 1))
+                + "expected="
+                + (newSize - oldSize)
+                + ").");
+        return false;
+      }
+      if (oldValues.elementType() != newValues.elementType())
+        throw new WaitThenTryAgainException(
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                + "\n("
+                + msg
+                + edvga.destinationName()
+                + " dataType changed: "
+                + " new="
+                + newValues.elementTypeString()
+                + " != old="
+                + oldValues.elementTypeString()
+                + ")");
+
+      // ensure last old value is unchanged
+      if (oldValues.getDouble(oldSize - 1)
+          != newValues.getDouble(0)) // they should be exactly equal
+      throw new WaitThenTryAgainException(
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                + "\n("
+                + msg
+                + edvga.destinationName()
+                + "["
+                + (oldSize - 1)
+                + "] changed!  old="
+                + oldValues.getDouble(oldSize - 1)
+                + " != new="
+                + newValues.getDouble(0));
+
+      // prepare changes to update the dataset
+      PAOne newMin = new PAOne(oldValues, 0);
+      PAOne newMax = new PAOne(newValues, newValues.size() - 1);
+      if (edvtsga != null) {
+        newMin = PAOne.fromDouble(edvtsga.sourceTimeToEpochSeconds(newMin.getDouble()));
+        newMax = PAOne.fromDouble(edvtsga.sourceTimeToEpochSeconds(newMax.getDouble()));
+      } else if (edvga.scaleAddOffset()) {
+        newMin = PAOne.fromDouble(newMin.getDouble() * edvga.scaleFactor() + edvga.addOffset());
+        newMax = PAOne.fromDouble(newMax.getDouble() * edvga.scaleFactor() + edvga.addOffset());
+      }
+
+      // first, calculate newAverageSpacing (destination units, will be negative if isDescending)
+      double newAverageSpacing = (newMax.getDouble() - newMin.getDouble()) / (newSize - 1);
+
+      // second, test for min>max after extractScaleAddOffset, since order may have changed
+      if (newMin.compareTo(newMax) > 0) {
+        PAOne d = newMin;
+        newMin = newMax;
+        newMax = d;
+      }
+
+      // test isAscending  (having last old value is essential)
+      String error = edvga.isAscending() ? newValues.isAscending() : newValues.isDescending();
+      if (error.length() > 0)
+        throw new WaitThenTryAgainException(
+            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                + "\n("
+                + edvga.destinationName()
+                + " was "
+                + (edvga.isAscending() ? "a" : "de")
+                + "scending, but the newest values aren't ("
+                + error
+                + ").)");
+
+      // if was isEvenlySpaced, test that new values are and have same averageSpacing
+      // (having last old value is essential)
+      boolean newIsEvenlySpaced =
+          edvga.isEvenlySpaced(); // here, this is actually oldIsEvenlySpaced
+      if (newIsEvenlySpaced) {
+        error = newValues.isEvenlySpaced();
+        if (error.length() > 0) {
+          String2.log(
+              msg
+                  + "changing "
+                  + edvga.destinationName()
+                  + ".isEvenlySpaced from true to false: "
+                  + error);
+          newIsEvenlySpaced = false;
+
+          // new spacing != old spacing ?  (precision=5, but times will be exact)
+        } else if (!Math2.almostEqual(5, newAverageSpacing, edvga.averageSpacing())) {
+          String2.log(
+              msg
+                  + "changing "
+                  + edvga.destinationName()
+                  + ".isEvenlySpaced from true to false: newSpacing="
+                  + newAverageSpacing
+                  + " oldSpacing="
+                  + edvga.averageSpacing());
+          newIsEvenlySpaced = false;
+        }
+      }
+
+      // remove the last old value from newValues
+      newValues.remove(0);
+
+      // ensureCapacity of oldValues (may take time)
+      oldValues.ensureCapacity(newSize); // so oldValues.append below is as fast as possible
+
+      // right before making changes, make doubly sure another thread hasn't already (IMPERFECT
+      // TEST)
+      if (oldValues.size() != oldSize) {
+        String2.log(
+            msg
+                + "changes abandoned.  "
+                + edvga.destinationName()
+                + ".size changed (new="
+                + oldValues.size()
+                + " != old="
+                + oldSize
+                + ").  (By update() in another thread?)");
+        return false;
+      }
+
+      // Swap changes into place quickly to minimize problems.  Better if changes were atomic.
+      // Order of changes is important.
+      // Other threads may be affected by some values being updated before others.
+      // This is an imperfect alternative to synchronizing all uses of this dataset (which is far
+      // worse).
+      oldValues.append(
+          newValues); // should be fast, and new size set at end to minimize concurrency problems
+      edvga.setDestinationMinMax(newMin, newMax);
+      edvga.setIsEvenlySpaced(newIsEvenlySpaced);
+      edvga.initializeAverageSpacingAndCoarseMinMax();
+      edvga.setActualRangeFromDestinationMinMax(language);
+      if (edvga instanceof EDVTimeGridAxis)
+        combinedGlobalAttributes.set(
+            language,
+            "time_coverage_end",
+            Calendar2.epochSecondsToLimitedIsoStringT(
+                edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION),
+                newMax.getDouble(),
+                ""));
+      edvga.clearSliderCsvValues(); // do last, to force recreation next time needed
+
+      updateCount++;
+      long thisTime = System.currentTimeMillis() - startUpdateMillis;
+      cumulativeUpdateTime += thisTime;
+      if (reallyVerbose)
+        String2.log(
+            msg
+                + "succeeded. "
+                + Calendar2.getCurrentISODateTimeStringLocalTZ()
+                + " nValuesAdded="
+                + newValues.size()
+                + " time="
+                + thisTime
+                + "ms updateCount="
+                + updateCount
+                + " avgTime="
+                + (cumulativeUpdateTime / updateCount)
+                + "ms");
     }
-
-    // remove the last old value from newValues
-    newValues.remove(0);
-
-    // ensureCapacity of oldValues (may take time)
-    oldValues.ensureCapacity(newSize); // so oldValues.append below is as fast as possible
-
-    // right before making changes, make doubly sure another thread hasn't already (IMPERFECT TEST)
-    if (oldValues.size() != oldSize) {
-      String2.log(
-          msg
-              + "changes abandoned.  "
-              + edvga.destinationName()
-              + ".size changed (new="
-              + oldValues.size()
-              + " != old="
-              + oldSize
-              + ").  (By update() in another thread?)");
-      return false;
-    }
-
-    // Swap changes into place quickly to minimize problems.  Better if changes were atomic.
-    // Order of changes is important.
-    // Other threads may be affected by some values being updated before others.
-    // This is an imperfect alternative to synchronizing all uses of this dataset (which is far
-    // worse).
-    oldValues.append(
-        newValues); // should be fast, and new size set at end to minimize concurrency problems
-    edvga.setDestinationMinMax(newMin, newMax);
-    edvga.setIsEvenlySpaced(newIsEvenlySpaced);
-    edvga.initializeAverageSpacingAndCoarseMinMax();
-    edvga.setActualRangeFromDestinationMinMax(language);
-    if (edvga instanceof EDVTimeGridAxis)
-      combinedGlobalAttributes.set(
-          language,
-          "time_coverage_end",
-          Calendar2.epochSecondsToLimitedIsoStringT(
-              edvga.combinedAttributes().getString(language, EDV.TIME_PRECISION),
-              newMax.getDouble(),
-              ""));
-    edvga.clearSliderCsvValues(); // do last, to force recreation next time needed
-
-    updateCount++;
-    long thisTime = System.currentTimeMillis() - startUpdateMillis;
-    cumulativeUpdateTime += thisTime;
-    if (reallyVerbose)
-      String2.log(
-          msg
-              + "succeeded. "
-              + Calendar2.getCurrentISODateTimeStringLocalTZ()
-              + " nValuesAdded="
-              + newValues.size()
-              + " time="
-              + thisTime
-              + "ms updateCount="
-              + updateCount
-              + " avgTime="
-              + (cumulativeUpdateTime / updateCount)
-              + "ms");
     return true;
   }
 
@@ -924,66 +929,67 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     String constraint = buildDapArrayQuery(tConstraints);
 
     // get results one var at a time (that's how OpendapHelper is set up)
-    DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
-    PrimitiveArray results[] = new PrimitiveArray[axisVariables.length + tDataVariables.length];
-    for (int dv = 0; dv < tDataVariables.length; dv++) {
-      // get the data
-      PrimitiveArray pa[] = null;
-      try {
-        pa =
-            OpendapHelper.getPrimitiveArrays(
-                dConnect, "?" + tDataVariables[dv].sourceName() + constraint);
+    try (DConnect2 dConnect = new DConnect2(localSourceUrl, acceptDeflate)) {
+      PrimitiveArray results[] = new PrimitiveArray[axisVariables.length + tDataVariables.length];
+      for (int dv = 0; dv < tDataVariables.length; dv++) {
+        // get the data
+        PrimitiveArray pa[] = null;
+        try {
+          pa =
+              OpendapHelper.getPrimitiveArrays(
+                  dConnect, "?" + tDataVariables[dv].sourceName() + constraint);
 
-      } catch (Throwable t) {
-        EDStatic.rethrowClientAbortException(t); // first thing in catch{}
+        } catch (Throwable t) {
+          EDStatic.rethrowClientAbortException(t); // first thing in catch{}
 
-        // if OutOfMemoryError or too much data, rethrow t
-        String tToString = t.toString();
-        if (Thread.currentThread().isInterrupted()
-            || t instanceof InterruptedException
-            || t instanceof OutOfMemoryError
-            || tToString.indexOf(Math2.memoryTooMuchData) >= 0
-            || tToString.indexOf(Math2.TooManyOpenFiles) >= 0) throw t;
+          // if OutOfMemoryError or too much data, rethrow t
+          String tToString = t.toString();
+          if (Thread.currentThread().isInterrupted()
+              || t instanceof InterruptedException
+              || t instanceof OutOfMemoryError
+              || tToString.indexOf(Math2.memoryTooMuchData) >= 0
+              || tToString.indexOf(Math2.TooManyOpenFiles) >= 0) throw t;
 
-        // request should be valid, so any other error is trouble with dataset
-        String2.log(MustBe.throwableToString(t));
-        throw t instanceof WaitThenTryAgainException
-            ? t
-            : new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-                    + "\n("
-                    + EDMessages.errorFromDataSource
-                    + t
-                    + ")",
-                t);
-      }
-      if (pa.length != axisVariables.length + 1)
-        throw new WaitThenTryAgainException(
-            EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-                + "\n(Details: An unexpected data structure was returned from the source.)");
-      results[axisVariables.length + dv] = pa[0];
-      if (dv == 0) {
-        // I think GridDataAccessor compares observed and expected axis values
-        System.arraycopy(pa, 1, results, 0, axisVariables.length);
-      } else {
-        for (int av = 0; av < axisVariables.length; av++) {
-          String tError = results[av].almostEqual(pa[av + 1]);
-          if (tError.length() > 0)
-            throw new WaitThenTryAgainException(
-                EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
-                    + "\n(Details: The axis values for dataVariable=0,axis="
-                    + av
-                    + "\ndon't equal the axis values for dataVariable="
-                    + dv
-                    + ",axis="
-                    + av
-                    + ".\n"
-                    + tError
-                    + ")");
+          // request should be valid, so any other error is trouble with dataset
+          String2.log(MustBe.throwableToString(t));
+          throw t instanceof WaitThenTryAgainException
+              ? t
+              : new WaitThenTryAgainException(
+                  EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                      + "\n("
+                      + EDMessages.errorFromDataSource
+                      + t
+                      + ")",
+                  t);
+        }
+        if (pa.length != axisVariables.length + 1)
+          throw new WaitThenTryAgainException(
+              EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                  + "\n(Details: An unexpected data structure was returned from the source.)");
+        results[axisVariables.length + dv] = pa[0];
+        if (dv == 0) {
+          // I think GridDataAccessor compares observed and expected axis values
+          System.arraycopy(pa, 1, results, 0, axisVariables.length);
+        } else {
+          for (int av = 0; av < axisVariables.length; av++) {
+            String tError = results[av].almostEqual(pa[av + 1]);
+            if (tError.length() > 0)
+              throw new WaitThenTryAgainException(
+                  EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
+                      + "\n(Details: The axis values for dataVariable=0,axis="
+                      + av
+                      + "\ndon't equal the axis values for dataVariable="
+                      + dv
+                      + ",axis="
+                      + av
+                      + ".\n"
+                      + tError
+                      + ")");
+          }
         }
       }
+      return results;
     }
-    return results;
   }
 
   private void getFilesForSubdir(String subDir, Table resultsTable, Queue<String> subdirs)

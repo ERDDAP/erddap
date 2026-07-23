@@ -1017,7 +1017,7 @@
             <groupId>edu.ucar</groupId>
             <artifactId>opendap</artifactId>
             <version>${netcdfJavaVersion}</version>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
