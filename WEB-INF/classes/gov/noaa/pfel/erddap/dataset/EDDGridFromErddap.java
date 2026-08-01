@@ -16,11 +16,11 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -40,7 +40,6 @@ import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -48,15 +47,14 @@ import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Queue;
-import opendap.dap.BaseType;
-import opendap.dap.DArray;
-import opendap.dap.DArrayDimension;
-import opendap.dap.DConnect2;
-import opendap.dap.DDS;
-import opendap.dap.DGrid;
 import opendap.dap.NoSuchVariableException;
 import org.semver4j.Semver;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class represents a grid dataset from an opendap DAP source.
@@ -210,6 +208,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
    * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
    * @throws Throwable if trouble
    */
+  public static NetcdfDataset openDataset(String url) throws Exception {
+    DatasetUrl durl = DatasetUrl.create(thredds.client.catalog.ServiceType.OPENDAP, url);
+    return NetcdfDatasets.openDataset(durl, null, -1, null, null);
+  }
+
   public EDDGridFromErddap(
       String tDatasetID,
       String tAccessibleTo,
@@ -283,8 +286,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
     }
 
-    try (DConnect2 dConnect =
-        quickRestartAttributes == null ? new DConnect2(localSourceUrl, acceptDeflate) : null) {
+    try (NetcdfDataset dataset =
+        quickRestartAttributes == null ? openDataset(localSourceUrl) : null) {
 
       // setup via info.json
       // source https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
@@ -334,11 +337,17 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             }
           }
           case "dimension" -> {
-            PrimitiveArray tSourceValues =
-                quickRestartAttributes == null
-                    ? OpendapHelper.getPrimitiveArray(dConnect, "?" + varName)
-                    : quickRestartAttributes.get(
-                        "sourceValues_" + String2.encodeVariableNameSafe(varName));
+            PrimitiveArray tSourceValues = null;
+            if (quickRestartAttributes != null) {
+              tSourceValues =
+                  quickRestartAttributes.get(
+                      "sourceValues_" + String2.encodeVariableNameSafe(varName));
+            } else {
+              Variable dimensionVar = dataset.findVariable(varName);
+              if (dimensionVar != null) {
+                tSourceValues = NcHelper.getPrimitiveArray(dimensionVar);
+              }
+            }
 
             // deal with remote not having ioos_category, but this ERDDAP requiring it
             LocalizedAttributes tAddAttributes = new LocalizedAttributes();
@@ -552,11 +561,18 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
-    // read dds
-    try (DConnect2 dConnect = new DConnect2(localSourceUrl, acceptDeflate)) {
-      byte ddsBytes[] = SSR.getUrlResponseBytes(localSourceUrl + ".dds");
-      DDS dds = new DDS();
-      dds.parse(new ByteArrayInputStream(ddsBytes));
+    try (NetcdfDataset dataset = openDataset(localSourceUrl)) {
+      Variable variable = dataset.findVariable(dataVariables[0].sourceName());
+      if (variable == null) {
+        String2.log(
+            msg
+                + String2.ERROR
+                + ": Unexpected: "
+                + dataVariables[0].sourceName()
+                + " not found in source dataset. So I called requestReloadASAP().");
+        requestReloadASAP();
+        return false;
+      }
 
       // has edvga[0] changed size?
       EDVGridAxis edvga = axisVariables[0];
@@ -564,31 +580,20 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       PrimitiveArray oldValues = edvga.sourceValues();
       int oldSize = oldValues.size();
 
-      // get mainDArray
-      BaseType bt =
-          dds.getVariable(dataVariables[0].sourceName()); // throws NoSuchVariableException
-      DArray mainDArray = null;
-      if (bt instanceof DGrid dgrid) {
-        mainDArray = (DArray) dgrid.getVar(0); // first element is always main array
-      } else if (bt instanceof DArray darray) {
-        mainDArray = darray;
-      } else {
+      // get the leftmost dimension
+      List<ucar.nc2.Dimension> dims = variable.getDimensions();
+      if (dims == null || dims.isEmpty()) {
         String2.log(
             msg
                 + String2.ERROR
-                + ": Unexpected "
-                + dataVariables[0].destinationName()
-                + " source type="
-                + bt.getTypeName()
-                + ".");
-        // requestReloadASAP()+WaitThenTryAgain might lead to endless cycle of full reloads
+                + ": Unexpected: Variable "
+                + dataVariables[0].sourceName()
+                + " has no dimensions.");
         requestReloadASAP();
         return false;
       }
-
-      // get the leftmost dimension
-      DArrayDimension dad = mainDArray.getDimension(0);
-      int newSize = dad.getSize();
+      ucar.nc2.Dimension leftmostDim = dims.get(0);
+      int newSize = leftmostDim.getLength();
       if (newSize < oldSize)
         throw new WaitThenTryAgainException(
             EDStatic.simpleBilingual(language, Message.WAIT_THEN_TRY_AGAIN)
@@ -609,24 +614,27 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       // newSize > oldSize, get last old value (for testing below) and new values
       PrimitiveArray newValues = null;
       if (edvga.sourceDataPAType() == PAType.INT
-          && // not a perfect test
-          "count".equals(edvga.sourceAttributes().getString("units")))
+          && "count".equals(edvga.sourceAttributes().getString("units"))) {
         newValues = new IntArray(oldSize - 1, newSize - 1); // 0 based
-      else {
+      } else {
         try {
-          newValues =
-              OpendapHelper.getPrimitiveArray(
-                  dConnect,
-                  "?" + edvga.sourceName() + "[" + (oldSize - 1) + ":" + (newSize - 1) + "]");
-        } catch (NoSuchVariableException nsve) {
-          // hopefully avoided by testing for units=count and int datatype above
+          Variable axisVar = dataset.findVariable(edvga.sourceName());
+          if (axisVar == null) {
+            throw new NoSuchVariableException(edvga.sourceName());
+          }
+          int start = oldSize - 1;
+          int size = newSize - oldSize + 1;
+          ucar.ma2.Section section = new ucar.ma2.Section(new int[] {start}, new int[] {size});
+          ucar.ma2.Array sliceArray = axisVar.read(section);
+          newValues = NcHelper.getPrimitiveArray(sliceArray);
+        } catch (Exception nsve) {
           String2.log(
               msg
-                  + "caught NoSuchVariableException for sourceName="
+                  + "caught Exception for sourceName="
                   + edvga.sourceName()
                   + ". Using index numbers.");
           newValues = new IntArray(oldSize - 1, newSize - 1); // 0 based
-        } // but other exceptions aren't caught
+        }
       }
 
       // ensure newValues is valid
@@ -924,21 +932,27 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
       int language, Table tDirTable, Table tFileTable, EDV tDataVariables[], IntArray tConstraints)
       throws Throwable {
 
-    // build String form of the constraint
-    // String errorInMethod = "Error in EDDGridFromErddap.getSourceData for " + datasetID + ": ";
-    String constraint = buildDapArrayQuery(tConstraints);
-
-    // get results one var at a time (that's how OpendapHelper is set up)
-    try (DConnect2 dConnect = new DConnect2(localSourceUrl, acceptDeflate)) {
+    try (NetcdfDataset dataset = openDataset(localSourceUrl)) {
       PrimitiveArray results[] = new PrimitiveArray[axisVariables.length + tDataVariables.length];
       for (int dv = 0; dv < tDataVariables.length; dv++) {
         // get the data
-        PrimitiveArray pa[] = null;
+        PrimitiveArray pa[] = new PrimitiveArray[axisVariables.length + 1];
         try {
-          pa =
-              OpendapHelper.getPrimitiveArrays(
-                  dConnect, "?" + tDataVariables[dv].sourceName() + constraint);
+          Variable var = dataset.findVariable(tDataVariables[dv].sourceName());
+          if (var == null) {
+            throw new SimpleException("Variable not found: " + tDataVariables[dv].sourceName());
+          }
+          ucar.ma2.Section section =
+              NcHelper.getSectionFromConstraints(tConstraints, axisVariables.length);
+          ucar.ma2.Array sliceArray = var.read(section);
+          pa[0] = NcHelper.getPrimitiveArray(sliceArray);
 
+          for (int av = 0; av < axisVariables.length; av++) {
+            int start = tConstraints.get(av * 3);
+            int stride = tConstraints.get(av * 3 + 1);
+            int stop = tConstraints.get(av * 3 + 2);
+            pa[av + 1] = axisVariables[av].sourceValues().subset(start, stride, stop);
+          }
         } catch (Throwable t) {
           EDStatic.rethrowClientAbortException(t); // first thing in catch{}
 
