@@ -19,7 +19,15 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import opendap.dap.*;
+import java.util.ArrayList;
+import java.util.List;
+import ucar.ma2.Array;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
+import ucar.nc2.Dimension;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 /** This class holds information about an OPeNDAP grid data set for one time period. */
 public class Opendap {
@@ -134,202 +142,206 @@ public class Opendap {
    * gridTimeDimension, gridDepthDimension, gridLatDimension, gridLonDimension, gridNLatValues,
    * gridNLonValues, gridLatIncrement, gridLonIncrement gridMissingValue.
    *
-   * @param das from getDas(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param dds from getDds(OpendapHelper.DEFAULT_TIMEOUT)
+   * @param ncd the NetcdfDataset instance
    * @param gridName e.g., "ssta"
    * @param defaultMissingValue the missingValue string to be used if the attribute "missing_value"
    *     isn't found
    * @throws Exception if trouble (e.g., gridName not found)
    */
-  public void getGridInfo(DAS das, DDS dds, String gridName, String defaultMissingValue)
+  public void getGridInfo(NetcdfDataset ncd, String gridName, String defaultMissingValue)
       throws Exception {
     long time = System.currentTimeMillis();
 
     if (verbose) String2.log("Opendap.getGridInfo for " + gridName);
 
     // clear variables (in case trouble)
-    try (DConnect2 dConnect = new DConnect2(url, acceptDeflate)) {
-      this.gridName = gridName;
-      gridDimensionNames = null;
-      gridDimensionData = null;
-      gridDimensionAscending = null;
-      gridTimeDimension = -1;
-      gridDepthDimension = -1;
-      gridLatDimension = -1;
-      gridLonDimension = -1;
-      gridNLonValues = -1;
-      gridNLatValues = -1;
-      gridLatIncrement = -1;
-      gridLonIncrement = -1;
-      gridMissingValue = null;
-      gridTimeBaseSeconds = Double.NaN;
-      gridTimeFactorToGetSeconds = Double.NaN;
+    this.gridName = gridName;
+    gridDimensionNames = null;
+    gridDimensionData = null;
+    gridDimensionAscending = null;
+    gridTimeDimension = -1;
+    gridDepthDimension = -1;
+    gridLatDimension = -1;
+    gridLonDimension = -1;
+    gridNLonValues = -1;
+    gridNLatValues = -1;
+    gridLatIncrement = -1;
+    gridLonIncrement = -1;
+    gridMissingValue = null;
+    gridTimeBaseSeconds = Double.NaN;
+    gridTimeFactorToGetSeconds = Double.NaN;
 
-      // get the grid baseType
-      BaseType bt = dds.getVariable(gridName); // throws exception if not found
-      DArray da =
-          (DArray) ((DGrid) bt).getVariables().nextElement(); // first element is always main array
-      // if (verbose) String2.log("  da.getName()=" + da.getName()); //always(?) same as gridName
+    // get the grid variable
+    Variable gridVar = ncd.findVariable(gridName);
+    if (gridVar == null) {
+      throw new RuntimeException("gridName not found: " + gridName);
+    }
 
-      // gridMissingValue:  get from _FillValue  (it is preferred over missing_value)
-      gridMissingValue = OpendapHelper.getAttributeValue(das, gridName, "_FillValue");
-      if (verbose) String2.log("  gridMissing value from _FillValue=" + gridMissingValue);
+    // gridMissingValue:  get from _FillValue  (it is preferred over missing_value)
+    PrimitiveArray fillValuePa = NcHelper.getVariableAttribute(gridVar, "_FillValue");
+    gridMissingValue = fillValuePa != null && fillValuePa.size() > 0 ? fillValuePa.getString(0) : null;
+    if (verbose) String2.log("  gridMissing value from _FillValue=" + gridMissingValue);
 
-      // gridMissingValue:  get from missingValue is second best
-      if (gridMissingValue == null) {
-        gridMissingValue = OpendapHelper.getAttributeValue(das, gridName, "missing_value");
-        if (verbose) String2.log("  gridMissing value from missing_value=" + gridMissingValue);
+    // gridMissingValue:  get from missingValue is second best
+    if (gridMissingValue == null) {
+      PrimitiveArray missingValuePa = NcHelper.getVariableAttribute(gridVar, "missing_value");
+      gridMissingValue = missingValuePa != null && missingValuePa.size() > 0 ? missingValuePa.getString(0) : null;
+      if (verbose) String2.log("  gridMissing value from missing_value=" + gridMissingValue);
+    }
+
+    // gridMissingValue:  use default
+    if (gridMissingValue == null) {
+      gridMissingValue = defaultMissingValue;
+      if (verbose) String2.log("  gridMissingValue from default: " + gridMissingValue + ".");
+    }
+
+    // investigate the dimensions
+    List<Dimension> dims = gridVar.getDimensions();
+    int numDimensions = dims.size();
+    gridDimensionNames = new String[numDimensions];
+    gridDimensionData = new double[numDimensions][];
+    gridDimensionAscending = new boolean[numDimensions];
+    int po = 0;
+    for (Dimension dim : dims) {
+      long time1 = System.currentTimeMillis();
+      String dimName = dim.getName();
+      gridDimensionNames[po] = dimName;
+
+      Variable coordVar = ncd.findVariable(dimName);
+      if (coordVar == null) {
+        throw new RuntimeException("Coordinate variable not found for dimension: " + dimName);
       }
 
-      // gridMissingValue:  use default
-      if (gridMissingValue == null) {
-        gridMissingValue = defaultMissingValue;
-        if (verbose) String2.log("  gridMissingValue from default: " + gridMissingValue + ".");
-      }
+      PrimitiveArray pa = NcHelper.getPrimitiveArray(coordVar);
+      gridDimensionData[po] = pa.toDoubleArray();
 
-      // investigate the dimensions
-      int numDimensions = da.numDimensions();
-      gridDimensionNames = new String[numDimensions];
-      gridDimensionData = new double[numDimensions][];
-      gridDimensionAscending = new boolean[numDimensions];
-      int po = 0;
-      java.util.Enumeration<DArrayDimension> e2 = da.getDimensions();
-      while (e2.hasMoreElements()) {
-        long time1 = System.currentTimeMillis();
-        DArrayDimension dad = e2.nextElement();
-        gridDimensionNames[po] = dad.getClearName();
+      // gather other information
+      double range =
+          Math.abs(
+              gridDimensionData[po][gridDimensionData[po].length - 1] - gridDimensionData[po][0]);
+      gridDimensionAscending[po] = range > 0;
+      switch (dimName) {
+        case "time", "time_series" -> {
+          gridTimeDimension = po;
 
-        // get dimension info
-        // I used to try to deduce the values from "point_spacing"="even" and "actual_range"?
-        // This is only small time saver.
-        //  Axis dimensions can be deduced, but are small and load quickly anyway.
-        //  Time dimension can be large, but can't be deduced.
-        // And it isn't safe to rely on metadata.
-        // So always just download the values.
-        gridDimensionData[po] = OpendapHelper.getDoubleArray(dConnect, "?" + dad.getClearName());
+          // interpret time_series units (e.g., "days since 1985-01-01" or "days since 1985-1-1")
+          // it must be: <units> since <isoDate>   or exception thrown
+          PrimitiveArray unitsPa = NcHelper.getVariableAttribute(coordVar, "units");
+          String tsUnits = unitsPa != null && unitsPa.size() > 0 ? unitsPa.getString(0) : "";
+          tsUnits = String2.replaceAll(tsUnits, "\"", "");
+          double timeBaseAndFactor[] =
+              Calendar2.getTimeBaseAndFactor(tsUnits); // throws exception if trouble
 
-        // gather other information
-        double range =
-            Math.abs(
-                gridDimensionData[po][gridDimensionData[po].length - 1] - gridDimensionData[po][0]);
-        gridDimensionAscending[po] = range > 0;
-        switch (dad.getClearName()) {
-          case "time", "time_series" -> {
-            gridTimeDimension = po;
+          gridTimeBaseSeconds = timeBaseAndFactor[0];
+          gridTimeFactorToGetSeconds = timeBaseAndFactor[1];
 
-            // interpret time_series units (e.g., "days since 1985-01-01" or "days since 1985-1-1")
-            // it must be: <units> since <isoDate>   or exception thrown
-            // FUTURE: need to catch time zone information
-            String tsUnits = OpendapHelper.getAttributeValue(das, dad.getClearName(), "units");
-            tsUnits = String2.replaceAll(tsUnits, "\"", "");
-            double timeBaseAndFactor[] =
-                Calendar2.getTimeBaseAndFactor(tsUnits); // throws exception if trouble
-
-            gridTimeBaseSeconds = timeBaseAndFactor[0];
-            gridTimeFactorToGetSeconds = timeBaseAndFactor[1];
-
-            // timeLongName is used to determine if the times in the file are already
-            // centered ("Centered Time" or anything other than "End Time")
-            // or aren't yet centered ("End Time").
-            timeLongName = OpendapHelper.getAttributeValue(das, dad.getClearName(), "long_name");
-          }
-          case "depth", "altitude" -> gridDepthDimension = po;
-          case "lat", "latitude" -> {
-            gridLatDimension = po;
-            gridNLatValues = gridDimensionData[po].length;
-            gridLatIncrement = range / (gridNLatValues - 1);
-          }
-          case "lon", "longitude" -> {
-            gridLonDimension = po;
-            gridNLonValues = gridDimensionData[po].length;
-            gridLonIncrement = range / (gridNLonValues - 1);
-            lonIsPM180 =
-                !DataHelper.lonNeedsToBe0360(
-                    gridDimensionData[po][0], gridDimensionData[po][gridNLonValues - 1]);
-          }
+          // timeLongName is used to determine if the times in the file are already
+          // centered ("Centered Time" or anything other than "End Time")
+          // or aren't yet centered ("End Time").
+          PrimitiveArray longNamePa = NcHelper.getVariableAttribute(coordVar, "long_name");
+          timeLongName = longNamePa != null && longNamePa.size() > 0 ? longNamePa.getString(0) : null;
         }
-        Test.ensureEqual(
-            dad.getStop() + 1,
-            gridDimensionData[po].length,
-            "Opendap.getGridInfo("
-                + gridName
-                + ") "
-                + ") dad.getStop()+1!= gridDimensionData["
-                + po
-                + "].size().\n  (url = "
-                + url
-                + ")");
-        if (verbose)
-          String2.log(
-              "  Dimension "
-                  + dad.getClearName()
-                  + " length="
-                  + (dad.getStop() + 1)
-                  + " time="
-                  + (System.currentTimeMillis() - time1)
-                  + "ms");
-        po++;
+        case "depth", "altitude" -> gridDepthDimension = po;
+        case "lat", "latitude" -> {
+          gridLatDimension = po;
+          gridNLatValues = gridDimensionData[po].length;
+          gridLatIncrement = range / (gridNLatValues - 1);
+        }
+        case "lon", "longitude" -> {
+          gridLonDimension = po;
+          gridNLonValues = gridDimensionData[po].length;
+          gridLonIncrement = range / (gridNLonValues - 1);
+          lonIsPM180 =
+              !DataHelper.lonNeedsToBe0360(
+                  gridDimensionData[po][0], gridDimensionData[po][gridNLonValues - 1]);
+        }
       }
       Test.ensureEqual(
-          numDimensions,
-          po,
-          "Opendap.getGridInfo(" + gridName + ") numDimensions != po.\n  (url = " + url + ")");
+          dim.getLength(),
+          gridDimensionData[po].length,
+          "Opendap.getGridInfo("
+              + gridName
+              + ") dim.getLength() != gridDimensionData["
+              + po
+              + "].length.\n  (url = "
+              + url
+              + ")");
       if (verbose)
         String2.log(
-            "  names="
-                + String2.toCSSVString(gridDimensionNames)
-                + "\n"
-                + "  gridTimeDimension="
-                + gridTimeDimension
-                + " min="
-                + gridDimensionData[gridTimeDimension][0]
-                + " max="
-                + gridDimensionData[gridTimeDimension][
-                    gridDimensionData[gridTimeDimension].length - 1]
-                + "\n"
-                + "  gridDepthDimension="
-                + gridDepthDimension
-                + (gridDepthDimension >= 0
-                    ? " min="
-                        + gridDimensionData[gridDepthDimension][0]
-                        + " max="
-                        + gridDimensionData[gridDepthDimension][
-                            gridDimensionData[gridDepthDimension].length - 1]
-                    : "")
-                + "\n"
-                + "  gridLatDimension="
-                + gridLatDimension
-                + " nLat="
-                + gridNLatValues
-                + " inc="
-                + gridLatIncrement
-                + " min="
-                + gridDimensionData[gridLatDimension][0]
-                + " max="
-                + gridDimensionData[gridLatDimension][
-                    gridDimensionData[gridLatDimension].length - 1]
-                + "\n"
-                + "  gridLonDimension="
-                + gridLonDimension
-                + " nLon="
-                + gridNLonValues
-                + " inc="
-                + gridLonIncrement
-                + " min="
-                + gridDimensionData[gridLonDimension][0]
-                + " max="
-                + gridDimensionData[gridLonDimension][
-                    gridDimensionData[gridLonDimension].length - 1]
-                + "\n"
-                + "  missingValue="
-                + gridMissingValue
-                + "  gridName="
-                + gridName
-                + "\n"
-                + "  Opendap.getGridInfo done. TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms\n");
+            "  Dimension "
+                + dimName
+                + " length="
+                + dim.getLength()
+                + " time="
+                + (System.currentTimeMillis() - time1)
+                + "ms");
+      po++;
     }
+    Test.ensureEqual(
+        numDimensions,
+        po,
+        "Opendap.getGridInfo(" + gridName + ") numDimensions != po.\n  (url = " + url + ")");
+    if (verbose)
+      String2.log(
+          "  names="
+              + String2.toCSSVString(gridDimensionNames)
+              + "\n"
+              + "  gridTimeDimension="
+              + gridTimeDimension
+              + (gridTimeDimension >= 0
+                  ? " min="
+                      + gridDimensionData[gridTimeDimension][0]
+                      + " max="
+                      + gridDimensionData[gridTimeDimension][
+                          gridDimensionData[gridTimeDimension].length - 1]
+                  : "")
+              + "\n"
+              + "  gridDepthDimension="
+              + gridDepthDimension
+              + (gridDepthDimension >= 0
+                  ? " min="
+                      + gridDimensionData[gridDepthDimension][0]
+                      + " max="
+                      + gridDimensionData[gridDepthDimension][
+                          gridDimensionData[gridDepthDimension].length - 1]
+                  : "")
+              + "\n"
+              + "  gridLatDimension="
+              + gridLatDimension
+              + (gridLatDimension >= 0
+                  ? " nLat="
+                      + gridNLatValues
+                      + " inc="
+                      + gridLatIncrement
+                      + " min="
+                      + gridDimensionData[gridLatDimension][0]
+                      + " max="
+                      + gridDimensionData[gridLatDimension][
+                          gridDimensionData[gridLatDimension].length - 1]
+                  : "")
+              + "\n"
+              + "  gridLonDimension="
+              + gridLonDimension
+              + (gridLonDimension >= 0
+                  ? " nLon="
+                      + gridNLonValues
+                      + " inc="
+                      + gridLonIncrement
+                      + " min="
+                      + gridDimensionData[gridLonDimension][0]
+                      + " max="
+                      + gridDimensionData[gridLonDimension][
+                          gridDimensionData[gridLonDimension].length - 1]
+                  : "")
+              + "\n"
+              + "  missingValue="
+              + gridMissingValue
+              + "  gridName="
+              + gridName
+              + "\n"
+              + "  Opendap.getGridInfo done. TIME="
+              + (System.currentTimeMillis() - time)
+              + "ms\n");
   }
 
   /**
@@ -503,7 +515,7 @@ public class Opendap {
     if (minY > maxY)
       Test.error(errorInMethod + "minY (" + minY + ") must be <= maxY (" + maxY + ").");
 
-    try (DConnect2 dConnect = new DConnect2(url, acceptDeflate)) {
+    try (NetcdfDataset ncd = NetcdfDatasets.openDataset(url)) {
       // getMinX and getMaxX are minX and maxX adjusted to be appropriate for the data
       // originalDesiredLonIncrement (e.g. .1 degrees) used to calculate new, larger desireNWide if
       // 360 degrees
@@ -612,16 +624,16 @@ public class Opendap {
         // the time values are off by one.
         // This checks for trouble and adjusts if possible.
 
-        // get the current time value from Opendap
+        // get the current time value from NetcdfDataset
         long checkTime = System.currentTimeMillis();
-        double observedTime =
-            OpendapHelper.getDoubleArray(
-                dConnect,
-                "?"
-                    + gridDimensionNames[gridTimeDimension]
-                    + "["
-                    + minIndex[gridTimeDimension]
-                    + "]")[0]; // just get one value
+        Variable timeVar = ncd.findVariable(gridDimensionNames[gridTimeDimension]);
+        if (timeVar == null) {
+          throw new RuntimeException("Time variable not found: " + gridDimensionNames[gridTimeDimension]);
+        }
+        int[] origin = new int[] { minIndex[gridTimeDimension] };
+        int[] shape = new int[] { 1 };
+        PrimitiveArray observedTimePa = NcHelper.getPrimitiveArray(timeVar.read(origin, shape));
+        double observedTime = observedTimePa.getDouble(0);
 
         // compare observed and expected
         // (observed and expected are in whatever offset/units/centeredVs.end the file uses)
@@ -643,9 +655,8 @@ public class Opendap {
             File2.writeToFile88591(flagDirectory + "OpendapTimeIndexTrouble", "a");
 
           // read all the time data
-          double timesAr[] =
-              OpendapHelper.getDoubleArray(dConnect, "?" + gridDimensionNames[gridTimeDimension]);
-          DoubleArray times = new DoubleArray(timesAr);
+          PrimitiveArray timesPa = NcHelper.getPrimitiveArray(timeVar);
+          DoubleArray times = timesPa instanceof DoubleArray da ? da : new DoubleArray(timesPa);
 
           // look for expected
           int newIndex = times.indexOf(expectedTime, 0);
@@ -951,7 +962,7 @@ public class Opendap {
   public Grid makeGrid(int minIndex[], int maxIndex[], int stride[]) throws Exception {
 
     long startTime = System.currentTimeMillis();
-    try (DConnect2 dConnect = new DConnect2(url, acceptDeflate)) {
+    try (NetcdfDataset ncd = NetcdfDatasets.openDataset(url)) {
       minLonInNewFile = getLon(minIndex[gridLonDimension]);
       maxLonInNewFile = getLon(maxIndex[gridLonDimension]);
       minLatInNewFile = getLat(minIndex[gridLatDimension]);
@@ -995,27 +1006,35 @@ public class Opendap {
                 + ")");
 
       // start getting the data
-      StringBuilder sb = new StringBuilder("?" + gridName);
-      for (int index = 0; index < minIndex.length; index++)
-        sb.append("[" + minIndex[index] + ":" + stride[index] + ":" + maxIndex[index] + "]");
-      String query = sb.toString();
+      List<Range> ranges = new ArrayList<>();
+      for (int i = 0; i < minIndex.length; i++) {
+        ranges.add(new Range(minIndex[i], maxIndex[i], stride[i]));
+      }
+      Section section = new Section(ranges);
+
+      Variable gridVar = ncd.findVariable(gridName);
+      if (gridVar == null) {
+        throw new RuntimeException("Grid variable not found: " + gridName);
+      }
+
       long getTime = System.currentTimeMillis();
-      PrimitiveArray pa[] = null;
+      PrimitiveArray dataPA = null;
       try {
-        // throw new Exception("test opendap exception"); //normally this line is commented out
-        pa = OpendapHelper.getPrimitiveArrays(dConnect, query); // throws Exception if trouble
+        Array dataArray = gridVar.read(section);
+        dataPA = NcHelper.getPrimitiveArray(dataArray, true, NcHelper.isUnsigned(gridVar));
       } catch (Exception e) {
         Test.error(
             WAIT_THEN_TRY_AGAIN
                 + // this message encourages getting new Shared in CWBrowser.java
                 "\n(Opendap dataset not available:\n  "
-                + query
+                + gridName
+                + " with section="
+                + section
                 + "\n"
                 + e
                 + ")");
       }
       getTime = System.currentTimeMillis() - getTime;
-      PrimitiveArray dataPA = pa[0];
       int dataPaSize = dataPA.size();
       /*
       //because of compression (and lots of NaNs), this isn't good measure of connection's KB/s
@@ -1037,7 +1056,13 @@ public class Opendap {
 
       // do post-check that time value has not changed since pre-check
       if (gridTimeDimension >= 0) {
-        PrimitiveArray timePA = pa[gridTimeDimension + 1]; // +1 since [0] is data
+        Variable timeVar = ncd.findVariable(gridDimensionNames[gridTimeDimension]);
+        if (timeVar == null) {
+          throw new RuntimeException("Time variable not found: " + gridDimensionNames[gridTimeDimension]);
+        }
+        int[] origin = new int[] { minIndex[gridTimeDimension] };
+        int[] shape = new int[] { 1 };
+        PrimitiveArray timePA = NcHelper.getPrimitiveArray(timeVar.read(origin, shape));
         double observedMinTime = timePA.getDouble(0);
 
         // compare observedMin and expectedMin     !!!you could check all observed and check x,y,

@@ -202,13 +202,18 @@ public class OpendapTest extends NetCheckTest {
 
       // open the dataSet; getTimeOptions, makeGrid
       Opendap opendap = new Opendap(url, true); // acceptDeflate, resetFlagDir
-      DAS das;
-      DDS dds;
-      try (DConnect2 dConnect = new DConnect2(opendap.url, opendap.acceptDeflate)) {
-        das = dConnect.getDAS();
-        dds = dConnect.getDDS();
+      DAS das = null;
+      DDS dds = null;
+      if ((dasMustContain != null && dasMustContain.length() > 0)
+          || (ddsMustContain != null && ddsMustContain.length() > 0)) {
+        try (DConnect2 dConnect = new DConnect2(opendap.url, opendap.acceptDeflate)) {
+          das = dConnect.getDAS();
+          dds = dConnect.getDDS();
+        }
       }
-      opendap.getGridInfo(das, dds, variableName, missingValue);
+      try (ucar.nc2.dataset.NetcdfDataset ncd = ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
+        opendap.getGridInfo(ncd, variableName, missingValue);
+      }
       opendap.getTimeOptions(
           false, // false = format as date time
           opendap.gridTimeFactorToGetSeconds,
