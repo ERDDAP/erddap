@@ -3953,20 +3953,20 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  &externalLinkHtml;  </a> A web page with a form that मनुष्य ब्राउज़रों के साथ उपयोग कर सकते हैं (इस मामले में डेटा सेट के बारे में डेटा, ग्राफ़ या जानकारी प्राप्त करने के लिए) ।
  <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful वेब सेवा
  &externalLinkHtml;  </a> एक यूआरएल जो कंप्यूटर प्रोग्राम का उपयोग कर सकता है (इस मामले में डेटा सेट के बारे में डेटा, ग्राफ़ और जानकारी प्राप्त करने के लिए) ।
- </ul> प्रत्येक के लिए ERDDAP वेब पेज जिस रूप से आप एक ब्राउज़र के साथ एक इंसान के रूप में उपयोग कर सकते हैं, वहाँ एक है
+ </ul> प्रत्येक के लिए ERDDAP एक रूप के साथ वेब पेज जो आप एक ब्राउज़र के साथ एक इंसान के रूप में उपयोग कर सकते हैं, वहाँ एक है
 अनुरूप ERDDAP वेब सेवा जो कंप्यूटर प्रोग्राम्स और स्क्रिप्ट्स के उपयोग के लिए आसान होने के लिए डिज़ाइन की गई है।
 उदाहरण के लिए, मनुष्य दिलचस्प डेटासेट के लिए एक पूर्ण पाठ खोज करने के लिए इस यूआरएल का उपयोग कर सकते हैं:
  <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> यूआरएल में फ़ाइल एक्सटेंशन को .html से बदलकर .json  (या csv, या .htmlTable या .jsonlCSV1 या .xhtml ...) :
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> हम एक URL प्राप्त करते हैं जो कंप्यूटर प्रोग्राम या Java स्क्रिप्ट स्क्रिप्ट एक ही प्राप्त करने के लिए उपयोग कर सकते हैं
-अधिक कंप्यूटर प्रोग्राम-अनुकूल प्रारूप में जानकारी जैसे
+अधिक कंप्यूटर प्रोग्राम-फ्रेंडली प्रारूप में जानकारी जैसे
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> ।
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> निर्माण शीर्ष पर बातें ERDDAP  </a>  </h3> में कई विशेषताएं हैं ERDDAP इसका उपयोग कंप्यूटर प्रोग्राम या स्क्रिप्ट द्वारा किया जा सकता है
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> शीर्ष पर चीजों का निर्माण ERDDAP  </a>  </h3> में कई विशेषताएं हैं ERDDAP इसका उपयोग कंप्यूटर प्रोग्राम या स्क्रिप्ट द्वारा किया जा सकता है
 आप लिखते हैं। आप उन्हें अन्य वेब अनुप्रयोगों या वेब सेवाओं के निर्माण के लिए उपयोग कर सकते हैं
-शीर्ष ERDDAP बनाना ERDDAP अधिक काम करते हैं&#33;
-यदि आपके पास डेटा के लिए बेहतर इंटरफ़ेस के लिए एक विचार है कि ERDDAP कार्य करता है या एक वेब
-पेज जो डेटा तक पहुंचने के लिए एक आसान तरीका की जरूरत है, हम आपको अपने खुद के निर्माण के लिए प्रोत्साहित करते हैं
+शीर्ष ERDDAP बनाना ERDDAP अधिकांश कार्य करते हैं&#33;
+इसलिए यदि आपके पास डेटा के लिए बेहतर इंटरफेस के लिए एक विचार है कि ERDDAP कार्य करता है या एक वेब
+पृष्ठ जो डेटा तक पहुंचने के लिए एक आसान तरीका की जरूरत है, हम आपको अपने खुद के निर्माण के लिए प्रोत्साहित करते हैं
 वेब अनुप्रयोग, वेब सेवा, या वेब पेज और उपयोग ERDDAP नींव के रूप में।
 आपकी प्रणाली से डेटा, ग्राफ़ और अन्य जानकारी प्राप्त कर सकती है ERD ' ERDDAP या
 अन्य ERDDAP स्थापना, या आप कर सकते हैं
@@ -3980,7 +3980,7 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  &externalLinkHtml;  </a> द्वारा भेजा गया
  <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> ।
 यह वही तंत्र है जो आपके ब्राउज़र का उपयोग करता है जब आप फॉर्म भरते हैं
-वेब पेज पर क्लिक करें <kbd> जमा करना </kbd> उपयोग करने के लिए HTTP GET , आप एक विशेष रूप से गठित URL उत्पन्न करते हैं (जिसमें एक क्वेरी शामिल हो सकती है) इसे भेजना HTTP GET । आप इन यूआरएल को हाथ से बना सकते हैं और उन्हें अंदर प्रवेश कर सकते हैं
+वेब पेज पर क्लिक करें <kbd> जमा करना </kbd> उपयोग करने के लिए HTTP GET , आप एक विशेष रूप से गठित URL उत्पन्न करते हैं (जिसमें एक क्वेरी शामिल हो सकती है) इसे भेजें HTTP GET आप इन यूआरएल को हाथ से बना सकते हैं और उन्हें अंदर प्रवेश कर सकते हैं
 अपने ब्राउज़र के एड्रेस टेक्स्ट फ़ील्ड (उदाहरण के लिए,
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> या, आप यूआरएल बनाने के लिए कंप्यूटर प्रोग्राम या वेब पेज स्क्रिप्ट लिख सकते हैं, इसे भेज सकते हैं,
 और प्रतिक्रिया प्राप्त करें। यूआरएल HTTP GET चुना गया क्योंकि
@@ -3988,7 +3988,7 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  <li> वे अच्छा काम करते हैं।
  <li> वे सार्वभौमिक रूप से समर्थित हैं (ब्राउज़रों, कंप्यूटर भाषाओं, ऑपरेटिंग सिस्टम में
 उपकरण, आदि) ।
- <li> वे की नींव हैं
+ <li> वे एक नींव हैं
  <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> प्रतिनिधि स्टेट ट्रांसफर ( REST )  &externalLinkHtml;  </a> और
  <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> संसाधन ओरिएंटेड आर्किटेक्चर ( ROA )  &externalLinkHtml;  </a>  <li> वे एक बड़े वितरित आवेदन के रूप में वर्ल्ड वाइड वेब का उपयोग करने की सुविधा देते हैं,
 उदाहरण के लिए
@@ -4003,11 +4003,11 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> प्रतिशत एन्कोड
  &externalLinkHtml;  </a> यूआरएल में विशेष वर्ण (उदाहरण के लिए, अंतरिक्ष %20 हो जाता है) उदाहरण के लिए,
  <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> लेकिन अगर आपका कंप्यूटर प्रोग्राम या स्क्रिप्ट यूआरएल उत्पन्न करता है, तो शायद इसे प्रतिशत करने की आवश्यकता होती है।
-खुद को एन्कोड करना। यदि हां, तो शायद A-Za-z0-9_-&#33; ' () *
+खुद को एन्कोड करना। यदि हां, तो शायद A-Za-z0-9 -&#33; () *
 क्वेरी के मूल्यों में (भागों के बाद '=' संकेत) कोकोड करने की आवश्यकता
 %HHH, जहां HH चरित्र का 2 अंकीय हेक्साडेसिमल मान है, उदाहरण के लिए, अंतरिक्ष %20 हो जाता है।
-#127 से ऊपर के अक्षरों को यूटीएफ-8 बाइट्स में परिवर्तित किया जाना चाहिए, फिर प्रत्येक यूटीएफ-8 बाइट को प्रतिशत एनकोड किया जाना चाहिए।
- (मदद के लिए प्रोग्रामर से पूछें) । प्रोग्रामिंग भाषाओं में ऐसा करने के लिए उपकरण हैं (उदाहरण के लिए, देखें Java '
+#127 से ऊपर के अक्षरों को UTF-8 बाइट्स में परिवर्तित किया जाना चाहिए, फिर प्रत्येक UTF-8 बाइट को प्रतिशत एनकोड किया जाना चाहिए।
+ (मदद के लिए प्रोग्रामर से पूछें) प्रोग्रामिंग भाषाओं में ऐसा करने के लिए उपकरण हैं (उदाहरण के लिए, देखें Java '
  <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> और Java स्क्रिप्ट
  <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponent ()  &externalLinkHtml;  </a> ) और वहाँ रहे हैं
  <a class="N" rel="help" href="https://www.url-encode-decode.com"> उन वेबसाइटों के लिए जो आपके लिए प्रतिशत एनकोड / डीकोड करते हैं
@@ -4024,9 +4024,9 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  &externalLinkHtml;  </a> )  <li>  .json - एक टेबल की तरह JSON फ़ाइल।
  ( <a rel="help" href="https://www.json.org/"> अधिक &nbsp; सूचना
  &externalLinkHtml;  </a> या
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP -विशिष्ट जानकारी </a> )  <li>  .jsonlCSV1 - पहली पंक्ति में कॉलम नामों के साथ एक \"CSV\" JSON लाइन्स फाइल।
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP विशेष जानकारी </a> )  <li>  .jsonlCSV1 - पहली पंक्ति में कॉलम नामों के साथ एक \"CSV\" JSON लाइन्स फाइल।
  ( <a rel="help" href="https://jsonlines.org/"> अधिक &nbsp; सूचना
- &externalLinkHtml;  </a> )  <li>  .jsonlCSV - एक \"CSV की तुलना में बेहतर\" JSON लाइन्स फ़ाइल के साथ कोई कॉलम नाम नहीं है।
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - CSV की तुलना में एक \"बेटर\" JSON लाइन्स फ़ाइल में कोई कॉलम नाम नहीं है।
  ( <a rel="help" href="https://jsonlines.org/"> अधिक &nbsp; सूचना
  &externalLinkHtml;  </a> )  <li>  .jsonlKVP - एक JSON लाइन्स फ़ाइल के साथ कुंजी: Value जोड़े।
  ( <a rel="help" href="https://jsonlines.org/"> अधिक &nbsp; सूचना
@@ -4036,14 +4036,15 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> अधिक &nbsp; सूचना
  &externalLinkHtml;  </a> )  <li>  .nccsv - एक फ्लैट, टेबल जैसी, NetCDF -जैसे, ASCII CSV फ़ाइल।
  ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> अधिक &nbsp; सूचना
- &externalLinkHtml;  </a> )  <li>  .nc o Json - एक JSON फ़ाइल ( NCO शैली) केवल डेटासेट के मेटाडाटा के साथ (वैश्विक गुण
+ &externalLinkHtml;  </a> )  <li>  .nc OJson - एक JSON फ़ाइल ( NCO शैली) केवल डेटासेट के मेटाडाटा के साथ (वैश्विक गुण
 आयाम और उनके गुणों, प्रकार और आकार के साथ चर) और कोई डेटा मान नहीं।
  ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> अधिक &nbsp; सूचना
- &externalLinkHtml;  </a> )  <li>  .tsv ASCII पाठ सारणी
+ &externalLinkHtml;  </a> ) यह प्रारूप केवल एकल डेटासेट मेटाडाटा अनुरोधों पर लागू होता है।
+ <li>  .tsv ASCII पाठ सारणी
  ( <a rel="help" href="https://jkorpela.fi/TSV.html"> अधिक &nbsp; सूचना
- &externalLinkHtml;  </a> )  <li>  .xhtml XHTML (एक्सएमएल) एक तालिका में डेटा के साथ फाइल करें।
+ &externalLinkHtml;  </a> )  <li>  .xhtml XHTML (एक्सएमएल) एक तालिका में डेटा के साथ फ़ाइल करें।
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> अधिक &nbsp; सूचना
- &externalLinkHtml;  </a> )  </ul> प्रत्येक परिणाम तालिका प्रारूप में (सिवाय .jsonlKVP जहां स्तंभ नाम हर पंक्ति पर हैं) :
+ &externalLinkHtml;  </a> )  </ul> प्रत्येक परिणाम तालिका प्रारूप में (सिवाय .jsonlKVP जहां स्तंभ नाम हर पंक्ति में हैं) :
  <ul>  <li> प्रत्येक स्तंभ में एक स्तंभ नाम और एक प्रकार की जानकारी होती है।
  <li> तालिका की पहली पंक्ति में स्तंभ नाम हैं।
  <li> बाद की पंक्तियों में आपके द्वारा अनुरोध की गई जानकारी है।
@@ -4064,37 +4065,38 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  <li> एक .csv में विशेष वर्ण या .tsv फ़ाइल की तरह एन्कोड किया गया है
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> बैकस्लैश-एनकोडेड वर्ण:
-हिन्दी (नौटंकी) , \\ (बैकस्लैश) , \f (फार्मफ़ीड) , \t (टैब) , \r (गाड़ी वापसी) या \\u के साथ <i> hhhh </i> वाक्यविन्यास
+\n (नौटंकी) , \\ (बैकस्लैश) , \f (फार्मफ़ीड) , \t (टैब) , \r (गाड़ी वापसी) या \\u के साथ <i> hhhh </i> वाक्यविन्यास
  </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> अनुरोध .json फ़ाइलों को अब एक वैकल्पिक शामिल हो सकता है
  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
  &externalLinkHtml;  </a> अनुरोध
-जोड़ने \"&amp; .json p= <i> समारोह नाम </i> \" क्वेरी के अंत तक। मूल रूप से, यह बताता है
- ERDDAP जोड़ने के लिए <i> समारोह नाम </i>  (\"\" प्रतिक्रिया की शुरुआत और \") \"
-प्रतिक्रिया का अंत। का पहला चरित्र <i> समारोह नाम </i> एक ISO 8859 अक्षर या \"_\" होना चाहिए।
-प्रत्येक वैकल्पिक बाद के चरित्र एक ISO 8859 अक्षर, \"_\", एक अंक, या \"\" होना चाहिए।
-यदि मूल रूप से कोई क्वेरी नहीं थी, तो अपने क्वेरी में \"&amp\" को छोड़ दें।
+जोड़ने \"&amp; .json p= <i> समारोहनाम </i> \" क्वेरी के अंत तक। मूल रूप से, यह बताता है
+ ERDDAP जोड़ने के लिए <i> समारोहनाम </i>  (\"\" प्रतिक्रिया की शुरुआत और \") \"
+प्रतिक्रिया का अंत। का पहला चरित्र <i> समारोहनाम </i> एक ISO 8859 अक्षर या \" \" होना चाहिए।
+प्रत्येक वैकल्पिक बाद के चरित्र एक ISO 8859 अक्षर, \" \", एक अंक, या \"\" होना चाहिए।
+यदि मूल रूप से कोई प्रश्न नहीं था, तो अपने क्वेरी में \"&amp\" को छोड़ दें।
 
 
  <p> ग्रिडडाप और tabledap विभिन्न फ़ाइल प्रकार प्रदान करें
  <br> ऊपर सूचीबद्ध फ़ाइल प्रकार फ़ाइल प्रकार हैं ERDDAP प्रतिक्रिया करने के लिए उपयोग कर सकते हैं
 अनुरोध के उपयोगकर्ता-इंटरफेस प्रकार (उदाहरण के लिए, खोज अनुरोध) । ERDDAP समर्थन
-वैज्ञानिक डेटा के लिए फ़ाइल प्रकारों का एक अलग सेट (उदाहरण के लिए, उपग्रह और buoy
+वैज्ञानिक डेटा के लिए फ़ाइल प्रकारों का एक अलग सेट (उदाहरण के लिए, उपग्रह और बॉय
 डेटा) अनुरोध (देखें
  <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> ग्रिड </a> और
  <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> दस्तावेज़ीकरण) ।
 
 
- &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> के लिए पहुँच यूआरएल ERDDAP सेवा </a>  </h3>  ERDDAP कंप्यूटर प्रोग्राम के लिए इन यूआरएल एक्सेस पॉइंट हैं:
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> के लिए पहुँच यूआरएल ERDDAP सेवा </a>  </h3>  ERDDAP कंप्यूटर प्रोग्राम के लिए इन URL एक्सेस पॉइंट हैं:
  <ul>  <li> सूची प्राप्त करने के लिए <strong> मुख्य संसाधन एक्सेस यूआरएल </strong> उपयोग
  <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> वर्तमान सूची प्राप्त करने के लिए <strong> सभी डेटासेट </strong> उपयोग
  <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> पाने के लिए <strong> मेटाडाटा </strong> एक विशिष्ट डेटा सेट के लिए
  (चर और उनकी विशेषताओं की सूची) उपयोग
- <br>  &tErddapUrl; हिन्दी <i>  datasetID  </i> इंडेक्स <i>  .fileType  </i>  <br> उदाहरण के लिए,
+ <br>  &tErddapUrl; हिन्दी <i>  datasetID  </i> इंडेक्स <i>  .fileType  </i>  <br> या लघु यूआरएल फॉर्म
+ <br>  &tErddapUrl; हिन्दी <i>  datasetID  .fileType  </i>  <br> उदाहरण के लिए,
  <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> परिणाम प्राप्त करने के लिए <strong> पूर्ण पाठ खोज </strong> डेटासेट के लिए
  (उपयोग "searchFor=wind%20speed" उदाहरण के रूप में) उपयोग
  <br>  &plainLinkExamples4;  <br>  (आपके कार्यक्रम या स्क्रिप्ट की आवश्यकता हो सकती है
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> प्रतिशत
- &externalLinkHtml;  </a> क्वेरी में मूल्य।)  <br>  &nbsp;  <br> या, उपयोग
+ &externalLinkHtml;  </a> क्वेरी में मूल्य।)  <br>  &nbsp;  <br> या, उपयोग करें
  <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> डेटासेट के लिए एक पूर्ण टेक्स्ट खोज करने के लिए मानक।
  <br>  &nbsp;  <li> परिणाम प्राप्त करने के लिए <strong> उन्नत खोज </strong> डेटासेट के लिए
  (उपयोग "searchFor=wind%20speed" उदाहरण के रूप में) उपयोग
@@ -4102,10 +4104,12 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
  <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> ब्राउज़र में सभी वैकल्पिक मापदंडों को समझने के लिए।
  (आपके कार्यक्रम या स्क्रिप्ट की आवश्यकता हो सकती है
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> प्रतिशत
- &externalLinkHtml;  </a> क्वेरी में मूल्य।)  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong>  categoryAttributes  </strong>  (उदाहरण के लिए, संस्था, long_name मानक नाम) उपयोग
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong> एक विशिष्ट श्रेणी के लिए श्रेणियां योगदान </strong>  (उदाहरण के रूप में \"standard_name\" का उपयोग करना) उपयोग
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong> एक विशिष्ट श्रेणी में डेटासेट </strong>  (उदाहरण के रूप में \"standard_name=time\" का उपयोग करना) उपयोग
- <br>  &plainLinkExamples8; 
+ &externalLinkHtml;  </a> क्वेरी में मूल्य।)  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong>  categoryAttributes  </strong>  (उदाहरण के लिए, संस्था, long_name , Standard name) उपयोग
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong> एक विशिष्ट श्रेणी के लिए श्रेणियां </strong>  (उदाहरण के रूप में \"standard name\" का उपयोग करना) उपयोग
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong> एक विशिष्ट श्रेणी में डेटासेट </strong>  (उदाहरण के रूप में \"standard name=time\" का उपयोग करना) उपयोग
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> पाने के लिए <strong> चर मेटाडाटा विशेषता सुझाव </strong> JSON भेजें (सामग्री प्रकार: आवेदन / जॉनसन) POST अनुरोध
+युक्त <a href="https://nco.sourceforge.net/nco.html#json"> ncojson </a> विशेषताओं के साथ शैली चर, उदाहरण:
+ <br>  <code> &#123;\"variables\": &#123;\"air temp\": &#123;\"attributes\": &#123;\"name\": \"एयर टेम्प\", \"इकाई\": \"degC\"&#125;&#125; </code>  <br> to &tErddapUrl; /suggestVariableAttributes
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

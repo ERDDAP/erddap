@@ -4177,162 +4177,166 @@ Různé protokoly jsou vhodné pro různé typy dat a pro různé klientské apl
 <restfulHTML><![CDATA[
  ERDDAP je obojí:
  <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Webová aplikace
- &externalLinkHtml;  </a> &ndash; webová stránka s formulářem, který mohou používat lidé s prohlížeči (v tomto případě získat data, grafy nebo informace o datových souborech) .
- <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful webová služba
- &externalLinkHtml;  </a> &ndash; URL, které mohou počítačové programy používat (v tomto případě získat data, grafy a informace o datových souborech) .
- </ul> Za každou ERDDAP webové stránky s formulářem, který můžete použít jako člověk s prohlížečem,
-odpovídající ERDDAP webová služba, která je navržena tak, aby byla jednoduchá pro počítačové programy a skripty k použití.
-Například, lidé mohou použít tuto URL pro úplné vyhledávání textu pro zajímavé soubory dat:
- <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Změnou přípony souboru v URL z .html na .json  (nebo .csv, nebo .htmlTable nebo .jsonlCSV1 nebo .xhtml , ...) :
- <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> dostaneme URL, že počítačový program nebo Java Skript může použít k získání stejného skriptu
-informace ve více počítačovém formátu, jako je
+ &externalLinkHtml;  </a> & ndash; webová stránka s formulářem, který lidé s prohlížeči mohou použít (v tomto případě získat data, grafy nebo informace o souborech dat) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful Webové služby
+ &externalLinkHtml;  </a> & ndash; URL, které mohou počítačové programy používat (v tomto případě získat data, grafy a informace o souborech dat) .
+ </ul> Pro každý ERDDAP webové stránky s formulářem, který jako člověk s prohlížečem můžete použít, existuje
+odpovídající ERDDAP webové služby, které jsou navrženy tak, aby bylo snadné pro počítačové programy a skripty používat.
+Například, lidé mohou použít tuto URL pro Full Text Search pro zajímavé soubory dat:
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Změnou rozšíření souboru v URL z .html na .json  (nebo .csv, nebo .htmlTable nebo .jsonlCSV1 nebo .xhtml ,...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> dostaneme URL, které počítačový program nebo Java Script skript může použít k získání stejné
+informace ve více počítačově-programově-přátelském formátu jako
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> .
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Postavit Věci na vrcholu ERDDAP  </a>  </h3> Existuje mnoho funkcí v ERDDAP které lze použít pomocí počítačových programů nebo skriptů
-že píšeš. Můžete je použít k vytvoření dalších webových aplikací nebo webových služeb na
-horní část ERDDAP , výroba ERDDAP Většinu práce&#33;
-Takže pokud máte nápad na lepší rozhraní k datům, která ERDDAP slouží nebo síť
-stránka, která potřebuje snadný přístup k datům, doporučujeme vám vybudovat vlastní
-webová aplikace, webová služba nebo webové stránky a používání ERDDAP jako základ.
-Váš systém může získat data, grafy a další informace z ERD 's ERDDAP nebo
-jiný ERDDAP instalace, nebo můžete
- <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Nastavit si vlastní ERDDAP server </a> ,
-který může být
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Budovat věci na vrcholu ERDDAP  </a>  </h3> Existuje mnoho funkcí v ERDDAP které mohou být použity počítačovými programy nebo skripty
+které píšeš. Můžete je použít k vybudování dalších webových aplikací nebo webových služeb na
+horní část ERDDAP , ERDDAP většinu práce&#33;
+Takže pokud máte nápad na lepší rozhraní s daty, které ERDDAP slouží nebo web
+stránka, která potřebuje snadný způsob přístupu k datům, doporučujeme vám vybudovat si vlastní
+webové aplikace, webové služby, nebo webové stránky a použití ERDDAP jako základ.
+Váš systém může získat data, grafy a další informace od ERD s ERDDAP nebo od
+ostatní ERDDAP instalace, nebo můžete
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Nastavte si vlastní ERDDAP server </a> ,
+která může být
 veřejně přístupné nebo jen soukromě přístupné.
 
 
- <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful Žádosti o URL </a>  </h3> Žádosti o informace o uživatelském rozhraní od ERDDAP  (například výsledky hledání) používat univerzální standard webu pro žádosti:
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL žádosti </a>  </h3> Žádosti o informace o uživatelském rozhraní od ERDDAP  (např. výsledky vyhledávání) použít univerzální standard webu pro žádosti:
  <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URL
- &externalLinkHtml;  </a> odesláno přes
+ &externalLinkHtml;  </a> odesláno
  <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
-Jedná se o stejný mechanismus, který váš prohlížeč používá při vyplnění formuláře
-na webové stránce a klikněte na <kbd> Odevzdat </kbd> K použití HTTP GET , vytvoříte speciálně vytvořené URL (který může zahrnovat dotaz) a odeslat s HTTP GET . Můžete vytvořit tyto URL ručně a zadat je do
-textové pole adresy prohlížeče (například:
- <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Nebo můžete napsat počítačový program nebo webové stránky skript vytvořit URL, poslat,
-a dostat odpověď. URL přes HTTP GET byly vybrány, protože
- <ul>  <li> Používají se jednoduše.
- <li> Fungují dobře.
- <li> Jsou všeobecně podporovány. (v prohlížečích, počítačových jazycích, operačním systému
+To je stejný mechanismus, který váš prohlížeč používá při vyplňování formuláře
+na webové stránce a klikněte na <kbd> Odeslat </kbd> K použití HTTP GET , generovat speciálně vytvořené URL (které mohou zahrnovat dotaz) a poslat s HTTP GET . Můžete vytvořit tyto URL ručně a zadejte je
+textové pole adresy vašeho prohlížeče (například:
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Nebo můžete napsat počítačový program nebo webový skript pro vytvoření URL, poslat ho,
+a dostat odpověď. URL prostřednictvím HTTP GET byli vybráni, protože
+ <ul>  <li> Je jednoduché je použít.
+ <li> Pracují dobře.
+ <li> Jsou všeobecně podporovány (v prohlížečích, počítačových jazycích, operačním systému
 nástroje atd.) .
  <li> Jsou základem
- <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Převod státu zastoupení ( REST )  &externalLinkHtml;  </a> a
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Státní převod ( REST )  &externalLinkHtml;  </a> a
  <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Architektura orientovaná na zdroje ( ROA )  &externalLinkHtml;  </a>  <li> Usnadňují používání World Wide Web jako velké distribuované aplikace,
-například prostřednictvím
+např. prostřednictvím
  <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX žádosti
- &externalLinkHtml;  </a>  <li> Jsou. <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Bez státní příslušnosti
- &externalLinkHtml;  </a> jak je ERDDAP , Což usnadňuje systém.
- <li> URL zcela definuje daný požadavek, takže jej můžete záložka ve vašem prohlížeči,
-napište to do poznámek, e-mailem příteli, atd.
- </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Procentní kódování </a>  </h3> V URL nejsou některé znaky povoleny (například prostory) a jiné znaky
-mají zvláštní význam (například '&amp;' odděluje dvojice klíč=hodnota v dotazu) .
-Když vyplníte formulář na webové stránce a kliknete na Odeslat, Váš prohlížeč automaticky
- <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % kódů
- &externalLinkHtml;  </a> speciální znaky v URL (Například, prostor se stává likérem) Například:
- <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Ale pokud váš počítačový program nebo skript generuje URL adresy, pravděpodobně bude muset udělat procento
-kódování se samo. Pokud ano, pak pravděpodobně všechny znaky jiné než A-Za-z0-9_-&#33;.~ ' () *
-v hodnotách dotazu (části po '=' značky) je třeba zakódovat
-jako %HH, kde HH je 2 číslice hexadecimální hodnota znaku, například, prostor se stává [51].
-Znaky nad #127 musí být převedeny na UTF-8 bajty, pak každý UTF-8 bajt musí být zakódován procentem
- (Požádat programátora o pomoc) . Programovací jazyky mají k tomu nástroje. (například viz Java 's
- <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> a Java Skript
+ &externalLinkHtml;  </a>  <li> To jsou. <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> bez státní příslušnosti
+ &externalLinkHtml;  </a> jak je ERDDAP Což zjednodušuje systém.
+ <li> URL zcela definovat daný požadavek, takže můžete záložku ve svém prohlížeči,
+Napište to do svých poznámek, e-mailem na přítele, atd.
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Procentní kódování </a>  </h3> V URL, některé znaky nejsou povoleny (například mezery) a jiné znaky
+mají zvláštní význam (například \"& amp;\" odděluje klíč = hodnoty párů v dotazu) .
+Když vyplníte formulář na webové stránce a kliknete na Odeslat, váš prohlížeč automaticky
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> Procento kódů
+ &externalLinkHtml;  </a> speciální znaky v URL (Například prostor se stává% 20) například:
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Ale pokud váš počítačový program nebo skript generuje URL, pravděpodobně to musí udělat procento
+enkódování samo. Pokud ano, pak pravděpodobně všechny znaky kromě A-Za-z0-9 _ -. ~ ' () *
+v hodnotách dotazu (části za '=' příznaky) je třeba zakódovat
+jako% HH, kde HH je 2-místná hexadecimální hodnota znaku, například prostor se stává%20.
+Znaky nad # 127 musí být převedeny na UTF-8 bytes, pak každý UTF-8 byte musí být v procentech zakódovány
+ (požádat programátora o pomoc) . Programování jazyků mají nástroje k tomu, aby to (např. viz Java s
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> a Java Script 's
  <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponent ()  &externalLinkHtml;  </a> ) a tam jsou
- <a class="N" rel="help" href="https://www.url-encode-decode.com"> webové stránky, které pro vás tvoří procento enkódování/dekódování
- &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Typy souboru odpovědi </a>  </h3> I když lidé, kteří používají prohlížeče, chtějí dostávat výsledky uživatelského rozhraní (například:
-výsledky hledání) jako HTML dokumenty, počítačové programy často raději získat výsledky v
-Jednoduché, snadno rozepsané, méně doslovné dokumenty. ERDDAP může vrátit uživatelské rozhraní
-výsledky jako tabulka dat v těchto běžných, počítače-program přátelský, typy souborů:
- <ul>  <li> .csv - textová tabulka ASCII oddělená čárkou.
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> webové stránky, které procento encode / decode pro vás
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Typy souborů odpovědí </a>  </h3> I když lidé, kteří používají prohlížeče, chtějí získat výsledky uživatel- interface (například:
+výsledky vyhledávání) jako HTML dokumenty, počítačové programy často dávají přednost dosažení výsledků v
+Jednoduché, snadno rozepsané, méně verbální dokumenty. ERDDAP může vrátit uživatelské rozhraní
+výsledky jako tabulka dat v těchto běžných, počítačových-program přátelský, typy souborů:
+ <ul>  <li> .csv - komma- oddělená ASCII textová tabulka.
  ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> více &nbsp; informace
  &externalLinkHtml;  </a> )  <li>  .htmlTable - webová stránka .html s daty v tabulce.
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .itx - textový soubor Igor s vlnou pro každý sloupec dat.
+ &externalLinkHtml;  </a> )  <li>  .itx - Igor Text File s vlnou pro každý sloupec dat.
  ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .json - jako je JSON.
+ &externalLinkHtml;  </a> )  <li>  .json - jako JSON.
  ( <a rel="help" href="https://www.json.org/"> více &nbsp; informace
  &externalLinkHtml;  </a> nebo
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - specifické informace </a> )  <li>  .jsonlCSV1 - soubor \"Lepší než CSV\" JSON Lines s názvy sloupců v prvním řádku.
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - specifické informace </a> )  <li>  .jsonlCSV1 - soubor \"Lepší než CSV\" JSON Lines se jmény sloupců na prvním řádku.
  ( <a rel="help" href="https://jsonlines.org/"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .jsonlCSV - soubor \"Lepší než CSV\" JSON Lines bez jmen sloupců.
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - soubor \"Lepší než CSV\" JSON Lines bez názvů sloupců.
  ( <a rel="help" href="https://jsonlines.org/"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .jsonlKVP - soubor JSON Lines s Key:Value pairs.
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - soubor JSON Lines s Key: Value pair.
  ( <a rel="help" href="https://jsonlines.org/"> více &nbsp; informace
  &externalLinkHtml;  </a> )  <li>  .mat - binární soubor MATLAB.
  ( <a rel="help" href="https://www.mathworks.com/"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .nc - byt, jako stůl, NetCDF - 3 binární soubory.
+ &externalLinkHtml;  </a> )  <li>  .nc - byt, stůl-jako, NetCDF -3 binární soubor.
  ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .nccsv - byt, jako stůl, NetCDF - Jako ASCII CSV soubor.
+ &externalLinkHtml;  </a> )  <li>  .nccsv - byt, stůl-jako, NetCDF -ASCII CSV soubor.
  ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .nc o Json - soubor JSON ( NCO -style) pouze metadata datového souboru (globální atributy,
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - soubor JSON ( NCO -Styl) pouze s metadaty datového souboru (globální atributy,
 rozměry a proměnné s jejich atributy, typem a tvarem) a žádné hodnoty dat.
  ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .tsv - textový stůl ASCII oddělený od karty.
+ &externalLinkHtml;  </a> ) . Tento formát se vztahuje pouze na jednotlivé požadavky na metadata souboru dat.
+ <li>  .tsv - tabulku oddělenou tabulkou ASCII.
  ( <a rel="help" href="https://jkorpela.fi/TSV.html"> více &nbsp; informace
- &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) soubor s údaji v tabulce.
+ &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) soubor s daty v tabulce.
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> více &nbsp; informace
- &externalLinkHtml;  </a> )  </ul> V každém formátu tabulky výsledků (kromě .jsonlKVP , kde jsou názvy sloupců v každém řádku) :
+ &externalLinkHtml;  </a> )  </ul> V každém formátu tabulky výsledků (kromě .jsonlKVP , kde názvy sloupců jsou v každém řádku) :
  <ul>  <li> Každý sloupec má název sloupce a jeden typ informací.
- <li> První řádek tabulky má názvy sloupců.
- <li> Následující řádky mají informace, které jste požadoval.
+ <li> První řádek tabulky obsahuje názvy sloupců.
+ <li> Následující řádky mají informace, které jste požadovali.
  </ul>  <p> Obsah těchto jednoduchých typů souborů je také mírně odlišný od .html
-odpověď &mdash; je záměrně holé kosti tak, že je jednodušší pro počítač
-program pro práci.
+odpověď & mdash; je záměrně bare- vykostěný tak, že je jednodušší pro počítač
+program, se kterým můžeme pracovat.
 
- <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Konzistentní struktura údajů pro odpovědi </a>  <br> Všechny uživatelské rozhraní služby popsané na této stránce mohou vrátit tabulku
-data v kterémkoliv ze společných formátů souborů uvedených výše. Doufejme, že můžete psát
-jen jeden postup k analýze tabulky dat v jednom z formátů. Pak můžeš
-znovu použít tento postup k přezkoumání odpovědi kterékoli z těchto služeb. Tohle
-Mělo by to usnadnit řešení ERDDAP .
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Konzistentní struktura dat pro odpovědi </a>  <br> Všechny uživatelsky-rozhraní služby popsané na této stránce může vrátit tabulku
+údaje v kterémkoli ze společných formátů souboru uvedených výše. Doufám, že umíš psát.
+jen jeden postup pro rozdělení tabulky dat v jednom z formátů. Pak můžeš.
+znovu použít tento postup k analýze odpovědi kterékoli z těchto služeb. Tohle.
+by mělo být jednodušší vypořádat se s ERDDAP .
 
 
- <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> a .tsv Podrobnosti <ul>  <li> Pokud má datum v souboru .csv interní dvojité uvozovky nebo čárky, ERDDAP následující:
-.csv specifikace striktně: to dává dvojité citace kolem datum a zdvojnásobí
-vnitřní dvojité uvozovky.
- <li> Speciální znaky v .csv nebo .tsv soubor je kódován jako
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> a .tsv Podrobnosti <ul>  <li> Pokud má datum v souboru .csv interní dvojité uvozovky nebo čárky, ERDDAP následovně:
+Specifikace .csv striktně: dává dvojité citace kolem data a zdvojnásobuje
+interní dvojité citace.
+ <li> Zvláštní znaky v .csv nebo .tsv soubor je zakódován jako
  <a rel="help" href="https://www.json.org/"> JSON
- &externalLinkHtml;  </a> Zakódované znaky:
-\\ n (nový řádek) , \\ (backslash) , (formfeed) , \\ t (Karta) , r (návrat vozu) nebo s \\u <i> Hhhh </i> Syntaxe.
- </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> Žádosti o .json soubory mohou nyní zahrnovat volitelné
+ &externalLinkHtml;  </a> backslash- kódované znaky:
+\\ n (nový řádek) . (backloader) ,\\ f (formfeed) ,\\ t (tab) ,\\ r (vrácení přepravy) nebo s\\ u <i> Hhhh </i> Syntaxe.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> Žádosti .json soubory mohou nyní obsahovat nepovinné
  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
  &externalLinkHtml;  </a> žádost
-přidání \"&amp; .json p= <i> funkce Název </i> \"na konec dotazu. V podstatě to říká
- ERDDAP přidat \" <i> funkce Název </i>  (\"na začátek odpovědi a \") \"
-Konec odpovědi. První znak <i> funkce Název </i> musí být písmeno ISO 8859 nebo \"_.\"
-Každý volitelný následný znak musí být písmeno ISO 8859, \"_,\" číslice nebo \".\"
-Pokud původně nebyl dotaz, vynechte \"&amp;\" v dotazu.
+přidání \"& amp; .json p = <i> FunctionName </i> \"až do konce dotazu. V podstatě to říká:
+ ERDDAP přidat \" <i> FunctionName </i>  (\"na začátek reakce a\") \"
+konec odpovědi. První znak <i> FunctionName </i> musí být ISO 8859 písmeno nebo \"_\".
+Každý volitelný následující znak musí být ISO 8859 písmeno \"_\", číslice, nebo \".\"
+Pokud původně neexistoval žádný dotaz, nechte ve svém dotazu \"& amp;\".
 
 
- <p> griddap a tabledap Nabídka různých typů souborů
+ <p> griddap a tabledap Nabídnout různé typy souborů
  <br> Výše uvedené typy souborů jsou typy souborů ERDDAP může použít k reakci na
-uživatelské rozhraní typů žádostí (například žádosti o vyhledávání) . ERDDAP Podpora
-jiný soubor typů souborů pro vědecké údaje (například satelitní a bóje
+User-interface typy žádostí (např. žádosti o vyhledávání) . ERDDAP podložky
+jiný soubor typů souborů pro vědecké údaje (například družice a bóje
 údaje) žádosti (viz
  <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> griddap </a> a
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> Dokumentace) .
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> dokumentace) .
 
 
- &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Přístupové URL pro ERDDAP Služby </a>  </h3>  ERDDAP má tyto přístupové body URL pro počítačové programy:
- <ul>  <li> Chcete-li získat seznam <strong> hlavní přístupové URL zdroje </strong> , použití
- <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Chcete-li získat aktuální seznam <strong> všechny soubory údajů </strong> , použití
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Přístup URL pro ERDDAP Služby </a>  </h3>  ERDDAP má tyto URL přístupové body pro počítačové programy:
+ <ul>  <li> Chcete-li získat seznam <strong> hlavní zdroje přístupu URL </strong> , použití
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Chcete-li získat aktuální seznam <strong> všechny soubory dat </strong> , použití
  <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> To get <strong> metadata </strong> pro konkrétní soubor údajů
  (seznam proměnných a jejich atributů) , použití
- <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /index <i>  .fileType  </i>  <br> například:
- <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Pro získání výsledků <strong> úplné vyhledávání textu </strong> pro soubory údajů
- (podání "searchFor=wind%20speed" jako příklad) , použití
- <br>  &plainLinkExamples4;  <br>  (Váš program nebo scénář může potřebovat
- <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % enkód
- &externalLinkHtml;  </a> hodnotu v dotazu.)  <br>  &nbsp;  <br> Nebo použijte
- <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1. 1 </a> standard pro úplné vyhledávání textu pro soubory dat.
- <br>  &nbsp;  <li> Pro získání výsledků <strong> pokročilé vyhledávání </strong> pro soubory údajů
- (podání "searchFor=wind%20speed" jako příklad) , použití
- <br>  &plainLinkExamples5;  <br> Ale experimentuj s
- <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> v prohlížeči pro zjištění všech volitelných parametrů.
- (Váš program nebo scénář může potřebovat
- <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % enkód
- &externalLinkHtml;  </a> hodnotu v dotazu.)  <br>  &nbsp;  <li> Získat seznam <strong>  categoryAttributes  </strong>  (například instituce, long_name , standard_name) , použití
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Získat seznam <strong> kategorie pro určitou kategorii Atribut </strong>  (pomocí \"standard_name\" jako příklad) , použití
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Získat seznam <strong> Soubory údajů v určité kategorii </strong>  (pomocí \"standard_name=time\" jako příklad) , použití
- <br>  &plainLinkExamples8; 
+ <br>  &tErddapUrl; / info / <i>  datasetID  </i> / index <i>  .fileType  </i>  <br> nebo zkrácený URL formulář
+ <br>  &tErddapUrl; / info / <i>  datasetID  .fileType  </i>  <br> například:
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Získat výsledky <strong> kompletní textové vyhledávání </strong> pro soubory dat
+ (použití "searchFor=wind%20speed" jako příklad) , použití
+ <br>  &plainLinkExamples4;  <br>  (Váš program nebo skript může potřebovat
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> Kód
+ &externalLinkHtml;  </a> hodnotu v dotazu.)  <br>  &nbsp;  <br> Nebo použít
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1. 1 </a> standard pro úplné hledání textů pro soubory dat.
+ <br>  &nbsp;  <li> Získat výsledky <strong> pokročilé vyhledávání </strong> pro soubory dat
+ (použití "searchFor=wind%20speed" jako příklad) , použití
+ <br>  &plainLinkExamples5;  <br> Ale experimentovat s
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> v prohlížeči zjistit všechny volitelné parametry.
+ (Váš program nebo skript může potřebovat
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> Kód
+ &externalLinkHtml;  </a> hodnotu v dotazu.)  <br>  &nbsp;  <li> Získat seznam <strong>  categoryAttributes  </strong>  (například instituce, long_name , standard _ name) , použití
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Získat seznam <strong> kategorie pro konkrétní kategorieAtribut </strong>  (pomocí \"standard _ name\" jako příkladu) , použití
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Získat seznam <strong> soubory údajů v konkrétní kategorii </strong>  (pomocí \"standard _ name = time\" jako příkladu) , použití
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> To get <strong> návrhy atributů proměnných metadat </strong> , pošlete JSON (Obsah - Typ: aplikace / json) Žádost POST
+obsahující <a href="https://nco.sourceforge.net/nco.html#json"> ncoJson </a> Stylové proměnné s atributy, příklad:
+ <br>  <code> &#123;\"proměnné\": &#123;\"air _ temp\": &#123;\"atributy\": &#123;\"name\": \"Air temp\", \"units\": \"degC\"&#125;&#125;&#125; </code>  <br> do &tErddapUrl; / sugestVariableAttributs
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[
