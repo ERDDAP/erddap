@@ -4907,7 +4907,7 @@ results as a table of data in these common, computer-program friendly, file type
 <li>.ncoJson - a JSON file (NCO-style) with the dataset's metadata only (global attributes,
     dimensions, and variables with their attributes, type, and shape) and no data values.
     (<a rel="help" href="https://nco.sourceforge.net/nco.html#json">more&nbsp;information
-    &externalLinkHtml;</a>)
+    &externalLinkHtml;</a>). This format only applies to single dataset metadata requests.
 <li>.tsv - a tab-separated ASCII text table.
     (<a rel="help" href="https://jkorpela.fi/TSV.html">more&nbsp;information
     &externalLinkHtml;</a>)
@@ -4982,6 +4982,8 @@ ERDDAP has these URL access points for computer programs:
 <li>To get <strong>metadata</strong> for a specific data set
   (the list of variables and their attributes), use
   <br>&tErddapUrl;/info/<i>datasetID</i>/index<i>.fileType</i>
+  <br>or the short URL form
+  <br>&tErddapUrl;/info/<i>datasetID.fileType</i>
   <br>for example,
   <br>&plainLinkExamples3;
   <br>&nbsp;
@@ -5019,6 +5021,11 @@ ERDDAP has these URL access points for computer programs:
 <li>To get the list of <strong>datasets in a specific category</strong>
   (using "standard_name=time" as the example), use
   <br>&plainLinkExamples8;
+  <br>&nbsp;
+<li>To get <strong>variable metadata attribute suggestions</strong>, send a JSON (Content-Type: application/json) POST request
+    containing <a href="https://nco.sourceforge.net/nco.html#json">ncoJson</a> style variables with attributes, example:
+    <br><code>{"variables": {"air_temp": {"attributes": {"name": "Air temp", "units": "degC"}}}}</code>
+    <br>to &tErddapUrl;/suggestVariableAttributes
 ]]></restfulHTML>
 
 <restfulHTMLContinued><![CDATA[
