@@ -31,21 +31,6 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
-import dods.dap.AttributeTable;
-import dods.dap.BaseType;
-import dods.dap.DAS;
-import dods.dap.DBoolean;
-import dods.dap.DByte;
-import dods.dap.DConnect;
-import dods.dap.DFloat32;
-import dods.dap.DFloat64;
-import dods.dap.DInt16;
-import dods.dap.DInt32;
-import dods.dap.DSequence;
-import dods.dap.DString;
-import dods.dap.DUInt16;
-import dods.dap.DUInt32;
-import dods.dap.DataDDS;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
@@ -103,6 +88,20 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import opendap.dap.AttributeTable;
+import opendap.dap.BaseType;
+import opendap.dap.DAS;
+import opendap.dap.DByte;
+import opendap.dap.DConnect2;
+import opendap.dap.DFloat32;
+import opendap.dap.DFloat64;
+import opendap.dap.DInt16;
+import opendap.dap.DInt32;
+import opendap.dap.DSequence;
+import opendap.dap.DString;
+import opendap.dap.DUInt16;
+import opendap.dap.DUInt32;
+import opendap.dap.DataDDS;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.column.page.PageReadStore;
@@ -10093,275 +10092,277 @@ public class Table {
     String errorInMethod = String2.ERROR + " in Table.readOpendapSequence(" + url + "):\n";
     long time = System.currentTimeMillis();
     clear();
-    DConnect dConnect = new DConnect(url, opendapAcceptDeflate, 1, 1);
-    DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    OpendapHelper.getAttributes(das, "GLOBAL", globalAttributes());
 
-    // get the outerSequence information
-    DataDDS dataDds = dConnect.getData(null); // null = no statusUI
-    if (reallyVerbose)
-      String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
-    BaseType firstVariable = dataDds.getVariables().next();
-    if (!(firstVariable instanceof DSequence outerSequence))
-      throw new Exception(
-          errorInMethod
-              + "firstVariable not a DSequence: name="
-              + firstVariable.getName()
-              + " type="
-              + firstVariable.getTypeName());
-    int nOuterRows = outerSequence.getRowCount();
-    int nOuterColumns = outerSequence.elementCount();
-    AttributeTable outerAttributeTable =
-        das.getAttributeTable(outerSequence.getLongName()); // I think getLongName == getName() here
-    // String2.log("outerAttributeTable=" + outerAttributeTable);
+    String baseUrl = url;
+    String ce = "";
+    int qIndex = url.indexOf('?');
+    if (qIndex >= 0) {
+      baseUrl = url.substring(0, qIndex);
+      ce = url.substring(qIndex + 1);
+    }
 
-    // create the columns
-    int innerSequenceColumn = -1; // the outerCol with the inner sequence (or -1 if none)
-    int nInnerColumns = 0; // 0 important if no innerSequenceColumn
-    for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
-      // create the columns
-      BaseType obt =
-          outerSequence.getVar(outerCol); // this doesn't have data, just description of obt
-      if (obt instanceof DByte) addColumn(obt.getName(), new ByteArray());
-      else if (obt instanceof DFloat32) addColumn(obt.getName(), new FloatArray());
-      else if (obt instanceof DFloat64) addColumn(obt.getName(), new DoubleArray());
-      else if (obt instanceof DInt16) addColumn(obt.getName(), new ShortArray());
-      else if (obt instanceof DUInt16) addColumn(obt.getName(), new ShortArray());
-      else if (obt instanceof DInt32) addColumn(obt.getName(), new IntArray());
-      else if (obt instanceof DUInt32) addColumn(obt.getName(), new IntArray());
-      else if (obt instanceof DBoolean)
-        addColumn(
-            obt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
-      else if (obt instanceof DString) addColumn(obt.getName(), new StringArray());
-      else if (obt instanceof DSequence innerSequence) {
-        // *** Start Dealing With InnerSequence
-        // Ensure this is the first innerSequence.
-        // If there are two, the response can't be represented as a simple table.
-        if (innerSequenceColumn != -1) {
-          throw new Exception(
-              errorInMethod
-                  + "The response has more than one inner sequence: "
-                  + getColumnName(innerSequenceColumn)
-                  + " and "
-                  + obt.getName()
-                  + ".");
-        }
-        innerSequenceColumn = outerCol;
-        if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
+    if (ce.trim().length() == 0) ce = "";
+    String queryConstraint = (ce != null) ? ce : "";
+    try (DConnect2 dConnect = new DConnect2(baseUrl, opendapAcceptDeflate)) {
+      DAS das = dConnect.getDAS();
+      OpendapHelper.getAttributes(das, "GLOBAL", globalAttributes());
+      // get the outerSequence information
+      DataDDS dataDds = dConnect.getData(queryConstraint, null);
 
-        // deal with the inner sequence
-        nInnerColumns = innerSequence.elementCount();
-        AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
-        // String2.log("innerAttributeTable=" + innerAttributeTable);
-        for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
-
-          // create the columns
-          BaseType ibt =
-              innerSequence.getVar(innerCol); // this doesn't have data, just description of ibt
-          if (ibt instanceof DByte) addColumn(ibt.getName(), new ByteArray());
-          else if (ibt instanceof DFloat32) addColumn(ibt.getName(), new FloatArray());
-          else if (ibt instanceof DFloat64) addColumn(ibt.getName(), new DoubleArray());
-          else if (ibt instanceof DUInt16) addColumn(ibt.getName(), new ShortArray());
-          else if (ibt instanceof DInt16) addColumn(ibt.getName(), new ShortArray());
-          else if (ibt instanceof DUInt32) addColumn(ibt.getName(), new IntArray());
-          else if (ibt instanceof DInt32) addColumn(ibt.getName(), new IntArray());
-          else if (ibt instanceof DBoolean)
-            addColumn(
-                ibt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
-          else if (ibt instanceof DString) addColumn(ibt.getName(), new StringArray());
-          else {
-            throw new Exception(
-                errorInMethod
-                    + "Unexpected inner variable type="
-                    + ibt.getTypeName()
-                    + " for name="
-                    + ibt.getName());
-          }
-
-          // get the ibt attributes
-          // (some servers return innerAttributeTable, some don't -- see test cases)
-          if (innerAttributeTable == null) {
-            // Dapper needs this approach
-            // note use of getLongName here
-            Attributes tAtt = columnAttributes(nColumns() - 1);
-            OpendapHelper.getAttributes(das, ibt.getLongName(), tAtt);
-            if (tAtt.size() == 0) OpendapHelper.getAttributes(das, ibt.getName(), tAtt);
-          } else {
-            // note use of getName in this section
-            int tCol = nColumns() - 1; // the table column just created
-            // String2.log("try getting attributes for inner " + getColumnName(col));
-            dods.dap.Attribute attribute = innerAttributeTable.getAttribute(ibt.getName());
-            // it should be a container with the attributes for this column
-            if (attribute == null) {
-              String2.log(
-                  errorInMethod + "Unexpected: no attribute for innerVar=" + ibt.getName() + ".");
-            } else if (attribute.isContainer()) {
-              OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
-            } else {
-              String2.log(
-                  errorInMethod
-                      + "Unexpected: attribute for innerVar="
-                      + ibt.getName()
-                      + " not a container: "
-                      + attribute.getName()
-                      + "="
-                      + attribute.getValueAt(0));
-            }
-          }
-        }
-        // *** End Dealing With InnerSequence
-
-      } else {
+      if (reallyVerbose)
+        String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
+      BaseType firstVariable = (BaseType) dataDds.getVariables().nextElement();
+      if (!(firstVariable instanceof DSequence outerSequence))
         throw new Exception(
             errorInMethod
-                + "Unexpected outer variable type="
-                + obt.getTypeName()
-                + " for name="
-                + obt.getName());
-      }
-      // get the obt attributes
-      // (some servers return outerAttributeTable, some don't -- see test cases)
-      if (obt instanceof DSequence) {
-        // it is the innerSequence, so attributes already read
-      } else if (outerAttributeTable == null) {
-        // Dapper needs this approach
-        // note use of getLongName here
-        Attributes tAtt = columnAttributes(nColumns() - 1);
-        OpendapHelper.getAttributes(das, obt.getLongName(), tAtt);
-        // drds needs this approach
-        if (tAtt.size() == 0) OpendapHelper.getAttributes(das, obt.getName(), tAtt);
-      } else {
-        // note use of getName in this section
-        int tCol = nColumns() - 1; // the table column just created
-        // String2.log("try getting attributes for outer " + getColumnName(col));
-        dods.dap.Attribute attribute = outerAttributeTable.getAttribute(obt.getName());
-        // it should be a container with the attributes for this column
-        if (attribute == null) {
-          String2.log(
-              errorInMethod + "Unexpected: no attribute for outerVar=" + obt.getName() + ".");
-        } else if (attribute.isContainer()) {
-          OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
-        } else {
-          String2.log(
-              errorInMethod
-                  + "Unexpected: attribute for outerVar="
-                  + obt.getName()
-                  + " not a container: "
-                  + attribute.getName()
-                  + "="
-                  + attribute.getValueAt(0));
-        }
-      }
-    }
-    // if (reallyVerbose) String2.log("  columns were created.");
+                + "firstVariable not a DSequence: name="
+                + firstVariable.getClearName()
+                + " type="
+                + firstVariable.getTypeName());
+      int nOuterRows = outerSequence.getRowCount();
+      int nOuterColumns = outerSequence.elementCount();
+      AttributeTable outerAttributeTable =
+          OpendapHelper.getAttributeTable(das, outerSequence.getLongName());
 
-    // Don't ensure that an innerSequence was found
-    // so that this method can be used for 1 or 2 level sequences.
-    // String2.log("nOuterRows=" + nOuterRows);
-    // String2.log(toString());
+      // create the columns
+      int innerSequenceColumn = -1; // the outerCol with the inner sequence (or -1 if none)
+      int nInnerColumns = 0; // 0 important if no innerSequenceColumn
+      for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
+        // create the columns
+        BaseType obt =
+            outerSequence.getVar(outerCol); // this doesn't have data, just description of obt
+        if (obt instanceof DByte) addColumn(obt.getClearName(), new ByteArray());
+        else if (obt instanceof DFloat32) addColumn(obt.getClearName(), new FloatArray());
+        else if (obt instanceof DFloat64) addColumn(obt.getClearName(), new DoubleArray());
+        else if (obt instanceof DInt16) addColumn(obt.getClearName(), new ShortArray());
+        else if (obt instanceof DUInt16) addColumn(obt.getClearName(), new ShortArray());
+        else if (obt instanceof DInt32) addColumn(obt.getClearName(), new IntArray());
+        else if (obt instanceof DUInt32) addColumn(obt.getClearName(), new IntArray());
+        else if (obt instanceof DString) addColumn(obt.getClearName(), new StringArray());
+        else if (obt instanceof DSequence innerSequence) {
+          // *** Start Dealing With InnerSequence
+          // Ensure this is the first innerSequence.
+          // If there are two, the response can't be represented as a simple table.
+          if (innerSequenceColumn != -1) {
+            throw new Exception(
+                errorInMethod
+                    + "The response has more than one inner sequence: "
+                    + getColumnName(innerSequenceColumn)
+                    + " and "
+                    + obt.getClearName()
+                    + ".");
+          }
+          innerSequenceColumn = outerCol;
+          if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
 
-    // *** read the data (row-by-row, as it wants)
-    for (int outerRow = 0; outerRow < nOuterRows; outerRow++) {
-      List<BaseType> outerVector = outerSequence.getRow(outerRow);
-      int col;
-
-      // get data from innerSequence first (so nInnerRows is known)
-      int nInnerRows = 1; // 1 is important if no innerSequence
-      if (innerSequenceColumn >= 0) {
-        DSequence innerSequence = (DSequence) outerVector.get(innerSequenceColumn);
-        nInnerRows = innerSequence.getRowCount();
-        if (skipDapperSpacerRows && outerRow < nOuterRows - 1) nInnerRows--;
-        // if (reallyVerbose) String2.log("  nInnerRows=" + nInnerRows + " nInnerCols=" +
-        // nInnerColumns);
-        Test.ensureEqual(
-            nInnerColumns,
-            innerSequence.elementCount(),
-            errorInMethod + "Unexpected nInnerColumns for outer row #" + outerRow);
-        col = innerSequenceColumn;
-        for (int innerRow = 0; innerRow < nInnerRows; innerRow++) {
-          List<BaseType> innerVector = innerSequence.getRow(innerRow);
+          // deal with the inner sequence
+          nInnerColumns = innerSequence.elementCount();
+          AttributeTable innerAttributeTable =
+              OpendapHelper.getAttributeTable(das, innerSequence.getClearName());
           for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
-            // if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" + innerRow
-            // + " IC=" + innerCol);
-            BaseType ibt = innerVector.get(innerCol);
-            if (ibt instanceof DByte t) ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DFloat32 t)
-              ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DFloat64 t)
-              ((DoubleArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DUInt16 t)
-              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DInt16 t)
-              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DUInt32 t)
-              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DInt32 t)
-              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DBoolean t)
-              ((ByteArray) columns.get(col + innerCol))
-                  .add(
-                      (byte)
-                          (t.getValue()
-                              ? 1
-                              : 0)); // .nc doesn't support booleans, so store byte=0|1
-            else if (ibt instanceof DString t)
-              ((StringArray) columns.get(col + innerCol)).add(t.getValue());
+
+            // create the columns
+            BaseType ibt =
+                innerSequence.getVar(innerCol); // this doesn't have data, just description of ibt
+            if (ibt instanceof DByte) addColumn(ibt.getClearName(), new ByteArray());
+            else if (ibt instanceof DFloat32) addColumn(ibt.getClearName(), new FloatArray());
+            else if (ibt instanceof DFloat64) addColumn(ibt.getClearName(), new DoubleArray());
+            else if (ibt instanceof DUInt16) addColumn(ibt.getClearName(), new ShortArray());
+            else if (ibt instanceof DInt16) addColumn(ibt.getClearName(), new ShortArray());
+            else if (ibt instanceof DUInt32) addColumn(ibt.getClearName(), new IntArray());
+            else if (ibt instanceof DInt32) addColumn(ibt.getClearName(), new IntArray());
+            else if (ibt instanceof DString) addColumn(ibt.getClearName(), new StringArray());
             else {
               throw new Exception(
                   errorInMethod
                       + "Unexpected inner variable type="
                       + ibt.getTypeName()
                       + " for name="
-                      + ibt.getName());
+                      + ibt.getClearName());
+            }
+
+            // get the ibt attributes
+            // (some servers return innerAttributeTable, some don't -- see test cases)
+            if (innerAttributeTable == null) {
+              // Dapper needs this approach
+              // note use of getLongName here
+              Attributes tAtt = columnAttributes(nColumns() - 1);
+              OpendapHelper.getAttributes(das, ibt.getLongName(), tAtt);
+              if (tAtt.size() == 0) OpendapHelper.getAttributes(das, ibt.getClearName(), tAtt);
+            } else {
+              // note use of getName in this section
+              int tCol = nColumns() - 1; // the table column just created
+              // String2.log("try getting attributes for inner " + getColumnName(col));
+              opendap.dap.Attribute attribute =
+                  innerAttributeTable.getAttribute(ibt.getClearName());
+              // it should be a container with the attributes for this column
+              if (attribute == null) {
+                String2.log(
+                    errorInMethod
+                        + "Unexpected: no attribute for innerVar="
+                        + ibt.getClearName()
+                        + ".");
+              } else if (attribute.isContainer()) {
+                OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
+              } else {
+                String2.log(
+                    errorInMethod
+                        + "Unexpected: attribute for innerVar="
+                        + ibt.getClearName()
+                        + " not a container: "
+                        + attribute.getClearName()
+                        + "="
+                        + attribute.getValueAt(0));
+              }
             }
           }
-        }
-      }
+          // *** End Dealing With InnerSequence
 
-      // process the other outerCol
-      // if (reallyVerbose) String2.log("  process the other outer col");
-      col = 0; // restart at 0
-      for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
-        // innerSequenceColumn already processed above
-        if (outerCol == innerSequenceColumn) {
-          col += nInnerColumns;
-          continue;
-        }
-
-        // note addN (not add)
-        // I tried storing type of column to avoid instanceof, but no faster.
-        BaseType obt = outerVector.get(outerCol);
-        if (obt instanceof DByte t) ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DFloat32 t)
-          ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DFloat64 t)
-          ((DoubleArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DUInt16 t)
-          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DInt16 t)
-          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DUInt32 t)
-          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DInt32 t)
-          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DBoolean t)
-          ((ByteArray) columns.get(col++))
-              .addN(
-                  nInnerRows,
-                  (byte) (t.getValue() ? 1 : 0)); // .nc doesn't support booleans, so store byte=0|1
-        else if (obt instanceof DString t)
-          ((StringArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else {
+        } else {
           throw new Exception(
               errorInMethod
                   + "Unexpected outer variable type="
                   + obt.getTypeName()
                   + " for name="
-                  + obt.getName());
+                  + obt.getClearName());
+        }
+        // get the obt attributes
+        // (some servers return outerAttributeTable, some don't -- see test cases)
+        if (obt instanceof DSequence) {
+          // it is the innerSequence, so attributes already read
+        } else if (outerAttributeTable == null) {
+          // Dapper needs this approach
+          // note use of getLongName here
+          Attributes tAtt = columnAttributes(nColumns() - 1);
+          OpendapHelper.getAttributes(das, obt.getLongName(), tAtt);
+          // drds needs this approach
+          if (tAtt.size() == 0) OpendapHelper.getAttributes(das, obt.getClearName(), tAtt);
+        } else {
+          // note use of getName in this section
+          int tCol = nColumns() - 1; // the table column just created
+          // String2.log("try getting attributes for outer " + getColumnName(col));
+          opendap.dap.Attribute attribute = outerAttributeTable.getAttribute(obt.getClearName());
+          // it should be a container with the attributes for this column
+          if (attribute == null) {
+            String2.log(
+                errorInMethod
+                    + "Unexpected: no attribute for outerVar="
+                    + obt.getClearName()
+                    + ".");
+          } else if (attribute.isContainer()) {
+            OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
+          } else {
+            String2.log(
+                errorInMethod
+                    + "Unexpected: attribute for outerVar="
+                    + obt.getClearName()
+                    + " not a container: "
+                    + attribute.getClearName()
+                    + "="
+                    + attribute.getValueAt(0));
+          }
+        }
+      }
+      // if (reallyVerbose) String2.log("  columns were created.");
+
+      // Don't ensure that an innerSequence was found
+      // so that this method can be used for 1 or 2 level sequences.
+      // String2.log("nOuterRows=" + nOuterRows);
+      // String2.log(toString());
+
+      // *** read the data (row-by-row, as it wants)
+      for (int outerRow = 0; outerRow < nOuterRows; outerRow++) {
+        List<BaseType> outerVector = outerSequence.getRow(outerRow);
+        int col;
+
+        // get data from innerSequence first (so nInnerRows is known)
+        int nInnerRows = 1; // 1 is important if no innerSequence
+        if (innerSequenceColumn >= 0) {
+          DSequence innerSequence = (DSequence) outerVector.get(innerSequenceColumn);
+          nInnerRows = innerSequence.getRowCount();
+          if (skipDapperSpacerRows && outerRow < nOuterRows - 1) nInnerRows--;
+          // if (reallyVerbose) String2.log("  nInnerRows=" + nInnerRows + " nInnerCols=" +
+          // nInnerColumns);
+          Test.ensureEqual(
+              nInnerColumns,
+              innerSequence.elementCount(),
+              errorInMethod + "Unexpected nInnerColumns for outer row #" + outerRow);
+          col = innerSequenceColumn;
+          for (int innerRow = 0; innerRow < nInnerRows; innerRow++) {
+            List<BaseType> innerVector = innerSequence.getRow(innerRow);
+            for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
+              // if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" +
+              // innerRow
+              // + " IC=" + innerCol);
+              BaseType ibt = innerVector.get(innerCol);
+              if (ibt instanceof DByte t)
+                ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DFloat32 t)
+                ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DFloat64 t)
+                ((DoubleArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DUInt16 t)
+                ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DInt16 t)
+                ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DUInt32 t)
+                ((IntArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DInt32 t)
+                ((IntArray) columns.get(col + innerCol)).add(t.getValue());
+              else if (ibt instanceof DString t)
+                ((StringArray) columns.get(col + innerCol)).add(t.getValue());
+              else {
+                throw new Exception(
+                    errorInMethod
+                        + "Unexpected inner variable type="
+                        + ibt.getTypeName()
+                        + " for name="
+                        + ibt.getClearName());
+              }
+            }
+          }
+        }
+
+        // process the other outerCol
+        // if (reallyVerbose) String2.log("  process the other outer col");
+        col = 0; // restart at 0
+        for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
+          // innerSequenceColumn already processed above
+          if (outerCol == innerSequenceColumn) {
+            col += nInnerColumns;
+            continue;
+          }
+
+          // note addN (not add)
+          // I tried storing type of column to avoid instanceof, but no faster.
+          BaseType obt = outerVector.get(outerCol);
+          if (obt instanceof DByte t)
+            ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DFloat32 t)
+            ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DFloat64 t)
+            ((DoubleArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DUInt16 t)
+            ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DInt16 t)
+            ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DUInt32 t)
+            ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DInt32 t)
+            ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else if (obt instanceof DString t)
+            ((StringArray) columns.get(col++)).addN(nInnerRows, t.getValue());
+          else {
+            throw new Exception(
+                errorInMethod
+                    + "Unexpected outer variable type="
+                    + obt.getTypeName()
+                    + " for name="
+                    + obt.getClearName());
+          }
         }
       }
     }
-
     // since addition of data to different columns is helter-skelter,
     // ensure resulting table is valid (it's a fast test)
     ensureValid(); // throws Exception if not

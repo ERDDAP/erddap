@@ -8,13 +8,13 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import dods.dap.DAS;
-import dods.dap.DConnect;
-import dods.dap.DDS;
 import gov.noaa.pfel.coastwatch.griddata.Opendap;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import java.time.ZonedDateTime;
+import opendap.dap.DAS;
+import opendap.dap.DConnect2;
+import opendap.dap.DDS;
 
 /**
  * This deals with one type of netCheck test: the ability to get das and dds information and actual
@@ -202,10 +202,18 @@ public class OpendapTest extends NetCheckTest {
 
       // open the dataSet; getTimeOptions, makeGrid
       Opendap opendap = new Opendap(url, true); // acceptDeflate, resetFlagDir
-      DConnect dConnect = new DConnect(opendap.url, opendap.acceptDeflate, 1, 1);
-      DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-      DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-      opendap.getGridInfo(das, dds, variableName, missingValue);
+      DAS das = null;
+      DDS dds = null;
+      if ((dasMustContain != null && dasMustContain.length() > 0)
+          || (ddsMustContain != null && ddsMustContain.length() > 0)) {
+        try (DConnect2 dConnect = new DConnect2(opendap.url, opendap.acceptDeflate)) {
+          das = dConnect.getDAS();
+          dds = dConnect.getDDS();
+        }
+      }
+      try (ucar.nc2.dataset.NetcdfDataset ncd = ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
+        opendap.getGridInfo(ncd, variableName, missingValue);
+      }
       opendap.getTimeOptions(
           false, // false = format as date time
           opendap.gridTimeFactorToGetSeconds,

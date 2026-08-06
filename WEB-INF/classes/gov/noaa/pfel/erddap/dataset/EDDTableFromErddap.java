@@ -15,11 +15,6 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.AttributeTable;
-import dods.dap.BaseType;
-import dods.dap.DAS;
-import dods.dap.DDS;
-import dods.dap.DSequence;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -46,6 +41,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Queue;
+import opendap.dap.AttributeTable;
+import opendap.dap.BaseType;
+import opendap.dap.DAS;
+import opendap.dap.DDS;
+import opendap.dap.DSequence;
 import org.semver4j.Semver;
 
 /**
@@ -321,7 +321,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
           throw new IllegalArgumentException(
               errorInMethod
                   + "outerVariable not a DSequence: name="
-                  + outerVariable.getName()
+                  + outerVariable.getClearName()
                   + " type="
                   + outerVariable.getTypeName());
         int nOuterColumns = outerSequence.elementCount();
@@ -330,7 +330,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
           // look at the variables in the outer sequence
           BaseType obt = outerSequence.getVar(outerCol);
-          String tSourceName = obt.getName();
+          String tSourceName = obt.getClearName();
 
           // get the data sourcePAType
           PAType tSourcePAType = OpendapHelper.getElementPAType(obt.newPrimitiveVector());
@@ -339,7 +339,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
           Attributes tSourceAtt = new Attributes();
           // note use of getName in this section
           // if (reallyVerbose) String2.log("try getting attributes for outer " + tSourceName);
-          dods.dap.Attribute attribute = outerAttributeTable.getAttribute(tSourceName);
+          opendap.dap.Attribute attribute = outerAttributeTable.getAttribute(tSourceName);
           // it should be a container with the attributes for this column
           if (attribute == null) {
             String2.log("WARNING!!! Unexpected: no attribute for outerVar=" + tSourceName + ".");
@@ -350,7 +350,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 "WARNING!!! Unexpected: attribute for outerVar="
                     + tSourceName
                     + " not a container: "
-                    + attribute.getName()
+                    + attribute.getClearName()
                     + "="
                     + attribute.getValueAt(0));
           }
