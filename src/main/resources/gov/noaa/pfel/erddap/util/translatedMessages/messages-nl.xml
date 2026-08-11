@@ -4418,11 +4418,11 @@ Verschillende protocollen zijn geschikt voor verschillende soorten gegevens en v
 <restfulHTML><![CDATA[
  ERDDAP is beide:
  <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Een webapplicatie
- &externalLinkHtml;  </a> &ndash; een webpagina met een formulier dat mensen met browsers kunnen gebruiken (in dit geval om gegevens, grafieken of informatie over datasets te krijgen) .
+ &externalLinkHtml;  </a> &ndash; een webpagina met een formulier dat mensen met browsers kunnen gebruiken (in dit geval, om gegevens, grafieken of informatie over datasets te krijgen) .
  <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful webservice
  &externalLinkHtml;  </a> &ndash; een URL die computerprogramma's kunnen gebruiken (in dit geval, om gegevens, grafieken en informatie over datasets te krijgen) .
- </ul> Voor elke ERDDAP webpagina met een vorm die u als mens met een browser kan gebruiken, is er een
-overeenkomstige ERDDAP webservice die is ontworpen om gemakkelijk te zijn voor computerprogramma's en scripts te gebruiken.
+ </ul> Voor elke ERDDAP webpagina met een vorm die u als mens met een browser kan gebruiken, er is een
+overeenstemmend ERDDAP webservice die is ontworpen om gemakkelijk te zijn voor computerprogramma's en scripts te gebruiken.
 Mensen kunnen bijvoorbeeld deze URL gebruiken om een volledige tekst te zoeken naar interessante datasets:
  <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Door het wijzigen van de bestandsextensie in de URL van .html naar .json  (of .csv, of .htmlTable , of .jsonlCSV1 , of .xhtml , ...) :
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> we krijgen een URL dat een computer programma of Java Script script kan gebruiken om hetzelfde te krijgen
@@ -4430,15 +4430,15 @@ informatie in een computer-programma-vriendelijk formaat zoals
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> .
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Bouwen Dingen boven op ERDDAP  </a>  </h3> Er zijn veel functies in ERDDAP dat kan worden gebruikt door computerprogramma's of scripts
-Dat je schrijft. U kunt ze gebruiken om andere webapplicaties of webdiensten op te bouwen
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Bouw dingen op de top van ERDDAP  </a>  </h3> Er zijn vele functies in ERDDAP die gebruikt kunnen worden door computerprogramma's of scripts
+dat je schrijft. U kunt ze gebruiken om andere webapplicaties of webdiensten te bouwen op
 top van ERDDAP , maken ERDDAP Doe het meeste werk&#33;
 Dus als je een idee hebt voor een betere interface naar de data die ERDDAP dient of een web
-pagina die een gemakkelijke manier om toegang tot gegevens nodig heeft, moedigen wij u aan om uw eigen
-webapplicatie, webservice of webpagina en gebruik ERDDAP als de stichting.
+pagina die een gemakkelijke manier nodig heeft om toegang te krijgen tot gegevens, moedigen wij u aan om uw eigen
+webapplicatie, webservice, of webpagina en gebruik ERDDAP als de stichting.
 Uw systeem kan gegevens, grafieken en andere informatie van ERD 's ERDDAP of van
 Andere ERDDAP installaties, of u kunt
- <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> zet je eigen ERDDAP server </a> ,
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> je eigen ERDDAP server </a> ,
 die
 publiek toegankelijk of gewoon privé toegankelijk.
 
@@ -4448,44 +4448,44 @@ publiek toegankelijk of gewoon privé toegankelijk.
  &externalLinkHtml;  </a> verzonden via
  <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Dit is hetzelfde mechanisme dat uw browser gebruikt wanneer u een formulier invult
-op een webpagina en klik op <kbd> Verzenden </kbd> Te gebruiken HTTP GET , u genereert een speciaal gevormde URL (die een query kunnen bevatten) en stuur het met HTTP GET . U kunt deze URL's met de hand vormen en ze invoeren in
+op een webpagina en klik op <kbd> Verzenden </kbd> Te gebruiken HTTP GET , je genereert een speciaal gevormde URL (die een vraag kunnen bevatten) en stuur het met HTTP GET . U kunt deze URL's met de hand vormen en ze invoeren in
 het adrestekstveld van uw browser (bijvoorbeeld,
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Of je kunt een computerprogramma of webpagina script schrijven om een URL te maken, versturen,
-en krijg de reactie. URL's via HTTP GET werden gekozen omdat
+en krijg de reactie. URL-adressen via HTTP GET werden gekozen omdat
  <ul>  <li> Ze zijn eenvoudig te gebruiken.
  <li> Ze werken goed.
- <li> Ze worden universeel ondersteund (in browsers, computertalen, besturingssysteem
+ <li> Zij worden universeel gesteund (in browsers, computertalen, besturingssysteem
 gereedschap, enz.) .
  <li> Zij zijn een basis van
- <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Overdracht door de vertegenwoordigende staat ( REST )  &externalLinkHtml;  </a> en
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Overdracht van vertegenwoordigende staten ( REST )  &externalLinkHtml;  </a> en
  <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Hulpbrongerichte architectuur ( ROA )  &externalLinkHtml;  </a>  <li> Ze vergemakkelijken het gebruik van het World Wide Web als een grote gedistribueerde toepassing,
 bijvoorbeeld via
  <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX aanvragen
- &externalLinkHtml;  </a>  <li> Zij zijn <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> staatloze
+ &externalLinkHtml;  </a>  <li> Dat zijn ze. <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> staatloze
  &externalLinkHtml;  </a> zoals het is ERDDAP , wat het systeem eenvoudiger maakt.
  <li> Een URL geeft een gegeven verzoek volledig aan, zodat u het kunt bookmarken in uw browser,
-schrijf het in uw notities, e-mail het naar een vriend, enz.
+schrijf het in je notities, e-mail het naar een vriend, enz.
  </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Procentcodering </a>  </h3> In URL's zijn sommige tekens niet toegestaan (bijvoorbeeld spaties) en andere tekens
 heeft speciale betekenissen (bijvoorbeeld, '&amp;' scheidt key=value paren in een query) .
-Wanneer u een formulier invult op een webpagina en klikt op Submit, uw browser automatisch
+Wanneer u een formulier invullen op een webpagina en klik op Submit, uw browser automatisch
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> percentage coderingen
  &externalLinkHtml;  </a> de speciale tekens in de URL (bijvoorbeeld, ruimte wordt %20) , bijvoorbeeld,
  <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Maar als uw computer programma of script genereert de URL's, het moet waarschijnlijk doen het percentage
-Encoding zelf. Zo ja, dan waarschijnlijk alle tekens anders dan A-Za-z0-9_-&#33;.~ ' () *
-in de waarden van de zoekopdracht (de delen na de '=' tekens) moet gecodeerd worden
-als %HH, waarbij HH de tweecijferige hexadecimale waarde van het teken is, wordt bijvoorbeeld de ruimte %20.
-Tekens boven #127 moeten worden omgezet in UTF-8 bytes, dan moet elke UTF-8 byte worden gecodeerd
+Encoding zelf. Zo ja, dan waarschijnlijk alle tekens anders dan A-Za-z0-9 -&#33;.~' () *
+in de waarden van de query (de delen na de '=' tekens) moet gecodeerd worden
+als %HH, waarbij HH de hexadecimale waarde van het teken is van 2 cijfers, wordt bijvoorbeeld de ruimte %20.
+Karakters boven #127 moeten worden omgezet in UTF-8 bytes, dan moet elke UTF-8 byte procent gecodeerd zijn
  (een programmeur om hulp vragen) . Programmeertalen hebben hiervoor hulpmiddelen (bijvoorbeeld, zie Java 's
  <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> en Java Script's
  <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponent ()  &externalLinkHtml;  </a> ) en er zijn
  <a class="N" rel="help" href="https://www.url-encode-decode.com"> websites die percentage coderen/decoderen voor u
  &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Bestandstypen voor respons </a>  </h3> Hoewel mensen die browsers gebruiken user-interface resultaten willen ontvangen (bijvoorbeeld,
-zoekresultaten) als HTML documenten, computer programma's vaak de voorkeur om resultaten te krijgen in
+zoekresultaten) als HTML-documenten, computerprogramma's vaak de voorkeur om resultaten te krijgen in
 eenvoudige, gemakkelijk ontleed, minder verbose documenten. ERDDAP kan gebruikersinterface teruggeven
 resultaten als een tabel van gegevens in deze gemeenschappelijke, computer-programma vriendelijk, bestandstypen:
  <ul>  <li> .csv - een door komma's gescheiden ASCII teksttabel.
  ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> meer &nbsp; informatie
- &externalLinkHtml;  </a> )  <li>  .htmlTable - een .html webpagina met de gegevens in een tabel.
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - een .html web pagina met de gegevens in een tabel.
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> meer &nbsp; informatie
  &externalLinkHtml;  </a> )  <li>  .itx - een Igor-tekstbestand met een golf voor elke kolom gegevens.
  ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> meer &nbsp; informatie
@@ -4502,27 +4502,28 @@ resultaten als een tabel van gegevens in deze gemeenschappelijke, computer-progr
  ( <a rel="help" href="https://www.mathworks.com/"> meer &nbsp; informatie
  &externalLinkHtml;  </a> )  <li>  .nc - een platte, tafelachtige, NetCDF - Drie binaire bestanden.
  ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> meer &nbsp; informatie
- &externalLinkHtml;  </a> )  <li>  .nccsv - een platte, tafelachtige, NetCDF Zoals ASCII CSV-bestand.
+ &externalLinkHtml;  </a> )  <li>  .nccsv - een platte, tafelachtige, NetCDF Zoals, ASCII CSV-bestand.
  ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> meer &nbsp; informatie
- &externalLinkHtml;  </a> )  <li>  .nc o Json - een JSON-bestand ( NCO -style) alleen metadata van de dataset (mondiale kenmerken,
-dimensies en variabelen met hun attributen, type en vorm) en geen datawaarden.
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - een JSON-bestand ( NCO -style) alleen metadata van de dataset (mondiale kenmerken,
+afmetingen en variabelen met hun kenmerken, type en vorm) en geen gegevenswaarden.
  ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> meer &nbsp; informatie
- &externalLinkHtml;  </a> )  <li>  .tsv - een tabblad-gescheiden ASCII-teksttabel.
+ &externalLinkHtml;  </a> ) . Dit formaat is alleen van toepassing op verzoeken om metadata met één dataset.
+ <li>  .tsv - een tabblad-gescheiden ASCII-teksttabel.
  ( <a rel="help" href="https://jkorpela.fi/TSV.html"> meer &nbsp; informatie
  &externalLinkHtml;  </a> )  <li>  .xhtml - een XHTML (XML) bestand met de gegevens in een tabel.
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> meer &nbsp; informatie
- &externalLinkHtml;  </a> )  </ul> In elk resultaat tabelformaat (behalve .jsonlKVP , waar kolomnamen op elke rij staan) :
+ &externalLinkHtml;  </a> )  </ul> In elke resultatentabelformaat (behalve .jsonlKVP , waar kolomnamen op elke rij staan) :
  <ul>  <li> Elke kolom heeft een kolomnaam en een type informatie.
  <li> De eerste rij van de tabel heeft de kolomnamen.
- <li> Volgende rijen hebben de informatie die je vroeg.
- </ul>  <p> De inhoud van deze gewone bestandstypen is ook iets anders dan de .html
-response &mdash; het is opzettelijk kale botten, zodat het gemakkelijker is voor een computer
+ <li> Volgende rijen hebben de informatie die u vroeg.
+ </ul>  <p> De inhoud in deze gewone bestandstypen is ook iets anders dan de .html
+respons &mdash; het is opzettelijk kale botten, zodat het gemakkelijker is voor een computer
 programma om mee te werken.
 
  <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Een consistente gegevensstructuur voor de antwoorden </a>  <br> Alle gebruikersinterface diensten beschreven op deze pagina kan een tabel van
 gegevens in een van de hierboven vermelde gemeenschappelijke bestandsformaten. Hopelijk kun je schrijven
-slechts één procedure om een tabel met gegevens in een van de formaten te verwerken. Dan kun je
-deze procedure opnieuw te gebruiken om het antwoord van een van deze diensten te verwerken. Dit
+slechts één procedure om een tabel van gegevens in een van de formaten te verwerken. Dan kun je
+deze procedure opnieuw gebruiken om het antwoord van een van deze diensten te verwerken. Dit
 de behandeling van ERDDAP .
 
 
@@ -4532,14 +4533,14 @@ de interne dubbele citaten.
  <li> Speciale tekens in een .csv of .tsv bestand is gecodeerd als
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> backslash gecodeerde tekens:
-% (nieuwe regel) ,\\ (backslash) \f (formfeed) , (tab) \r (vervoer terug) of met de \\u <i> Hhhh </i> syntaxis.
+\n (nieuwe regel) ,\\ (backslash) \f (formfeed) \t (tab) \r (vervoer terug) of met de \\u <i> Hhhh </i> syntaxis.
  </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> Verzoeken om .json bestanden kunnen nu een optie bevatten
  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
  &externalLinkHtml;  </a> verzoek van
-\"&amp; .json p= <i> functie Naam </i> \" tot het einde van de vraag. Eigenlijk, dit vertelt
- ERDDAP toe te voegen \" <i> functie Naam </i>  (\" naar het begin van de reactie en \") \" aan de
-einde van het antwoord. Het eerste karakter van <i> functie Naam </i> moet een ISO 8859 letter of \"_\" zijn.
-Elk optioneel daarop volgend teken moet een ISO 8859-letter zijn, \"_,\" een cijfer, of \".\"
+\"&amp; .json p= <i> functieNaam </i> \" tot het einde van de vraag. Eigenlijk zegt dit
+ ERDDAP toe te voegen \" <i> functieNaam </i>  (\" naar het begin van de reactie en \") \" aan de
+einde van het antwoord. Het eerste karakter van <i> functieNaam </i> moet een ISO 8859 letter of \" \" zijn.
+Elk optioneel daarop volgend teken moet een ISO 8859 letter zijn, \" ,\" een cijfer, of \".\"
 Als er oorspronkelijk geen vraag was, laat dan de \"&amp;\" in uw vraag.
 
 
@@ -4553,11 +4554,12 @@ gegevens) verzoeken (zie
 
 
  &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Toegang tot URL's voor ERDDAP Diensten </a>  </h3>  ERDDAP heeft deze URL-toegangspunten voor computerprogramma's:
- <ul>  <li> Om de lijst van de <strong> belangrijkste toegang tot bronnen URL's </strong> Gebruik
+ <ul>  <li> Om de lijst van de <strong> belangrijkste toegang URL's voor bronnen </strong> Gebruik
  <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Om de huidige lijst van <strong> alle datasets </strong> Gebruik
  <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Om te krijgen <strong> metagegevens </strong> voor een specifieke gegevensverzameling
  (de lijst van variabelen en hun kenmerken) Gebruik
- <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /index <i>  .fileType  </i>  <br> bijvoorbeeld,
+ <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /index <i>  .fileType  </i>  <br> of het korte URL-formulier
+ <br>  &tErddapUrl; /info/ <i>  datasetID  .fileType  </i>  <br> bijvoorbeeld,
  <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Om de resultaten van <strong> volledige tekstzoekopdrachten </strong> voor datasets
  (gebruik "searchFor=wind%20speed" als voorbeeld) Gebruik
  <br>  &plainLinkExamples4;  <br>  (Uw programma of script kan nodig zijn
@@ -4570,10 +4572,12 @@ gegevens) verzoeken (zie
  <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> in een browser om alle optionele parameters uit te zoeken.
  (Uw programma of script kan nodig zijn
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> procent-encode
- &externalLinkHtml;  </a> de waarde in de query.)  <br>  &nbsp;  <li> Om de lijst van <strong>  categoryAttributes  </strong>  (bijvoorbeeld, instelling, long_name , standaard_naam) Gebruik
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Om de lijst van <strong> categorieën voor een specifieke categorie Attribuut </strong>  (\"standard_name\" als voorbeeld gebruiken) Gebruik
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Om de lijst van <strong> datasets in een specifieke categorie </strong>  (\"standard_name=time\" als voorbeeld gebruiken) Gebruik
- <br>  &plainLinkExamples8; 
+ &externalLinkHtml;  </a> de waarde in de query.)  <br>  &nbsp;  <li> Om de lijst van <strong>  categoryAttributes  </strong>  (bijvoorbeeld, instelling, long_name , standaard naam) Gebruik
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Om de lijst van <strong> categorieën voor een specifieke categorieKenmerken </strong>  (\"standard name\" als voorbeeld gebruiken) Gebruik
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Om de lijst van <strong> datasets in een specifieke categorie </strong>  (\"standard name=time\" als voorbeeld gebruiken) Gebruik
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> Om te krijgen <strong> suggesties voor variabele metagegevens-attribuut </strong> , stuur een JSON (Inhoudstype: toepassing/json) POST-verzoek
+bevattende <a href="https://nco.sourceforge.net/nco.html#json"> ncoJson </a> stijlvariabelen met attributen, voorbeeld:
+ <br>  <code> &#123;\"variabelen\": &#123;\"air temp\": &#123;\"attributes\": &#123;\"name\": \"Air temp,\" \"units\": \"degC\"&#125;&#125; </code>  <br> tot &tErddapUrl; /suggerstVariableKenmerken
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

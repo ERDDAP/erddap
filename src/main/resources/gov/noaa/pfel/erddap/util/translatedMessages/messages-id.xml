@@ -4383,164 +4383,168 @@ Protokol yang berbeda sesuai untuk tipe data yang berbeda dan untuk aplikasi kli
 <resourceNotFound>Sumber tidak ditemukan:</resourceNotFound>
 <restfulWebServices>Layanan Web yang Tenang</restfulWebServices>
 <restfulHTML><![CDATA[
- ERDDAP keduanya:
+ ERDDAP adalah keduanya:
  <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Aplikasi web
- &externalLinkHtml;  </a> &ndash; halaman web dengan bentuk bahwa manusia dengan browser dapat menggunakan (dalam hal ini, untuk mendapatkan data, grafik, atau informasi tentang dataset) Sitemap
- <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> Login RESTful Layanan web
- &externalLinkHtml;  </a> &ndash; URL yang program komputer dapat menggunakan (dalam hal ini, untuk mendapatkan data, grafik, dan informasi tentang dataset) Sitemap
+ &externalLinkHtml;  </a> & ndash; halaman web dengan bentuk yang dapat digunakan manusia dengan browser (dalam kasus ini, untuk mendapatkan data, grafik, atau informasi tentang dataset) .
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful layanan web
+ &externalLinkHtml;  </a> & ndash; suatu URL yang dapat dipakai program komputer (dalam kasus ini, untuk mendapatkan data, grafik, dan informasi tentang dataset) .
  </ul> Untuk setiap ERDDAP halaman web dengan bentuk bahwa Anda sebagai manusia dengan browser dapat digunakan, ada
-Sitemap ERDDAP layanan web yang dirancang untuk mudah untuk program komputer dan skrip untuk digunakan.
-Misalnya, manusia dapat menggunakan URL ini untuk melakukan Pencarian Teks Penuh untuk dataset yang menarik:
- <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Dengan mengubah ekstensi file di URL dari .html ke .json  (atau .csv, atau .htmlTable Sitemap .jsonlCSV1 Sitemap .xhtml Login) Sitemap
- <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> kita mendapatkan URL bahwa program komputer atau Java Script script dapat digunakan untuk mendapatkan yang sama
-informasi dalam format yang lebih ramah komputer seperti
- <a rel="help" href="https://www.json.org/"> Login
- &externalLinkHtml;  </a> Sitemap
+sesuai ERDDAP layanan web yang dirancang agar mudah untuk program komputer dan skrip untuk digunakan.
+Sebagai contoh, manusia dapat menggunakan URL ini untuk melakukan pencarian teks penuh untuk data yang menarik:
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> Dengan mengubah ekstensi berkas dalam URL dari .html ke .json  (atau .csv, atau .htmlTable , atau .jsonlCSV1 , atau .xhtml ,...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> kita mendapatkan URL yang program komputer atau Java Skrip dapat digunakan untuk mendapatkan yang sama
+informasi dalam format lebih computer-program- ramah seperti
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> .
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Login Hal-hal di Atas ERDDAP  </a>  </h3> Ada banyak fitur di ERDDAP yang dapat digunakan oleh program komputer atau skrip
-Anda menulis. Meme it Anda dapat menggunakannya untuk membangun aplikasi web atau layanan web lain di
-Sitemap ERDDAP Sitemap ERDDAP melakukan sebagian besar pekerjaan&#33;
-Jadi jika Anda memiliki ide untuk antarmuka yang lebih baik ke data yang ERDDAP Sitemap
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Bangun Hal di Puncak ERDDAP  </a>  </h3> Ada banyak fitur dalam ERDDAP yang dapat digunakan oleh program komputer atau skrip
+bahwa Anda menulis. Anda dapat menggunakannya untuk membangun aplikasi web atau layanan web lain pada
+atas ERDDAP , membuat ERDDAP melakukan sebagian besar pekerjaan&#33;
+Jadi jika Anda memiliki ide untuk antarmuka yang lebih baik ke data yang ERDDAP melayani atau web
 halaman yang membutuhkan cara mudah untuk mengakses data, kami mendorong Anda untuk membangun Anda sendiri
-aplikasi web, layanan web, atau halaman web dan penggunaan ERDDAP sebagai dasar.
-Sistem Anda bisa mendapatkan data, grafik, dan informasi lainnya dari ERD Sitemap ERDDAP Sitemap
-Sitemap ERDDAP instalasi, atau Anda dapat
- <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Anda sendiri ERDDAP Login </a> Login
-yang bisa
-dapat diakses secara publik atau hanya dapat diakses secara pribadi.
+aplikasi, layanan web, atau halaman web dan gunakan ERDDAP sebagai fondasi.
+Sistem Anda dapat memperoleh data, grafik, dan informasi lain dari ERD ' ERDDAP atau dari
+lain ERDDAP instalasi, atau Anda dapat
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> mengatur sendiri ERDDAP server </a> ,
+yang dapat
+akses publik atau hanya dapat diakses secara pribadi.
 
 
- <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL </a>  </h3> Permintaan untuk informasi user-interface dari ERDDAP  (misalnya, hasil pencarian) menggunakan standar universal web untuk permintaan:
- <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> Login
- &externalLinkHtml;  </a> Sitemap
- <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> Sitemap
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful Permintaan URL </a>  </h3> Permintaan untuk informasi antar muka pengguna dari ERDDAP  (Misalnya, hasil pencarian) gunakan standar universal web untuk permintaan:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> URL
+ &externalLinkHtml;  </a> dikirim melalui
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Ini adalah mekanisme yang sama yang digunakan browser Anda ketika Anda mengisi formulir
-di halaman web dan klik <kbd> Sitemap </kbd> Sitemap HTTP GET , Anda menghasilkan URL yang terbentuk secara khusus (yang dapat mencakup pertanyaan) dan mengirimkannya dengan HTTP GET Sitemap Anda dapat membentuk URL ini dengan tangan dan masukkan mereka di Meme it
-kolom teks alamat browser Anda (Sitemap
- <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Atau, Anda dapat menulis program komputer atau script halaman web untuk membuat URL, mengirimnya,
-dan mendapatkan tanggapan. URL HTTP GET dipilih karena
- <ul>  <li> Mereka mudah digunakan.
+pada halaman web dan klik pada <kbd> Kirim </kbd> Untuk menggunakan HTTP GET , anda membuat sebuah URL yang terbentuk khusus (yang mungkin termasuk permintaan) Dan mengirimkannya dengan HTTP GET . Anda dapat membentuk URL ini dengan tangan dan masukkan mereka di
+ruas teks alamat peramban Anda (misalnya,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Atau, Anda dapat menulis sebuah program komputer atau naskah halaman web untuk membuat suatu URL, mengirimkannya,
+dan mendapatkan respon. URL melalui HTTP GET terpilih karena
+ <ul>  <li> Mereka sederhana untuk digunakan.
  <li> Mereka bekerja dengan baik.
- <li> Mereka didukung secara universal (di browser, bahasa komputer, sistem operasi
-alat, dll) Sitemap
+ <li> Mereka secara universal didukung (dalam browser, bahasa komputer, sistem operasi
+alat, dll) .
  <li> Mereka adalah fondasi
- <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Transfer Negara Berwakili ( REST )  &externalLinkHtml;  </a> Login
- <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Arsitektur Berorientasi Sumber Daya ( ROA )  &externalLinkHtml;  </a>  <li> Mereka memfasilitasi menggunakan Web World Wide sebagai aplikasi terdistribusi besar,
-Sitemap
- <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX Sitemap
- &externalLinkHtml;  </a>  <li> Sitemap <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> Login
- &externalLinkHtml;  </a> Sitemap ERDDAP , yang membuat sistem lebih sederhana.
- <li> URL benar-benar mendefinisikan permintaan yang diberikan, sehingga Anda dapat menandainya di browser Anda,
-menulis di catatan Anda, email ke teman, dll.
- </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Percent Encoding </a>  </h3> Dalam URL, beberapa karakter tidak diperbolehkan (misalnya, ruang) dan karakter lainnya
-memiliki makna khusus (misalnya, '&amp;' memisahkan key=value pair di query) Sitemap
-Ketika Anda mengisi formulir di halaman web dan klik Submit, browser Anda secara otomatis
- <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> persen kode
- &externalLinkHtml;  </a> karakter khusus di URL (misalnya, ruang menjadi %20) , misalnya,
- <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Tetapi jika program komputer atau skrip Anda menghasilkan URL, mungkin perlu dilakukan persen
-pengkodean itu sendiri. A-Za-z0-9_-&#33; Sitemap () Sitemap
-dalam nilai query (bagian setelah bagian '=' Login) perlu dikodekan
-seperti %HHH, di mana HH adalah nilai heksadecimal 2 digit karakter, misalnya, ruang menjadi %20.
-Karakter di atas #127 harus dikonversi ke UTF-8 byte, maka setiap UTF-8 byte harus persen dikodekan
- (meminta programmer untuk membantu) Sitemap Bahasa pemrograman memiliki alat untuk melakukan ini (misalnya, lihat Java Sitemap
- <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> Login Java Login
- <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> Sitemap ()  &externalLinkHtml;  </a> ) dan ada
- <a class="N" rel="help" href="https://www.url-encode-decode.com"> situs web yang dikodekan persen / kode untuk Anda
- &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Jenis File Respon </a>  </h3> Meskipun manusia menggunakan browser ingin menerima hasil user-interface (Sitemap
-hasil pencarian) sebagai dokumen HTML, program komputer sering lebih suka mendapatkan hasil dalam
-dokumen verbose sederhana, mudah parsed, kurang. ERDDAP dapat mengembalikan user-interface
-Hasil sebagai tabel data dalam jenis file yang umum, ramah program komputer,:
- <ul>  <li> .csv - tabel teks ASCII yang dipisahkan.
- ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .htmlTable - halaman web .html dengan data dalam tabel.
- ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .itx - File Teks Igor dengan gelombang untuk setiap kolom data.
- ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .json - file JSON seperti tabel.
- ( <a rel="help" href="https://www.json.org/"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> Sitemap
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - Informasi spesifik </a> )  <li>  .jsonlCSV1 - file JSON Garis dengan nama kolom di baris pertama.
- ( <a rel="help" href="https://jsonlines.org/"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"Better dari CSV\" JSON Lines file tanpa nama kolom.
- ( <a rel="help" href="https://jsonlines.org/"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .jsonlKVP - file JSON Garis dengan Kunci: Pasangan nilai.
- ( <a rel="help" href="https://jsonlines.org/"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .mat - file biner MATLAB.
- ( <a rel="help" href="https://www.mathworks.com/"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .nc - datar, seperti meja, NetCDF -3 file biner.
- ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .nccsv - datar, seperti meja, NetCDF -seperti, file CSV ASCII.
- ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .nc Login Json - file JSON ( NCO Login) dengan metadata dataset hanya (atribut global,
-dimensi, dan variabel dengan atribut, jenis, dan bentuk mereka) dan tidak ada nilai data.
- ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .tsv - tabel teks ASCII yang dipisahkan tab.
- ( <a rel="help" href="https://jkorpela.fi/TSV.html"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  <li>  .xhtml Login (Login) file dengan data dalam tabel.
- ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> Sitemap &nbsp; Sitemap
- &externalLinkHtml;  </a> )  </ul> Dalam setiap format tabel hasil (Sitemap .jsonlKVP , di mana nama kolom ada di setiap baris) Sitemap
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Transfer Negara Perwakilan ( REST )  &externalLinkHtml;  </a> dan
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Arsitektur Sumber Daya Terorientasi ( ROA )  &externalLinkHtml;  </a>  <li> Mereka memfasilitasi penggunaan World Wide Web sebagai aplikasi terdistribusi besar,
+misalnya melalui
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX aplikasi
+ &externalLinkHtml;  </a>  <li> Mereka <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> tanpa status
+ &externalLinkHtml;  </a> sebagaimana ERDDAP , yang membuat sistem lebih sederhana.
+ <li> Sebuah URL benar-benar mendefinisikan permintaan yang diberikan, sehingga Anda dapat bookmark dalam peramban Anda,
+menuliskannya dalam catatan Anda, email ke teman, dll.
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Pengkodean Persen </a>  </h3> Dalam URL, beberapa karakter tidak diperbolehkan (misalnya, spasi) dan karakter lain
+memiliki arti khusus (sebagai contoh, '& amp;' memisahkan kunci = pasangan nilai dalam suatu query) .
+Ketika Anda mengisi formulir pada halaman web dan klik pada Submit, peramban Anda secara otomatis
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> persen encodes
+ &externalLinkHtml;  </a> karakter khusus dalam URL (Misalnya, ruang menjadi% 20) , misalnya,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Tetapi jika program komputer atau skrip Anda menghasilkan URL, mungkin perlu untuk melakukan persen
+encoding sendiri. Jika demikian, maka mungkin semua karakter selain A- Z-z0-9 _ -&#33; ~ ' () ♪
+dalam nilai permintaan (bagian setelah '=' tanda-tanda) perlu dikodekan
+sebagai% HH, dimana HH adalah 2 digit nilai heksadesimal dari karakter, sebagai contoh, ruang menjadi% 20.
+Karakter di atas # 127 harus dikonversi ke UTF-8 bytes, maka masing-masing UTF-8 byte harus dikodekan persen
+ (minta bantuan pemrogram) Pemrograman bahasa memiliki alat untuk melakukan hal ini (sebagai contoh, lihat Java '
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> dan Java Skrip
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponen ()  &externalLinkHtml;  </a> ) dan ada
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> situs yang persen menyandi / decode bagi Anda
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> Tipe Berkas Respon </a>  </h3> Meskipun manusia menggunakan browser ingin menerima hasil interface (misalnya,
+hasil pencarian) sebagai dokumen HTML, program komputer sering lebih memilih untuk mendapatkan hasil
+sederhana, mudah diurai, sedikit dokumen verbose. ERDDAP dapat mengembalikan user-interface
+hasil sebagai tabel dari data dalam common, computer- program ramah, tipe file:
+ <ul>  <li> .csv - sebuah tabel teks comma- dipisahkan ASCII.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - sebuah halaman web .html dengan data dalam sebuah tabel.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .itx - Sebuah Berkas Teks Igor dengan gelombang untuk setiap kolom data.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .json - Meja - seperti file JSON.
+ ( <a rel="help" href="https://www.json.org/"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> atau
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP -spesifik informasi </a> )  <li>  .jsonlCSV1 - Sebuah \"Lebih baik dari CSV\" JSON Lines file dengan nama kolom di baris pertama.
+ ( <a rel="help" href="https://jsonlines.org/"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - Sebuah \"lebih baik dari CSV\" JSON Lines file tanpa nama kolom.
+ ( <a rel="help" href="https://jsonlines.org/"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - berkas JSON Lines dengan pasangan Kunci: nilai.
+ ( <a rel="help" href="https://jsonlines.org/"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .mat - berkas biner MATLAB.
+ ( <a rel="help" href="https://www.mathworks.com/"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .nc - Sebuah, meja datar-seperti, NetCDF -3 berkas biner.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .nccsv - Sebuah, meja datar-seperti, NetCDF - Seperti, berkas ASCII CSV.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - file JSON ( NCO -style) hanya dengan metadata data (atribut global,
+dimensi, dan variabel dengan atribut mereka, tipe, dan bentuk) dan tidak ada nilai data.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> ) . Format ini hanya berlaku untuk permintaan metadata dataset tunggal.
+ <li>  .tsv - Meja teks ASCII yang dipisah.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) berkas dengan data dalam tabel.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> lagi &nbsp; informasi
+ &externalLinkHtml;  </a> )  </ul> Dalam setiap format tabel hasil (kecuali .jsonlKVP , dimana nama kolom berada di setiap baris) :
  <ul>  <li> Setiap kolom memiliki nama kolom dan satu jenis informasi.
- <li> Baris pertama dari tabel memiliki nama kolom.
- <li> Sering baris memiliki informasi yang Anda minta.
- </ul>  <p> Konten dalam jenis file polos ini juga sedikit berbeda dari .html
-respon &mdash; itu sengaja telanjang-boned sehingga lebih mudah untuk komputer
-program untuk bekerja sama.
+ <li> Baris pertama tabel memiliki nama kolom.
+ <li> Baris berikutnya memiliki informasi yang Anda minta.
+ </ul>  <p> Isi dalam tipe berkas polos ini juga sedikit berbeda dari .html
+respon & mdash; ini sengaja tanpa kabel sehingga lebih mudah untuk komputer
+Program untuk bekerja sama.
 
- <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Struktur Data Konsisten untuk Tanggapan </a>  <br> Semua layanan user-interface yang dijelaskan di halaman ini dapat mengembalikan tabel
-data dalam format file umum yang tercantum di atas. Mudah-mudahan, Anda dapat menulis
-hanya satu prosedur untuk membuat tabel data dalam satu format. Maka kamu bisa
-menggunakan kembali prosedur untuk membuat respons dari layanan ini. Sitemap
-harus memudahkan berurusan dengan Meme it ERDDAP Sitemap
-
-
- <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> Login </a> Login .tsv Sitemap <ul>  <li> Jika file datum dalam file .csv memiliki kutipan ganda internal atau kommas, ERDDAP Login
-spesifikasi .csv ketat: itu menempatkan kutipan ganda di sekitar datum dan ganda
-kutipan ganda internal.
- <li> Karakter khusus dalam .csv atau .tsv file dikodekan seperti
- <a rel="help" href="https://www.json.org/"> Login
- &externalLinkHtml;  </a> karakter backslash-encoded:
-Login (Login) Login (Login) Login (Login) Login (Login) Login (kembali kereta) atau dengan \\u <i> Login </i> Login
- </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> Login </a>  <br> Permintaan .json file sekarang dapat menyertakan opsional
- <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> Login
- &externalLinkHtml;  </a> Sitemap
-menambahkan \"&amp; .json p= <i> Sitemap Login </i> \" untuk akhir kueri. Pada dasarnya, cerita ini
- ERDDAP untuk menambahkan \" <i> Sitemap Login </i>  (\" untuk awal respons dan \") Login
-akhir respons. Karakter pertama <i> Sitemap Login </i> harus berupa huruf ISO 8859 atau \"_\".
-Setiap karakter opsional berikutnya harus berupa huruf ISO 8859, \"_\", digit, atau \".\".
-Jika awalnya tidak ada kueri, meninggalkan \"&amp;\" dalam pertanyaan Anda.
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Struktur Data Konsistensi untuk Respon </a>  <br> Semua layanan antar muka yang dijelaskan di halaman ini dapat mengembalikan tabel
+data dalam format berkas umum terdaftar di atas. Mudah-mudahan, Anda dapat menulis
+hanya satu prosedur untuk mengurai tabel data dalam salah satu format. Kemudian Anda dapat
+gunakan prosedur itu untuk mengurai respon dari salah satu layanan ini. Ini
+harus membuatnya lebih mudah untuk menangani ERDDAP .
 
 
- <p> Login tabledap Menawarkan Jenis File yang Berbeda
- <br> Jenis file yang tercantum di atas adalah jenis file ERDDAP dapat digunakan untuk menanggapi
-jenis pengguna-interface permintaan (misalnya, permintaan pencarian) Sitemap ERDDAP Login
-satu set jenis file yang berbeda untuk data ilmiah (misalnya, satelit dan buoy
-Sitemap) Sitemap (Login
- <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> Login </a> Login
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> Sitemap) Sitemap
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> dan .tsv Rincian <ul>  <li> Bila suatu data dalam berkas .csv memiliki kutipan ganda internal atau koma, ERDDAP mengikuti
+spesifikasi .csv secara ketat: ini menempatkan tanda kutip ganda di sekitar data dan ganda
+Kutipan ganda internal.
+ <li> Karakter khusus dalam .csv atau .tsv berkas dikodekan seperti
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> karakter backslash- terkode:
+\\ n (baris baru) ,\\ (backslash) ,\\ f (formfeed) ,\\ t (tab) ,\\ r (kereta kembali) atau dengan\\ u <i> hhhh </i> syntax.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> Permintaan untuk .json berkas sekarang mungkin termasuk sebuah opsional
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
+ &externalLinkHtml;  </a> permintaan oleh
+menambahkan \"& amp; .json p = <i> Nama Fungsi </i> \"sampai akhir query. Pada dasarnya, ini memberitahu
+ ERDDAP untuk menambahkan \" <i> Nama Fungsi </i>  (\"ke awal respon dan\") \"ke
+akhir dari respons. Karakter pertama dari <i> Nama Fungsi </i> harus sebuah ISO 8859 huruf atau \"_\".
+Setiap karakter opsional berikutnya harus berupa huruf ISO 8859, \"_\", sebuah digit, atau \".
+Jika awalnya tidak ada permintaan, tinggalkan \"& amp;\" dalam permintaan Anda.
 
 
- &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Login ERDDAP Sitemap </a>  </h3>  ERDDAP memiliki titik akses URL ini untuk program komputer:
- <ul>  <li> Untuk mendapatkan daftar <strong> URL akses sumber daya utama </strong> Sitemap
- <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Untuk mendapatkan daftar saat ini <strong> dataset </strong> Sitemap
- <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Sitemap <strong> Login </strong> untuk set data tertentu
- (daftar variabel dan atribut mereka) Sitemap
- <br>  &tErddapUrl; Login <i>  datasetID  </i> Login <i>  .fileType  </i>  <br> Sitemap
- <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Untuk mendapatkan hasil <strong> Pencarian teks penuh </strong> dataset
- (Login "searchFor=wind%20speed" sebagai contoh) Sitemap
+ <p> griddap dan tabledap Menawarkan Jenis Berkas Berbeda
+ <br> Tipe berkas yang tercantum di atas adalah tipe berkas ERDDAP dapat digunakan untuk menanggapi
+Tipe antar muka permintaan (misalnya, permintaan pencarian) . ERDDAP dukungan
+set berbeda dari tipe berkas untuk data ilmiah (misalnya, satelit dan pelampung
+data) permintaan (lihat
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> griddap </a> dan
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> dokumentasi) .
+
+
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> URL akses bagi ERDDAP Layanan </a>  </h3>  ERDDAP memiliki titik akses URL untuk program komputer:
+ <ul>  <li> Untuk mendapatkan daftar <strong> URL akses sumber daya utama </strong> , gunakan
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Untuk mendapatkan daftar saat ini <strong> semua data </strong> , gunakan
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Untuk mendapatkan <strong> metadata </strong> untuk kumpulan data tertentu
+ (daftar variabel dan atribut mereka) , gunakan
+ <br>  &tErddapUrl; / info / <i>  datasetID  </i> / indeks <i>  .fileType  </i>  <br> atau bentuk URL singkat
+ <br>  &tErddapUrl; / info / <i>  datasetID  .fileType  </i>  <br> misalnya,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Untuk mendapatkan hasil <strong> pencarian teks lengkap </strong> bagi datasets
+ (memakai "searchFor=wind%20speed" sebagai contoh) , gunakan
  <br>  &plainLinkExamples4;  <br>  (Program atau skrip Anda mungkin perlu
- <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> Sitemap
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> persen -encode
  &externalLinkHtml;  </a> nilai dalam query.)  <br>  &nbsp;  <br> Atau, gunakan
- <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch Login </a> standar untuk melakukan pencarian teks penuh untuk dataset.
- <br>  &nbsp;  <li> Untuk mendapatkan hasil <strong> pencarian lanjutan </strong> dataset
- (Login "searchFor=wind%20speed" sebagai contoh) Sitemap
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> standar untuk melakukan pencarian teks penuh untuk dataset.
+ <br>  &nbsp;  <li> Untuk mendapatkan hasil <strong> pencarian lanjutan </strong> bagi datasets
+ (memakai "searchFor=wind%20speed" sebagai contoh) , gunakan
  <br>  &plainLinkExamples5;  <br> Tapi percobaan dengan
- <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> di browser untuk mengetahui semua parameter opsional.
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> dalam browser untuk mengetahui semua parameter opsional.
  (Program atau skrip Anda mungkin perlu
- <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> Sitemap
- &externalLinkHtml;  </a> nilai dalam query.)  <br>  &nbsp;  <li> Untuk mendapatkan daftar <strong>  categoryAttributes  </strong>  (misalnya, institusi, long_name Login) Sitemap
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Untuk mendapatkan daftar <strong> kategori untuk kategori tertentu Login </strong>  (menggunakan \"standar_name\" sebagai contoh) Sitemap
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Untuk mendapatkan daftar <strong> dataset dalam kategori tertentu </strong>  (menggunakan \"standar_name=time\" sebagai contoh) Sitemap
- <br>  &plainLinkExamples8; 
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> persen -encode
+ &externalLinkHtml;  </a> nilai dalam query.)  <br>  &nbsp;  <li> Untuk mendapatkan daftar <strong>  categoryAttributes  </strong>  (misalnya, lembaga, long_name , nama _ standar) , gunakan
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Untuk mendapatkan daftar <strong> kategori untuk kategori Atribut tertentu </strong>  (memakai \"standard _ name\" sebagai contoh) , gunakan
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Untuk mendapatkan daftar <strong> dataset dalam kategori tertentu </strong>  (menggunakan \"standard _ name = time\" sebagai contoh) , gunakan
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> Untuk mendapatkan <strong> saran atribut metadata variabel </strong> , kirim JSON (Konten - Tipe: aplikasi / json) Permintaan POST
+berisi <a href="https://nco.sourceforge.net/nco.html#json"> ncoJson </a> variabel gaya dengan atribut, contoh:
+ <br>  <code> &#123;\"variables\": &#123;\"air _ temp\": &#123;\"chartries\": \"Air temp\", \"unit\": \"degC\"&#125;&#125;&#125;&#125; </code>  <br> ke &tErddapUrl; / ProverstVariableAtribut
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

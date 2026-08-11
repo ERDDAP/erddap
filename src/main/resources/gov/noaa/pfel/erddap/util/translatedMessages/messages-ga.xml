@@ -4384,7 +4384,7 @@ Tá prótacail éagsúla oiriúnach do chineálacha éagsúla sonraí agus d’f
  <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> Iarratas gréasáin
  &externalLinkHtml;  </a> &amp; airgid; leathanach gréasáin le foirm gur féidir le daoine le brabhsálaithe a úsáid (sa chás seo, a fháil sonraí, graif, nó faisnéis faoi tacar sonraí) .
  <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> Amharc ar gach eolas RESTful web development
- &externalLinkHtml;  </a> &amp; airgid; URL gur féidir le cláir ríomhaireachta a úsáid (sa chás seo, a fháil sonraí, graif, agus faisnéis faoi tacar sonraí) .
+ &externalLinkHtml;  </a> &amp; rsquo; URL gur féidir le cláir ríomhaireachta a úsáid (sa chás seo, a fháil sonraí, graif, agus faisnéis faoi tacar sonraí) .
  </ul> I gcás gach ERDDAP leathanach gréasáin le foirm gur féidir leat mar dhuine le brabhsálaí a úsáid, tá
 comhfhreagrach ERDDAP seirbhís gréasáin atá deartha chun a bheith éasca do chláir ríomhaireachta agus scripteanna a úsáid.
 Mar shampla, is féidir le daoine a úsáid URL seo a dhéanamh Téacs Iomlán Cuardaigh le haghaidh tacair sonraí suimiúil:
@@ -4394,17 +4394,17 @@ faisnéis i bhformáid níos ríomhaire-clár-chairdiúil mhaith
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> .
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Tógáil Tógála Rudaí ar Barr ERDDAP  </a>  </h3> Tá go leor gnéithe i ERDDAP is féidir a úsáid ag cláir ríomhaire nó scripteanna
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Tógáil Rudaí ar Barr ERDDAP  </a>  </h3> Tá go leor gnéithe i ERDDAP is féidir a úsáid ag cláir ríomhaire nó scripteanna
 go scríobhann tú. Is féidir leat iad a úsáid chun iarratais gréasáin nó seirbhísí gréasáin eile a thógáil ar
 barr ERDDAP , a dhéanamh ERDDAP an chuid is mó den obair a dhéanamh&#33;
-Mar sin, má tá tú smaoineamh le haghaidh comhéadan níos fearr leis na sonraí a ERDDAP freastal nó gréasáin
+Mar sin, má tá tú smaoineamh le haghaidh comhéadan níos fearr leis na sonraí a ERDDAP feidhmíonn nó gréasáin
 leathanach gur gá ar bhealach éasca chun sonraí a rochtain, molaimid duit a thógáil do chuid féin
 iarratas gréasáin, seirbhís gréasáin, nó leathanach gréasáin agus úsáid ERDDAP mar an bunús.
 Is féidir le do chóras a fháil sonraí, graif, agus faisnéis eile ó ERD 's ERDDAP nó ó
 eile eile ERDDAP suiteálacha, nó is féidir leat
  <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> a chur ar bun do chuid féin ERDDAP freastalaí freastalaí </a> ,
 is féidir a bheith
-rochtain phoiblí nó rochtain phríobháideach ar an bpobal.
+atá inrochtana go poiblí nó atá inrochtana go príobháideach.
 
 
  <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful Iarratais URL </a>  </h3> Iarratais ar fhaisnéis úsáideora-idirghníomhú ó ERDDAP  (mar shampla, torthaí cuardaigh) caighdeán uilíoch an ghréasáin a úsáid le haghaidh iarrataí:
@@ -4415,7 +4415,7 @@ Is é seo an mheicníocht chéanna a úsáideann do bhrabhsálaí nuair a líona
 ar leathanach gréasáin agus cliceáil ar <kbd> Cuir isteach </kbd> Le húsáid HTTP GET , tú a ghiniúint URL déanta go speisialta (a d'fhéadfadh ceist a chur san áireamh) agus é a sheoladh le HTTP GET . Is féidir leat foirm na URLanna de láimh agus iad a chur isteach i
 réimse téacs seoladh do bhrabhsálaí (mar shampla,
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Nó, Is féidir leat scríobh clár ríomhaire nó script leathanach gréasáin a chruthú URL, é a sheoladh,
-agus an freagra a fháil. URLanna via HTTP GET a roghnaíodh mar gheall ar
+agus an freagra a fháil. URLanna via HTTP GET Roghnaíodh mar gheall ar
  <ul>  <li> Tá siad simplí a úsáid.
  <li> Oibríonn siad go maith.
  <li> Tá siad tacaíocht uilíoch (i brabhsálaithe, teangacha ríomhaireachta, córas oibriúcháin
@@ -4435,11 +4435,11 @@ Nuair a líonann tú foirm ar leathanach gréasáin agus cliceáil ar Cuir, do b
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> ionchódú faoin gcéad
  &externalLinkHtml;  </a> na carachtair speisialta sa URL (mar shampla, éiríonn spás %20) , mar shampla,
  <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Ach má ghineann do chlár ríomhaire nó script na URLanna, ní mór dó is dócha a dhéanamh ar an gcéad
-ionchódú féin. Más amhlaidh, ansin is dócha go léir carachtair seachas A-Za-z0-9_-&#33;. '' () * * *
+ionchódú féin. Más amhlaidh, ansin is dócha go léir carachtair seachas A-Za-z0-9 -&#33;. () * * * *
 i luachanna an cheist (na codanna tar éis an '=' Comharthaí agus comharthaí) Ní mór a ionchódú
 mar %H, i gcás ina bhfuil HH an luach hexadecimal 2 dhigit an carachtar, mar shampla, thiocfaidh chun bheith spás %20.
 Ní mór Carachtair os cionn #127 a thiontú go bytes UTF-8, ansin ní mór gach UTF-8 byte a ionchódú faoin gcéad
- (iarraidh ar Ríomhchláraitheoir le haghaidh cabhrach) . teangacha Clárú Tá uirlisí a dhéanamh seo (mar shampla, féach Java 's
+ (iarraidh ar Ríomhchláraitheoir le haghaidh cabhrach) . Tá teangacha clárú uirlisí a dhéanamh seo (mar shampla, féach Java 's
  <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> agus Java Script ar
  <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> Déan teagmháil linn ()  &externalLinkHtml;  </a> ) agus tá
  <a class="N" rel="help" href="https://www.url-encode-decode.com"> láithreáin ghréasáin go ionchódú faoin gcéad / dhíchódú ar do shon
@@ -4456,7 +4456,7 @@ torthaí mar tábla sonraí sna coitianta, ríomhaire-clár cairdiúil, cineála
  &externalLinkHtml;  </a> )  <li>  .json - comhad JSON tábla-mhaith.
  ( <a rel="help" href="https://www.json.org/"> níos mó &nbsp; Eochairfhocal information
  &externalLinkHtml;  </a> nó
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP Eolas sonrach </a> )  <li>  .jsonlCSV1 - comhad \"Better ná CSV\" JSON Lines le hainmneacha colún ar an gcéad líne.
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - Faisnéis shonrach </a> )  <li>  .jsonlCSV1 - a \"Better ná CSV\" JSON Línte comhad le hainmneacha colún ar an gcéad líne.
  ( <a rel="help" href="https://jsonlines.org/"> níos mó &nbsp; Eochairfhocal information
  &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"Better ná CSV\" JSON Línte comhad gan aon ainmneacha colún.
  ( <a rel="help" href="https://jsonlines.org/"> níos mó &nbsp; Eochairfhocal information
@@ -4468,10 +4468,11 @@ torthaí mar tábla sonraí sna coitianta, ríomhaire-clár cairdiúil, cineála
  ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> níos mó &nbsp; Eochairfhocal information
  &externalLinkHtml;  </a> )  <li>  .nccsv - árasán, cosúil le tábla, NetCDF -like, ASCII CSV comhad.
  ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> níos mó &nbsp; Eochairfhocal information
- &externalLinkHtml;  </a> )  <li>  .nc o Json - comhad JSON ( NCO - stíl) le meiteashonraí an tacar sonraí amháin (tréithe domhanda,
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - comhad JSON ( NCO - stíl) le meiteashonraí an tacar sonraí amháin (tréithe domhanda,
 toisí, agus athróga lena tréithe, cineál, agus cruth) agus aon luachanna sonraí.
  ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> níos mó &nbsp; Eochairfhocal information
- &externalLinkHtml;  </a> )  <li>  .tsv - tábla téacs ASCII scartha.
+ &externalLinkHtml;  </a> ) . Ní bhaineann an fhormáid seo ach le hiarrataí meiteashonraí aonair.
+ <li>  .tsv - tábla téacs ASCII scartha.
  ( <a rel="help" href="https://jkorpela.fi/TSV.html"> níos mó &nbsp; Eochairfhocal information
  &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) comhad leis na sonraí i dtábla.
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> níos mó &nbsp; Eochairfhocal information
@@ -4487,7 +4488,7 @@ clár a bheith ag obair le.
 sonraí in aon cheann de na formáidí comhaid coitianta atá liostaithe thuas. Tá súil againn, is féidir leat scríobh
 ach nós imeachta amháin a parse tábla sonraí i gceann de na formáidí. Ansin, is féidir leat
 an nós imeachta sin a athúsáid chun an freagra ó aon cheann de na seirbhísí sin a pharsáil. Seo é
-Ba chóir go mbeadh sé níos éasca déileáil le ERDDAP .
+Ba chóir go mbeadh sé níos éasca déileáil leis ERDDAP .
 
 
  <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> agus .tsv Sonraí Teagmhála <ul>  <li> Má tá datum i gcomhad .csv Sleachta dúbailte inmheánach nó commas, ERDDAP Seo a leanas na
@@ -4496,14 +4497,14 @@ na Sleachta dúbailte inmheánach.
  <li> Carachtair speisialta i .csv nó .tsv comhad a ionchódú cosúil
  <a rel="help" href="https://www.json.org/"> JSON
  &externalLinkHtml;  </a> backslash-ionchódaithe carachtair:
-Táirgí gaolmhara (free line) , \\ (riachtanais uisce: measartha) , (foirm duille: oval) , (cluaisín tab) , (internet marketing) nó leis an \\u <i> Tá an </i> syntax.
+Táirgí gaolmhara (free line) , \\ (riachtanais uisce: measartha) , (foirm duille: oval) , \\ t (cluaisín tab) , \r (internet marketing) nó leis an \\u <i> Tá an </i> syntax.
  </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> cineál gas: in airde </a>  <br> Iarratais ar .json Is féidir comhaid san áireamh anois roghnach
  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> cineál gas: in airde
  &externalLinkHtml;  </a> iarratas a dhéanamh
-ag cur \" &amp; amp; .json p = p = <i> feidhm fheidhm Ainm an ainm </i> \" go dtí deireadh an cheist. Go bunúsach, Insíonn sé seo
- ERDDAP a chur le \" <i> feidhm fheidhm Ainm an ainm </i>  (\" go dtí tús na freagartha agus \") \" go dtí an
-deireadh na freagartha. An chéad charachtar <i> feidhm fheidhm Ainm an ainm </i> ní mór a bheith ina litir ISO 8859 nó \"_\".
-Ní mór do gach carachtar roghnach ina dhiaidh sin a bheith ina litir ISO 8859, \"_\", dhigit, nó \".
+ag cur \" &amp; amp; .json p = p = <i> Feidhm agus feidhm </i> \" go dtí deireadh an cheist. Go bunúsach, Insíonn sé seo
+ ERDDAP a chur le \" <i> Feidhm agus feidhm </i>  (\" go dtí tús na freagartha agus \") \" go dtí an
+deireadh an fhreagra. An chéad charachtar <i> Feidhm agus feidhm </i> ní mór a bheith ina litir ISO 8859 nó \" \".
+Ní mór do gach carachtar roghnach ina dhiaidh sin a bheith ina litir ISO 8859, \" \", dhigit, nó \".
 Más rud é ar dtús nach raibh aon cheist, fág amach an \" &amp;\" i do cheist.
 
 
@@ -4516,12 +4517,13 @@ data recovery) iarratais (féach ar an
  <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> data recovery) .
 
 
- &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Rochtain URLanna le haghaidh ERDDAP Seirbhísí ar líne </a>  </h3>  ERDDAP Tá na pointí rochtana URL do chláir ríomhaireachta:
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> Rochtain URLanna le haghaidh ERDDAP 'Seirbhísí </a>  </h3>  ERDDAP Tá na pointí rochtain URL do chláir ríomhaireachta:
  <ul>  <li> A fháil ar an liosta de na <strong> URLanna rochtana acmhainní is mó </strong> , úsáid
  <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Chun an liosta reatha a fháil <strong> gach tacar sonraí </strong> , úsáid
  <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> A fháil <strong> meiteashonraí </strong> le haghaidh tacar sonraí ar leith
  (liosta na n-athróg agus a n-tréithe) , úsáid
- <br>  &tErddapUrl; / Eolas / <i>  datasetID  </i> / innéacs <i>  .fileType  </i>  <br> mar shampla,
+ <br>  &tErddapUrl; / Eolas / <i>  datasetID  </i> / innéacs <i>  .fileType  </i>  <br> nó an fhoirm gearr URL
+ <br>  &tErddapUrl; / Eolas / <i>  datasetID  .fileType  </i>  <br> mar shampla,
  <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> A fháil ar na torthaí <strong> cuardaigh téacs iomlán </strong> do thacair sonraí
  (ag baint úsáide as "searchFor=wind%20speed" mar shampla) , úsáid
  <br>  &plainLinkExamples4;  <br>  (D'fhéadfadh do chlár nó script gá
@@ -4531,13 +4533,15 @@ data recovery) iarratais (féach ar an
  <br>  &nbsp;  <li> A fháil ar na torthaí <strong> searchs chun cinn </strong> do thacair sonraí
  (ag baint úsáide as "searchFor=wind%20speed" mar shampla) , úsáid
  <br>  &plainLinkExamples5;  <br> Ach turgnamh le
- <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> i bhrabhsálaí a dhéanamh amach gach ceann de na paraiméadair roghnacha.
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> i bhrabhsálaí a dhéanamh amach na paraiméadair roghnacha go léir.
  (D'fhéadfadh do chlár nó script gá
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> faoin gcéad cód
- &externalLinkHtml;  </a> an luach sa cheist.)  <br>  &nbsp;  <li> Chun an liosta a fháil <strong>  categoryAttributes  </strong>  (mar shampla, institiúid, long_name , standard_name) , úsáid
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Chun an liosta a fháil <strong> catagóirí do chatagóir ar leith Ag tagairt </strong>  (ag baint úsáide as \"standard_name\" mar shampla) , úsáid
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Chun an liosta a fháil <strong> datasets i gcatagóir ar leith </strong>  (ag baint úsáide as \"standard_name = am\" mar shampla) , úsáid
- <br>  &plainLinkExamples8; 
+ &externalLinkHtml;  </a> an luach sa cheist.)  <br>  &nbsp;  <li> Chun an liosta a fháil <strong>  categoryAttributes  </strong>  (mar shampla, institiúid, long_name , standard name) , úsáid
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Chun an liosta a fháil <strong> catagóirí do chatagóir ar leith ómós </strong>  (ag baint úsáide as \"standard name\" mar shampla) , úsáid
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Chun an liosta a fháil <strong> tacar sonraí i gcatagóir ar leith </strong>  (ag baint úsáide as \"standard name = am\" mar shampla) , úsáid
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> A fháil <strong> moltaí tréith meiteashonraí athraitheacha </strong> , sheoladh JSON (Ábhar-Cineál: iarratas/json) Iarratas POST
+ina bhfuil <a href="https://nco.sourceforge.net/nco.html#json"> cliceáil grianghraf a mhéadú </a> athróg stíl le tréithe, mar shampla:
+ <br>  <code> &#123; \"cineálacha\": &#123;\"aer temp\": &#123;\"aontaí\": &#123;\"ainm\": \"Air teocht\", \"aonaid\": \"degC\"&#125;&#125;&#125; </code>  <br> go dtí &tErddapUrl; / suggestVariable
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

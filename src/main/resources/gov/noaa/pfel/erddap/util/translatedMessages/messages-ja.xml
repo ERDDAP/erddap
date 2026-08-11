@@ -3911,45 +3911,45 @@ A-Za-z0-9_-!.~&#39;()* 以外のすべての文字は %HH としてエンコー�
 <restfulHTML><![CDATA[
  ERDDAP どちらも:
  <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> ウェブアプリケーション
- &externalLinkHtml;  </a> &ndash; ブラウザで人間が使用できるフォームのWebページ (この場合、データ、グラフ、データセットに関する情報を取得する) お問い合わせ
+ &externalLinkHtml;  </a> &ndash; ブラウザで人間が使用できるフォームのWebページ (この場合、データ、グラフ、データセットに関する情報を取得する) . .
  <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> ツイート RESTful ウェブサービス
- &externalLinkHtml;  </a> &ndash; コンピュータプログラムが使用できるURL (この場合、データ、グラフ、データセットに関する情報を取得する) お問い合わせ
- </ul> 全てのために ERDDAP ブラウザで人間として使うことができるフォームのWebページでは、
+ &externalLinkHtml;  </a> &ndash; コンピュータプログラムが使用できるURL (この場合、データ、グラフ、データセットに関する情報を取得する) . .
+ </ul> 全てのために ERDDAP ブラウザで人間として利用できるフォームのウェブページです。
 対応する ERDDAP コンピュータプログラムやスクリプトが使いやすいWebサービス。
 たとえば、人間はこのURLを使用して、興味深いデータセットのフルテキスト検索を行うことができます。
- <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> URL の拡張子を .html から変更することで .json  (または .csv, または .htmlTable または .jsonlCSV1 または .xhtml , ...) : : :
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> URL の拡張子を .html から変更することで、 .json  (または .csv, または .htmlTable または .jsonlCSV1 または .xhtml ,...) : : :
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> コンピュータープログラムの URL を取得します。 Java スクリプトスクリプトは同じを取得するために使用できる
 より多くのコンピュータプログラムフレンドリーな形式で情報
  <a rel="help" href="https://www.json.org/"> ジェイソン
- &externalLinkHtml;  </a> お問い合わせ
+ &externalLinkHtml;  </a> . .
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> ビルド 新着情報 ERDDAP  </a>  </h3> 多くの機能があります ERDDAP コンピュータプログラムやスクリプトで使用できる
-書きます。 他のWebアプリケーションやWebサービスを作成するためにそれらを使用することができます
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> トップに物事を構築 ERDDAP  </a>  </h3> 多くの機能があります ERDDAP コンピュータプログラムやスクリプトで使用できる
+書きます。 これらを使用して、他のWebアプリケーションやWebサービスを構築できます。
 トップトップ ERDDAP 、作ります ERDDAP ほとんどの仕事をします&#33;
-そのため、データに対するより良いインターフェイスのアイデアを持っている場合 ERDDAP またはウェブ
-データをアクセスしやすいページで、独自の構築を促します。
+そのため、データに対するより良いインターフェイスのためのアイデアを持っている場合 ERDDAP またはウェブ
+データのアクセスが簡単なページで、独自の構築を促します。
 Webアプリケーション、Webサービス、Webページ、およびWebページの使用 ERDDAP 基礎として。
-システムでは、データ、グラフ、その他の情報を取得できます。 ERD お問い合わせ ERDDAP またはから
+お使いのシステムでは、データ、グラフ、その他の情報を取得できます。 ERD お問い合わせ ERDDAP またはから
 その他 ERDDAP 取付け、またはできます
  <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> 自分で設定する ERDDAP サーバー </a> ,
 できること
 公共アクセス可能または個人的にアクセス可能。
 
 
- <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URLリクエスト </a>  </h3> ユーザーインターフェイス情報へのリクエスト ERDDAP  (例えば、検索結果) 要求のためにWebの普遍的な標準を使用して下さい:
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URLリクエスト </a>  </h3> ユーザーインターフェイス情報へのリクエスト ERDDAP  (例えば、検索結果) リクエストに対してWebのユニバーサル規格を使用する:
  <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> サイトマップ
  &externalLinkHtml;  </a> メールでのお問い合わせ
- <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> お問い合わせ
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> . .
 フォームを記入したときにブラウザが使用するのと同じ仕組みです。
-サイトマップ <kbd> 送信する </kbd> ご利用にあたって HTTP GET 特殊なURLを生成する (クエリを含むことができます。) お問い合わせ HTTP GET お問い合わせ これらのURLを手元で作成して入力することができます
+サイトマップ <kbd> コンテンツ </kbd> ご利用にあたって HTTP GET 特殊なURLを生成する (クエリを含むことができます。) お問い合わせ HTTP GET . これらのURLを手元で作成して入力することができます。
 ブラウザのアドレステキストフィールド (例えば、
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> または、コンピュータープログラムやWebページスクリプトをURLを作成したり、送信したりすることができます。
 応答を取得します。 サイトマップ HTTP GET 選ばれる理由
  <ul>  <li> 使い方は簡単です。
  <li> 彼らはうまくいく。
- <li> それらは普遍的に支持されています (ブラウザ、コンピュータ言語、オペレーティングシステム
-工具等) お問い合わせ
- <li> 彼らは基礎であり、
+ <li> 彼らは普遍的にサポートされています (ブラウザ、コンピュータ言語、オペレーティングシステム
+工具等) . .
+ <li> それらはの基盤です
  <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> 代表的な状態の移動 ( REST )  &externalLinkHtml;  </a> そして、
  <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> 資源指向アーキテクチャ ( ROA )  &externalLinkHtml;  </a>  <li> それらは大きい分散された適用としてWorld Wide Webを使用して促進します、
 例えば、
@@ -3958,21 +3958,21 @@ Webアプリケーション、Webサービス、Webページ、およびWebペ�
  &externalLinkHtml;  </a> です。 ERDDAP システムを簡単にする。
  <li> URLは与えられたリクエストを完全に定義するので、ブラウザでブックマークすることができます。
 メモに書いて、友達にメールを送ってください。
- </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> パーセントエンコーディング </a>  </h3> URL では、一部の文字は許可されていません (例えば、スペース) その他キャラクター
-特別な意味を持つ (例えば、'&amp;' はクエリで key=value のペアを分離します。) お問い合わせ
-フォームをWebページに記入し、[送信]をクリックしたときに、自動的にブラウザ
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> パーセントエンコーディング </a>  </h3> URL では、一部の文字は許可されていません (例えば、スペース) その他文字
+特別な意味を持つ (例えば、'&amp;' はクエリでキー=値のペアを分離します。) . .
+フォームを Web ページに記入し、[送信] をクリックすると、ブラウザが自動的に表示されます。
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> パーセントエンコード
- &externalLinkHtml;  </a> URL内の特別な文字 (例えば、空間が%20になる) 例えば、
+ &externalLinkHtml;  </a> URLの特別な文字 (例えば、空間は%20になります) 例えば、
  <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> しかし、コンピュータプログラムやスクリプトがURLを生成する場合、おそらくパーセントを行う必要があります
-エンコーディング自体。 もしそうなら、おそらくA-Za-z0-9_-&#33;.~以外のすべての文字が お問い合わせ () * 必須
+エンコーディング自体。 もしそうなら、おそらく A-Za-z0-9 -&#33;.~' 以外のすべての文字 () * 必須
 クエリの値は (後の部品 '=' サインイン) 符号化された必要性
 たとえば、HH が文字の 2 桁の 16 進数値である %HH は %20 になります。
-#127 を超える文字は UTF-8 バイトに変換されなければならず、各 UTF-8 バイトはパーセントエンコードしなければなりません。
- (プログラマに助けを求める) お問い合わせ プログラミング言語はこれを行うためのツールを持っています (例えば、 Java お問い合わせ
+#127上の文字はUTF-8バイトに変換されなければならず、各UTF-8バイトはパーセントエンコードしなければなりません。
+ (プログラマに助けを求める) . プログラミング言語はこれを行うためのツールを持っています (例えば、 Java お問い合わせ
  <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> そして、 Java スクリプトの
  <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> エンコーダ ()  &externalLinkHtml;  </a> ) そしてそこにあります
  <a class="N" rel="help" href="https://www.url-encode-decode.com"> あなたのためのエンコード/デコードをパーセントするウェブサイト
- &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> 応答ファイルの種類 </a>  </h3> ブラウザを使っている人間はユーザーインターフェイスの結果を受け取りたい (例えば、
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> 応答ファイルの種類 </a>  </h3> ブラウザを使っている人間はユーザーインターフェイスの結果を受信したい (例えば、
 検索結果) HTML文書として、コンピュータプログラムは頻繁に結果を得るために好みます
 シンプルで簡単にパースされ、文書を冗長化します。 ERDDAP ユーザーインターフェイスを返すことができます
 これらの一般的な、コンピュータプログラムフレンドリー、ファイルタイプのデータのテーブルとして結果します。
@@ -3997,52 +3997,53 @@ Webアプリケーション、Webサービス、Webページ、およびWebペ�
  ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> ニュース &nbsp; インフォメーション
  &externalLinkHtml;  </a> )  <li>  .nccsv - フラット、テーブルのような、 NetCDF -like、ASCII CSVファイル。
  ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> ニュース &nbsp; インフォメーション
- &externalLinkHtml;  </a> )  <li>  .nc ログイン JSON - JSON ファイル ( NCO -スタイル) データセットのメタデータのみ (グローバル属性,
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - JSONファイル ( NCO -スタイル) データセットのメタデータのみ (グローバル属性,
 属性、タイプ、形状の寸法、変数) データ値はありません。
  ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> ニュース &nbsp; インフォメーション
- &externalLinkHtml;  </a> )  <li>  .tsv - タブ区切りのASCIIテキストテーブル。
+ &externalLinkHtml;  </a> ) . この形式は、単一のデータセットメタデータリクエストのみに適用されます。
+ <li>  .tsv - タブ区切りのASCIIテキストテーブル。
  ( <a rel="help" href="https://jkorpela.fi/TSV.html"> ニュース &nbsp; インフォメーション
  &externalLinkHtml;  </a> )  <li>  .xhtml - XHTMLの (ログイン) テーブル内のデータを持つファイル。
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> ニュース &nbsp; インフォメーション
  &externalLinkHtml;  </a> )  </ul> すべての結果表形式 (その他 .jsonlKVP 列名が各行にある場所) : : :
  <ul>  <li> 各列には、列名と1種類の情報があります。
  <li> テーブルの最初の行は列名を持っています。
- <li> サブシーケント行には、要求した情報があります。
- </ul>  <p> これらのプレーンファイルタイプのコンテンツは .html と若干異なります
-応答&mdash;それは意図的にコンピュータのためにより容易であるように焼かれます
+ <li> サブシーケント行には、リクエストした情報があります。
+ </ul>  <p> これらのプレーンファイルタイプのコンテンツは .html と若干異なります。
+応答&mdash;それは意図的にコンピュータのためにより容易であるように結ばれます
 一緒に働くプログラム。
 
  <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> 応答のための一貫したデータ構造 </a>  <br> このページに記載されているユーザーインターフェイスサービスはすべて、テーブルを返すことができます
 上記の一般的なファイル形式のいずれかのデータ。 うまくいけば、あなたは書くことができます
 フォーマットの1つのデータのテーブルを解析する1つの手順。 すると、
 これらのサービスのいずれかからの応答を解析する手順を再使用. お問い合わせ
-対処しやすくなる ERDDAP お問い合わせ
+対処しやすくなる ERDDAP . .
 
 
  <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> ログイン </a> そして、 .tsv インフォメーション <ul>  <li> .csv ファイルの datum が内部のダブルクォートまたはコンマがある場合、 ERDDAP フォローする
 .csv の指定厳しく: それは datum および倍のまわりの二重引用を置きます
-内部の二重引用符。
+内部ダブルクォート。
  <li> .csv または .tsv ファイルのエンコード
  <a rel="help" href="https://www.json.org/"> ジェイソン
  &externalLinkHtml;  </a> バックスラッシュエンコードされた文字:
 ツイート (ニューライン) , \\\ (バックスラッシュ) , \f (フォームフィード) , \t (タブ) , \r (キャリッジリターン) または \\u で <i> ログイン </i> 構文。
- </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> リクエスト .json ファイルにはオプションが含まれている場合があります。
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> リクエスト .json ファイルがオプションに含まれている可能性があります
  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
  &externalLinkHtml;  </a> リクエスト
-\"&amp; を追加 .json p=== <i> 関数 お名前 (必須) </i> \" クエリの最後に。 基本的には、これは言う
- ERDDAP \" を追加 <i> 関数 お名前 (必須) </i>  (「応答の先頭へ」) お問い合わせ
-応答の終了。 最初の文字 <i> 関数 お名前 (必須) </i> ISO 8859 文字または \"_\" でなければなりません。
-ISO 8859 文字、\"_\"、数字、\".\" の各オプションの文字は、ISO 8859 文字でなければなりません。
+\"&amp; を追加 .json p== <i> 関数名 </i> \" クエリの最後に。 基本的には、これは言う
+ ERDDAP \" を追加 <i> 関数名 </i>  (\" 応答の先頭に \") お問い合わせ
+応答の終了。 最初の文字 <i> 関数名 </i> ISO 8859 文字または \" \" でなければなりません。
+ISO 8859 文字、\" \" 、数字、\".\" の各オプションの次の文字でなければなりません。
 最初にクエリがなかった場合は、クエリの \"&amp;\" をオフにします。
 
 
  <p> グリッドダップと tabledap 異なるファイルタイプを提供
  <br> 上記のファイルタイプはファイルタイプです。 ERDDAP 対応するために使用できる
-ユーザーインターフェイスのリクエストの種類 (例えば、検索リクエスト) お問い合わせ ERDDAP サポート
-科学的なデータの異なる種類のファイルタイプ (例えば、衛星とブイ
+ユーザーインターフェイスのリクエストの種類 (例えば、検索リクエスト) . . ERDDAP サポート
+科学的なデータのための異なる種類のファイルタイプ (例えば、衛星とブイ
 データデータ) リクエスト (見る
  <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> グリッドダップ </a> そして、
- <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> ドキュメント) お問い合わせ
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> ドキュメント) . .
 
 
  &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> アクセスURL ERDDAP サービス </a>  </h3>  ERDDAP コンピュータプログラムのURLアクセスポイントは以下です。
@@ -4050,23 +4051,26 @@ ISO 8859 文字、\"_\"、数字、\".\" の各オプションの文字は、ISO
  <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> 現在のリストを取得するには <strong> すべてのデータセット </strong> 、使用して下さい
  <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> お問い合わせ <strong> メタデータ </strong> 特定のデータセット
  (変数とその属性のリスト) 、使用して下さい
- <br>  &tErddapUrl; インフォメーション <i>  datasetID  </i> /インデックス <i>  .fileType  </i>  <br> 例えば、
+ <br>  &tErddapUrl; インフォメーション <i>  datasetID  </i> /インデックス <i>  .fileType  </i>  <br> またはショートURLフォーム
+ <br>  &tErddapUrl; インフォメーション <i>  datasetID  .fileType  </i>  <br> 例えば、
  <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> 結果を得るために <strong> 完全なテキスト検索 </strong> データセット用
  (使用方法 "searchFor=wind%20speed" 例として) 、使用して下さい
  <br>  &plainLinkExamples4;  <br>  (プログラムやスクリプトは、
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> パーセントエンコード
  &externalLinkHtml;  </a> クエリ内の値。)  <br>  &nbsp;  <br> または、使用して下さい
- <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 の </a> データセットの完全なテキスト検索を行うための標準。
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch サイズ: 1.1 </a> データセットの完全なテキスト検索を行うための標準。
  <br>  &nbsp;  <li> 結果を得るために <strong> 高度な検索 </strong> データセット用
  (使用方法 "searchFor=wind%20speed" 例として) 、使用して下さい
  <br>  &plainLinkExamples5;  <br> しかし実験と
  <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> ブラウザでは、すべてのオプションパラメータを把握できます。
  (プログラムやスクリプトは、
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> パーセントエンコード
- &externalLinkHtml;  </a> クエリ内の値。)  <br>  &nbsp;  <li> リストを取得するには <strong>  categoryAttributes  </strong>  (例えば、機関、 long_name , 標準名) 、使用して下さい
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> リストを取得するには <strong> 特定のカテゴリのカテゴリ アトリビュート </strong>  (例として「標準名」を使う) 、使用して下さい
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> リストを取得するには <strong> 特定のカテゴリのデータセット </strong>  (\"standard_name=time\" を例として使う) 、使用して下さい
- <br>  &plainLinkExamples8; 
+ &externalLinkHtml;  </a> クエリ内の値。)  <br>  &nbsp;  <li> リストを取得するには <strong>  categoryAttributes  </strong>  (例えば、機関、 long_name ,標準名) 、使用して下さい
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> リストを取得するには <strong> 特定のカテゴリーのカテゴリ属性 </strong>  (例として「標準名」を使う) 、使用して下さい
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> リストを取得するには <strong> 特定のカテゴリのデータセット </strong>  (\"標準 name=time\" を例として使う) 、使用して下さい
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> お問い合わせ <strong> 変数メタデータ属性の提案 </strong> , JSON を送信する (コンテンツタイプ: application/json) POSTリクエスト
+含まれるもの <a href="https://nco.sourceforge.net/nco.html#json"> ログイン </a> 属性を持つスタイル変数、例:
+ <br>  <code> &#123;\"変数\": &#123;\"air temp\": &#123;\"attributes\": &#123;\"name\": \"Airtemp\", \"units\": \"degC\"&#125;&#125; </code>  <br> お問い合わせ &tErddapUrl; /suggestVariableアトリビュート
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[
