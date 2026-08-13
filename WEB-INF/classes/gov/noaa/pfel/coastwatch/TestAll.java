@@ -386,13 +386,13 @@ public class TestAll {
     String outName =
         "/data/s3/awsS3NoaaGoes17partial.jsonlCSV";
         //"/data/s3/awsS3NoaaGoes16.jsonlCSV";
-        //"/data/s3/awsS3NasanexNexDcp30rlilpl.jsonlCSV";
-        //"/data/s3/awsS3NasanexNexDcp30Conus.jsonlCSV";
+        //"/data/s3/awsS3nasa-nexNexDcp30rlilpl.jsonlCSV";
+        //"/data/s3/awsS3nasa-nexNexDcp30Conus.jsonlCSV";
     FileVisitorDNLS.oneStep(    //throws IOException if "Too many open files"
         "https://noaa-goes17.s3.us-east-1.amazonaws.com/", //ABI-L1b-RadC/2018/338/",
         //"https://noaa-goes16.s3.us-east-1.amazonaws.com/",
-        //"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
-        //"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/",
+        //"https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
+        //"https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/",
         ".*\\.nc", true, ".*", true).writeJsonlCSV(outName); //dirsToo=false
     String2.log(File2.directReadFrom88591File(outName));
     String2.log("The Results are in " + outName + "\n" +

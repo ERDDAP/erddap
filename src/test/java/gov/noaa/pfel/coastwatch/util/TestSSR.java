@@ -515,7 +515,7 @@ public class TestSSR {
     results = "okay";
     try {
       SSR.touchUrl(
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/doi.txt",
+          "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/doi.txt",
           5000,
           false); // handleS3ViaSDK=false
     } catch (Exception e) {
