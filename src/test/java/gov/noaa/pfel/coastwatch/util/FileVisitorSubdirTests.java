@@ -61,12 +61,12 @@ class FileVisitorSubdirTests {
 
     alps =
         FileVisitorSubdir.oneStep(
-            "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
+            "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
             "");
     String results = alps.toNewlineString();
     String expected =
-        "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/\n"
-            + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\n";
+        "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/\n"
+            + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     String2.log("\n*** FileVisitorSubdir.testAWSS3 finished.");

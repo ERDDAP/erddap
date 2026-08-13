@@ -1307,7 +1307,7 @@ class EDDGridFromNcFilesTests {
     expected =
         // "2015-06-24T17:36:33Z
         // http://localhost:8080/cwexperimental/griddap/testAwsS3.das\";\n" +
-        "String infoUrl \"https://registry.opendata.aws/nasanex/\";\n"
+        "String infoUrl \"https://registry.opendata.aws/nasa-nex/\";\n"
             + "    String initialization_method \"1\";\n"
             + "    String institute_id \"NASA-Ames\";\n"
             + "    String institution \"NASA Earth Exchange, NASA Ames Research Center, Moffett Field, CA 94035\";\n"
@@ -3997,7 +3997,7 @@ class EDDGridFromNcFilesTests {
   void testGenerateDatasetsXmlAwsS3() throws Throwable {
     int language = EDMessages.DEFAULT_LANGUAGE;
     String cacheFromUrl =
-        "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; // intentionally
+        "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; // intentionally
     // left
     // off
     // trailing
@@ -4062,7 +4062,7 @@ class EDDGridFromNcFilesTests {
             + suggDatasetID
             + "\" active=\"true\">\n"
             + "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n"
-            + "    <cacheFromUrl>https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS</cacheFromUrl>\n"
+            + "    <cacheFromUrl>https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS</cacheFromUrl>\n"
             + "    <fileDir>"
             + dir
             + "</fileDir>\n"
