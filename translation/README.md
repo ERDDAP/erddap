@@ -19,3 +19,5 @@ Using uv:
 ```
 uv run --with argostranslate --with lxml ./translation/translate.py
 ```
+
+Once the translations are completed, update messagesOld.xml with the contents of messages.xml. This is how the translation script determines what tags are new or have changed and so need to be translated.

@@ -1271,7 +1271,7 @@ class EDDGridFromNcFilesTests {
             + "    String CMIPtable \"Amon\";\n"
             + "    String contact \"Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org\";\n"
             + "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n"
-            + "    String creation_date \"Thu Sep  6 19:48:06 PDT 2012\";\n"
+            + "    String creation_date \"DDD MMM dd hh:mm:ss PDT yyyy\";\n"
             + "    String creator_email \"rama.nemani@nasa.gov\";\n"
             + "    String creator_name \"Rama Nemani\";\n"
             + "    String creator_url \"https://www.nasa.gov/\";\n"
@@ -1296,7 +1296,7 @@ class EDDGridFromNcFilesTests {
             + "    String geospatial_lon_units \"degrees_east\";\n"
             + "    String history \""
             + today;
-    // 2015-06-24T17:36:33Z (local files)
+    results = results.replaceAll("... ...  . ..:..:.. PDT ....", "DDD MMM dd hh:mm:ss PDT yyyy");
     tResults = results.substring(0, Math.min(results.length(), expected.length()));
     Test.ensureEqual(tResults, expected, "results=\n" + results);
 
@@ -1346,12 +1346,13 @@ class EDDGridFromNcFilesTests {
             + "    String time_coverage_end \"2099-12-16T12:00:00Z\";\n"
             + "    String time_coverage_start \"2006-01-16T12:00:00Z\";\n"
             + "    String title \"800m Downscaled NEX CMIP5 Climate Projections for the Continental US\";\n"
-            + "    String tracking_id \"2b55c74a-aec1-11e2-a0c6-e41f13ef4fd4\";\n"
+            + "    String tracking_id \"TRACKING_ID\";\n"
             + "    String variableName \"tasmin\";\n"
             + "    String version \"1.0\";\n"
             + "    Float64 Westernmost_Easting 234.97916666666998;\n"
             + "  }\n"
             + "}\n";
+    results = results.replaceAll("........-....-....-....-............", "TRACKING_ID");
     int tPo = results.indexOf(expected.substring(0, 25));
     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
     Test.ensureEqual(
