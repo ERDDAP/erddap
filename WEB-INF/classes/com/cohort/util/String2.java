@@ -5958,7 +5958,7 @@ public class String2 {
    * where the regionName is optional, <br>
    * where a prefix is usually in the form dir1/dir2/ but may be "", <br>
    * where a key (objectName) is usually in the form dir1/dir2/fileName.ext <br>
-   * https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+   * https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
    *
    * @param url
    * @return String [bucketName, region, objectName], or null if url isn't an s3 URL. region and

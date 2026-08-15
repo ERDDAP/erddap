@@ -4256,9 +4256,9 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
  <a rel="help" href="https://www.json.org/"> Джон
  &externalLinkHtml;  </a> .
 
- <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> строить Вещи сверху ERDDAP  </a>  </h3> Есть много особенностей в ERDDAP которые могут быть использованы компьютерными программами или скриптами
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> Постройте вещи сверху ERDDAP  </a>  </h3> Есть много особенностей в ERDDAP которые могут быть использованы компьютерными программами или скриптами
 Что ты пишешь. Вы можете использовать их для создания других веб-приложений или веб-сервисов на
-вершина ERDDAP Изготовление ERDDAP Сделайте большую часть работы&#33;
+вершина ERDDAP изготовление ERDDAP Сделайте большую часть работы&#33;
 Поэтому, если у вас есть идея для лучшего интерфейса к данным, которые ERDDAP Сервис или Интернет
 Страница, которая нуждается в простом способе доступа к данным, мы рекомендуем вам создать свой собственный
 веб-приложение, веб-сервис или веб-страница и использование ERDDAP как фундамент.
@@ -4266,7 +4266,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 другой ERDDAP Установки, или вы можете
  <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> Создайте свой собственный ERDDAP сервер </a> ,
 который может быть
-общедоступным или только частным.
+общедоступными или только частными.
 
 
  <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL запросы </a>  </h3> Запросы пользовательской информации из ERDDAP  (Например, результаты поиска) Используйте универсальный веб-стандарт для запросов:
@@ -4274,7 +4274,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
  &externalLinkHtml;  </a> отправляется через
  <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> .
 Это тот же механизм, который использует ваш браузер при заполнении формы.
-на веб-странице и нажмите на <kbd> Представить </kbd> использовать HTTP GET Вы создаете специально сформированный URL (который может включать запрос) и отправить его с HTTP GET . Вы можете сформировать эти URL-адреса вручную и ввести их в
+на веб-странице и нажмите на <kbd> Представить </kbd> использовать HTTP GET Вы создаете специально сформированный URL (который может включать запрос) и отправить его с HTTP GET Вы можете сформировать эти URL-адреса вручную и ввести их в
 Адресное текстовое поле вашего браузера (Например,
  <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> Или вы можете написать компьютерную программу или скрипт веб-страницы, чтобы создать URL-адрес, отправить его.
 И получить ответ. URL через HTTP GET Они были выбраны потому, что
@@ -4283,25 +4283,25 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
  <li> Они пользуются всеобщей поддержкой (в браузерах, компьютерных языках, операционной системе
 инструменты и т.д.) .
  <li> Они являются основой
- <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Представительский государственный трансфер ( REST )  &externalLinkHtml;  </a> и
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> Представительский государственный трансферт ( REST )  &externalLinkHtml;  </a> и
  <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Ориентированная на ресурсы архитектура ( ROA )  &externalLinkHtml;  </a>  <li> Они облегчают использование Всемирной паутины в качестве большого распределенного приложения.
 Например, через
  <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX приложения
  &externalLinkHtml;  </a>  <li> Они являются <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> без гражданства
  &externalLinkHtml;  </a> как есть ERDDAP Это делает систему проще.
  <li> URL полностью определяет заданный запрос, поэтому вы можете добавить его в закладку в своем браузере.
-Напишите это в заметках, отправьте по электронной почте другу и т. Д.
+Напишите его в заметках, напишите другу и т.д.
  </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> Процент кодирования </a>  </h3> В URL некоторые символы не допускаются. (Например, пространства) и других персонажей
 имеют особые значения (Например, '&amp;' разделяет пары ключ = значение в запросе.) .
 Когда вы заполняете форму на веб-странице и нажимаете на Submit, ваш браузер автоматически
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % кодирует
  &externalLinkHtml;  </a> Специальные символы в URL (Например, пространство становится 20%.) Например,
  <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> Но если ваша компьютерная программа или скрипт генерирует URL-адреса, ему, вероятно, нужно сделать процентное соотношение.
-Кодирование себя. Если это так, то, вероятно, все персонажи, кроме A-Za-z0-9_-&#33; \" () *
+Кодирование себя. Если это так, то, вероятно, все персонажи, кроме A-Za-z0-9 -&#33; () *
 в значениях запроса (частей после того, как '=' знаки) необходимо кодировать
 как %HH, где HH — 2-значное шестнадцатеричное значение символа, например, пространство становится %20.
 Персонажи выше 127 должны быть преобразованы в UTF-8 байтов, тогда каждый UTF-8 байт должен быть закодирован на процент.
- (Попросите программиста помочь) . Языки программирования имеют инструменты для этого. (Например, см. Java ?
+ (Попросите программиста помочь) Языки программирования имеют инструменты для этого. (Например, см. Java ?
  <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> и Java Сценарий
  <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> Кодируемый компонент ()  &externalLinkHtml;  </a> ) И там есть
  <a class="N" rel="help" href="https://www.url-encode-decode.com"> Сайты, которые закодируют / декодируют для вас
@@ -4330,10 +4330,11 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
  ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> больше &nbsp; информация
  &externalLinkHtml;  </a> )  <li>  .nccsv - плоский, как стол, NetCDF - Например, файл ASCII CSV.
  ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> больше &nbsp; информация
- &externalLinkHtml;  </a> )  <li>  .nc о Json - файл JSON ( NCO стиль) Только метаданные набора данных (глобальные атрибуты,
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - файл JSON ( NCO стиль) только метаданные набора данных (глобальные атрибуты,
 Размеры и переменные с их атрибутами, типом и формой) Никаких значений данных.
  ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> больше &nbsp; информация
- &externalLinkHtml;  </a> )  <li>  .tsv - разделённая на вкладки таблица ASCII.
+ &externalLinkHtml;  </a> ) Этот формат применяется только к единым запросам метаданных набора данных.
+ <li>  .tsv - разделённая на вкладке таблица ASCII.
  ( <a rel="help" href="https://jkorpela.fi/TSV.html"> больше &nbsp; информация
  &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (XML) Файл с данными в таблице.
  ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> больше &nbsp; информация
@@ -4346,26 +4347,26 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 Программа для работы с.
 
  <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> Постоянная структура данных для ответов </a>  <br> Все службы пользовательского интерфейса, описанные на этой странице, могут вернуть таблицу
-данные в любом из общих форматов файлов, перечисленных выше. Надеюсь, вы сможете написать
+данные в любом из распространенных форматов файлов, перечисленных выше. Надеюсь, вы сможете написать
 Всего одна процедура для разбора таблицы данных в одном из форматов. Тогда ты сможешь
 повторно использовать эту процедуру для анализа ответа от любой из этих служб. Это
 Это должно облегчить борьбу с ERDDAP .
 
 
  <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv </a> и .tsv Подробности <ul>  <li> Если в файле .csv есть внутренние двойные цитаты или запятые, ERDDAP Далее следует
-Спецификация .csv строго: она ставит двойные котировки вокруг датума и двойников
+Спецификация .csv строго: она ставит двойные котировки вокруг datum и doubles
 Внутренние двойные цитаты.
  <li> Специальные символы в .csv или .tsv Файл кодируется как
  <a rel="help" href="https://www.json.org/"> Джон
  &externalLinkHtml;  </a> Backslash-кодированные символы:
-n (новая линия) , \\ (обратная реакция) , f (подкормка) , \t (вкладка) , r (Возвращение груза) или с помощью \\u <i> hhhh </i> Синтаксис.
+n (новая линия) , \\ (обратная реакция) , f (подкормка) , \t (вкладка) , r (Возвращение груза) или с \\u <i> hhhh </i> Синтаксис.
  </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> Джонсон </a>  <br> Просьбы о .json Файлы теперь могут включать в себя дополнительные
  <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> Джонсон
  &externalLinkHtml;  </a> по просьбе
-добавление \"&amp; .json p = <i> функция Имя </i> \"до конца запроса. В основном это говорит
- ERDDAP Добавить \" <i> функция Имя </i>  (\"к началу ответа и\") \"Ко мне
-Конец ответа. Первый персонаж <i> функция Имя </i> ISO 8859 - буква или \"_\".
-Каждый дополнительный последующий символ должен быть буквой ISO 8859, \"_\", цифрой или \".\".
+добавление \"&amp; .json p = <i> Функция Имя </i> \"до конца запроса. В основном это говорит
+ ERDDAP Добавить \" <i> Функция Имя </i>  (\"к началу ответа и\") \"Ко мне
+Конец ответа. Первый персонаж <i> Функция Имя </i> - буква ISO 8859 или \" \".
+Каждый дополнительный последующий символ должен быть буквой ISO 8859, \" \", цифрой или \".\".
 Если изначально не было запроса, оставьте «&amp» в своем запросе.
 
 
@@ -4373,7 +4374,7 @@ n (новая линия) , \\ (обратная реакция) , f (подко
  <br> Типы файлов, перечисленные выше, являются типами файлов. ERDDAP Можно использовать для ответа
 Типы запросов пользовательского интерфейса (Например, поисковые запросы) . ERDDAP поддержка
 Различные типы файлов для научных данных (Например, спутник и буй
-данные) просьбы (Видишь?
+данные) просьбы (Смотри.
  <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> сетка </a> и
  <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> документация) .
 
@@ -4383,7 +4384,8 @@ n (новая линия) , \\ (обратная реакция) , f (подко
  <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> Чтобы получить текущий список <strong> Все наборы данных </strong> использовать
  <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> Чтобы получить <strong> метаданные </strong> для конкретного набора данных
  (Список переменных и их атрибуты) использовать
- <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /индекс <i>  .fileType  </i>  <br> Например,
+ <br>  &tErddapUrl; /info/ <i>  datasetID  </i> /индекс <i>  .fileType  </i>  <br> Короткая форма URL
+ <br>  &tErddapUrl; /info/ <i>  datasetID  .fileType  </i>  <br> Например,
  <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> Чтобы получить результаты <strong> Полный текстовый поиск </strong> для наборов данных
  (использовать "searchFor=wind%20speed" как пример) использовать
  <br>  &plainLinkExamples4;  <br>  (Ваша программа или сценарий должны быть
@@ -4396,10 +4398,12 @@ n (новая линия) , \\ (обратная реакция) , f (подко
  <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> в браузере, чтобы выяснить все дополнительные параметры.
  (Ваша программа или сценарий должны быть
  <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> процентный код
- &externalLinkHtml;  </a> значение в запросе.)  <br>  &nbsp;  <li> Чтобы получить список <strong>  categoryAttributes  </strong>  (Например, институт, long_name Standard_name) использовать
- <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Чтобы получить список <strong> категории для конкретной категории атрибут </strong>  (Использование «стандарт_имя» в качестве примера) использовать
- <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Чтобы получить список <strong> наборы данных в конкретной категории </strong>  (Использование «стандарт_имя=время» в качестве примера) использовать
- <br>  &plainLinkExamples8; 
+ &externalLinkHtml;  </a> значение в запросе.)  <br>  &nbsp;  <li> Чтобы получить список <strong>  categoryAttributes  </strong>  (Например, институт, long_name Standard name) использовать
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> Чтобы получить список <strong> Категории для конкретной категорииАтрибут </strong>  (Использование «стандарт имя» в качестве примера) использовать
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> Чтобы получить список <strong> наборы данных в конкретной категории </strong>  (Использование «стандарт имя=время» в качестве примера) использовать
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> Чтобы получить <strong> Предложения в отношении атрибутов переменных метаданных </strong> Пошлите сына (Тип контента: Application/json) Пост-запрос
+содержащий <a href="https://nco.sourceforge.net/nco.html#json"> НикоДжон </a> переменные стиля с атрибутами, например:
+ <br>  <code> &#123;\"переменные\": &#123;\"air temp\": &#123;\"attributes\": &#123;\"name\": \"Air temp\", \"units\": \"degC\"&#125;&#125;&#125;&#125; </code>  <br> то &tErddapUrl; /suggestVariableАтрибуты
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

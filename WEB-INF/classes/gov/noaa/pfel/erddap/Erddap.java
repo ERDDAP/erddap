@@ -184,7 +184,6 @@ public class Erddap extends HttpServlet {
           ".mat",
           ".nc",
           ".nccsv",
-          ".ncoJson",
           ".tsv",
           ".xhtml");
 
@@ -5410,7 +5409,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replaceAll(
                   "&plainLinkExamples3;",
                   plainLinkExamples(
-                      tErddapUrl, "/info/" + EDStatic.messages.EDDGridIdExample + "/index", ""))
+                      tErddapUrl,
+                      "/info/" + EDStatic.messages.EDDGridIdExample + "/index",
+                      "",
+                      ".ncoJson"))
               .replaceAll(
                   "&plainLinkExamples4;",
                   plainLinkExamples(
@@ -6342,6 +6344,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // it flushes
   }
 
+  protected static ImmutableList<String> getExtendedPlainFileTypes(String... extraTypes) {
+    return ImmutableList.sortedCopyOf(
+        new ImmutableList.Builder<String>().addAll(plainFileTypes).add(extraTypes).build());
+  }
+
   /**
    * This is used to generate examples for the plainFileTypes in the method above.
    *
@@ -6349,22 +6356,25 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *     erddapHttpsUrl if user is logged in)
    * @param relativeUrl without the fileType, e.g., "/griddap/index" (no "?" or "?query" at end)
    * @param query after the "?", already HTML encoded, e.g., "searchfor=temperature" or "".
+   * @param extraTypes optional extra file types to include in the list of links (e.g., ".ncoJson")
    * @return a string with a series of html links to information about the plainFileTypes
    */
-  protected String plainLinkExamples(String tErddapUrl, String relativeUrl, String query)
-      throws Throwable {
+  protected String plainLinkExamples(
+      String tErddapUrl, String relativeUrl, String query, String... extraTypes) throws Throwable {
 
     StringBuilder sb = new StringBuilder();
-    int n = plainFileTypes.size();
+    ImmutableList<String> allFileTypes = getExtendedPlainFileTypes(extraTypes);
+
+    int n = allFileTypes.size();
     for (int pft = 0; pft < n; pft++) {
       sb.append(
           "    <a href=\""
               + tErddapUrl
               + relativeUrl
-              + plainFileTypes.get(pft)
+              + allFileTypes.get(pft)
               + EDStatic.questionQuery(query)
               + "\">"
-              + plainFileTypes.get(pft)
+              + allFileTypes.get(pft)
               + "</a>");
       if (pft <= n - 3) sb.append(",\n");
       if (pft == n - 2) sb.append(", or\n");
@@ -17875,7 +17885,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // now last part is "index...."
     }
     String fileTypeName = File2.getExtension(endOfRequestUrl);
-    boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index");
+    boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index", ".ncoJson");
     if (!endsWithPlainFileType && !fileTypeName.equals(".html")) {
       sendResourceNotFoundError(
           requestNumber,
@@ -23966,8 +23976,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * This indicates if the string 's' equals 'start' (e.g., "index") plus one of the plain file
    * types.
    */
-  protected static boolean endsWithPlainFileType(String s, String start) {
-    for (String plainFileType : plainFileTypes) {
+  protected static boolean endsWithPlainFileType(String s, String start, String... extraTypes) {
+    for (String plainFileType : getExtendedPlainFileTypes(extraTypes)) {
       if (s.equals(start + plainFileType)) return true;
     }
     return false;
