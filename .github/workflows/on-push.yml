@@ -45,7 +45,8 @@ jobs:
         -Ddownload.unpack=true
         -Ddownload.unpackWhenChanged=false
         -DforkCount=1
-        -DreuseForks=true
+        -DreuseForks=false
+        -DargLine.extra="-Xmx4g -XX:+UseG1GC"
         clean verify
 
   build-and-push-docker:
