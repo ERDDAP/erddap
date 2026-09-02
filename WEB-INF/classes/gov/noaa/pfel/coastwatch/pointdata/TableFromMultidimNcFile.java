@@ -36,7 +36,7 @@ public class TableFromMultidimNcFile {
   private int standardizeWhat;
   private Attributes gridMappingAtts = null;
 
-  private static class VarData {
+  private static final class VarData {
     private PrimitiveArray pa;
     private Attributes atts;
     private List<Dimension> dims;
@@ -274,15 +274,19 @@ public class TableFromMultidimNcFile {
       // If loadDims size=0, this finds scalar vars
       BitSet loaded = new BitSet(nLoadVars); // all false
       int shape[] = new int[loadDims.size()];
+      for (int d = 0; d < loadDims.size(); d++) {
+        shape[d] = loadDims.get(d).getLength();
+      }
       // find first var with all of the load dims
       VarData firstVar = null;
       for (int v = 0; v < nLoadVars; v++) {
         Variable tVar = loadVars.get(v);
-        firstVar = new VarData();
-        firstVar.loadDims(this, tVar);
-        if (firstVar.nDims != loadDims.size()) {
+        VarData candidate = new VarData();
+        candidate.loadDims(this, tVar);
+        if (candidate.nDims != loadDims.size()) {
           continue;
         }
+        firstVar = candidate;
         if (this.table.nColumns() == 0) {
           // first var with all dims: set loadDims to be in that order
           for (int d = 0; d < firstVar.nDims; d++) {
@@ -360,7 +364,7 @@ public class TableFromMultidimNcFile {
       // allIndicesTable.dataToString(5));
 
       // apply constraints
-      int onRows = this.table.nRows();
+      int onRows = (firstVar != null) ? this.table.nRows() : allIndicesTable.nRows();
       BitSet keep;
       if (firstVar != null) {
         keep = getKeepForVar(firstVar, nd0, varToKeep);

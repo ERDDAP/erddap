@@ -265,8 +265,19 @@ public class TaskThread extends Thread {
         long tElapsedTime = elapsedTime();
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistribution24);
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
-        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
-        Integer taskType = (Integer) taskOA[0];
+        int taskIndex = EDStatic.nextTask.get() - 1;
+        Object taskOA[] = null;
+        try {
+          taskOA =
+              (taskIndex >= 0 && taskIndex < EDStatic.taskList.size())
+                  ? EDStatic.taskList.get(taskIndex)
+                  : null;
+        } catch (Throwable ignore) {
+        }
+        Integer taskType =
+            (taskOA != null && taskOA.length > 0 && taskOA[0] instanceof Integer)
+                ? (Integer) taskOA[0]
+                : -1;
         EDStatic.metrics
             .taskThreadDuration
             .labelValues(Metrics.ThreadStatus.fail.name(), "" + taskType)
