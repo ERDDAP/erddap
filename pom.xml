@@ -32,7 +32,7 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.31.0</version>
+    <version>2.31.1</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -48,7 +48,7 @@
         <error-prone.version>2.50.0</error-prone.version>
         <prometheusVersion>1.8.0</prometheusVersion>
         <parquetVersion>1.18.0</parquetVersion>
-        <awssdkVersion>2.53.1</awssdkVersion>
+        <awssdkVersion>2.54.10</awssdkVersion>
         <luceneVersion>10.5.1</luceneVersion>
         <nettyVersion>4.2.17.Final</nettyVersion>
         <mavenTestPluginVersion>3.5.6</mavenTestPluginVersion>
@@ -601,7 +601,7 @@
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>4.0.3</version>
+                    <version>4.1.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -745,7 +745,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.35.1</version>
+                <version>4.36.1</version>
             </dependency>
 
             <!-- updating indirect dependencies from hivemq -->
@@ -777,7 +777,7 @@
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.12.1</version>
+                <version>1.12.2</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/dnsjava/dnsjava -->
             <dependency>
@@ -1126,7 +1126,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.7.0-jre</version>
+            <version>33.7.1-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -1142,7 +1142,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.39</version>
+            <version>4.2.40</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -1205,7 +1205,7 @@
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.50.0</version>
+            <version>1.51.0</version>
         </dependency>
 
         <dependency>
@@ -1231,7 +1231,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.192</version>
+            <version>4.8.194</version>
         </dependency>
          <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -1276,7 +1276,7 @@
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-mqtt-client</artifactId>
-            <version>1.3.17</version>
+            <version>1.4.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.nibor.autolink/autolink -->
