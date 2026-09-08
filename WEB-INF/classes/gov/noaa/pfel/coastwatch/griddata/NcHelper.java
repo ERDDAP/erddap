@@ -222,8 +222,16 @@ public class NcHelper {
       return PrimitiveArray.factory(byteAr, nc2Array.isUnsigned());
     }
 
+    Object o = nc2Array.copyTo1DJavaArray();
+    if (o instanceof String[] sa) {
+      for (int i = 0; i < sa.length; i++) {
+        if (sa[i] != null) sa[i] = sa[i].trim();
+      }
+      return new StringArray(sa);
+    }
+
     // ArrayXxxnumeric
-    return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), nc2Array.isUnsigned());
+    return PrimitiveArray.factory(o, nc2Array.isUnsigned());
   }
 
   /**

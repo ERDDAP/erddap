@@ -354,12 +354,16 @@ public class EDDTableFromDapSequence extends EDDTable {
       // This will fail (good) if dataset has changed significantly and
       //  quickRestart file has outdated information.
       quickRestartAttributes = NcHelper.readAttributesFromNc3(quickRestartFullFileName());
+      String cachedSourceUrl = quickRestartAttributes.getString("localSourceUrl");
+      if (cachedSourceUrl != null && !cachedSourceUrl.equals(tLocalSourceUrl)) {
+        quickRestartAttributes = null;
+      } else {
+        if (verbose) String2.log("  using info from quickRestartFile");
 
-      if (verbose) String2.log("  using info from quickRestartFile");
-
-      // set creationTimeMillis to time of previous creation, so next time
-      // to be reloaded will be same as if ERDDAP hadn't been restarted.
-      creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
+        // set creationTimeMillis to time of previous creation, so next time
+        // to be reloaded will be same as if ERDDAP hadn't been restarted.
+        creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
+      }
     }
 
     // create structures to hold the sourceAttributes temporarily
