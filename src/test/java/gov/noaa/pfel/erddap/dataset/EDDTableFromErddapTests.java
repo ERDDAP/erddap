@@ -5,11 +5,11 @@ import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import dods.dap.DAS;
-import dods.dap.DConnect;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import opendap.dap.DAS;
+import opendap.dap.DConnect2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -323,12 +323,12 @@ class EDDTableFromErddapTests {
     String url =
         // "http://localhost:8080/cwexperimental/tabledap/erdCalcofiSur";
         "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalcofiSur";
-    DConnect dConnect = new DConnect(url, true, 1, 1);
-    DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    String results = OpendapHelper.getDasString(das);
-    // String expected = "zztop";
-    // Test.ensureEqual(results, expected, "results=\n" + results);
-
+    try (DConnect2 dConnect = new DConnect2(url, true)) {
+      DAS das = dConnect.getDAS();
+      String results = OpendapHelper.getDasString(das);
+      // String expected = "zztop";
+      // Test.ensureEqual(results, expected, "results=\n" + results);
+    }
     EDDTable edd =
         (EDDTableFromErddap)
             EDDTableFromErddap.oneFromDatasetsXml(null, "testCalcofiSurFromErddap");
@@ -404,8 +404,8 @@ class EDDTableFromErddapTests {
 
   /**
    * This tests dataset from Kevin O'Brien's erddap: &lt;dataset type="EDDTableFromErddap"
-   * datasetID="ChukchiSea_454a_037a_fcf4" active="true"&gt; where DConnect in local ERDDAP
-   * complained: connection reset, but server said everything was fine. I made changes to DConnect
+   * datasetID="ChukchiSea_454a_037a_fcf4" active="true"&gt; where DConnect2 in local ERDDAP
+   * complained: connection reset, but server said everything was fine. I made changes to DConnect2
    * 2016-10-03 to deal with this problem.
    */
   @org.junit.jupiter.api.Test

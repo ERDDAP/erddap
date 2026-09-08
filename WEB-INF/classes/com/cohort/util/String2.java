@@ -6095,4 +6095,39 @@ public class String2 {
       }
     }
   }
+
+  /**
+   * Automatically extracts the domain name/host from a URL string, converting it to lowercase and
+   * removing any ports.
+   */
+  public static String extractDomain(String urlString, boolean includePort) {
+    if (urlString == null
+        || urlString.trim().isEmpty()
+        || urlString.equalsIgnoreCase("(not specified)")) {
+      return null;
+    }
+    String s = urlString.trim();
+    if (!s.contains("://")) {
+      s = "http://" + s;
+    }
+    try {
+      java.net.URI uri = new java.net.URI(s);
+      String host = uri.getHost();
+      if (host != null) {
+        String h = host.trim().toLowerCase();
+        if (h.contains(":") && !h.startsWith("[")) {
+          // if the host contains a colon and doesn't start with '[', it's likely an IPv6 address
+          // without brackets, so we need to add brackets around it.
+          h = "[" + h + "]";
+        }
+        if (includePort && h != null && uri.getPort() != -1) {
+          h += ":" + uri.getPort();
+        }
+        return h;
+      }
+    } catch (Exception e) {
+      String2.log("Error parsing host from URL: " + urlString + " - " + e.toString());
+    }
+    return null;
+  }
 } // End of String2 class.

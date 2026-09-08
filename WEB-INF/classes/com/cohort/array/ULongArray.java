@@ -400,6 +400,21 @@ public class ULongArray extends PrimitiveArray {
   }
 
   /**
+   * This adds an already packed value to the array (increasing 'size' by 1).
+   *
+   * @param packedValue the already packed value to be added to the array
+   */
+  public void addNPacked(int n, final long packedValue) {
+    if (n == 0) return;
+    if (n < 0)
+      throw new IllegalArgumentException(
+          MessageFormat.format(ArrayAddN, getClass().getSimpleName(), "" + n));
+    ensureCapacity(size + (long) n);
+    Arrays.fill(array, size, size + n, packedValue);
+    size += n;
+  }
+
+  /**
    * This adds an item to the array (increasing 'size' by 1).
    *
    * @param value the value to be added to the array. If value instanceof Number, this uses
@@ -425,6 +440,18 @@ public class ULongArray extends PrimitiveArray {
   @Override
   public void add(final StructureData sd, final String memberName) {
     addPacked(sd.getScalarLong(memberName));
+  }
+
+  /**
+   * This reads one value from the StrutureData and adds it to this PA.
+   *
+   * @param sd from an .nc file
+   * @param memberName
+   * @param count
+   */
+  @Override
+  public void addN(final StructureData sd, final String memberName, int count) {
+    addNPacked(count, sd.getScalarLong(memberName));
   }
 
   /**

@@ -279,6 +279,9 @@ public class EDConfig {
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
   @FeatureFlag public boolean useHeadersForUrl = true;
+  @FeatureFlag public boolean verifyHostNameErddapUrl = true;
+  public java.util.Set<String> allowedHosts =
+      java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
   @FeatureFlag public boolean generateCroissantSchema = true;
   @FeatureFlag public boolean touchThreadOnlyWhenItems = true;
   @FeatureFlag public boolean taskCacheClear = true;
@@ -680,6 +683,44 @@ public class EDConfig {
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
     useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
+
+    verifyHostNameErddapUrl = getSetupEVBoolean(setup, ev, "verifyHostNameErddapUrl", true);
+    String allowedHostsStr = getSetupEVString(setup, ev, "allowedHosts", "");
+    allowedHosts = java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+    if (String2.isSomething(allowedHostsStr)) {
+      String[] parts = String2.split(allowedHostsStr, ',');
+      for (String part : parts) {
+        if (part != null) {
+          String normalized = part.trim().toLowerCase();
+          // closing bracket is for IPv6 addresses, e.g., [::1]:8080
+          int closingBracket = normalized.indexOf(']');
+          if (closingBracket >= 0) {
+            int colonIdx = normalized.indexOf(':', closingBracket);
+            if (colonIdx >= 0) {
+              normalized = normalized.substring(0, colonIdx);
+            }
+          } else {
+            int colonIdx = normalized.indexOf(':');
+            if (colonIdx >= 0) {
+              normalized = normalized.substring(0, colonIdx);
+            }
+          }
+          normalized = normalized.trim();
+          if (!normalized.isEmpty()) {
+            allowedHosts.add(normalized);
+          }
+        }
+      }
+    }
+    // Automatically parse domain names from baseUrl and baseHttpsUrl
+    String baseDomain = String2.extractDomain(baseUrl, false);
+    if (baseDomain != null && !baseDomain.isEmpty()) {
+      allowedHosts.add(baseDomain);
+    }
+    String baseHttpsDomain = String2.extractDomain(baseHttpsUrl, false);
+    if (baseHttpsDomain != null && !baseHttpsDomain.isEmpty()) {
+      allowedHosts.add(baseHttpsDomain);
+    }
     slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);

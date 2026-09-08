@@ -2,7 +2,6 @@ package gov.noaa.pfel.erddap.util;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.cohort.array.Attributes;
 import com.cohort.util.String2;
@@ -72,6 +71,8 @@ public class EDStaticTests {
 
     // FIXME changing global config state makes tests brittle
     boolean cachedUseHeadersForUrlConfig = EDStatic.config.useHeadersForUrl;
+    boolean cachedVerify = EDStatic.config.verifyHostNameErddapUrl;
+    EDStatic.config.verifyHostNameErddapUrl = false;
 
     checkUrlExpectation(
         "EDStatic.getErddapUrlPrefix with null request and null loggedInAs",
@@ -248,13 +249,248 @@ public class EDStaticTests {
 
     // set useHeadersForUrl back to original value
     EDStatic.config.useHeadersForUrl = cachedUseHeadersForUrlConfig;
+    EDStatic.config.verifyHostNameErddapUrl = cachedVerify;
 
     for (HttpServletRequest request :
         List.of(httpRequest, httpRequestWithPort, httpRequestWithPortAndSubpath, httpsRequest)) {
       verify(request, atLeastOnce()).getHeader("Host");
       verify(request, atLeastOnce()).getHeader("X-Forwarded-Prefix");
       verify(request, atLeastOnce()).getScheme();
-      verifyNoMoreInteractions(request);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testHostHeaderValidation() throws Exception {
+    String2.log("\n***** EDStatic.testHostHeaderValidation");
+
+    // Cache the original configuration
+    boolean cachedVerify = EDStatic.config.verifyHostNameErddapUrl;
+    java.util.Set<String> cachedAllowed = EDStatic.config.allowedHosts;
+
+    try {
+      // 1. Check legacy/bypass behavior when verifyHostNameErddapUrl is false
+      EDStatic.config.verifyHostNameErddapUrl = false;
+      EDStatic.config.useHeadersForUrl = true;
+
+      HttpServletRequest reqLegacy = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqLegacy.getHeader("Host")).thenReturn("evil.com");
+      Mockito.when(reqLegacy.getScheme()).thenReturn("http");
+
+      // With verification disabled, it should return the legacy/unvalidated value
+      String resultLegacy = EDStatic.baseUrl(reqLegacy, null);
+      Test.ensureEqual(
+          resultLegacy, "http://evil.com", "Legacy bypass should return the provided host");
+
+      // Check legacy/bypass handles underscores safely (regression test)
+      HttpServletRequest reqLegacyUnderscore = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqLegacyUnderscore.getHeader("Host")).thenReturn("local_dev:8080");
+      Mockito.when(reqLegacyUnderscore.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqLegacyUnderscore, null),
+          "http://local_dev:8080",
+          "Legacy bypass must preserve local hostnames containing underscores");
+
+      // 2. Enable host verification and setup allowed hosts
+      EDStatic.config.verifyHostNameErddapUrl = true;
+      EDStatic.config.allowedHosts =
+          java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+      EDStatic.config.allowedHosts.add("erddap.example.org");
+      EDStatic.config.allowedHosts.add("proxy.example.org");
+
+      // Test a valid host header (exact match)
+      HttpServletRequest reqValid1 = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqValid1.getHeader("Host")).thenReturn("erddap.example.org");
+      Mockito.when(reqValid1.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqValid1, null),
+          "http://erddap.example.org",
+          "Exact allowed host match");
+
+      // Test a valid host header with trailing port and mixed case
+      HttpServletRequest reqValid2 = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqValid2.getHeader("Host")).thenReturn("ERDDAP.EXAMPLE.ORG:8080");
+      Mockito.when(reqValid2.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqValid2, null),
+          "http://erddap.example.org:8080",
+          "Case-insensitive allowed host match with port");
+
+      // Test using X-Forwarded-Host
+      HttpServletRequest reqValidXF = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqValidXF.getHeader("X-Forwarded-Host")).thenReturn("proxy.example.org");
+      Mockito.when(reqValidXF.getHeader("Host")).thenReturn("evil.com");
+      Mockito.when(reqValidXF.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqValidXF, null),
+          "http://proxy.example.org",
+          "X-Forwarded-Host takes precedence and matches allowlist");
+
+      // Extract what the fallback host should be from actual baseUrl/baseHttpsUrl since they are
+      // final
+      String expectedFallbackHttpHost = "";
+      try {
+        java.net.URI uri = new java.net.URI(EDStatic.config.baseUrl);
+        expectedFallbackHttpHost = uri.getHost();
+        if (uri.getPort() != -1) {
+          expectedFallbackHttpHost += ":" + uri.getPort();
+        }
+      } catch (Exception e) {
+      }
+
+      HttpServletRequest reqInvalidHttp = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqInvalidHttp.getHeader("Host")).thenReturn("evil.com");
+      Mockito.when(reqInvalidHttp.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqInvalidHttp, null),
+          "http://" + expectedFallbackHttpHost,
+          "Invalid host on http should fallback to baseUrl host and port");
+
+      String expectedFallbackHttpsHost = expectedFallbackHttpHost;
+      if (EDStatic.config.baseHttpsUrl != null
+          && !EDStatic.config.baseHttpsUrl.trim().isEmpty()
+          && !EDStatic.config.baseHttpsUrl.equalsIgnoreCase("(not specified)")) {
+        try {
+          java.net.URI uri = new java.net.URI(EDStatic.config.baseHttpsUrl);
+          String h = uri.getHost();
+          if (h != null) {
+            expectedFallbackHttpsHost = h;
+            if (uri.getPort() != -1) {
+              expectedFallbackHttpsHost += ":" + uri.getPort();
+            }
+          }
+        } catch (Exception e) {
+        }
+      }
+
+      // Test invalid host on HTTPS, fallback to baseHttpsUrl
+      HttpServletRequest reqInvalidHttps = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqInvalidHttps.getHeader("Host")).thenReturn("evil.com");
+      Mockito.when(reqInvalidHttps.getScheme()).thenReturn("https");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqInvalidHttps, null),
+          "https://" + expectedFallbackHttpsHost,
+          "Invalid host on https should fallback to baseHttpsUrl host and port");
+
+      // 4. Test Chained Proxies / Comma-separated X-Forwarded-Host
+      HttpServletRequest reqChainedProxy = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqChainedProxy.getHeader("X-Forwarded-Host"))
+          .thenReturn("erddap.example.org, proxy1.example.org, proxy2.example.org");
+      Mockito.when(reqChainedProxy.getHeader("Host")).thenReturn("erddap.example.org");
+      Mockito.when(reqChainedProxy.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqChainedProxy, null),
+          "http://erddap.example.org",
+          "Chained proxy: first element picked and matched");
+
+      // Check underscore hostname when verification is enabled
+      EDStatic.config.allowedHosts.add("local_dev");
+      HttpServletRequest reqUnderscoreValid = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqUnderscoreValid.getHeader("Host")).thenReturn("LOCAL_DEV:8080");
+      Mockito.when(reqUnderscoreValid.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqUnderscoreValid, null),
+          "http://local_dev:8080",
+          "Verification enabled must support local hostnames containing underscores if allowed");
+
+      // 5. Test Wildcard Allowed Hosts
+      EDStatic.config.allowedHosts.add("*.allowed-wild.com");
+      EDStatic.config.allowedHosts.add(".another-wild.org");
+
+      HttpServletRequest reqWildcard1 = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqWildcard1.getHeader("Host")).thenReturn("sub.allowed-wild.com");
+      Mockito.when(reqWildcard1.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqWildcard1, null),
+          "http://sub.allowed-wild.com",
+          "Wildcard prefix match (*.allowed-wild.com)");
+
+      HttpServletRequest reqWildcard2 = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqWildcard2.getHeader("Host")).thenReturn("deep.sub.another-wild.org");
+      Mockito.when(reqWildcard2.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqWildcard2, null),
+          "http://deep.sub.another-wild.org",
+          "Wildcard prefix match (.another-wild.org)");
+
+      HttpServletRequest reqWildcardEvil = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqWildcardEvil.getHeader("Host")).thenReturn("evil-allowed-wild.com");
+      Mockito.when(reqWildcardEvil.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqWildcardEvil, null),
+          "http://" + expectedFallbackHttpHost,
+          "Wildcard must not match substring without dot boundary");
+
+      // 6. Test IPv6 Handling
+      EDStatic.config.allowedHosts.add("[::1]");
+      EDStatic.config.allowedHosts.add("[2001:db8::1]");
+
+      HttpServletRequest reqIPv6_1 = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqIPv6_1.getHeader("Host")).thenReturn("[::1]");
+      Mockito.when(reqIPv6_1.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqIPv6_1, null), "http://[::1]", "Safe bracketed IPv6 match");
+
+      HttpServletRequest reqIPv6_2 = Mockito.mock(HttpServletRequest.class);
+      Mockito.when(reqIPv6_2.getHeader("Host")).thenReturn("[2001:db8::1]:8080");
+      Mockito.when(reqIPv6_2.getScheme()).thenReturn("http");
+      Test.ensureEqual(
+          EDStatic.baseUrl(reqIPv6_2, null),
+          "http://[2001:db8::1]:8080",
+          "Safe bracketed IPv6 with port match");
+
+      // 7. Test Attack String Sanitation (cleanUrlChars and normalizeAndValidateHost)
+      Test.ensureEqual(
+          EDStatic.cleanUrlChars("evil.com/../path", true),
+          "evil.com/../path",
+          "cleanUrlChars keeps safe chars");
+      // But normalizeAndValidateHost will discard anything with unsafe path segments or malformed
+      // hosts
+      Test.ensureEqual(
+          EDStatic.normalizeAndValidateHost("evil.com/../path"),
+          "",
+          "normalizeAndValidateHost blocks path traversal in domain");
+      Test.ensureEqual(
+          EDStatic.normalizeAndValidateHost("evil.com%2e%2e%2fpath"),
+          "",
+          "normalizeAndValidateHost blocks encoded path traversal in domain");
+      Test.ensureEqual(
+          EDStatic.normalizeAndValidateHost("<script>alert(1)</script>.example.org"),
+          "",
+          "normalizeAndValidateHost blocks XSS in domain");
+
+      // 3. Test Domain Extraction helper method
+      Test.ensureEqual(
+          String2.extractDomain("http://myhost.com:8080/erddap", false),
+          "myhost.com",
+          "extractDomain: standard HTTP with port");
+      Test.ensureEqual(
+          String2.extractDomain("http://myhost.com:8080/erddap", true),
+          "myhost.com:8080",
+          "extractDomain: standard HTTP with port");
+      Test.ensureEqual(
+          String2.extractDomain("https://sub.domain.com/path", false),
+          "sub.domain.com",
+          "extractDomain: standard HTTPS");
+      Test.ensureEqual(
+          String2.extractDomain("just.host.name", false),
+          "just.host.name",
+          "extractDomain: no protocol");
+      Test.ensureEqual(
+          String2.extractDomain("(not specified)", false), null, "extractDomain: (not specified)");
+      Test.ensureEqual(String2.extractDomain(null, false), null, "extractDomain: null input");
+      Test.ensureEqual(
+          String2.extractDomain("http://[::1]:8080/erddap", false),
+          "[::1]",
+          "extractDomain: bracketed IPv6 with port");
+      Test.ensureEqual(
+          String2.extractDomain("http://[::1]:8080/erddap", true),
+          "[::1]:8080",
+          "extractDomain: bracketed IPv6 with port");
+
+    } finally {
+      // Restore cached configurations
+      EDStatic.config.verifyHostNameErddapUrl = cachedVerify;
+      EDStatic.config.allowedHosts = cachedAllowed;
     }
   }
 

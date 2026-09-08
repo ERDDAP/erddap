@@ -920,17 +920,206 @@ public class EDStatic {
   }
 
   /**
-   * Return host and path prefix (if applicable) url fragment, determined by request headers.
-   *
-   * @param request the request
-   * @return ERDDAP url fragment with host and path prefix (if set)
+   * Cleans a URL/host string by allowing only safe alphanumeric and standard special characters.
+   * Alphanumeric: A-Z, a-z, 0-9 Special characters: - (hyphen), _ (underscore), . (period), ~
+   * (tilde), and optionally : (colon) and / (slash).
    */
-  private static String getHostAndPathFromRequest(HttpServletRequest request) {
-    String url = request.getHeader("Host");
-    if (request.getHeader("X-Forwarded-Prefix") != null) {
-      url += request.getHeader("X-Forwarded-Prefix");
+  public static String cleanUrlChars(String input, boolean allowColonAndSlash) {
+    if (input == null) {
+      return "";
     }
-    return url;
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < input.length(); i++) {
+      char c = input.charAt(i);
+      if ((c >= 'a' && c <= 'z')
+          || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9')
+          || c == '-'
+          || c == '_'
+          || c == '.'
+          || c == '~'
+          || c == '['
+          || c == ']'
+          || (allowColonAndSlash && (c == ':' || c == '/'))) {
+        sb.append(c);
+      }
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Keep the overload simple: only reject dangerous characters; otherwise preserve host and port.
+   */
+  public static String normalizeAndValidateHost(String hostAndPath) {
+    if (hostAndPath == null) {
+      return "";
+    }
+    String value = hostAndPath.trim();
+    if (value.isEmpty()) {
+      return "";
+    }
+    if (value.contains("\\") || value.indexOf('%') >= 0 || value.contains("..")) {
+      return "";
+    }
+    if (!value.matches("^[A-Za-z0-9._~:/\\[\\]-]+$")) {
+      return "";
+    }
+
+    String path = "";
+    int slash = value.indexOf('/');
+    if (slash >= 0) {
+      path = value.substring(slash);
+      value = value.substring(0, slash);
+    }
+
+    String host = value;
+    String port = "";
+    if (host.startsWith("[") && host.indexOf(']') >= 0) {
+      int end = host.indexOf(']');
+      host = host.substring(0, end + 1);
+      if (end + 1 < value.length() && value.charAt(end + 1) == ':') {
+        port = value.substring(end + 1);
+      }
+    } else if (host.indexOf(':') > 0 && host.indexOf(':', host.indexOf(':') + 1) < 0) {
+      int colon = host.indexOf(':');
+      host = host.substring(0, colon);
+      port = value.substring(colon);
+    }
+
+    host = host.toLowerCase();
+    // IPv6 addresses are enclosed in brackets, e.g., [2001:db8::1]:8080. The inner part is
+    // validated to contain only hex digits and colons. Otherwise, the host is validated to
+    // contain only lowercase letters, digits, dots, underscores, and hyphens.
+    if (host.startsWith("[") && host.endsWith("]")) {
+      String inner = host.substring(1, host.length() - 1);
+      if (!inner.matches("^[0-9a-f:]+$")) {
+        return "";
+      }
+    } else if (!host.matches("^[a-z0-9._-]+$")) {
+      return "";
+    }
+
+    if (!port.isEmpty()) {
+      String portNumber = port.substring(1);
+      if (!portNumber.matches("^[0-9]+$")) {
+        return "";
+      }
+    }
+
+    return host + port + path;
+  }
+
+  private static String stripHostPort(String value) {
+    if (value == null) {
+      return "";
+    }
+    String host = value.trim().toLowerCase();
+    if (host.startsWith("[") && host.indexOf(']') >= 0) {
+      return host.substring(0, host.indexOf(']') + 1);
+    }
+    int colon = host.indexOf(':');
+    if (colon > 0 && host.indexOf(':', colon + 1) < 0) {
+      return host.substring(0, colon);
+    }
+    return host;
+  }
+
+  private static String getApprovedHost(HttpServletRequest request) {
+    if (request == null || EDStatic.config == null || EDStatic.config.allowedHosts == null) {
+      return null;
+    }
+    String candidate = request.getHeader("X-Forwarded-Host");
+    if (candidate == null || candidate.trim().isEmpty()) {
+      candidate = request.getHeader("Host");
+    }
+    if (candidate == null || candidate.trim().isEmpty()) {
+      candidate = request.getServerName();
+    }
+    candidate = candidate.split(",")[0].trim();
+    String normalized = normalizeAndValidateHost(candidate);
+    if (normalized.isEmpty()) {
+      return null;
+    }
+
+    String bareHost = stripHostPort(normalized);
+    for (String allowed : EDStatic.config.allowedHosts) {
+      String allowedHost = allowed.trim().toLowerCase();
+      if (allowedHost.startsWith("*.")) {
+        String suffix = allowedHost.substring(1);
+        if (bareHost.endsWith(suffix) && bareHost.length() > suffix.length()) {
+          return normalized;
+        }
+      } else if (allowedHost.startsWith(".")) {
+        if (bareHost.endsWith(allowedHost) && bareHost.length() > allowedHost.length()) {
+          return normalized;
+        }
+      } else if (bareHost.equals(stripHostPort(allowedHost))) {
+        return normalized;
+      }
+    }
+    return null;
+  }
+
+  private static String getHostAndPathFromRequest(HttpServletRequest request) {
+    if (request == null) {
+      return "";
+    }
+
+    String prefix = request.getHeader("X-Forwarded-Prefix");
+    if (prefix != null && prefix.matches("^/[a-zA-Z0-9/_-]*$")) {
+      prefix = cleanUrlChars(prefix, true);
+    } else {
+      prefix = "";
+    }
+
+    if (EDStatic.config.verifyHostNameErddapUrl) {
+      String approvedHost = getApprovedHost(request);
+      if (approvedHost != null) {
+        return approvedHost
+            + (prefix != null && prefix.matches("^/[a-zA-Z0-9/_-]*$")
+                ? cleanUrlChars(prefix, true)
+                : "");
+      }
+    }
+
+    String hostValue = request.getHeader("Host");
+    if (hostValue == null || hostValue.trim().isEmpty()) {
+      hostValue = request.getServerName();
+    }
+
+    if (!EDStatic.config.verifyHostNameErddapUrl) {
+      String url = normalizeAndValidateHost(hostValue);
+      url += prefix;
+      return url;
+    }
+
+    String scheme = "http";
+    if ("https".equalsIgnoreCase(request.getScheme())) {
+      scheme = "https";
+    }
+    String fallbackUrl = EDStatic.config.baseUrl;
+    if ("https".equalsIgnoreCase(scheme)
+        && EDStatic.config.baseHttpsUrl != null
+        && !EDStatic.config.baseHttpsUrl.trim().isEmpty()
+        && !EDStatic.config.baseHttpsUrl.equalsIgnoreCase("(not specified)")) {
+      fallbackUrl = EDStatic.config.baseHttpsUrl;
+    }
+
+    String fallbackHost = String2.extractDomain(fallbackUrl, true);
+    if (fallbackHost == null || fallbackHost.isEmpty()) {
+      String safe = fallbackUrl.trim();
+      int schemeEnd = safe.indexOf("://");
+      int slash = safe.indexOf('/', schemeEnd + 3);
+      if (slash >= 0) {
+        safe = safe.substring(0, slash);
+      }
+      fallbackHost = safe;
+    }
+    if (fallbackHost == null || fallbackHost.isEmpty()) {
+      fallbackHost = request.getServerName();
+    }
+    String2.log("WARNING: Unapproved host header attempt: " + hostValue);
+    return normalizeAndValidateHost(fallbackHost) + prefix;
   }
 
   /**
@@ -947,7 +1136,11 @@ public class EDStatic {
    */
   public static String baseUrl(HttpServletRequest request, String loggedInAs) {
     if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
-      return request.getScheme() + "://" + getHostAndPathFromRequest(request);
+      String scheme = "http";
+      if ("https".equalsIgnoreCase(request.getScheme())) {
+        scheme = "https";
+      }
+      return scheme + "://" + getHostAndPathFromRequest(request);
     }
     return loggedInAs == null ? config.baseUrl : config.baseHttpsUrl;
   }
@@ -991,10 +1184,11 @@ public class EDStatic {
    */
   public static String erddapHttpsUrl(HttpServletRequest request, int language) {
     String httpsUrl = erddapHttpsUrl;
+    boolean isHttps = request != null && "https".equalsIgnoreCase(request.getScheme());
     if (EDStatic.config.useHeadersForUrl
         && request != null
         && request.getHeader("Host") != null
-        && ("https".equals(request.getScheme()) || !request.getHeader("Host").contains(":"))) {
+        && (isHttps || !request.getHeader("Host").contains(":"))) {
       httpsUrl = "https://" + getHostAndPathFromRequest(request) + "/" + config.warName;
     }
     return httpsUrl + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));

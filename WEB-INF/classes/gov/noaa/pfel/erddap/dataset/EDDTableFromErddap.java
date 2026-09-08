@@ -15,12 +15,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import dods.dap.AttributeTable;
-import dods.dap.BaseType;
-import dods.dap.DAS;
-import dods.dap.DDS;
-import dods.dap.DSequence;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -40,13 +35,18 @@ import gov.noaa.pfel.erddap.variable.EDVTime;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Queue;
 import org.semver4j.Semver;
+import thredds.client.catalog.ServiceType;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class represents a table of data from an opendap sequence source.
@@ -299,64 +299,32 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
       } else { // if !useNccsv
         // get sourceTable from remote DAP
-        if (verbose) String2.log("  using info from remote dataset's DAP services");
+        if (verbose) String2.log("  using info from remote dataset's NetcdfDatasets services");
 
-        DAS das = new DAS();
-        das.parse(
-            new ByteArrayInputStream(
-                SSR.getUrlResponseBytes(
-                    localSourceUrl + ".das"))); // has timeout and descriptive error
-        DDS dds = new DDS();
-        dds.parse(
-            new ByteArrayInputStream(
-                SSR.getUrlResponseBytes(
-                    localSourceUrl + ".dds"))); // has timeout and descriptive error
+        DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, localSourceUrl);
+        try (NetcdfDataset dataset = NetcdfDatasets.openDataset(durl, null, -1, null, null)) {
+          NcHelper.getGroupAttributes(dataset.getRootGroup(), sourceGlobalAttributes);
 
-        // get global attributes
-        OpendapHelper.getAttributes(das, "GLOBAL", sourceGlobalAttributes);
+          Variable outerVariable = dataset.findVariable(SEQUENCE_NAME);
+          if (!(outerVariable instanceof ucar.nc2.Structure outerSequence))
+            throw new IllegalArgumentException(
+                errorInMethod + "outerVariable not a Sequence/Structure: name=" + SEQUENCE_NAME);
 
-        // delve into the outerSequence
-        BaseType outerVariable = dds.getVariable(SEQUENCE_NAME);
-        if (!(outerVariable instanceof DSequence outerSequence))
-          throw new IllegalArgumentException(
-              errorInMethod
-                  + "outerVariable not a DSequence: name="
-                  + outerVariable.getName()
-                  + " type="
-                  + outerVariable.getTypeName());
-        int nOuterColumns = outerSequence.elementCount();
-        AttributeTable outerAttributeTable = das.getAttributeTable(SEQUENCE_NAME);
-        for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
+          List<Variable> outerVars = outerSequence.getVariables();
+          int nOuterColumns = outerVars.size();
+          for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
+            Variable obt = outerVars.get(outerCol);
+            String tSourceName = obt.getShortName();
+            PAType tSourcePAType = NcHelper.getElementPAType(obt);
+            Attributes tSourceAtt = new Attributes();
+            NcHelper.getVariableAttributes(obt, tSourceAtt);
 
-          // look at the variables in the outer sequence
-          BaseType obt = outerSequence.getVar(outerCol);
-          String tSourceName = obt.getName();
-
-          // get the data sourcePAType
-          PAType tSourcePAType = OpendapHelper.getElementPAType(obt.newPrimitiveVector());
-
-          // get the attributes
-          Attributes tSourceAtt = new Attributes();
-          // note use of getName in this section
-          // if (reallyVerbose) String2.log("try getting attributes for outer " + tSourceName);
-          dods.dap.Attribute attribute = outerAttributeTable.getAttribute(tSourceName);
-          // it should be a container with the attributes for this column
-          if (attribute == null) {
-            String2.log("WARNING!!! Unexpected: no attribute for outerVar=" + tSourceName + ".");
-          } else if (attribute.isContainer()) {
-            OpendapHelper.getAttributes(attribute.getContainer(), tSourceAtt);
-          } else {
-            String2.log(
-                "WARNING!!! Unexpected: attribute for outerVar="
-                    + tSourceName
-                    + " not a container: "
-                    + attribute.getName()
-                    + "="
-                    + attribute.getValueAt(0));
+            sourceTable.addColumn(
+                outerCol, tSourceName, PrimitiveArray.factory(tSourcePAType, 8, false), tSourceAtt);
           }
-
-          sourceTable.addColumn(
-              outerCol, tSourceName, PrimitiveArray.factory(tSourcePAType, 8, false), tSourceAtt);
+        } catch (Throwable t) {
+          throw new RuntimeException(
+              "Error while getting metadata from NetcdfDataset: " + localSourceUrl, t);
         }
       }
     }

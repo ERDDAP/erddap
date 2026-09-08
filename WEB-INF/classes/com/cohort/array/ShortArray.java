@@ -356,6 +356,18 @@ public class ShortArray extends PrimitiveArray {
   }
 
   /**
+   * This reads one value from the StrutureData and adds it to this PA.
+   *
+   * @param sd from an .nc file
+   * @param memberName
+   * @param count
+   */
+  @Override
+  public void addN(final StructureData sd, final String memberName, int count) {
+    addN(count, sd.getScalarShort(memberName));
+  }
+
+  /**
    * This adds all the values from ar.
    *
    * @param ar an array

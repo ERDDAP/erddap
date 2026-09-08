@@ -8,7 +8,7 @@ import com.cohort.array.*;
 import com.cohort.util.*;
 
 /** The Java DAP classes.  */
-import dods.dap.*;
+import opendap.dap.*;
 
 import gov.noaa.pfel.coastwatch.griddata.*;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -2595,7 +2595,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                 int nTimes = String2.parseInt(dds.substring(po + 7, po2));
                 if (nTimes == Integer.MAX_VALUE)
                     throw new Exception("Unexpected Time from dds=\n" + dds);
-                DConnect dConnect = new DConnect(s, true, 1, 1);
+                DConnect2 dConnect = new DConnect2(s, true);
                 double beginTime = OpendapHelper.getDoubleArray(dConnect, "?Time[0]")[0]; 
                 double endTime   = OpendapHelper.getDoubleArray(dConnect, "?Time[" + (nTimes-1) + "]")[0]; 
                 String2.log("  Time n=" + nTimes + " begin=" + beginTime + " end=" + endTime);
@@ -4367,7 +4367,7 @@ String2.log("Projects.touchUrls is finished.");
 
         String url = "http://las.pfeg.noaa.gov/thredds/dodsC/CA_market_catch/ca_fish_grouped_short.nc";
 
-        DConnect dConnect = new DConnect(url, true, 1, 1);
+        DConnect2 dConnect = new DConnect2(url, true);
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
         String name;
@@ -4691,7 +4691,7 @@ String2.log("Projects.touchUrls is finished.");
 
         String url = "http://las.pfeg.noaa.gov/thredds/dodsC/CA_market_catch/ca_fish_grouped.nc";
 
-        DConnect dConnect = new DConnect(url, true, 1, 1);
+        DConnect2 dConnect = new DConnect2(url, true);
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
         String name;
@@ -7043,7 +7043,7 @@ project)
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //get dConnect.  If this fails, no clean up needed.
-        DConnect dConnect = new DConnect(dapUrl, true, 1, 1);
+        DConnect2 dConnect = new DConnect2(dapUrl, true);
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
 

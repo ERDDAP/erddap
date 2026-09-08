@@ -682,6 +682,15 @@ public abstract class PrimitiveArray {
   public abstract void add(StructureData sd, String memberName);
 
   /**
+   * This reads one value from the StrutureData and adds it to this PA.
+   *
+   * @param sd from an .nc file
+   * @param memberName
+   * @param count number of times to add
+   */
+  public abstract void addN(StructureData sd, String memberName, int count);
+
+  /**
    * This adds PAOne's value to the array.
    *
    * @param value the value, as a PAOne (or null).

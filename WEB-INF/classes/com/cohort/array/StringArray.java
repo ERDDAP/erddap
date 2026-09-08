@@ -568,6 +568,18 @@ public class StringArray extends PrimitiveArray {
     add(sd.getScalarString(memberName));
   }
 
+  /**
+   * This reads one value from the StrutureData and adds it to this PA.
+   *
+   * @param sd from an .nc file
+   * @param memberName
+   * @param count
+   */
+  @Override
+  public void addN(final StructureData sd, final String memberName, int count) {
+    addN(count, sd.getScalarString(memberName));
+  }
+
   /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is
   currently implemented.
      * This adds an item to the array (increasing 'size' by 1).
