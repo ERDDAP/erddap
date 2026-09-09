@@ -3890,18 +3890,21 @@ public class Table {
     for (int col = 0; col < nCols; col++) {
       String s = tTable.getColumnName(col);
       if (String2.indexOf(doubleColumns, s) >= 0)
-        tTable.setColumn(col, new DoubleArray(tTable.getColumn(col)));
+        tTable.setColumn(col, PrimitiveArray.factory(PAType.DOUBLE, tTable.getColumn(col)));
       if (String2.indexOf(intColumns, s) >= 0)
-        tTable.setColumn(col, new IntArray(tTable.getColumn(col)));
+        tTable.setColumn(col, PrimitiveArray.factory(PAType.INT, tTable.getColumn(col)));
     }
 
     // create and add x,y,z,t,id columns    (numeric cols forced to be doubles)
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(0), new DoubleArray(tTable.findColumn("Longitude")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(0),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Longitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(1), new DoubleArray(tTable.findColumn("Latitude")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(1),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Latitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(2), new DoubleArray(tTable.findColumn("Minimumdepth")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(2),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Minimumdepth")));
     DoubleArray tPA = new DoubleArray(nRows, false);
     addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(3), tPA);
     StringArray idPA = new StringArray(nRows, false);
@@ -5178,15 +5181,15 @@ public class Table {
 
       } else if (pa instanceof UByteArray ua) {
         atts.remove(name);
-        atts.set("_encodedUByteArray_" + name, new ByteArray(ua.toArray()));
+        atts.set("_encodedUByteArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof UShortArray ua) {
         atts.remove(name);
-        atts.set("_encodedUShortArray_" + name, new ShortArray(ua.toArray()));
+        atts.set("_encodedUShortArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof UIntArray ua) {
         atts.remove(name);
-        atts.set("_encodedUIntArray_" + name, new IntArray(ua.toArray()));
+        atts.set("_encodedUIntArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof LongArray) {
         atts.remove(name);
@@ -5218,15 +5221,15 @@ public class Table {
 
         } else if (paType == PAType.BYTE && name.startsWith("_encodedUByteArray_")) {
           atts.remove(name);
-          atts.set(name.substring(19), new UByteArray(((ByteArray) pa).toArray()));
+          atts.set(name.substring(19), pa.makeUnsignedPA());
 
         } else if (paType == PAType.SHORT && name.startsWith("_encodedUShortArray_")) {
           atts.remove(name);
-          atts.set(name.substring(20), new UShortArray(((ShortArray) pa).toArray()));
+          atts.set(name.substring(20), pa.makeUnsignedPA());
 
         } else if (paType == PAType.INT && name.startsWith("_encodedUIntArray_")) {
           atts.remove(name);
-          atts.set(name.substring(18), new UIntArray(((IntArray) pa).toArray()));
+          atts.set(name.substring(18), pa.makeUnsignedPA());
 
         } else if (paType == PAType.STRING && name.startsWith("_encodedLongArray_")) {
           atts.remove(name);
@@ -11711,7 +11714,7 @@ public class Table {
                   + " because it is not a numeric data type.");
         }
 
-        DoubleArray roundedArray = new DoubleArray(srcColumn);
+        PrimitiveArray roundedArray = PrimitiveArray.factory(PAType.DOUBLE, srcColumn);
         if (targetColNumber < 0) {
           targetColNumber = this.addColumn(keyColumnName, roundedArray);
           tempOrderByCols.addFirst(targetColNumber);

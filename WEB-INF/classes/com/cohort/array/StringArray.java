@@ -1044,10 +1044,9 @@ public class StringArray extends PrimitiveArray {
    *     return an array with their storage type e.g., ULongArray returns a long[].
    */
   public String[] toArray() {
+    if (array.length == size) return array;
     Math2.ensureMemoryAvailable(8L * size, "StringArray.toArray"); // 8L is guess
-    String[] tArray = new String[size];
-    for (int i = 0; i < size; i++) tArray[i] = array[i];
-    return tArray;
+    return Arrays.copyOfRange(array, 0, size);
   }
 
   /**
