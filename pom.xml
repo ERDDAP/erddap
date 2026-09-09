@@ -32,7 +32,7 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.31.1</version>
+    <version>2.32.0-alpha</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -49,14 +49,14 @@
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.10.0</netcdfJavaVersion>
         <test.resources.version>test1.06</test.resources.version>
-        <jettyVersion>12.1.12</jettyVersion>
+        <jettyVersion>12.1.13</jettyVersion>
         <error-prone.version>2.50.0</error-prone.version>
         <prometheusVersion>1.8.0</prometheusVersion>
-        <parquetVersion>1.18.0</parquetVersion>
-        <awssdkVersion>2.54.10</awssdkVersion>
+        <parquetVersion>1.18.1</parquetVersion>
+        <awssdkVersion>2.54.14</awssdkVersion>
         <luceneVersion>10.5.1</luceneVersion>
         <nettyVersion>4.2.17.Final</nettyVersion>
-        <mavenTestPluginVersion>3.5.6</mavenTestPluginVersion>
+        <mavenTestPluginVersion>3.6.0</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.15</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
         <argLine.extra></argLine.extra>
@@ -761,7 +761,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>2.4.10</version>
+                <version>2.4.20</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
             <dependency>
@@ -856,7 +856,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.4.240</version>
+            <version>2.5.250</version>
             <scope>test</scope>
         </dependency>
 
@@ -976,7 +976,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.18</version>
+            <version>2.0.19</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -1213,7 +1213,7 @@
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.51.0</version>
+            <version>1.52.0</version>
         </dependency>
 
         <dependency>
@@ -1239,7 +1239,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.194</version>
+            <version>4.8.195</version>
         </dependency>
          <dependency>
             <groupId>org.apache.hadoop</groupId>
