@@ -109,6 +109,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
+import org.apache.http.HttpStatus;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
@@ -14072,12 +14073,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (String2.isSomething(datasetID)) datasetID = datasetID.trim();
       if (String2.isSomething(flagKey)) flagKey = flagKey.trim();
 
+      int httpStatus = HttpStatus.SC_OK;
       if (!String2.isSomething(datasetID) || !String2.isSomething(flagKey)) {
         message = String2.ERROR + ": Incomplete request.";
+        httpStatus = HttpStatus.SC_BAD_REQUEST;
       } else if (!String2.isFileNameSafe(datasetID)) {
         message = String2.ERROR + ": Invalid datasetID.";
+        httpStatus = HttpStatus.SC_BAD_REQUEST;
       } else if (!EDD.flagKey(datasetID).equals(flagKey)) {
         message = String2.ERROR + ": Invalid flagKey.";
+        httpStatus = HttpStatus.SC_UNAUTHORIZED;
       } else {
         // It's ok if it isn't an existing edd.  An inactive dataset is a valid one to flag.
         // And ok of it isn't even in datasets.xml.  Unknown files are removed.
@@ -14094,6 +14099,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       EDStatic.tally.add("SetDatasetFlag " + sf + ", IP Address (since startup)", ipAddress);
 
       Math2.sleep(delaySeconds * 1000L);
+      response.setStatus(httpStatus);
       writer.write(message);
       if (verbose) String2.log(message + " setDatasetFlag(" + ipAddress + ")");
     }
