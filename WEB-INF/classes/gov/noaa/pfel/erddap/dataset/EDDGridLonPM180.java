@@ -674,7 +674,8 @@ public class EDDGridLonPM180 extends EDDGrid {
     // really easy: all the requested lons are from the new right: >=dloni0
     if (dloni0 != -1 && rStart >= dloni0) {
       // 1 request, and lon values are already correct
-      IntArray newConstraints = (IntArray) tConstraints.subset(0, 1, tConstraints.size() - 1);
+      IntArray newConstraints =
+          (IntArray) tConstraints.subset(new IntArray(), 0, 1, tConstraints.size() - 1);
       newConstraints.set(li3 + 0, rStart - (dloni0 - sloni0));
       newConstraints.set(li3 + 2, rStop - (dloni0 - sloni0));
       return tChildDataset.getSourceData(
@@ -684,7 +685,8 @@ public class EDDGridLonPM180 extends EDDGrid {
     // easy: all the requested lons are from the left: <=dloni359
     if (rStop <= dloni359) {
       // 1 request, but need to adjust lon values
-      IntArray newConstraints = (IntArray) tConstraints.subset(0, 1, tConstraints.size() - 1);
+      IntArray newConstraints =
+          (IntArray) tConstraints.subset(new IntArray(), 0, 1, tConstraints.size() - 1);
       newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
       newConstraints.set(li3 + 2, rStop + sloni180); // (sloni180 - dloni180), but dloni180 is 0
       PrimitiveArray results[] =
@@ -705,7 +707,8 @@ public class EDDGridLonPM180 extends EDDGrid {
     if (debugMode) String2.log(">> lon request= " + rStart + ":" + rStride + ":" + rStop);
 
     // find request for lon 180-359: <=dloni359
-    IntArray newConstraints = (IntArray) tConstraints.subset(0, 1, tConstraints.size() - 1);
+    IntArray newConstraints =
+        (IntArray) tConstraints.subset(new IntArray(), 0, 1, tConstraints.size() - 1);
     PrimitiveArray results180[] = null;
     if (rStart <= dloni359) {
       // some values are from source loni180 to loni359

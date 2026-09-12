@@ -669,7 +669,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     if (reallyVerbose) String2.log("sourceAxisNames=" + sourceAxisNames);
     if (axis0Type != AXIS0_REGULAR)
       sourceAxisNamesNoAxis0 =
-          (StringArray) sourceAxisNames.subset(1, 1, sourceAxisNames.size() - 1);
+          (StringArray) sourceAxisNames.subset(new StringArray(), 1, 1, sourceAxisNames.size() - 1);
 
     // note sourceDataNames, sourceDataTypes
     sourceDataNames = new StringArray();
@@ -2679,7 +2679,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
           decompFullName,
           tDataVariables, // start, stride, stop
           (IntArray)
-              tConstraints.subset(3, 1, tConstraints.size() - 1)); // remove the axis0 constraints
+              tConstraints.subset(
+                  new IntArray(), 3, 1, tConstraints.size() - 1)); // remove the axis0 constraints
     }
 
     throw new RuntimeException("Invalid axis0Type=" + axis0Type);

@@ -18,13 +18,14 @@ import gov.noaa.pfel.erddap.dataset.GridDataAccessor;
 import gov.noaa.pfel.erddap.dataset.GridDataAllAccessor;
 import gov.noaa.pfel.erddap.dataset.OutputStreamSource;
 import gov.noaa.pfel.erddap.dataset.TableWriter;
+import gov.noaa.pfel.erddap.dataset.TableWriterAll;
 import gov.noaa.pfel.erddap.dataset.TableWriterAllWithMetadata;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
+import java.nio.channels.FileChannel;
 
 @FileTypeClass(
     fileTypeExtension = ".json",
@@ -333,7 +334,7 @@ public class NcoJsonFiles extends TableWriterFileType {
         writer.write(atts.toNcoJsonString("      ", twawm != null, true));
         if (twawm != null) {
           writer.write("      \"data\": [");
-          try (DataInputStream dis = twawm.dataInputStream(col)) {
+          try (FileChannel channel = twawm.openColumnChannel(col)) {
             // create the bufferPA
             PrimitiveArray pa = null;
             long nRowsRead = 0;
@@ -345,7 +346,7 @@ public class NcoJsonFiles extends TableWriterFileType {
               }
               pa.clear();
               pa.setMaxIsMV(twawm.columnMaxIsMV(col)); // reset after clear()
-              pa.readDis(dis, nToRead);
+              TableWriterAll.readColumnChunk(col, channel, pa, nRowsRead, nToRead);
               if (isChar) {
                 // write it as one string with chars concatenated
                 // see "md5_abc" in in http://dust.ess.uci.edu/tmp/in.json.fmt2
@@ -559,8 +560,17 @@ public class NcoJsonFiles extends TableWriterFileType {
             int max = 1;
             if (writeData) {
               long n = gda.totalIndex().size();
-              try (DataInputStream dis = gdaa.getDataInputStream(dvi)) {
-                for (int i = 0; i < n; i++) max = Math.max(max, dis.readUTF().length());
+              try (FileChannel channel = gdaa.openDataChannel(dvi)) {
+                StringArray sa = new StringArray();
+                long nRead = 0;
+                int chunkSize = 8192;
+                while (nRead < n) {
+                  int toRead = (int) Math.min(chunkSize, n - nRead);
+                  sa.clear();
+                  GridDataAllAccessor.readDataChunk(dvi, channel, sa, nRead, toRead);
+                  for (int i = 0; i < sa.size(); i++) max = Math.max(max, sa.get(i).length());
+                  nRead += toRead;
+                }
               }
             }
             writer.write(
@@ -664,7 +674,7 @@ public class NcoJsonFiles extends TableWriterFileType {
         if (writeData) {
           writer.write("      \"data\":\n");
           for (int avi = 0; avi < nAV; avi++) writer.write("[ ");
-          try (DataInputStream dis = gdaa.getDataInputStream(dvi)) {
+          try (FileChannel channel = gdaa.openDataChannel(dvi)) {
 
             // create the bufferPA
             PrimitiveArray pa =
@@ -678,7 +688,7 @@ public class NcoJsonFiles extends TableWriterFileType {
 
               // String2.log(">> preCurrent=" + String2.toCSSVString(preCurrent));
               pa.clear();
-              pa.readDis(dis, 1);
+              GridDataAllAccessor.readDataChunk(dvi, channel, pa, nRowsRead, 1);
 
               // write one data value
               if (isChar) {

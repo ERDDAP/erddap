@@ -7,11 +7,16 @@ package com.cohort.array;
 
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.util.BufferedFileChannel;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -217,22 +222,27 @@ public class FloatArray extends PrimitiveArray {
     if (stopIndex < startIndex) return pa == null ? new FloatArray(new float[0]) : pa;
 
     final int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
-    FloatArray fa = null;
     if (pa == null) {
-      fa = new FloatArray(willFind, true);
-    } else {
-      fa = (FloatArray) pa;
+      return new PrimitiveView(this, startIndex, stride, willFind);
+    }
+    if (pa instanceof FloatArray fa) {
       fa.ensureCapacity(willFind);
       fa.size = willFind;
+      final float tar[] = fa.array;
+      if (stride == 1) {
+        System.arraycopy(array, startIndex, tar, 0, willFind);
+      } else {
+        int po = 0;
+        for (int i = startIndex; i <= stopIndex; i += stride) tar[po++] = array[i];
+      }
+      return fa;
     }
-    final float tar[] = fa.array;
-    if (stride == 1) {
-      System.arraycopy(array, startIndex, tar, 0, willFind);
-    } else {
-      int po = 0;
-      for (int i = startIndex; i <= stopIndex; i += stride) tar[po++] = array[i];
+    pa.clear();
+    pa.ensureCapacity(willFind);
+    for (int i = startIndex; i <= stopIndex; i += stride) {
+      pa.addFromPA(this, i, 1);
     }
-    return fa;
+    return pa;
   }
 
   /**
@@ -613,9 +623,7 @@ public class FloatArray extends PrimitiveArray {
       int newCapacity = (int) Math.min(Integer.MAX_VALUE - 1, array.length + (long) array.length);
       if (newCapacity < minCapacity) newCapacity = (int) minCapacity; // safe since checked above
       Math2.ensureMemoryAvailable(4L * newCapacity, "FloatArray");
-      final float[] newArray = new float[newCapacity];
-      System.arraycopy(array, 0, newArray, 0, size);
-      array = newArray; // do last to minimize concurrency problems
+      array = Arrays.copyOf(array, newCapacity); // do last to minimize concurrency problems
     }
   }
 
@@ -973,7 +981,8 @@ public class FloatArray extends PrimitiveArray {
   /** If size != capacity, this makes a new 'array' of size 'size' so capacity will equal size. */
   @Override
   public void trimToSize() {
-    array = toArray();
+    if (size == array.length) return;
+    array = Arrays.copyOf(array, size);
   }
 
   /**
@@ -1006,7 +1015,10 @@ public class FloatArray extends PrimitiveArray {
           + " value(s); the other has "
           + other.size()
           + " value(s).";
-    for (int i = 0; i < size; i++)
+    final int mismatchIdx = Arrays.mismatch(array, 0, size, other.array, 0, size);
+    if (mismatchIdx == -1 && maxIsMV == other.maxIsMV) return "";
+    final int startIdx = (maxIsMV == other.maxIsMV) ? mismatchIdx : 0;
+    for (int i = startIdx; i < size; i++)
       if (!Math2.equalsIncludingNanOrInfinite(array[i], other.array[i]))
         return "The two FloatArrays aren't equal: this["
             + i
@@ -1110,6 +1122,125 @@ public class FloatArray extends PrimitiveArray {
     for (int i = 0; i < size; i++)
       // this probably fails for some values since not all bit combos are valid floats
       array[i] = Float.intBitsToFloat(Integer.reverseBytes(Float.floatToIntBits(array[i])));
+  }
+
+  /**
+   * This writes the active elements (0 ... size-1) to a FileChannel using native byte order.
+   *
+   * @param channel the FileChannel
+   * @return the number of bytes written
+   * @throws Exception if trouble
+   */
+  @Override
+  public long writeToChannel(final BufferedFileChannel channel) throws Exception {
+    return writeToChannel(channel, 0, size);
+  }
+
+  @Override
+  public long writeToChannel(final BufferedFileChannel channel, final int offset, final int length)
+      throws Exception {
+    if (channel == null) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in FloatArray.writeToChannel: BufferedFileChannel is null.");
+    }
+    if (offset < 0) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in FloatArray.writeToChannel: offset (" + offset + ") < 0.");
+    }
+    if (length < 0) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in FloatArray.writeToChannel: length (" + length + ") < 0.");
+    }
+    if (offset + (long) length > size) {
+      throw new IllegalArgumentException(
+          String2.ERROR
+              + " in FloatArray.writeToChannel: offset + length ("
+              + (offset + (long) length)
+              + ") > size ("
+              + size
+              + ").");
+    }
+    if (length == 0) {
+      return 0L;
+    }
+    if (length == 0) return 0L;
+
+    final int bytesPerElement = 4;
+    final int CHUNK_BYTES = 64 * 1024;
+    final int CHUNK_ELEMENTS = Math.max(1, CHUNK_BYTES / bytesPerElement);
+    final ByteBuffer byteBuf =
+        ByteBuffer.allocate(CHUNK_ELEMENTS * bytesPerElement).order(ByteOrder.nativeOrder());
+    final java.nio.FloatBuffer floatBuf = byteBuf.asFloatBuffer();
+    long totalWritten = 0;
+    int remaining = length;
+    int currentOffset = offset;
+    while (remaining > 0) {
+      final int toWrite = Math.min(remaining, CHUNK_ELEMENTS);
+      byteBuf.clear();
+      floatBuf.clear();
+      floatBuf.put(array, currentOffset, toWrite);
+      byteBuf.limit(toWrite * bytesPerElement);
+      totalWritten += channel.write(byteBuf);
+      currentOffset += toWrite;
+      remaining -= toWrite;
+    }
+    return totalWritten;
+  }
+
+  /**
+   * This reads/adds n elements from a FileChannel using native byte order.
+   *
+   * @param channel the FileChannel
+   * @param n the number of elements to read
+   * @throws Exception if trouble
+   */
+  @Override
+  public void readFromChannel(final FileChannel channel, final int n) throws Exception {
+    if (channel == null) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in FloatArray.readFromChannel: FileChannel is null.");
+    }
+    if (n < 0) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in FloatArray.readFromChannel: n (" + n + ") < 0.");
+    }
+    if (n == 0) return;
+    ensureCapacity(size + (long) n);
+
+    final int bytesPerElement = 4;
+    final int CHUNK_BYTES = 64 * 1024;
+    final int CHUNK_ELEMENTS = Math.max(1, CHUNK_BYTES / bytesPerElement);
+    final ByteBuffer byteBuf =
+        ByteBuffer.allocate(CHUNK_ELEMENTS * bytesPerElement).order(ByteOrder.nativeOrder());
+
+    int remaining = n;
+    int destOffset = size;
+    while (remaining > 0) {
+      final int toRead = Math.min(remaining, CHUNK_ELEMENTS);
+      final int bytesToRead = toRead * bytesPerElement;
+      byteBuf.clear();
+      byteBuf.limit(bytesToRead);
+      int totalBytesRead = 0;
+      while (totalBytesRead < bytesToRead) {
+        final int read = channel.read(byteBuf);
+        if (read == -1) {
+          throw new EOFException(
+              String2.ERROR
+                  + " in FloatArray.readFromChannel: EOF reached after reading "
+                  + totalBytesRead
+                  + " of "
+                  + bytesToRead
+                  + " bytes.");
+        }
+        totalBytesRead += read;
+      }
+      byteBuf.position(0);
+      byteBuf.limit(bytesToRead);
+      byteBuf.asFloatBuffer().get(array, destOffset, toRead);
+      destOffset += toRead;
+      remaining -= toRead;
+    }
+    size += n;
   }
 
   /**

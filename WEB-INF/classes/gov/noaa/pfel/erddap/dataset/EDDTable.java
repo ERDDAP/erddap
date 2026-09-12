@@ -53,7 +53,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -3707,21 +3706,21 @@ public abstract class EDDTable extends EDD {
         int ncOffset = 0;
         int bufferSize = EDStatic.config.partialRequestMaxCells;
         PrimitiveArray pa = null;
-        try (DataInputStream dis = twawm.dataInputStream(col)) {
+        try (java.nio.channels.FileChannel channel = twawm.openColumnChannel(col)) {
           PAType colType = twawm.columnType(col);
           Array array;
 
           while (nToGo > 0) {
-            bufferSize = Math.min(nToGo, bufferSize); // actual number to be transferred
+            int nToRead = Math.min(nToGo, bufferSize); // actual number to be transferred
             // use of != below (not <) lets toObjectArray below return internal array since
             // size=capacity
             if (pa == null || pa.elementType() != twawm.columnType(col)) {
               pa = twawm.columnEmptyPA(col);
-              pa.ensureCapacity(bufferSize);
+              pa.ensureCapacity(nToRead);
             }
             pa.clear();
             pa.setMaxIsMV(twawm.columnMaxIsMV(col)); // reset it after clear()
-            pa.readDis(dis, bufferSize);
+            TableWriterAll.readColumnChunk(col, channel, pa, ncOffset, nToRead);
             if (debugMode)
               String2.log(
                   ">> col="
@@ -3730,8 +3729,8 @@ public abstract class EDDTable extends EDD {
                       + nToGo
                       + " ncOffset="
                       + ncOffset
-                      + " bufferSize="
-                      + bufferSize
+                      + " nToRead="
+                      + nToRead
                       + " pa.capacity="
                       + pa.capacity()
                       + " pa.size="
@@ -3744,7 +3743,7 @@ public abstract class EDDTable extends EDD {
               array =
                   Array.factory(
                       NcHelper.getNc3DataType(colType),
-                      new int[] {bufferSize},
+                      new int[] {nToRead},
                       tsa.toIso88591().toObjectArray());
               ncWriter.writeStringDataToChar(newVar, new int[] {ncOffset}, array);
 
@@ -3762,19 +3761,17 @@ public abstract class EDDTable extends EDD {
                 // pa is temporary, so ok to change chars
                 array =
                     Array.factory(
-                        DataType.CHAR, new int[] {bufferSize}, ca.toIso88591().toObjectArray());
+                        DataType.CHAR, new int[] {nToRead}, ca.toIso88591().toObjectArray());
               } else {
                 array =
                     Array.factory(
-                        NcHelper.getNc3DataType(colType),
-                        new int[] {bufferSize},
-                        pa.toObjectArray());
+                        NcHelper.getNc3DataType(colType), new int[] {nToRead}, pa.toObjectArray());
               }
               ncWriter.write(newVar, new int[] {ncOffset}, array);
             }
 
-            nToGo -= bufferSize;
-            ncOffset += bufferSize;
+            nToGo -= nToRead;
+            ncOffset += nToRead;
             // String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType ==
             // PAType.STRING));
           }
@@ -4198,7 +4195,6 @@ public abstract class EDDTable extends EDD {
         } else if (nodcMode) {
           // write nodc obsVar[feature][obs]
           int origin[] = {0, 0};
-          PrimitiveArray subsetPa = null;
           for (int feature = 0; feature < nFeatures; feature++) {
             // write the data for this feature
             origin[0] = feature;
@@ -4206,7 +4202,7 @@ public abstract class EDDTable extends EDD {
             int firstRow = featureFirstRow.get(feature);
             int tNRows = featureNRows.get(feature);
             int stopRow = firstRow + tNRows - 1;
-            subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
+            PrimitiveArray subsetPa = pa.subset(firstRow, 1, stopRow);
             NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tNRows}, subsetPa);
 
             // and write missing values
@@ -4215,12 +4211,20 @@ public abstract class EDDTable extends EDD {
               // String2.log("  writeMVs: feature=" + feature + " origin[1]=" + origin[1] +
               //  " tNRows=" + tNRows + " maxFeatureNRows=" + maxFeatureNRows);
               tNRows = maxFeatureNRows - tNRows;
-              subsetPa.clear();
               // if (tEdv.destinationDataPAType() == PAType.LONG)
               //    subsetPa.addNStrings(tNRows, "" + tSafeMV);
               // else
-              if (subsetPa instanceof StringArray) subsetPa.addNStrings(tNRows, "");
-              else subsetPa.addNDoubles(tNRows, tSafeMV);
+              // subsetPa is a PrimitiveView, so add elements will materialize the view
+              // previously the subsetPa was cleared just above here, so rather than clear
+              // and then cause it to materialize, we just make a proper PrimitiveArray.
+
+              if (subsetPa.elementType() == PAType.STRING) {
+                subsetPa = new StringArray();
+                subsetPa.addNStrings(tNRows, "");
+              } else {
+                subsetPa = PrimitiveArray.factory(subsetPa.elementType(), tNRows, false);
+                subsetPa.addNDoubles(tNRows, tSafeMV);
+              }
               NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tNRows}, subsetPa);
             }
           }
@@ -4670,7 +4674,6 @@ public abstract class EDDTable extends EDD {
             int origin[] = new int[2];
             int firstRow;
             int lastRow = -1;
-            PrimitiveArray tpa = null;
             for (int feature = 0; feature < nFeatures; feature++) {
               // write data
               origin[0] = feature;
@@ -4678,7 +4681,7 @@ public abstract class EDDTable extends EDD {
               int tnProfiles = nProfilesPerFeature.get(feature);
               firstRow = lastRow + 1;
               lastRow = firstRow + tnProfiles - 1;
-              tpa = pa.subset(tpa, firstRow, 1, lastRow);
+              PrimitiveArray tpa = pa.subset(firstRow, 1, lastRow);
               NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tnProfiles}, tpa);
 
               // write fill values
@@ -4726,7 +4729,7 @@ public abstract class EDDTable extends EDD {
             int firstRow = profileFirstObsRow.get(profile);
             int tNRows = nObsPerProfile.get(profile);
             int stopRow = firstRow + tNRows - 1;
-            subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
+            subsetPa = pa.subset(firstRow, 1, stopRow);
             shape[2] = tNRows;
             NcHelper.write(nc3Mode, ncWriter, newVar, origin, shape, subsetPa);
           }
