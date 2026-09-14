@@ -715,37 +715,33 @@ public class Table {
   }
 
   /**
-   * This makes a deep clone of the current table (data and attributes).
-   *
-   * @param startRow
-   * @param stride
-   * @param endRow (inclusive) e.g., nRows()-1
-   * @return a new Table.
-   */
-  public Table subset(int startRow, int stride, int endRow) {
-    Table tTable = new Table();
-
-    int n = columns.size();
-    for (int i = 0; i < n; i++) tTable.columns.add(columns.get(i).subset(startRow, stride, endRow));
-
-    tTable.columnNames = (StringArray) columnNames.clone();
-
-    tTable.globalAttributes = (Attributes) globalAttributes.clone();
-
-    for (int col = 0; col < columnAttributes.size(); col++)
-      tTable.columnAttributes.add((Attributes) columnAttributes.get(col).clone());
-
-    return tTable;
-  }
-
-  /**
    * This makes a deep clone of the entire current table (data and attributes).
    *
    * @return a new Table.
    */
   @Override
-  public Object clone() {
-    return subset(0, 1, nRows() - 1);
+  public Table clone() {
+    Table t2 = new Table();
+
+    // 1. Deep copy global attributes
+    if (this.globalAttributes != null) {
+      t2.globalAttributes = (Attributes) this.globalAttributes.clone();
+    }
+
+    // 2. Deep copy column names, attributes, and primitive arrays
+    int nCols = this.nColumns();
+    for (int c = 0; c < nCols; c++) {
+      String colName = this.getColumnName(c);
+      PrimitiveArray paClone = (PrimitiveArray) this.getColumn(c).clone();
+
+      t2.addColumn(colName, paClone);
+    }
+
+    for (int col = 0; col < columnAttributes.size(); col++) {
+      t2.columnAttributes.add((Attributes) columnAttributes.get(col).clone());
+    }
+
+    return t2;
   }
 
   /**
@@ -3894,18 +3890,21 @@ public class Table {
     for (int col = 0; col < nCols; col++) {
       String s = tTable.getColumnName(col);
       if (String2.indexOf(doubleColumns, s) >= 0)
-        tTable.setColumn(col, new DoubleArray(tTable.getColumn(col)));
+        tTable.setColumn(col, PrimitiveArray.factory(PAType.DOUBLE, tTable.getColumn(col)));
       if (String2.indexOf(intColumns, s) >= 0)
-        tTable.setColumn(col, new IntArray(tTable.getColumn(col)));
+        tTable.setColumn(col, PrimitiveArray.factory(PAType.INT, tTable.getColumn(col)));
     }
 
     // create and add x,y,z,t,id columns    (numeric cols forced to be doubles)
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(0), new DoubleArray(tTable.findColumn("Longitude")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(0),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Longitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(1), new DoubleArray(tTable.findColumn("Latitude")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(1),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Latitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(2), new DoubleArray(tTable.findColumn("Minimumdepth")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(2),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Minimumdepth")));
     DoubleArray tPA = new DoubleArray(nRows, false);
     addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(3), tPA);
     StringArray idPA = new StringArray(nRows, false);
@@ -5182,15 +5181,15 @@ public class Table {
 
       } else if (pa instanceof UByteArray ua) {
         atts.remove(name);
-        atts.set("_encodedUByteArray_" + name, new ByteArray(ua.toArray()));
+        atts.set("_encodedUByteArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof UShortArray ua) {
         atts.remove(name);
-        atts.set("_encodedUShortArray_" + name, new ShortArray(ua.toArray()));
+        atts.set("_encodedUShortArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof UIntArray ua) {
         atts.remove(name);
-        atts.set("_encodedUIntArray_" + name, new IntArray(ua.toArray()));
+        atts.set("_encodedUIntArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof LongArray) {
         atts.remove(name);
@@ -5222,15 +5221,15 @@ public class Table {
 
         } else if (paType == PAType.BYTE && name.startsWith("_encodedUByteArray_")) {
           atts.remove(name);
-          atts.set(name.substring(19), new UByteArray(((ByteArray) pa).toArray()));
+          atts.set(name.substring(19), pa.makeUnsignedPA());
 
         } else if (paType == PAType.SHORT && name.startsWith("_encodedUShortArray_")) {
           atts.remove(name);
-          atts.set(name.substring(20), new UShortArray(((ShortArray) pa).toArray()));
+          atts.set(name.substring(20), pa.makeUnsignedPA());
 
         } else if (paType == PAType.INT && name.startsWith("_encodedUIntArray_")) {
           atts.remove(name);
-          atts.set(name.substring(18), new UIntArray(((IntArray) pa).toArray()));
+          atts.set(name.substring(18), pa.makeUnsignedPA());
 
         } else if (paType == PAType.STRING && name.startsWith("_encodedLongArray_")) {
           atts.remove(name);
@@ -8710,11 +8709,10 @@ public class Table {
                 rowSizesPA, "No row_size info for dim=" + dimName + " for var=" + vNames[v]);
             PrimitiveArray varPA = NcHelper.getPrimitiveArray(var);
             StringArray newPA = new StringArray(outerDimSize, false);
-            PrimitiveArray tSubset = null;
             int thisPo = 0;
             for (int outer = 0; outer < outerDimSize; outer++) {
               int thisChunkSize = rowSizesPA.getInt(outer);
-              tSubset = varPA.subset(tSubset, thisPo, 1, thisPo + thisChunkSize - 1);
+              PrimitiveArray tSubset = varPA.subset(thisPo, 1, thisPo + thisChunkSize - 1);
               // usually just 0 or 1 pi's, gld has more
               String tts = String2.toSVString(tSubset.toStringArray(), "/", false);
               newPA.add(tts);
@@ -8901,7 +8899,6 @@ public class Table {
         PrimitiveArray newPA = PrimitiveArray.factory(varPATypes[v], nActiveInnerRows, false);
 
         int thisPo = 0;
-        PrimitiveArray tSubset = null;
         for (int outer = 0; outer < outerDimSize; outer++) {
           int largestChunkSize = largestRowSizes.getInt(outer);
           int thisChunkSize = rowSizesPA.getInt(outer);
@@ -8919,12 +8916,12 @@ public class Table {
 
           } else if (thisChunkSize == largestChunkSize) {
             // copy values into newPA
-            tSubset = varPA.subset(tSubset, thisPo, 1, thisPo + thisChunkSize - 1);
+            // This used to use a single subset object for the loop, but with the new PrimitiveView
+            // implementation I think it's better to use views and not a full PrimitiveArray.
+            // If we truly want to optimize this we could add support for appendSubset() to
+            // PrimitiveArray.
+            PrimitiveArray tSubset = varPA.subset(thisPo, 1, thisPo + thisChunkSize - 1);
             newPA.append(tSubset);
-
-            // only need to do once, but not extant till here
-            tSubset.clear(); // speeds up ensureCapacity
-            tSubset.ensureCapacity(largestLargestChunkSize);
 
           } else {
             throw new RuntimeException(
@@ -11717,7 +11714,7 @@ public class Table {
                   + " because it is not a numeric data type.");
         }
 
-        DoubleArray roundedArray = new DoubleArray(srcColumn);
+        PrimitiveArray roundedArray = PrimitiveArray.factory(PAType.DOUBLE, srcColumn);
         if (targetColNumber < 0) {
           targetColNumber = this.addColumn(keyColumnName, roundedArray);
           tempOrderByCols.addFirst(targetColNumber);

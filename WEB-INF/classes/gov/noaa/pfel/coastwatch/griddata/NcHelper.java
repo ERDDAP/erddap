@@ -385,7 +385,8 @@ public class NcHelper {
         // String2.log("***getAttribute string=\"" + ts + "\"");
         return new Attribute(name, ts);
       } else {
-        String s = ((StringArray) pa).toNewlineString();
+        StringArray sa = pa instanceof StringArray tsa ? tsa : new StringArray(pa);
+        String s = sa.toNewlineString();
         return new Attribute(name, s.length() == 0 ? "" : s.substring(0, s.length() - 1));
       }
     }
@@ -561,6 +562,9 @@ public class NcHelper {
     if (buildStringsFromChars && nc2Array instanceof ArrayChar na) {
       ArrayObject ao = na.make1DStringArray();
       Object[] oa = (Object[]) ao.copyTo1DJavaArray();
+      if (oa instanceof String[] sa) {
+        return new StringArray(sa);
+      }
       StringArray sa = new StringArray(oa.length, false);
       for (Object o : oa) sa.add(o == null ? null : String2.trimEnd(o.toString()));
       return sa;
@@ -572,8 +576,7 @@ public class NcHelper {
       int n = boolAr.length;
       byte byteAr[] = new byte[n];
       for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
-      return PrimitiveArray.factory(
-          byteAr, false); // never unsigned (not needed, and unsigned is often trouble)
+      return new com.cohort.array.ByteArray(byteAr);
     }
 
     // ArrayXxxnumeric
@@ -1886,11 +1889,20 @@ public class NcHelper {
     if (paType == PAType.CHAR) {
       // netcdf-java 3 & 4 just write 1 byte chars
       // (but nc4 will writes strings as utf-8 encoded
-      pa = new CharArray(pa).toIso88591();
+      if (pa instanceof CharArray tca) {
+        pa = tca.toIso88591();
+      } else {
+        pa = new CharArray(pa).toIso88591();
+      }
     } else if (nc3Mode) {
       if (paType == PAType.LONG || paType == PAType.ULONG) pa = new DoubleArray(pa);
-      else if (paType == PAType.STRING)
-        pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
+      else if (paType == PAType.STRING) {
+        if (pa instanceof StringArray tsa) {
+          pa = tsa.toIso88591(); // netcdf-java 3 just writes low byte
+        } else {
+          pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
+        }
+      }
     }
 
     if (nc3Mode && paType == PAType.STRING) {
@@ -1995,14 +2007,15 @@ public class NcHelper {
         tpas[var] = pas[var];
         if (tpas[var].elementType() == PAType.CHAR) {
           // nc 'char' is 1 byte!  So store java char (2 bytes) as shorts.
-          tpas[var] = new ShortArray(((CharArray) pas[var]).toArray());
+          CharArray ca = pas[var] instanceof CharArray tca ? tca : new CharArray(pas[var]);
+          tpas[var] = new ShortArray(ca.toArray());
         } else if (tpas[var].elementType() == PAType.LONG
             || tpas[var].elementType() == PAType.ULONG) {
           // these will always be decoded by fromJson as-is; no need to encode with toJson
           tpas[var] = new StringArray(pas[var]);
         } else if (tpas[var].elementType() == PAType.STRING) {
           // .nc strings only support characters 1..255, so encode as Json strings
-          StringArray oldSa = (StringArray) pas[var];
+          StringArray oldSa = pas[var] instanceof StringArray tsa ? tsa : new StringArray(pas[var]);
           int tSize = oldSa.size();
           StringArray newSa = new StringArray(tSize, false);
           tpas[var] = newSa;

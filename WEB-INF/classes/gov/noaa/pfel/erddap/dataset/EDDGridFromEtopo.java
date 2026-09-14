@@ -307,16 +307,14 @@ public class EDDGridFromEtopo extends EDDGrid {
     // I verified this interpretation with Lynn.
 
     long eTime = System.currentTimeMillis();
-    DoubleArray lats =
-        (DoubleArray)
-            axisVariables[0]
-                .sourceValues()
-                .subset(tConstraints.get(0), tConstraints.get(1), tConstraints.get(2));
-    DoubleArray lons =
-        (DoubleArray)
-            axisVariables[1]
-                .sourceValues()
-                .subset(tConstraints.get(3), tConstraints.get(4), tConstraints.get(5));
+    PrimitiveArray lats =
+        axisVariables[0]
+            .sourceValues()
+            .subset(tConstraints.get(0), tConstraints.get(1), tConstraints.get(2));
+    PrimitiveArray lons =
+        axisVariables[1]
+            .sourceValues()
+            .subset(tConstraints.get(3), tConstraints.get(4), tConstraints.get(5));
     int nLats = lats.size();
     int nLons = lons.size();
     int nLatsLons = nLats * nLons;
@@ -443,7 +441,8 @@ public class EDDGridFromEtopo extends EDDGrid {
    * @param lats the desired lats
    * @param data will receive the results.
    */
-  public void rawGetSourceData(DoubleArray lons, DoubleArray lats, short data[]) throws Throwable {
+  public void rawGetSourceData(PrimitiveArray lons, PrimitiveArray lats, short data[])
+      throws Throwable {
 
     // Currently ETOPO1
     // etopo1_ice_g_i2.bin (grid centered, LSB 16 bit signed integers)
@@ -460,7 +459,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     // find the offsets for the start of the rows for the resulting lon values
     int lonOffsets[] = new int[nLons];
     for (int i = 0; i < nLons; i++) {
-      double tLon = lons.get(i);
+      double tLon = lons.getDouble(i);
       while (tLon < fileMinLon) tLon += 360;
       while (tLon > fileMaxLon) tLon -= 360;
       // findClosest since may differ by roundoff error
@@ -475,7 +474,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     // find the offsets for the start of the columns closest to the desiredLon values
     int latOffsets[] = new int[nLats];
     for (int i = 0; i < nLats; i++) {
-      double tLat = lats.get(i);
+      double tLat = lats.getDouble(i);
       while (tLat < fileMinLat) tLat += 90;
       while (tLat > fileMaxLat) tLat -= 90;
       int closestLat =

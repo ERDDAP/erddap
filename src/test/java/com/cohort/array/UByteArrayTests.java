@@ -416,7 +416,7 @@ class UByteArrayTests {
     PrimitiveArray ss = anArray.subset(1, 3, 4);
     Test.ensureEqual(ss.toString(), "5, 19", "");
     ss = anArray.subset(0, 1, 0);
-    Test.ensureEqual(ss.getClass().getName(), "com.cohort.array.UByteArray", "");
+    Test.ensureEqual(ss.getClass().getName(), "com.cohort.array.PrimitiveView", "");
     Test.ensureEqual(ss.toString(), "25", "");
     ss = anArray.subset(0, 1, -1);
     Test.ensureEqual(ss.toString(), "", "");
