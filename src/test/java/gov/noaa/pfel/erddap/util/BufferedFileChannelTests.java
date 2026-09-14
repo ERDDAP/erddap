@@ -54,7 +54,7 @@ public class BufferedFileChannelTests {
   @Test
   void testWriteLargeDirect(@TempDir Path tempDir) throws Exception {
     Path file = tempDir.resolve("test_large.bin");
-    int size = 16384; // 16 KB > 8 KB
+    int size = 1024 * 80; // 80 KB > 64 KB
     try (FileChannel fc =
             FileChannel.open(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         BufferedFileChannel bfc = new BufferedFileChannel(fc)) {
@@ -97,7 +97,7 @@ public class BufferedFileChannelTests {
   void testWriteByteArraySmallAndLarge(@TempDir Path tempDir) throws Exception {
     Path file = tempDir.resolve("test_byte_array.bin");
     byte[] dataSmall = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
-    byte[] dataLarge = new byte[10000]; // 10 KB > 8 KB
+    byte[] dataLarge = new byte[1024 * 80]; // 80 KB > 64 KB
     for (int i = 0; i < dataLarge.length; i++) {
       dataLarge[i] = (byte) (i & 0xFF);
     }

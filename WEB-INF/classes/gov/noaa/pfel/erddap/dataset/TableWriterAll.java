@@ -228,6 +228,7 @@ public class TableWriterAll extends TableWriter {
       }
       DataInputStream dis = new DataInputStream(java.nio.channels.Channels.newInputStream(channel));
       try {
+        sa.ensureCapacity(sa.size() + maxRows);
         for (int i = 0; i < maxRows; i++) {
           sa.add(dis.readUTF());
         }

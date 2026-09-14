@@ -150,7 +150,7 @@ public class StringArray extends PrimitiveArray {
     array = new String[capacity];
     if (active) {
       size = capacity;
-      for (int i = 0; i < size; i++) array[i] = "";
+      Arrays.fill(array, 0, size, "");
     }
   }
 
@@ -1685,7 +1685,7 @@ public class StringArray extends PrimitiveArray {
 
     long bytesWritten = 0;
     final int CHUNK_SIZE = 65536; // 64 KB heap buffer for UTF string batching
-    final ByteBuffer byteBuf = ByteBuffer.allocate(CHUNK_SIZE);
+    final ByteBuffer byteBuf = getCleanIoBuffer();
 
     for (int i = offset; i < offset + length; i++) {
       String s = get(i);
@@ -1723,7 +1723,7 @@ public class StringArray extends PrimitiveArray {
       }
 
       if (totalStringBytes > CHUNK_SIZE) {
-        final ByteBuffer largeBuf = ByteBuffer.allocate(totalStringBytes);
+        final ByteBuffer largeBuf = getCleanIoBuffer();
         largeBuf.putShort((short) utfLen);
         writeUtfBytes(s, largeBuf);
         largeBuf.flip();

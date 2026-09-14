@@ -17,7 +17,8 @@ import java.nio.channels.FileChannel;
  */
 public class BufferedFileChannel implements AutoCloseable {
 
-  public static final int BUFFER_SIZE = 8192;
+  public static final int BUFFER_SIZE = 65536; // 64 KB
+  private static final int PASSTHROUGH_THRESHOLD = 8 * 1024; // 8 KB
 
   private final FileChannel channel;
   private final ByteBuffer buffer;
@@ -69,7 +70,7 @@ public class BufferedFileChannel implements AutoCloseable {
     }
 
     // If source is large, flush pending buffer first, then write source directly
-    if (src.remaining() >= BUFFER_SIZE) {
+    if (src.remaining() >= PASSTHROUGH_THRESHOLD) {
       flush();
       while (src.hasRemaining()) {
         channel.write(src);

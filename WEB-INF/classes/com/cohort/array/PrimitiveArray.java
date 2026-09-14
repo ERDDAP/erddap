@@ -14,6 +14,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.sql.Types;
 import java.text.MessageFormat;
@@ -1779,6 +1781,20 @@ public abstract class PrimitiveArray {
    * little-endian source.
    */
   public abstract void reverseBytes();
+
+  public static final int IO_BYTES = 65536; // 64 KB
+
+  protected static final ThreadLocal<ByteBuffer> IO_BUFFER =
+      ThreadLocal.withInitial(
+          () ->
+              ByteBuffer.allocateDirect(IO_BYTES).order(ByteOrder.BIG_ENDIAN)); // always big-endian
+
+  /** Returns a clean, thread-local off-heap ByteBuffer with position=0 and limit=capacity. */
+  protected static ByteBuffer getCleanIoBuffer() {
+    ByteBuffer buf = IO_BUFFER.get();
+    buf.clear(); // Always resets position to 0 and limit to capacity (65536)
+    return buf;
+  }
 
   /**
    * This writes all elements to a BufferedFileChannel using native byte order.

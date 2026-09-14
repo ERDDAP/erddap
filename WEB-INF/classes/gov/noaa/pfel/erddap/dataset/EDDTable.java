@@ -4219,8 +4219,7 @@ public abstract class EDDTable extends EDD {
               // and then cause it to materialize, we just make a proper PrimitiveArray.
 
               if (subsetPa.elementType() == PAType.STRING) {
-                subsetPa = new StringArray();
-                subsetPa.addNStrings(tNRows, "");
+                subsetPa = new StringArray(tNRows, true); // true->fills with ""
               } else {
                 subsetPa = PrimitiveArray.factory(subsetPa.elementType(), tNRows, false);
                 subsetPa.addNDoubles(tNRows, tSafeMV);

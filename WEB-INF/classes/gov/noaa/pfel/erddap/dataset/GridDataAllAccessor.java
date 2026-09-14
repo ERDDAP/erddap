@@ -114,6 +114,7 @@ public class GridDataAllAccessor implements AutoCloseable {
       }
       DataInputStream dis = new DataInputStream(java.nio.channels.Channels.newInputStream(channel));
       try {
+        sa.ensureCapacity(sa.size() + maxElements);
         for (int i = 0; i < maxElements; i++) {
           sa.add(dis.readUTF());
         }

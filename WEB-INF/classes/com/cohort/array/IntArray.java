@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -1274,8 +1273,7 @@ public class IntArray extends PrimitiveArray {
     final int bytesPerElement = 4;
     final int CHUNK_BYTES = 64 * 1024;
     final int CHUNK_ELEMENTS = Math.max(1, CHUNK_BYTES / bytesPerElement);
-    final ByteBuffer byteBuf =
-        ByteBuffer.allocate(CHUNK_ELEMENTS * bytesPerElement).order(ByteOrder.nativeOrder());
+    final ByteBuffer byteBuf = getCleanIoBuffer();
     final java.nio.IntBuffer intBuf = byteBuf.asIntBuffer();
 
     long totalWritten = 0;
@@ -1317,8 +1315,7 @@ public class IntArray extends PrimitiveArray {
     final int bytesPerElement = 4;
     final int CHUNK_BYTES = 64 * 1024;
     final int CHUNK_ELEMENTS = Math.max(1, CHUNK_BYTES / bytesPerElement);
-    final ByteBuffer byteBuf =
-        ByteBuffer.allocate(CHUNK_ELEMENTS * bytesPerElement).order(ByteOrder.nativeOrder());
+    final ByteBuffer byteBuf = getCleanIoBuffer();
 
     int remaining = n;
     int destOffset = size;
