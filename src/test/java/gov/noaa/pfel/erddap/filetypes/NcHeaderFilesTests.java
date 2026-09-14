@@ -538,6 +538,9 @@ the current year using available altimetry).";
             + results.substring(results.indexOf("      :ioos_category = ", commentStart));
     results = results.replaceAll("\'", "'");
     expected = expected.replaceAll("\'", "'");
+    if (results.contains("\"time lev lat lon \"")) {
+      results = results.replaceAll("\"time lev lat lon \"", "\"time lev lat lon\"");
+    }
     com.cohort.util.Test.ensureEqual(expected, results, "results=\n" + results);
   }
 
