@@ -22,6 +22,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
@@ -1585,19 +1587,37 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static String directReadFromFile(String fileName, String charset) throws Exception {
+    String bro[] = String2.parseAwsS3Url(fileName);
+    String ext = getExtension(fileName);
 
-    // declare the BufferedReader variable
-    // declare the results variable: String results[] = {"", ""};
-    // BufferedReader and results are declared outside try/catch so
-    // that they can be accessed from within either try/catch block.
+    // Modern NIO fast-path for uncompressed local files
+    if (bro == null && !isDecompressible(ext)) {
+      Path path = Paths.get(fileName);
+      Charset cs =
+          String2.isSomething(charset) ? Charset.forName(charset) : StandardCharsets.ISO_8859_1;
+
+      try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
+        long size = channel.size();
+        if (size > Integer.MAX_VALUE - 8) {
+          throw new IllegalArgumentException("File size exceeds maximum string capacity: " + size);
+        }
+
+        int fileSize = (int) size;
+        ByteBuffer buffer = ByteBuffer.allocateDirect(fileSize);
+        while (buffer.hasRemaining()) {
+          if (channel.read(buffer) == -1) break;
+        }
+        buffer.flip();
+        return cs.decode(buffer).toString();
+      }
+    }
+
+    // Fallback for compressed archives and AWS S3 objects
     try (BufferedReader br = getDecompressedBufferedFileReader(fileName, charset)) {
       StringBuilder sb = new StringBuilder(8192);
-
-      // get the text from the file
       char buffer[] = new char[8192];
       int nRead;
-      while ((nRead = br.read(buffer)) >= 0) // -1 = end-of-file
-      sb.append(buffer, 0, nRead);
+      while ((nRead = br.read(buffer)) >= 0) sb.append(buffer, 0, nRead);
       return sb.toString();
     }
   }
@@ -1997,8 +2017,29 @@ public class File2 {
    * @throws Exception if trouble
    */
   public static String hexDump(String fullFileName, int nBytes) throws Exception {
+    String bro[] = String2.parseAwsS3Url(fullFileName);
+    String ext = getExtension(fullFileName);
+
+    if (bro == null && !isDecompressible(ext)) {
+      Path path = Paths.get(fullFileName);
+      try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
+        int bytesToRead = Math.min(nBytes, (int) Math.min(channel.size(), Integer.MAX_VALUE));
+        ByteBuffer buffer = ByteBuffer.allocateDirect(bytesToRead);
+
+        while (buffer.hasRemaining()) {
+          if (channel.read(buffer) == -1) break;
+        }
+        buffer.flip();
+
+        byte ba[] = new byte[buffer.remaining()];
+        buffer.get(ba);
+        return String2.hexDump(ba);
+      }
+    }
+
+    // Fallback for compressed or S3 files
     try (InputStream fis = getDecompressedBufferedInputStream(fullFileName)) {
-      nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName))); // max 2GB
+      nBytes = Math.min(nBytes, Math2.narrowToInt(length(fullFileName)));
       byte ba[] = new byte[nBytes];
       int bytesRead = 0;
       while (bytesRead < nBytes) bytesRead += fis.read(ba, bytesRead, nBytes - bytesRead);
@@ -2053,7 +2094,7 @@ public class File2 {
 
     if (source.equals(destination)) return false;
 
-    // make dir
+    // Ensure target directory exists
     try {
       File dir = new File(getDirectory(destination));
       if (!dir.isDirectory()) dir.mkdirs();
@@ -2062,7 +2103,42 @@ public class File2 {
       return false;
     }
 
-    // regular file
+    String sourceBro[] = String2.parseAwsS3Url(source);
+    String destBro[] = String2.parseAwsS3Url(destination);
+
+    // Fast-path zero-copy OS kernel transfer for uncompressed local files
+    if (sourceBro == null && destBro == null && !isDecompressible(getExtension(source))) {
+      Path sourcePath = Paths.get(source);
+      Path destPath = Paths.get(destination);
+
+      try (FileChannel srcChannel = FileChannel.open(sourcePath, StandardOpenOption.READ);
+          FileChannel destChannel =
+              FileChannel.open(
+                  destPath,
+                  StandardOpenOption.CREATE,
+                  StandardOpenOption.WRITE,
+                  StandardOpenOption.TRUNCATE_EXISTING)) {
+
+        long fileSize = srcChannel.size();
+        long start = Math.max(0, first);
+        long count = (last < 0) ? (fileSize - start) : (last - start + 1);
+        if (count < 0) count = 0;
+
+        long transferred = 0;
+        while (transferred < count) {
+          long bytes = srcChannel.transferTo(start + transferred, count - transferred, destChannel);
+          if (bytes <= 0) break;
+          transferred += bytes;
+        }
+        return true;
+      } catch (Exception e) {
+        String2.log(String2.ERROR + " in File2.copy (FileChannel) source=" + source + "\n" + e);
+        delete(destination);
+        return false;
+      }
+    }
+
+    // Fallback for S3 URLs or compressed streams
     OutputStream out = null;
     boolean success = false;
     try {
