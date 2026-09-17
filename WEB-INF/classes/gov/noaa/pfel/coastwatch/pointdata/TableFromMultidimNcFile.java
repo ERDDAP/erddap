@@ -70,11 +70,12 @@ public class TableFromMultidimNcFile {
     }
 
     private static VarData fromVariableIfDimsMatch(
-        TableFromMultidimNcFile tableMultidim, Variable tVar, VarData other, int nd0)
+        TableFromMultidimNcFile tableMultidim, int v, Variable tVar, VarData other, int nd0)
         throws Exception {
-      int index = tableMultidim.loadVarNames.indexOf(tVar.getFullName());
-      if (index > -1 && tableMultidim.cachedVarData[index] != null) {
-        VarData data = tableMultidim.cachedVarData[index];
+      if (v >= 0
+          && v < tableMultidim.cachedVarData.length
+          && tableMultidim.cachedVarData[v] != null) {
+        VarData data = tableMultidim.cachedVarData[v];
         if (!tableMultidim.doDimsMatch(nd0, data.nDims, data.dims, other.nDims, other.dims)) {
           return null;
         }
@@ -87,23 +88,24 @@ public class TableFromMultidimNcFile {
         return null;
       }
       data.loadArrayAndAttributes(tableMultidim, tVar);
-      if (index > -1) {
-        tableMultidim.cachedVarData[index] = data;
+      if (v >= 0 && v < tableMultidim.cachedVarData.length) {
+        tableMultidim.cachedVarData[v] = data;
       }
       return data;
     }
 
-    private static VarData fromVariable(TableFromMultidimNcFile tableMultidim, Variable tVar)
+    private static VarData fromVariable(TableFromMultidimNcFile tableMultidim, int v, Variable tVar)
         throws Exception {
-      int index = tableMultidim.loadVarNames.indexOf(tVar.getFullName());
-      if (index > -1 && tableMultidim.cachedVarData[index] != null) {
-        return tableMultidim.cachedVarData[index];
+      if (v >= 0
+          && v < tableMultidim.cachedVarData.length
+          && tableMultidim.cachedVarData[v] != null) {
+        return tableMultidim.cachedVarData[v];
       }
       VarData data = new VarData();
       data.loadDims(tableMultidim, tVar);
       data.loadArrayAndAttributes(tableMultidim, tVar);
-      if (index > -1) {
-        tableMultidim.cachedVarData[index] = data;
+      if (v >= 0 && v < tableMultidim.cachedVarData.length) {
+        tableMultidim.cachedVarData[v] = data;
       }
       return data;
     }
@@ -281,38 +283,36 @@ public class TableFromMultidimNcFile {
       VarData firstVar = null;
       for (int v = 0; v < nLoadVars; v++) {
         Variable tVar = loadVars.get(v);
-        VarData candidate = new VarData();
-        candidate.loadDims(this, tVar);
+
+        // Reuse existing cached instance if present; otherwise check dimensions lazily
+        VarData candidate = cachedVarData[v];
+        if (candidate == null) {
+          candidate = new VarData();
+          candidate.loadDims(this, tVar);
+        }
+
         if (candidate.nDims != loadDims.size()) {
           continue;
         }
+
+        // Matching dimensions found: ensure array data is loaded
         firstVar = candidate;
+        if (firstVar.pa == null) {
+          firstVar.loadArrayAndAttributes(this, tVar);
+          cachedVarData[v] = firstVar;
+        }
+
         if (this.table.nColumns() == 0) {
-          // first var with all dims: set loadDims to be in that order
           for (int d = 0; d < firstVar.nDims; d++) {
             Dimension dim = firstVar.dims.get(d);
             dim = convertDimension(nd0, dim);
-            loadDims.set(d, dim); // perhaps change loadDims to different order
+            loadDims.set(d, dim);
             loadDimNames.set(d, dim.getName());
             shape[d] = dim.getLength();
-            if (shape[d] == 0) {
-              // if (verbose) String2.log(warningInMethod +
-              // "Returning an empty table because dim=" + dim.getName() +
-              // "'s length=0! " +
-              // "time=" + (System.currentTimeMillis() - time));
-              return;
-            }
+            if (shape[d] == 0) return;
           }
         }
-        if (cachedVarData[v] != null) {
-          firstVar = cachedVarData[v];
-        } else {
-          // yes, load this var, it has all of the dimensions in the expected order
-          firstVar.loadArrayAndAttributes(this, tVar);
-          // knownPAs[v] = null;
-          // knownAtts[v] = null;
-          cachedVarData[v] = firstVar;
-        }
+
         addColumnToTable(getMetadata, loaded, firstVar, v, tVar, this.table);
         break;
       }
@@ -390,6 +390,10 @@ public class TableFromMultidimNcFile {
           // order
           // don't use knownPAs here: different vars and different v's.
           data.loadArrayAndAttributes(this, tVar);
+          int index = loadVarNames.indexOf(tVar.getFullName());
+          if (index > -1) {
+            cachedVarData[index] = data;
+          }
           this.table.addColumn(this.table.nColumns(), tVar.getFullName(), data.pa, data.atts);
         }
 
@@ -552,7 +556,7 @@ public class TableFromMultidimNcFile {
             continue;
           }
           Variable tVar = loadVars.get(v);
-          VarData data = VarData.fromVariable(this, tVar);
+          VarData data = VarData.fromVariable(this, v, tVar);
           addVarAndIndicies(
               nd0, loadDims, loaded, allIndicesTable, lut, getMetadata, data, v, tVar);
           loadDimMatchedVars(nd0, loadVars, nLoadVars, loaded, lut, data, getMetadata);
@@ -692,7 +696,7 @@ public class TableFromMultidimNcFile {
       // look for an unloaded var (and other vars with same dimensions)
       Variable tVar = loadVars.get(v);
 
-      varData = VarData.fromVariable(this, tVar);
+      varData = VarData.fromVariable(this, v, tVar);
 
       addVarAndIndicies(nd0, loadDims, loaded, allIndicesTable, lut, getMetadata, varData, v, tVar);
       return varData;
@@ -764,7 +768,7 @@ public class TableFromMultidimNcFile {
 
       // look for an unloaded var (and other vars with same dimensions)
       Variable tVar = loadVars.get(v);
-      VarData data = VarData.fromVariableIfDimsMatch(this, tVar, matchDims, nd0);
+      VarData data = VarData.fromVariableIfDimsMatch(this, v, tVar, matchDims, nd0);
       if (data == null) {
         continue;
       }
