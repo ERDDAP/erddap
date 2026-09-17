@@ -9929,8 +9929,7 @@ public class Table {
               + ", so lookUpTable has no related information.");
     if (mvKey == null) mvKey = "";
     long time = System.currentTimeMillis();
-    Tally notMatchedTally = null;
-    if (debugMode) notMatchedTally = new Tally();
+    Tally notMatchedTally = debugMode ? new Tally() : null;
 
     // gather keyPA's
     PrimitiveArray keyPA[] = new PrimitiveArray[nKeys];
@@ -9943,11 +9942,22 @@ public class Table {
     // make hashtable of keys->Integer.valueOf(row#) in lookUpTable
     // so join is fast with any number of rows in lookUpTable
     int lutNRows = lutKeyPA[0].size();
-    HashMap<String, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * lutNRows));
+    HashMap<String, Integer> hashMap = new HashMap<>((int) Math.ceil(lutNRows / 0.75f));
+    StringBuilder sb = nKeys > 1 ? new StringBuilder(32 * nKeys) : null;
+
     for (int row = 0; row < lutNRows; row++) {
-      StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
-      for (int key = 1; key < nKeys; key++) sb.append("\t" + lutKeyPA[key].getString(row));
-      hashMap.put(sb.toString(), row);
+      String keyStr;
+      if (nKeys == 1) {
+        keyStr = lutKeyPA[0].getString(row);
+      } else {
+        sb.setLength(0);
+        sb.append(lutKeyPA[0].getString(row));
+        for (int key = 1; key < nKeys; key++) {
+          sb.append('\t').append(lutKeyPA[key].getString(row));
+        }
+        keyStr = sb.toString();
+      }
+      hashMap.put(keyStr, row);
     }
 
     // insert columns to be filled
@@ -9978,11 +9988,24 @@ public class Table {
     BitSet matched = new BitSet();
     matched.set(0, nRows); // all true
     for (int row = 0; row < nRows; row++) {
-      StringBuilder sb = new StringBuilder(keyPA[0].getString(row));
-      for (int key = 1; key < nKeys; key++) sb.append("\t" + keyPA[key].getString(row));
-      String s = sb.toString();
-      if (s.length() == nKeys - 1) // just tabs separating ""
-      s = mvKey;
+      String s;
+      if (nKeys == 1) {
+        s = keyPA[0].getString(row);
+        if (s == null || s.isEmpty()) {
+          s = mvKey;
+        }
+      } else {
+        sb.setLength(0);
+        sb.append(keyPA[0].getString(row));
+        for (int key = 1; key < nKeys; key++) {
+          sb.append('\t').append(keyPA[key].getString(row));
+        }
+        s = sb.toString();
+        if (s.length() == nKeys - 1) {
+          s = mvKey;
+        }
+      }
+
       Integer obj = hashMap.get(s);
       if (obj == null) {
         // don't change the missing values already in the pa
@@ -9992,10 +10015,12 @@ public class Table {
         // copy values from lutPA's to newPA's
         nMatched++;
         int fRow = obj;
-        for (int lutCol = nKeys; lutCol < lutNCols; lutCol++)
+        for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) {
           newPA[lutCol].setFromPA(row, lutPA[lutCol], fRow);
+        }
       }
     }
+
     if (reallyVerbose)
       String2.log(
           "  Table.join(nKeys="

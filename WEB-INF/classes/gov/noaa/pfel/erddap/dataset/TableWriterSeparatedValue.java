@@ -41,6 +41,7 @@ public class TableWriterSeparatedValue extends TableWriter {
   protected volatile boolean isTimeStamp[];
   protected volatile DateTimeFormatter[] time_precision;
   protected volatile BufferedWriter writer;
+  protected final StringBuilder rowBuffer = new StringBuilder(1024);
 
   public final AtomicLong totalNRows = new AtomicLong(0);
 
@@ -175,21 +176,25 @@ public class TableWriterSeparatedValue extends TableWriter {
 
     // write the data
     for (int row = 0; row < nRows; row++) {
+      rowBuffer.setLength(0);
       for (int col = 0; col < nColumns; col++) {
         if (isTimeStamp[col]) {
-          writer.write(
+          rowBuffer.append(
               Calendar2.epochSecondsToLimitedIsoStringT(
                   time_precision[col], pas[col].getDouble(row), ""));
         } else if (isStringOrChar[col]) {
           String s = pas[col].getSVString(row);
-          if (twoQuotes) s = String2.replaceAll(s, "\\\"", "\"\"");
-          writer.write(s);
+          if (twoQuotes && s.indexOf('"') >= 0) {
+            s = String2.replaceAll(s, "\\\"", "\"\"");
+          }
+          rowBuffer.append(s);
         } else {
           String s = pas[col].getString(row);
-          writer.write(s.length() == 0 ? nanString : s);
+          rowBuffer.append(s.isEmpty() ? nanString : s);
         }
-        writer.write(col == nColumns - 1 ? "\n" : separator);
+        rowBuffer.append(col == nColumns - 1 ? "\n" : separator);
       }
+      writer.write(rowBuffer.toString());
     }
 
     if (flushAfterward) writer.flush();

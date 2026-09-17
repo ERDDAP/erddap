@@ -3842,18 +3842,42 @@ public class String2 {
     //  because Java is very slow at filling in the stack trace when an exception is thrown.
     if (s == null) return Double.NaN;
     s = s.trim();
-    if (s.length() == 0) return Double.NaN;
+    int len = s.length();
+    if (len == 0) return Double.NaN;
     char ch = s.charAt(0);
+    // Fast-path common ERDDAP missing value tokens before parsing
+    if (ch == 'N' || ch == 'n' || ch == 'M' || ch == 'm' || ch == '?') {
+      if (s.equalsIgnoreCase("NaN") || s.equals("NC") || s.equals("MV")) return Double.NaN;
+    }
+
+    if (len == 1 && ch >= '0' && ch <= '9') {
+      return ch - '0';
+    }
+
+    // Fast-path multi-digit integers (e.g., 2024, -999, 100) to avoid JDK FloatingDecimal buffer
+    if (len < 10) {
+      boolean isInt = true;
+      for (int i = (ch == '-' || ch == '+') ? 1 : 0; i < len; i++) {
+        char c = s.charAt(i);
+        if (c < '0' || c > '9') {
+          isInt = false;
+          break;
+        }
+      }
+      if (isInt) {
+        try {
+          return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+          // Fall through to Double.parseDouble on overflow
+        }
+      }
+    }
+
     if ((ch >= '0' && ch <= '9') || ch == '-' || ch == '+' || ch == '.') {
       // it's probably a number
       try {
         if (s.startsWith("0x") || s.startsWith("0X"))
           return Long.parseLong(s.substring(2), 16); // for >7fffffff, returns signed int
-
-        // 2011-02-09 Bob Simons added to avoid Java hang bug.
-        //  But now, latest version of Java is fixed.
-        // if (isDoubleTrouble(s)) return 0;
-
         double d = Double.parseDouble(s);
         return Double.isFinite(d) ? d : Double.NaN;
       } catch (Exception e) {
