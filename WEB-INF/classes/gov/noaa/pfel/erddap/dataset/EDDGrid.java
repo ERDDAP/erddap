@@ -2454,18 +2454,24 @@ public abstract class EDDGrid extends EDD {
   public String changed(EDD old) {
     if (old == null) return super.changed(old); // so message is consistent
 
-    if (!(old instanceof EDDGrid oldG)) return EDStatic.messages.EDDChangedTableToGrid + "\n";
+    if (!(old instanceof EDDGrid oldG)) {
+      return EDStatic.messages.EDDChangedTableToGrid + "\n";
+    }
 
     // check most important things first
     int nAv = axisVariables.length;
-    StringBuilder diff = new StringBuilder();
-    String oldS = "" + oldG.axisVariables().length;
-    String newS = "" + nAv;
-    if (!oldS.equals(newS)) {
-      diff.append(
-          MessageFormat.format(EDStatic.messages.EDDChangedAxesDifferentNVar, oldS, newS) + "\n");
-      return diff.toString(); // because tests below assume nAv are same
+    int oldAvLen = oldG.axisVariables().length;
+
+    // Direct primitive comparison avoids string allocation on match
+    if (oldAvLen != nAv) {
+      return MessageFormat.format(
+              EDStatic.messages.EDDChangedAxesDifferentNVar,
+              String.valueOf(oldAvLen),
+              String.valueOf(nAv))
+          + "\n";
     }
+
+    StringBuilder diff = new StringBuilder();
 
     for (int av = 0; av < nAv; av++) {
       EDVGridAxis oldAV = oldG.axisVariables[av];
@@ -2473,69 +2479,77 @@ public abstract class EDDGrid extends EDD {
       String newName = newAV.destinationName();
       String msg2 = "#" + av + "=" + newName;
 
-      oldS = oldAV.destinationName();
-      newS = newName;
-      if (!oldS.equals(newS))
+      String oldDestName = oldAV.destinationName();
+      if (!oldDestName.equals(newName)) {
         diff.append(
-            MessageFormat.format(
-                    EDStatic.messages.EDDChangedAxes2Different, "destinationName", msg2, oldS, newS)
-                + "\n");
+                MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "destinationName",
+                    msg2,
+                    oldDestName,
+                    newName))
+            .append("\n");
+      }
 
-      oldS = oldAV.destinationDataType();
-      newS = newAV.destinationDataType();
-      if (!oldS.equals(newS))
+      String oldType = oldAV.destinationDataType();
+      String newType = newAV.destinationDataType();
+      if (!oldType.equals(newType)) {
         diff.append(
-            MessageFormat.format(
+                MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
                     "destinationDataType",
                     msg2,
-                    oldS,
-                    newS)
-                + "\n");
+                    oldType,
+                    newType))
+            .append("\n");
+      }
 
-      // most import case: new time value will be displayed as an iso time
-      oldS = "" + oldAV.sourceValues().size();
-      newS = "" + newAV.sourceValues().size();
-      if (!oldS.equals(newS))
+      int oldSize = oldAV.sourceValues().size();
+      int newSize = newAV.sourceValues().size();
+      if (oldSize != newSize) {
         diff.append(
-            MessageFormat.format(
-                    EDStatic.messages.EDDChangedAxes2Different, "numberOfValues", msg2, oldS, newS)
-                + "\n");
+                MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "numberOfValues",
+                    msg2,
+                    String.valueOf(oldSize),
+                    String.valueOf(newSize)))
+            .append("\n");
+      }
 
       int diffIndex = newAV.sourceValues().diffIndex(oldAV.sourceValues());
-      if (diffIndex >= 0)
+      if (diffIndex >= 0) {
+        String oldValStr =
+            (diffIndex >= oldAV.sourceValues().size())
+                ? EDStatic.messages.EDDChangedNoValue
+                : oldAV.destinationToString(oldAV.destinationValue(diffIndex).getDouble(0));
+
+        String newValStr =
+            (diffIndex >= newAV.sourceValues().size())
+                ? EDStatic.messages.EDDChangedNoValue
+                : newAV.destinationToString(newAV.destinationValue(diffIndex).getDouble(0));
+
         diff.append(
-            MessageFormat.format(
+                MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
                     "destinationValues",
                     msg2,
-                    "index #"
-                        + diffIndex
-                        + "="
-                        + (diffIndex >= oldAV.sourceValues().size()
-                            ? EDStatic.messages.EDDChangedNoValue
-                            : oldAV.destinationToString(
-                                oldAV.destinationValue(diffIndex).getDouble(0))),
-                    "index #"
-                        + diffIndex
-                        + "="
-                        + (diffIndex >= newAV.sourceValues().size()
-                            ? EDStatic.messages.EDDChangedNoValue
-                            : newAV.destinationToString(
-                                newAV.destinationValue(diffIndex).getDouble(0))))
-                + "\n");
+                    "index #" + diffIndex + "=" + oldValStr,
+                    "index #" + diffIndex + "=" + newValStr))
+            .append("\n");
+      }
 
       String s =
           String2.differentLine(
               oldAV.combinedAttributes().toString(), newAV.combinedAttributes().toString());
-      if (s.length() > 0)
+      if (!s.isEmpty()) {
         diff.append(
-            MessageFormat.format(
-                    EDStatic.messages.EDDChangedAxes1Different, "combinedAttribute", msg2, s)
-                + "\n");
+                MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes1Different, "combinedAttribute", msg2, s))
+            .append("\n");
+      }
     }
 
-    // check least important things last
     diff.append(super.changed(oldG));
     return diff.toString();
   }
