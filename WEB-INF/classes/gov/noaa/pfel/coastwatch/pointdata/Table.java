@@ -2742,15 +2742,28 @@ public class Table {
             testColumnNumbers[col] = po;
           }
 
-          // loadColumnNumbers[sourceColumn#] -> outputColumn#
-          //  (-1 if a var not in this file)
+          // Estimate file rows to pre-allocate exact StringArray capacity
+          int sampleLineIndex = 0;
+          String sampleLine = linesCache.size() > 0 ? linesCache.get(0) : null;
+          while (sampleLine == null && sampleLineIndex < linesCache.size() - 1) {
+            sampleLine = linesCache.get(++sampleLineIndex);
+          }
+          int sampleLineLength = sampleLine != null ? sampleLine.length() + 1 : 80;
+          long fileBytes =
+              (fileName != null && fileName.length() > 0) ? new java.io.File(fileName).length() : 0;
+
+          int estimatedRows =
+              (fileBytes > 0 && sampleLineLength > 0)
+                  ? Math.max(128, (int) (fileBytes / sampleLineLength))
+                  : 128;
+
           if (loadColumns == null) {
             // load all
             loadColumnNumbers = new int[fileColumnNames.size()];
             loadColumnSA = new StringArray[fileColumnNames.size()];
             for (int col = 0; col < fileColumnNames.size(); col++) {
               loadColumnNumbers[col] = col;
-              loadColumnSA[col] = new StringArray();
+              loadColumnSA[col] = new StringArray(estimatedRows, false);
               addColumn(fileColumnNames.get(col), loadColumnSA[col]);
             }
           } else {
@@ -2758,7 +2771,7 @@ public class Table {
             loadColumnSA = new StringArray[loadColumns.length];
             for (int col = 0; col < loadColumns.length; col++) {
               loadColumnNumbers[col] = fileColumnNames.indexOf(loadColumns[col], 0);
-              loadColumnSA[col] = new StringArray();
+              loadColumnSA[col] = new StringArray(estimatedRows, false);
               addColumn(loadColumns[col], loadColumnSA[col]);
             }
           }
