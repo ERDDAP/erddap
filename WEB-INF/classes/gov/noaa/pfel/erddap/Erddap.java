@@ -7466,10 +7466,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + (nextPath == null ? "" : nextPath)
               + nameAndExt;
       SSR.uploadFileToAwsS3(
-          EDStatic.config.awsS3OutputTransferManager,
-          localDir + nameAndExt,
-          fullAwsUrl,
-          contentType);
+          EDStatic.config.getS3TransferManager(), localDir + nameAndExt, fullAwsUrl, contentType);
       response.sendRedirect(fullAwsUrl);
 
     } else {

@@ -20,6 +20,9 @@ import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.sun.management.UnixOperatingSystemMXBean;
@@ -74,8 +77,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -85,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
@@ -99,6 +105,13 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.semver4j.Semver;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -582,6 +595,20 @@ public class EDStatic {
   // However we aren't actually done testing at that point, so we don't want to call destroy
   // during testing. This should only be set to tru during testing.
   public static boolean testingDontDestroy = false;
+
+  // cache S3TransferManager by region for 1 hour each, and close on removal
+  private static final Cache<String, S3TransferManager> s3TransferManagerCache =
+      CacheBuilder.newBuilder()
+          .expireAfterWrite(Duration.of(1, ChronoUnit.HOURS))
+          .removalListener(
+              (RemovalListener<String, S3TransferManager>)
+                  notification -> {
+                    final S3TransferManager s3TransferManager = notification.getValue();
+                    if (s3TransferManager != null) {
+                      s3TransferManager.close();
+                    }
+                  })
+          .build();
 
   /**
    * This static block reads this class's static String values from contentDirectory, which must
@@ -2697,6 +2724,10 @@ public class EDStatic {
         emailThread = null;
       }
 
+      // invalidate and cleanup all remaining S3TransferManagers
+      s3TransferManagerCache.invalidateAll();
+      s3TransferManagerCache.cleanUp();
+
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
     } finally {
@@ -4582,5 +4613,36 @@ public class EDStatic {
       // ignore if directory doesn't exist or can't be accessed
     }
     return nDeleted;
+  }
+
+  /**
+   * This builds an S3TransferManager
+   *
+   * @param region The S3 region from bro[1].
+   */
+  public static S3TransferManager buildS3TransferManager(String region) throws ExecutionException {
+    return s3TransferManagerCache.get(
+        region,
+        () -> {
+          final SdkBuilder<?, S3AsyncClient> builder;
+          AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+          if (EDStatic.config.useAwsAnonymous) {
+            credentialsProvider = AnonymousCredentialsProvider.create();
+          }
+          if (EDStatic.config.useAwsCrt) {
+            builder =
+                S3AsyncClient.crtBuilder()
+                    .credentialsProvider(credentialsProvider)
+                    .region(Region.of(region))
+                    .targetThroughputInGbps(20.0) // ??? make a separate setting?
+                    .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+          } else {
+            builder =
+                S3AsyncClient.builder()
+                    .credentialsProvider(credentialsProvider)
+                    .region(Region.of(region));
+          }
+          return S3TransferManager.builder().s3Client(builder.build()).build();
+        });
   }
 }

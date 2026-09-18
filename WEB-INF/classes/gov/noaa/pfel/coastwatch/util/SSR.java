@@ -49,16 +49,10 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.FileDownload;
 import software.amazon.awssdk.transfer.s3.model.FileUpload;
-import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate using Java programs in place
@@ -878,33 +872,6 @@ public class SSR {
   }
 
   /**
-   * This builds an S3TransferManager
-   *
-   * @param region The S3 region from bro[1].
-   */
-  public static S3TransferManager buildS3TransferManager(String region) {
-    SdkBuilder<?, S3AsyncClient> builder;
-    AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
-    if (EDStatic.config.useAwsAnonymous) {
-      credentialsProvider = AnonymousCredentialsProvider.create();
-    }
-    if (EDStatic.config.useAwsCrt) {
-      builder =
-          S3AsyncClient.crtBuilder()
-              .credentialsProvider(credentialsProvider)
-              .region(Region.of(region))
-              .targetThroughputInGbps(20.0) // ??? make a separate setting?
-              .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
-    } else {
-      builder =
-          S3AsyncClient.builder()
-              .credentialsProvider(credentialsProvider)
-              .region(Region.of(region));
-    }
-    return S3TransferManager.builder().s3Client(builder.build()).build();
-  }
-
-  /**
    * This uploads a file to AWS S3. If the file already exists, it is just touched.
    *
    * @param tm The S3TransferManager. If null, one will be temporarily created.
@@ -934,7 +901,7 @@ public class SSR {
         return;
       }
 
-      if (tm == null) tm = buildS3TransferManager(bro[1]);
+      if (tm == null) tm = EDStatic.buildS3TransferManager(bro[1]);
       PutObjectRequest.Builder request =
           PutObjectRequest.builder()
               .bucket(bro[0])
@@ -1022,7 +989,8 @@ public class SSR {
     if (bro != null) {
       // sample code and javadoc:
       // https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
-      try (S3TransferManager tm = buildS3TransferManager(bro[1]); ) {
+      try {
+        S3TransferManager tm = EDStatic.buildS3TransferManager(bro[1]);
         FileDownload download =
             tm.downloadFile(
                 d ->

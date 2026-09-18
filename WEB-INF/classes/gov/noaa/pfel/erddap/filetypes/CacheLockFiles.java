@@ -136,7 +136,7 @@ public abstract class CacheLockFiles extends FileTypeInterface {
       String fullAwsUrl =
           EDStatic.config.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
       SSR.uploadFileToAwsS3(
-          EDStatic.config.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
+          EDStatic.config.getS3TransferManager(), fullName, fullAwsUrl, contentType);
       requestInfo.response().sendRedirect(fullAwsUrl);
     }
   }
