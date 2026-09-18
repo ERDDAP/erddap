@@ -3454,26 +3454,50 @@ public class String2 {
    */
   public static List<String> splitToArrayList(
       String s, char separator, boolean trim, List<String> al) {
+    return splitToArrayList(s, separator, trim, al, null);
+  }
+
+  /**
+   * This splits the string at the specified character. A missing final string is treated as "" (not
+   * discarded as with String.split).
+   *
+   * @param s a string with 0 or more separator characters
+   * @param separator
+   * @param trim trim the substrings, or don't
+   * @param al an ArrayList<String> to receive the results. It is initially clear()'d.
+   * @param isColumnNeeded if not null, indicates which column indices should be extracted as
+   *     Strings. If isColumnNeeded[col] is false, null is added to al instead of creating a String
+   *     object.
+   * @return al for convenience.
+   */
+  public static List<String> splitToArrayList(
+      String s, char separator, boolean trim, List<String> al, boolean[] isColumnNeeded) {
 
     // go through the string looking for separators
     al.clear();
     if (s == null) return al;
     int sLength = s.length();
     int start = 0;
+    int col = 0;
     // log("split line=" + annotatedString(s));
     for (int index = 0; index < sLength; index++) {
       if (s.charAt(index) == separator) {
-        if (trim) {
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          al.add(null);
+        } else if (trim) {
           al.add(trimSubString(s, start, index));
         } else {
           al.add(s.substring(start, index));
         }
+        col++;
         start = index + 1;
       }
     }
 
     // add the final substring
-    if (trim) {
+    if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+      al.add(null);
+    } else if (trim) {
       al.add(trimSubString(s, start, sLength));
     } else {
       al.add(s.substring(start, sLength));

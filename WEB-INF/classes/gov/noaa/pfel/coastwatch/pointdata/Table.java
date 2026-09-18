@@ -684,6 +684,37 @@ public class Table {
   }
 
   /**
+   * Helper method to extract literal prefix from skipLinesRegex (e.g., "^#.*" -> "#", "^//" ->
+   * "//", "#.*" -> "#"). Returns null if skipLinesRegex is null or doesn't have a simple literal
+   * anchor/prefix.
+   */
+  private static String extractLiteralPrefix(String regex) {
+    if (regex == null || regex.isEmpty()) {
+      return null;
+    }
+    String r = regex.startsWith("^") ? regex.substring(1) : regex;
+    // Check for simple comment patterns like #.*, //.*, %.*, ;.*, #, //, %, ;
+    if (r.startsWith("#")) return "#";
+    if (r.startsWith("//")) return "//";
+    if (r.startsWith("%")) return "%";
+    if (r.startsWith(";")) return ";";
+    return null;
+  }
+
+  /**
+   * Helper method to determine if a line should be skipped based on fast-path checks or
+   * skipLinesMatcher.
+   */
+  private static boolean shouldSkipLine(String line, Matcher skipMatcher, String literalPrefix) {
+    if (line == null) return false;
+    if (line.isEmpty()) return false;
+    if (literalPrefix != null) {
+      return line.startsWith(literalPrefix);
+    }
+    return skipMatcher != null && skipMatcher.reset(line).matches();
+  }
+
+  /**
    * This reads and ignores lines until it finds a line that matches skipHeaderToRegex.
    *
    * @param skipHeaderToRegex the regex to be matched (or null or "" if nothing to be done)
@@ -2568,6 +2599,8 @@ public class Table {
           skipLinesRegex != null && !skipLinesRegex.isEmpty()
               ? Pattern.compile(skipLinesRegex)
               : null;
+      Matcher skipLinesMatcher = skipLinesPattern != null ? skipLinesPattern.matcher("") : null;
+      String literalPrefix = extractLiteralPrefix(skipLinesRegex);
 
       // skipHeaderToRegex
       int row =
@@ -2582,7 +2615,7 @@ public class Table {
         String s = linesReader.readLine(); // null if end. exception if trouble
         if (s == null) break;
         linesCache.add(s);
-        if (skipLinesPattern == null || skipLinesPattern.matcher(s).matches()) nonSkipLines++;
+        if (!shouldSkipLine(s, skipLinesMatcher, literalPrefix)) nonSkipLines++;
         if (nonSkipLines == dataStartLine + 2) // both 0-based
         break;
       }
@@ -2601,7 +2634,7 @@ public class Table {
         int tRow = 0;
         for (String s : linesCache) {
           oneLine = s;
-          if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
+          if (shouldSkipLine(oneLine, skipLinesMatcher, literalPrefix)) continue;
           if (tRow++ < dataStartLine) // both are 0..
           continue;
           nTab *=
@@ -2647,7 +2680,7 @@ public class Table {
         while (true) {
           oneLine = linesCache.get(nextLinesCache++);
           row++;
-          if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
+          if (shouldSkipLine(oneLine, skipLinesMatcher, literalPrefix)) continue;
           if (++logicalLine == columnNamesLine) // both are 0-based
           break;
         }
@@ -2676,6 +2709,7 @@ public class Table {
       StringBuilder warnings = new StringBuilder();
       ArrayList<String> items = new ArrayList<>(16);
       StringBuilder separatedWord = new StringBuilder();
+      boolean[] isColumnNeeded = null;
       while (true) {
         oneLine = null;
         if (nextLinesCache < linesCacheSize) {
@@ -2689,7 +2723,7 @@ public class Table {
         // actual row number
         row++;
         // then check skipLines
-        if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
+        if (shouldSkipLine(oneLine, skipLinesMatcher, literalPrefix)) continue;
         // then check dataStartLine
         if (++logicalLine < dataStartLine) continue;
 
@@ -2707,14 +2741,21 @@ public class Table {
                 ',',
                 true,
                 true,
-                items); // trim=true keep=true   //does handle "'d phrases, but leaves them quoted
+                items,
+                isColumnNeeded); // trim=true keep=true   //does handle "'d phrases, but leaves them
+            // quoted
           } else if (colSeparator == ' ') {
-            StringArray.wordsAndQuotedPhrases(oneLine, items); // items are trim'd
+            StringArray.wordsAndQuotedPhrases(oneLine, items, isColumnNeeded); // items are trim'd
           } else if (colSeparator == '\u0000') {
             items.clear();
-            items.add(oneLine.trim());
+            if (isColumnNeeded != null && isColumnNeeded.length > 0 && !isColumnNeeded[0]) {
+              items.add(null);
+            } else {
+              items.add(oneLine.trim());
+            }
           } else {
-            String2.splitToArrayList(oneLine, colSeparator, true, items); // trim=true
+            String2.splitToArrayList(
+                oneLine, colSeparator, true, items, isColumnNeeded); // trim=true
           }
           // if (debugMode && logicalLine-dataStartLine<5) String2.log(">> row=" + row + " nItems="
           // + items.length + "\nitems=" + String2.toCSSVString(items));
@@ -2773,6 +2814,19 @@ public class Table {
               loadColumnNumbers[col] = fileColumnNames.indexOf(loadColumns[col], 0);
               loadColumnSA[col] = new StringArray(estimatedRows, false);
               addColumn(loadColumns[col], loadColumnSA[col]);
+            }
+          }
+
+          // construct isColumnNeeded array for subsequent iterations
+          isColumnNeeded = new boolean[expectedNItems];
+          for (int tc : testColumnNumbers) {
+            if (tc >= 0 && tc < expectedNItems) {
+              isColumnNeeded[tc] = true;
+            }
+          }
+          for (int lc : loadColumnNumbers) {
+            if (lc >= 0 && lc < expectedNItems) {
+              isColumnNeeded[lc] = true;
             }
           }
           // if (reallyVerbose) String2.log("loadColumnNumbers=" +
@@ -3199,6 +3253,8 @@ public class Table {
               ? Pattern.compile(skipLinesRegex)
               : null;
 
+      Matcher skipLinesMatcher = skipLinesPattern != null ? skipLinesPattern.matcher("") : null;
+      String literalPrefix = extractLiteralPrefix(skipLinesRegex);
       // create the columns
       PrimitiveArray pa[] = new PrimitiveArray[nCols];
       ByteArray arBool[] = new ByteArray[nCols]; // ByteArray (from boolean) if boolean, else null
@@ -3222,7 +3278,7 @@ public class Table {
         row++;
         if (tLine == null) // end of file
         break;
-        if (skipLinesPattern != null && skipLinesPattern.matcher(tLine).matches()) continue;
+        if (shouldSkipLine(tLine, skipLinesMatcher, literalPrefix)) continue;
         logicalLine++;
         if (logicalLine < dataStartLine) continue;
 
