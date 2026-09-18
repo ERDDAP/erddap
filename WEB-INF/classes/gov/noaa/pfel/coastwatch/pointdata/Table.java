@@ -110,10 +110,10 @@ import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import thredds.client.catalog.ServiceType;
-import ucar.ma2.Array;
 import ucar.ma2.ArraySequence;
 import ucar.ma2.ArrayStructure;
 import ucar.ma2.DataType;
+import ucar.ma2.Section;
 import ucar.ma2.StructureData;
 import ucar.ma2.StructureDataIterator;
 import ucar.nc2.Dimension;
@@ -5959,8 +5959,8 @@ public class Table {
           tReadOrigin[nAxes] = 0;
           tReadShape[nAxes] = variable.getDimension(nAxes).getLength();
         }
-        Array array = variable.read(tReadOrigin, tReadShape);
-        PrimitiveArray pa = NcHelper.getPrimitiveArray(array);
+        Section section = new Section(tReadOrigin, tReadShape);
+        PrimitiveArray pa = NcHelper.getPrimitiveArray(variable, section);
         Test.ensureEqual(
             pa.size(),
             nRows(),

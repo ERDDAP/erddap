@@ -34,6 +34,8 @@ import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayObject;
 import ucar.ma2.ArrayString;
 import ucar.ma2.DataType;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 import ucar.ma2.StructureData;
 import ucar.ma2.StructureDataIterator;
 import ucar.ma2.StructureMembers;
@@ -206,7 +208,9 @@ public class NcHelper {
     // String[] from ArrayChar.Dn
     if (nc2Array instanceof ArrayChar ac) {
       ArrayObject ao = ac.make1DStringArray();
-      Object[] oa = (Object[]) ao.copyTo1DJavaArray();
+      // Make1DStringArray already makes this a contiguous array, so no need to call
+      // copyTo1DJavaArray
+      Object[] oa = (Object[]) ao.get1DJavaArray(ao.getDataType());
       StringArray sa = new StringArray(oa.length, false);
       for (Object o : oa)
         sa.add(o == null ? null : String2.fromJson(String2.trimEnd(o.toString())));
@@ -214,8 +218,8 @@ public class NcHelper {
     }
 
     // byte[] from ArrayBoolean.Dn
-    if (nc2Array instanceof ArrayBoolean) {
-      boolean boolAr[] = (boolean[]) nc2Array.copyTo1DJavaArray();
+    if (nc2Array instanceof ArrayBoolean ab) {
+      boolean boolAr[] = (boolean[]) ab.copyTo1DJavaArray();
       int n = boolAr.length;
       byte byteAr[] = new byte[n];
       for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
@@ -546,6 +550,42 @@ public class NcHelper {
   }
 
   /**
+   * This reads a section of values from an nDimensional variable using a ucar.ma2.Section.
+   *
+   * @param variable
+   * @param section
+   * @return a suitable primitiveArray
+   */
+  public static PrimitiveArray getPrimitiveArray(Variable variable, ucar.ma2.Section section)
+      throws Exception {
+    return getPrimitiveArray(variable, section, true);
+  }
+
+  /**
+   * This reads a section of values from an nDimensional variable using a ucar.ma2.Section.
+   *
+   * @param variable
+   * @param section
+   * @param buildStringsFromChars only applies to source DataType=char variables.
+   * @return a suitable primitiveArray
+   */
+  public static PrimitiveArray getPrimitiveArray(
+      Variable variable, ucar.ma2.Section section, boolean buildStringsFromChars) throws Exception {
+    if (section == null) {
+      return getPrimitiveArray(variable, buildStringsFromChars);
+    }
+    if (section.getRank() == variable.getRank() - 1
+        && variable.getDataType() == DataType.CHAR
+        && variable.getRank() > 0) {
+      int strLen = variable.getDimension(variable.getRank() - 1).getLength();
+      List<Range> ranges = new ArrayList<>(section.getRanges());
+      ranges.add(new Range(0, strLen - 1));
+      section = new Section(ranges);
+    }
+    return getPrimitiveArray(variable.read(section), buildStringsFromChars, isUnsigned(variable));
+  }
+
+  /**
    * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
    *
    * @param nc2Array an nc2Array
@@ -561,7 +601,9 @@ public class NcHelper {
     // String[] from ArrayChar.Dn
     if (buildStringsFromChars && nc2Array instanceof ArrayChar na) {
       ArrayObject ao = na.make1DStringArray();
-      Object[] oa = (Object[]) ao.copyTo1DJavaArray();
+      // Make1DStringArray already makes this a contiguous array, so no need to call
+      // copyTo1DJavaArray
+      Object[] oa = (Object[]) ao.get1DJavaArray(ao.getDataType());
       if (oa instanceof String[] sa) {
         return new StringArray(sa);
       }
@@ -1670,18 +1712,19 @@ public class NcHelper {
     boolean isChar = variable.getDataType() == DataType.CHAR;
     int nDim = variable.getRank();
     int oShape[] = variable.getShape();
-    // ???verify that shape is valid?
-    int origin[] = new int[nDim]; // all 0's
-    int shape[] = new int[nDim];
-    origin[0] = firstRow;
-    Arrays.fill(shape, 1);
+    List<Range> ranges = new ArrayList<>();
+    ranges.add(new Range(firstRow, lastRow));
+    for (int d = 1; d < nDim; d++) {
+      if (isChar && d == nDim - 1) {
+        ranges.add(new Range(0, oShape[d] - 1));
+      } else {
+        ranges.add(new Range(0, 0));
+      }
+    }
+    Section section = new Section(ranges);
     int nRows = lastRow - firstRow + 1;
-    shape[0] = nRows;
-    if (isChar) shape[nDim - 1] = oShape[nDim - 1]; // nChars / String
-    PrimitiveArray pa = getPrimitiveArray(variable.read(origin, shape), true, isUnsigned(variable));
+    PrimitiveArray pa = getPrimitiveArray(variable, section, true);
 
-    // eek! opendap returns a full-sized array!
-    //     netcdf  returns a shape-sized array
     if (pa.size() < nRows)
       Test.error(
           String2.ERROR
@@ -1694,12 +1737,10 @@ public class NcHelper {
               + pa.size()
               + ").");
     if (pa.size() > nRows) {
-      // it full-sized; reduce to correct size
       if (reallyVerbose)
         String2.log("    NcHelper.getPrimitiveArray variable.read returned entire variable!");
-      pa.removeRange(
-          lastRow + 1, pa.size()); // remove tail first (so don't have to move it when remove head
-      pa.removeRange(0, firstRow - 1); // remove head section
+      pa.removeRange(lastRow + 1, pa.size());
+      pa.removeRange(0, firstRow - 1);
     }
     return pa;
   }
@@ -1942,21 +1983,45 @@ public class NcHelper {
         okRows.set(0, nRows); // make all 'true' initially
       }
 
-      // read the data
-      cumReadTime -= System.currentTimeMillis();
-      PrimitiveArray pa = getPrimitiveArray(variable.read());
-      cumReadTime += System.currentTimeMillis();
-
-      // test the data
+      // test the data in chunks using Section reads
       double tMin = min[col];
       double tMax = max[col];
-      int row = okRows.nextSetBit(0);
+      int nRows = variable.getDimension(0).getLength();
+      int chunkSize = 10000;
       int lastSetBit = -1;
+
+      int row = okRows.nextSetBit(0);
       while (row >= 0) {
-        double d = pa.getDouble(row);
-        if (d < tMin || d > tMax || Double.isNaN(d)) okRows.clear(row);
-        else lastSetBit = row;
-        row = okRows.nextSetBit(row + 1);
+        int chunkStart = (row / chunkSize) * chunkSize;
+        int chunkEnd = Math.min(chunkStart + chunkSize - 1, nRows - 1);
+
+        List<Range> ranges = new ArrayList<>();
+        ranges.add(new Range(chunkStart, chunkEnd));
+        boolean isChar = variable.getDataType() == DataType.CHAR;
+        int nDim = variable.getRank();
+        int oShape[] = variable.getShape();
+        for (int d = 1; d < nDim; d++) {
+          if (isChar && d == nDim - 1) {
+            ranges.add(new Range(0, oShape[d] - 1));
+          } else {
+            ranges.add(new Range(0, 0));
+          }
+        }
+        Section chunkSection = new Section(ranges);
+
+        cumReadTime -= System.currentTimeMillis();
+        PrimitiveArray pa = getPrimitiveArray(variable, chunkSection, true);
+        cumReadTime += System.currentTimeMillis();
+
+        while (row >= 0 && row <= chunkEnd) {
+          double d = pa.getDouble(row - chunkStart);
+          if (d < tMin || d > tMax || Double.isNaN(d)) {
+            okRows.clear(row);
+          } else {
+            lastSetBit = row;
+          }
+          row = okRows.nextSetBit(row + 1);
+        }
       }
       if (lastSetBit == -1) return okRows;
     }

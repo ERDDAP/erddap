@@ -745,4 +745,34 @@ class NcHelperTests {
 
     String2.log("diffString=\n" + pas14.diffString(pas13));
   }
+
+  @org.junit.jupiter.api.Test
+  void testGetPrimitiveArrayWithSection() throws Exception {
+    String file = "test-data/data/briand/6900536_prof.nc";
+    try (NetcdfFile ncfile = NetcdfFiles.open(file)) {
+      Variable presVar = ncfile.findVariable("PRES");
+      Test.ensureNotNull(presVar, "Variable 'PRES' should be present");
+
+      // Numeric bounded section test on 2D numeric variable PRES(N_PROF=1, N_LEVELS=118)
+      ucar.ma2.Section section2D = new ucar.ma2.Section("0:0,0:9");
+      PrimitiveArray paBounded = NcHelper.getPrimitiveArray(presVar, section2D, true);
+      Test.ensureEqual(paBounded.size(), 10, "Bounded PA size matches section size");
+      Test.ensureTrue(
+          paBounded.size() < presVar.getSize(),
+          "Bounded PA size is strictly less than full variable size");
+
+      // CHAR section auto rank expansion test (passing 1D section for 2D char var
+      // PLATFORM_NUMBER(N_PROF=1, DATE_TIME_STRING_LENGTH=8))
+      Variable platformVar = ncfile.findVariable("PLATFORM_NUMBER");
+      Test.ensureNotNull(platformVar, "Variable 'PLATFORM_NUMBER' should be present");
+      Test.ensureEqual(
+          platformVar.getDataType(), DataType.CHAR, "PLATFORM_NUMBER is DataType.CHAR");
+      ucar.ma2.Section charSectionSubRank = new ucar.ma2.Section("0:0");
+      Test.ensureEqual(
+          charSectionSubRank.getRank(), platformVar.getRank() - 1, "Section rank is rank - 1");
+      PrimitiveArray charPa = NcHelper.getPrimitiveArray(platformVar, charSectionSubRank, true);
+      Test.ensureNotNull(charPa, "Char PA should not be null");
+      Test.ensureEqual(charPa.size(), 1, "Char PA size should be 1 string");
+    }
+  }
 }
