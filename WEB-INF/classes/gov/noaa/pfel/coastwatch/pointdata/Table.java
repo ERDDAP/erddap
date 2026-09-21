@@ -1324,9 +1324,25 @@ public class Table {
    * @return a BitSet with bit=true for each row that has data (not all missing-values).
    */
   public BitSet rowsWithData() {
+    return rowsWithData(null);
+  }
+
+  /**
+   * Returns a BitSet with bit=true for each row that has data (not all missing-values), using a
+   * reusable BitSet if provided.
+   *
+   * @param reusableKeep optional BitSet instance to clear and reuse
+   * @return keep BitSet
+   */
+  public BitSet rowsWithData(BitSet reusableKeep) {
     int tnRows = nRows();
     int tnCols = nColumns();
-    BitSet keep = new BitSet(tnRows); // all false
+    BitSet keep = reusableKeep;
+    if (keep == null) {
+      keep = new BitSet(tnRows);
+    } else {
+      keep.clear();
+    }
     int keepN = 0;
     for (int col = 0; col < tnCols; col++) {
       // this is very similar to lastRowWithData
@@ -1415,7 +1431,17 @@ public class Table {
    * @return the number of rows remaining
    */
   public int removeRowsWithoutData() {
-    justKeep(rowsWithData());
+    return removeRowsWithoutData(null);
+  }
+
+  /**
+   * This removes rows that don't have data in any column, using a reusable BitSet.
+   *
+   * @param reusableKeep optional BitSet instance to clear and reuse
+   * @return the number of rows remaining
+   */
+  public int removeRowsWithoutData(BitSet reusableKeep) {
+    justKeep(rowsWithData(reusableKeep));
     return nRows();
   }
 
@@ -10424,13 +10450,38 @@ public class Table {
    */
   public int tryToApplyConstraintsAndKeep(
       int idCol, StringArray conNames, StringArray conOps, StringArray conVals) {
+    return tryToApplyConstraintsAndKeep(idCol, conNames, conOps, conVals, null);
+  }
+
+  /**
+   * This is like tryToApplyConstraintsAndKeep, but accepts a reusable BitSet.
+   *
+   * @param idCol For reallyVerbose only: rejected rows will log the value in this column.
+   * @param conNames constraint variable names
+   * @param conOps constraint operators
+   * @param conVals constraint values
+   * @param reusableKeep optional reusable BitSet; if null, a new BitSet will be created
+   * @return the number of rows remaining in the table
+   */
+  public int tryToApplyConstraintsAndKeep(
+      int idCol,
+      StringArray conNames,
+      StringArray conOps,
+      StringArray conVals,
+      BitSet reusableKeep) {
 
     // no constraints
     if (conNames == null || conNames.size() == 0) return nRows();
 
     // try to apply constraints
-    BitSet keep = new BitSet();
-    keep.set(0, nRows());
+    int n = nRows();
+    BitSet keep = reusableKeep;
+    if (keep == null) {
+      keep = new BitSet(n);
+    } else {
+      keep.clear();
+    }
+    keep.set(0, n);
     int cardinality = tryToApplyConstraints(idCol, conNames, conOps, conVals, keep);
     if (cardinality == 0) removeAllRows();
     else justKeep(keep);
@@ -11436,20 +11487,22 @@ public class Table {
     boolean someConverted = temporarilyConvertToStandardMissingValues(keyColumns);
 
     String lastKCMV = getColumn(lastKeyColumn).elementType() == PAType.STRING ? "" : "NaN";
+    BitSet keep = new BitSet(nRows);
     // remove rows with mv for last keyColumn
     nRows =
         tryToApplyConstraintsAndKeep(
             lastKeyColumn,
             new StringArray(new String[] {getColumnName(lastKeyColumn)}),
             new StringArray(new String[] {"!="}),
-            new StringArray(new String[] {lastKCMV}));
+            new StringArray(new String[] {lastKCMV}),
+            keep);
     if (nRows == 0) return;
 
     // sort based on keys
     ascendingSort(keyColumns);
 
     // walk through the table, often marking previous row to be kept
-    BitSet keep = new BitSet(nRows); // all false
+    keep.clear();
     keep.set(nRows - 1); // always
     if (nKeyColumns > 1) {
       PrimitiveArray keyCols[] = new PrimitiveArray[nKeyColumns - 1];

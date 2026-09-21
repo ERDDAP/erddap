@@ -878,6 +878,11 @@ public class FloatArray extends PrimitiveArray {
     return String2.toJson(get(index));
   }
 
+  @Override
+  public void getJsonString(final int index, final StringBuilder sb) {
+    String2.toJson(get(index), sb);
+  }
+
   /**
    * Return a value from the array as a String. This "raw" variant leaves missingValue from integer
    * data types (e.g., ByteArray missingValue=127) AS IS, regardless of maxIsMV. FloatArray and

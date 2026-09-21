@@ -1102,6 +1102,16 @@ public abstract class PrimitiveArray {
   public abstract String getJsonString(int index);
 
   /**
+   * Appends a value from the array as a String suitable for a JSON file directly to sb.
+   *
+   * @param index the index number 0 ... size-1
+   * @param sb the StringBuilder to append to
+   */
+  public void getJsonString(int index, StringBuilder sb) {
+    sb.append(getJsonString(index));
+  }
+
+  /**
    * Return a value from the array as a String suitable for the data section of an NCCSV file. This
    * is close to a json string. StringArray and CharArray overwrite this. Note that LongArray
    * doesn't append L -- that is done separately by file writers.

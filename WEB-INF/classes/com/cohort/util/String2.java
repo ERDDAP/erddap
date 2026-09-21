@@ -1764,9 +1764,29 @@ public class String2 {
    *     as a string.
    */
   public static String toJson(final float f) {
-    if (!Float.isFinite(f)) return "null";
-    String s = "" + f;
-    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+    StringBuilder sb = new StringBuilder();
+    toJson(f, sb);
+    return sb.toString();
+  }
+
+  /**
+   * Appends a JSON version of a float directly to sb.
+   *
+   * @param f
+   * @param sb
+   */
+  public static void toJson(final float f, final StringBuilder sb) {
+    if (!Float.isFinite(f)) {
+      sb.append("null");
+      return;
+    }
+    int len0 = sb.length();
+    Math2.floatToString(f, sb);
+    if (sb.length() >= len0 + 2
+        && sb.charAt(sb.length() - 2) == '.'
+        && sb.charAt(sb.length() - 1) == '0') {
+      sb.setLength(sb.length() - 2);
+    }
   }
 
   /**
@@ -1777,9 +1797,29 @@ public class String2 {
    *     as a string.
    */
   public static String toJson(final double d) {
-    if (!Double.isFinite(d)) return "null";
-    String s = "" + d;
-    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+    StringBuilder sb = new StringBuilder();
+    toJson(d, sb);
+    return sb.toString();
+  }
+
+  /**
+   * Appends a JSON version of a double directly to sb.
+   *
+   * @param d
+   * @param sb
+   */
+  public static void toJson(final double d, final StringBuilder sb) {
+    if (!Double.isFinite(d)) {
+      sb.append("null");
+      return;
+    }
+    int len0 = sb.length();
+    Math2.doubleToString(d, sb);
+    if (sb.length() >= len0 + 2
+        && sb.charAt(sb.length() - 2) == '.'
+        && sb.charAt(sb.length() - 1) == '0') {
+      sb.setLength(sb.length() - 2);
+    }
   }
 
   /**
@@ -1792,6 +1832,16 @@ public class String2 {
    */
   public static String toJson(final String s) {
     return toJson(s, 127, true);
+  }
+
+  /**
+   * Appends a JSON version of a string directly to targetSB.
+   *
+   * @param s
+   * @param targetSB
+   */
+  public static void toJson(final String s, final StringBuilder targetSB) {
+    toJson(s, 127, true, targetSB);
   }
 
   /**
@@ -1874,35 +1924,50 @@ public class String2 {
     if (s == null) return "null";
     final int sLength = s.length();
     final StringBuilder sb = new StringBuilder((sLength / 5 + 1) * 6);
-    sb.append('\"');
+    toJson(s, firstUEncodedChar, encodeNewline, sb);
+    return sb.toString();
+  }
+
+  /** Appends a JSON version of a string directly to targetSB. */
+  public static void toJson(
+      final String s,
+      final int firstUEncodedChar,
+      final boolean encodeNewline,
+      final StringBuilder targetSB) {
+    if (s == null) {
+      targetSB.append("null");
+      return;
+    }
+    final int sLength = s.length();
+    targetSB.append('\"');
     int start = 0;
     for (int i = 0; i < sLength; i++) {
       final char ch = s.charAt(i);
-      // using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
       if (ch < 32 || ch >= firstUEncodedChar) {
-        sb.append(s, start, i);
+        targetSB.append(s, start, i);
         start = i + 1;
-        if (ch == '\f') sb.append("\\f");
-        else if (ch == '\n') sb.append(encodeNewline ? "\\n" : "\n");
-        else if (ch == '\r') sb.append("\\r");
-        else if (ch == '\t') sb.append("\\t");
+        if (ch == '\f') targetSB.append("\\f");
+        else if (ch == '\n') targetSB.append(encodeNewline ? "\\n" : "\n");
+        else if (ch == '\r') targetSB.append("\\r");
+        else if (ch == '\t') targetSB.append("\\t");
         else if (ch == '\b') {
         } // remove it
-        //  / can be encoded as \/ but there is no need and it looks odd
-        else sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4));
+        else {
+          targetSB.append("\\u");
+          targetSB.append(zeroPad(Integer.toHexString(ch), 4));
+        }
       } else if (ch == '\\') {
-        sb.append(s, start, i);
+        targetSB.append(s, start, i);
         start = i + 1;
-        sb.append("\\\\");
+        targetSB.append("\\\\");
       } else if (ch == '\"') {
-        sb.append(s, start, i);
+        targetSB.append(s, start, i);
         start = i + 1;
-        sb.append("\\\"");
-      } // else normal character will be appended later via s.substring
+        targetSB.append("\\\"");
+      }
     }
-    sb.append(s.substring(start));
-    sb.append('\"');
-    return sb.toString();
+    targetSB.append(s, start, sLength);
+    targetSB.append('\"');
   }
 
   /** This encodes one char to the Json encoding. */
@@ -4566,37 +4631,54 @@ public class String2 {
    * @return the number converted to a string
    */
   public static String genEFormat6(double d) {
+    StringBuilder sb = new StringBuilder();
+    genEFormat6(d, sb);
+    return sb.toString();
+  }
 
+  /**
+   * Appends d formatted with up to 6 digits to the left and right of the decimal directly to sb.
+   *
+   * @param d a number
+   * @param sb the StringBuilder to append to
+   */
+  public static void genEFormat6(double d, StringBuilder sb) {
     // !finite
-    if (!Double.isFinite(d)) return "" + d;
+    if (!Double.isFinite(d)) {
+      sb.append(d);
+      return;
+    }
 
     // almost 0
-    if (Math2.almost0(d)) return "0";
+    if (Math2.almost0(d)) {
+      sb.append('0');
+      return;
+    }
 
     // close to 0
-    // String2.log("genEFormat test " + (d*1000) + " " + Math.rint(d*1000));
-    if (Math.abs(d) < 0.0999995
-        && !Math2.almostEqual(
-            6,
-            d * 10000,
-            Math.rint(d * 10000))) { // leave .0021 as .0021, but display .00023 as 2.3e-4
+    if (Math.abs(d) < 0.0999995 && !Math2.almostEqual(6, d * 10000, Math.rint(d * 10000))) {
       synchronized (genExpFormat6) {
-        return genExpFormat6.format(d);
+        sb.append(genExpFormat6.format(d));
       }
+      return;
     }
 
     // large int
-    if (Math.abs(d) < 1e13 && d == Math.rint(d)) return "" + Math2.roundToLong(d);
+    if (Math.abs(d) < 1e13 && d == Math.rint(d)) {
+      sb.append(Math2.roundToLong(d));
+      return;
+    }
 
     // >10e6
     if (Math.abs(d) >= 999999.9999995) {
       synchronized (genExpFormat6) {
-        return genExpFormat6.format(d);
+        sb.append(genExpFormat6.format(d));
       }
+      return;
     }
 
     synchronized (genStdFormat6) {
-      return genStdFormat6.format(d);
+      sb.append(genStdFormat6.format(d));
     }
   }
 
@@ -4611,38 +4693,54 @@ public class String2 {
    * @return the number converted to a string
    */
   public static String genEFormat10(double d) {
+    StringBuilder sb = new StringBuilder();
+    genEFormat10(d, sb);
+    return sb.toString();
+  }
 
+  /**
+   * Appends d formatted with up to 10 digits to the left and right of the decimal directly to sb.
+   *
+   * @param d a number
+   * @param sb the StringBuilder to append to
+   */
+  public static void genEFormat10(double d, StringBuilder sb) {
     // !finite
-    if (!Double.isFinite(d)) return "" + d;
+    if (!Double.isFinite(d)) {
+      sb.append(d);
+      return;
+    }
 
     // almost 0
-    if (Math2.almost0(d)) return "0";
+    if (Math2.almost0(d)) {
+      sb.append('0');
+      return;
+    }
 
     // close to 0 and many sig digits
-    // String2.log("genEFormat test " + (d*1000) + " " + Math.rint(d*1000));
-    if (Math.abs(d) < 0.09999999995
-        && !Math2.almostEqual(
-            9,
-            d * 1000000,
-            Math.rint(d * 1000000))) { // leave .0021 as .0021, but display .00023 as 2.3e-4
+    if (Math.abs(d) < 0.09999999995 && !Math2.almostEqual(9, d * 1000000, Math.rint(d * 1000000))) {
       synchronized (genExpFormat10) {
-        return genExpFormat10.format(d);
+        sb.append(genExpFormat10.format(d));
       }
+      return;
     }
 
     // large int
-    if (Math.abs(d) < 1e13 && d == Math.rint(d)) // rint only catches 9 digits(?)
-    return "" + Math2.roundToLong(d);
+    if (Math.abs(d) < 1e13 && d == Math.rint(d)) {
+      sb.append(Math2.roundToLong(d));
+      return;
+    }
 
     // >10e6
     if (Math.abs(d) >= 1000000.0) {
       synchronized (genExpFormat10) {
-        return genExpFormat10.format(d);
+        sb.append(genExpFormat10.format(d));
       }
+      return;
     }
 
     synchronized (genStdFormat10) {
-      return genStdFormat10.format(d);
+      sb.append(genStdFormat10.format(d));
     }
   }
 

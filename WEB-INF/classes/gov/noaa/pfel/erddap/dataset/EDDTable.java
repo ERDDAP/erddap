@@ -20308,6 +20308,7 @@ public abstract class EDDTable extends EDD {
     int nCols = sourceTable.nColumns();
     Test.ensureEqual(nCols, destTable.nColumns(), "sourceTable.nColumns != destTable.nColumns");
     StringArray suggest = new StringArray();
+    BitSet keep = new BitSet();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = (PrimitiveArray) sourceTable.getColumn(col).clone();
       pa.sort();
@@ -20316,7 +20317,7 @@ public abstract class EDDTable extends EDD {
         PAOne tmv = pa.tryToFindNumericMissingValue();
         if (tmv != null) {
 
-          BitSet keep = new BitSet();
+          keep.clear();
           keep.set(0, nRows);
           pa.applyConstraint(
               false, // morePrecise,
