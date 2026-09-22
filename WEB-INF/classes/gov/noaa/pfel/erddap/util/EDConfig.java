@@ -219,6 +219,8 @@ public class EDConfig {
   public String awsS3OutputRegion = null;
   public boolean useAwsCrt;
   public boolean useAwsAnonymous;
+  public double s3TargetThroughputInGbps = 20.0;
+  public Integer s3MaxConcurrency = null;
 
   public final String corsAllowHeaders;
   public final String[] corsAllowOrigin;
@@ -549,6 +551,9 @@ public class EDConfig {
     // optional parameter to disable AWS Common Runtime
     useAwsCrt = getSetupEVBoolean(setup, ev, "useAwsCrt", true);
     useAwsAnonymous = getSetupEVBoolean(setup, ev, "useAwsAnonymous", false);
+    s3TargetThroughputInGbps = getSetupEVDouble(setup, ev, "s3TargetThroughputInGbps", 20.0);
+    int maxConcurrency = getSetupEVInt(setup, ev, "s3MaxConcurrency", -1);
+    s3MaxConcurrency = maxConcurrency > 0 ? Integer.valueOf(maxConcurrency) : null;
 
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 
@@ -845,7 +850,7 @@ public class EDConfig {
    * @param tDefault the default value
    * @return the desired value (or the default if it isn't defined anywhere)
    */
-  private int getSetupEVInt(
+  int getSetupEVInt(
       ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
     String value = ev.get("ERDDAP_" + paramName);
     if (value != null) {
@@ -877,4 +882,29 @@ public class EDConfig {
     }
     return setup.getNotNothingString(paramName, errorInMethod);
   }
+
+  /**
+   * This gets a double from setup.xml or environmentalVariables (preferred).
+   * Ensures the value is positive (> 0) and finite; falls back to tDefault otherwise.
+   *
+   * @param setup from setup.xml
+   * @param ev from System.getenv()
+   * @param paramName If present in ev, it will be ERDDAP_paramName.
+   * @param tDefault the default value
+   * @return the desired value (or default if not defined or <= 0/invalid)
+   */
+  double getSetupEVDouble(
+      ResourceBundle2 setup, Map<String, String> ev, String paramName, double tDefault) {
+    String s = getSetupEVString(setup, ev, paramName, null);
+    if (String2.isSomething(s)) {
+      double valued = String2.parseDouble(s);
+      if (Double.isFinite(valued) && valued > 0) {
+        return valued;
+      }
+      String2.log(
+          "WARNING: " + paramName + " (" + s + ") is invalid or <= 0. Using default: " + tDefault);
+    }
+    return tDefault;
+  }
+
 }
