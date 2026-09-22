@@ -850,8 +850,7 @@ public class EDConfig {
    * @param tDefault the default value
    * @return the desired value (or the default if it isn't defined anywhere)
    */
-  int getSetupEVInt(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
+  int getSetupEVInt(ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
     String value = ev.get("ERDDAP_" + paramName);
     if (value != null) {
       int valuei = String2.parseInt(value);
@@ -884,8 +883,8 @@ public class EDConfig {
   }
 
   /**
-   * This gets a double from setup.xml or environmentalVariables (preferred).
-   * Ensures the value is positive (> 0) and finite; falls back to tDefault otherwise.
+   * This gets a double from setup.xml or environmentalVariables (preferred). Ensures the value is
+   * positive (> 0) and finite; falls back to tDefault otherwise.
    *
    * @param setup from setup.xml
    * @param ev from System.getenv()
@@ -906,5 +905,4 @@ public class EDConfig {
     }
     return tDefault;
   }
-
 }
