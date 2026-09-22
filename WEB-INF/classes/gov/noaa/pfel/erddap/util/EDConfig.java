@@ -5,6 +5,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -12,7 +13,6 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.util.Metrics.FeatureFlag;
 import java.awt.Color;
@@ -20,6 +20,7 @@ import java.awt.Image;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 public class EDConfig {
@@ -215,7 +216,7 @@ public class EDConfig {
   // these are all non-null if in awsS3Output mode, otherwise all are null
   public String awsS3OutputBucketUrl = null; // ends in slash
   public String awsS3OutputBucket = null; // the short name of the bucket
-  public S3TransferManager awsS3OutputTransferManager = null;
+  public String awsS3OutputRegion = null;
   public boolean useAwsCrt;
   public boolean useAwsAnonymous;
 
@@ -537,10 +538,7 @@ public class EDConfig {
                 + String2.AWS_S3_REGEX());
 
       awsS3OutputBucket = bro[0];
-      String region = bro[1];
-
-      // build the awsS3OutputTransferManager
-      awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
+      awsS3OutputRegion = bro[1];
 
       // note that I could set LifecycleRule(s) for the bucket via
       // awsS3OutputClient.putBucketLifecycleConfiguration
@@ -759,6 +757,16 @@ public class EDConfig {
     googleEarthLogoFileHeight = tImage.getHeight(null);
 
     lazyInitializeStatics();
+  }
+
+  // access the transfer manager from the cache
+  public S3TransferManager getS3TransferManager() {
+    try {
+      return EDStatic.buildS3TransferManager(awsS3OutputRegion);
+    } catch (ExecutionException e) {
+      String2.log(MustBe.throwableToString(e));
+      throw new RuntimeException(e);
+    }
   }
 
   private void copyContentImagesToWebApps() {
