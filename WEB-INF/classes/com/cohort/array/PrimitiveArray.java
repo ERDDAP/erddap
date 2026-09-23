@@ -1102,6 +1102,16 @@ public abstract class PrimitiveArray {
   public abstract String getJsonString(int index);
 
   /**
+   * Appends a value from the array as a String suitable for a JSON file directly to sb.
+   *
+   * @param index the index number 0 ... size-1
+   * @param sb the StringBuilder to append to
+   */
+  public void getJsonString(int index, StringBuilder sb) {
+    sb.append(getJsonString(index));
+  }
+
+  /**
    * Return a value from the array as a String suitable for the data section of an NCCSV file. This
    * is close to a json string. StringArray and CharArray overwrite this. Note that LongArray
    * doesn't append L -- that is done separately by file writers.
@@ -3068,23 +3078,41 @@ public abstract class PrimitiveArray {
    *     this or the other primitiveArray.
    */
   public int diffIndex(PrimitiveArray other) {
-    int i = 0;
-    int otherSize = other.size();
+    int size1 = this.size();
+    int size2 = other.size();
+    int minSize = Math.min(size1, size2);
 
-    while (true) {
-      if (i == size && size == otherSize) return -1;
-      if (i == size || i == otherSize) return i;
-      String s = getString(i);
-      String so = other.getString(i);
-      if (s == null && so != null) return i;
-      if (so == null && s != null) return i;
-      if (s != null && so != null && !s.equals(so)) return i;
-      i++;
+    // Fast path for numeric arrays: avoids String allocations and handles NaN/Infinity correctly
+    if (this.isFloatingPointType() && other.isFloatingPointType()) {
+      for (int i = 0; i < minSize; i++) {
+        double d1 = this.getDouble(i);
+        double d2 = other.getDouble(i);
+        // Double.compare considers Double.NaN == Double.NaN to be true
+        if (Double.compare(d1, d2) != 0) {
+          return i;
+        }
+      }
+    } else if (this.isIntegerType() && other.isIntegerType()) {
+      for (int i = 0; i < minSize; i++) {
+        long d1 = this.getLong(i);
+        long d2 = other.getLong(i);
+        if (Long.compare(d1, d2) != 0) {
+          return i;
+        }
+      }
+    } else {
+      // Fallback path for StringArray or mixed object arrays
+      for (int i = 0; i < minSize; i++) {
+        String s1 = this.getString(i);
+        String s2 = other.getString(i);
+        if (!java.util.Objects.equals(s1, s2)) {
+          return i;
+        }
+      }
     }
 
-    // you could do a double test if both pa's were numeric
-    // but tests with inifinity and nan are awkward and time consuming
-    // so string test is pretty good approach.
+    // If common elements match, return minSize if lengths differ, or -1 if identical
+    return size1 == size2 ? -1 : minSize;
   }
 
   /**

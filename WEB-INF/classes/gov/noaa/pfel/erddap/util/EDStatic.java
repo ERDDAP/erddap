@@ -92,6 +92,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -688,10 +689,11 @@ public class EDStatic {
             File2.makeDirectory(fullNdName);
             String oldFileList[] = new File(oldBaseDir + odName).list();
             int oldFileListSize = oldFileList == null ? 0 : oldFileList.length;
+            Pattern tempFilesNamePattern = Pattern.compile(".*[0-9]{7}");
             for (int of = 0; of < oldFileListSize; of++) {
               String ofName = oldFileList[of];
               String fullOfName = oldBaseDir + odName + "/" + ofName;
-              if (!ofName.matches(".*[0-9]{7}")) // skip temp files
+              if (!tempFilesNamePattern.matcher(ofName).matches()) // skip temp files
               File2.copy(fullOfName, fullNdName + ofName); // dir will be created
               File2.delete(fullOfName);
             }
@@ -974,6 +976,13 @@ public class EDStatic {
     return sb.toString();
   }
 
+  private static final Pattern ALLOWED_CHARACTERS_PATTERN =
+      Pattern.compile("^[A-Za-z0-9._~:/\\[\\]-]+$");
+  private static final Pattern HEX_AND_COLON_PATTERN = Pattern.compile("^[0-9a-f:]+$");
+  private static final Pattern HOST_CHARACTERS_PATTERN = Pattern.compile("^[a-z0-9._-]+$");
+  private static final Pattern PORT_PATTERN = Pattern.compile("^[0-9]+$");
+  private static final Pattern PATH_SEGMENT_PATTERN = Pattern.compile("^/[a-zA-Z0-9/_-]*$");
+
   /**
    * Keep the overload simple: only reject dangerous characters; otherwise preserve host and port.
    */
@@ -988,7 +997,7 @@ public class EDStatic {
     if (value.contains("\\") || value.indexOf('%') >= 0 || value.contains("..")) {
       return "";
     }
-    if (!value.matches("^[A-Za-z0-9._~:/\\[\\]-]+$")) {
+    if (!ALLOWED_CHARACTERS_PATTERN.matcher(value).matches()) {
       return "";
     }
 
@@ -1019,16 +1028,16 @@ public class EDStatic {
     // contain only lowercase letters, digits, dots, underscores, and hyphens.
     if (host.startsWith("[") && host.endsWith("]")) {
       String inner = host.substring(1, host.length() - 1);
-      if (!inner.matches("^[0-9a-f:]+$")) {
+      if (!HEX_AND_COLON_PATTERN.matcher(inner).matches()) {
         return "";
       }
-    } else if (!host.matches("^[a-z0-9._-]+$")) {
+    } else if (!HOST_CHARACTERS_PATTERN.matcher(host).matches()) {
       return "";
     }
 
     if (!port.isEmpty()) {
       String portNumber = port.substring(1);
-      if (!portNumber.matches("^[0-9]+$")) {
+      if (!PORT_PATTERN.matcher(portNumber).matches()) {
         return "";
       }
     }
@@ -1093,7 +1102,7 @@ public class EDStatic {
     }
 
     String prefix = request.getHeader("X-Forwarded-Prefix");
-    if (prefix != null && prefix.matches("^/[a-zA-Z0-9/_-]*$")) {
+    if (prefix != null && PATH_SEGMENT_PATTERN.matcher(prefix).matches()) {
       prefix = cleanUrlChars(prefix, true);
     } else {
       prefix = "";
@@ -1103,7 +1112,7 @@ public class EDStatic {
       String approvedHost = getApprovedHost(request);
       if (approvedHost != null) {
         return approvedHost
-            + (prefix != null && prefix.matches("^/[a-zA-Z0-9/_-]*$")
+            + (prefix != null && PATH_SEGMENT_PATTERN.matcher(prefix).matches()
                 ? cleanUrlChars(prefix, true)
                 : "");
       }

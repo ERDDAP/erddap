@@ -5,13 +5,16 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
@@ -3520,66 +3523,111 @@ public abstract class EDDTable extends EDD {
       StringArray scriptTypes,
       Map<String, Set<String>> scriptNeedsColumns) {
 
-    if (scriptNames != null) {
-      // if (debugMode) String2.log(">> raw table:\n" + table.dataToString(5));
-      int nRows = table.nRows();
-      for (int sni = 0; sni < scriptNames.size(); sni++) {
-        PrimitiveArray pa =
-            PrimitiveArray.factory(
-                PAType.fromCohortString(scriptTypes.get(sni)), nRows, false); // active?
-        JexlScript jscript = Script2.jexlEngine().createScript(scriptNames.get(sni).substring(1));
+    if (scriptNames == null || scriptNames.size() == 0) return;
+
+    int nRows = table.nRows();
+
+    for (int sni = 0; sni < scriptNames.size(); sni++) {
+      String rawScript = scriptNames.get(sni);
+      String scriptExpr =
+          rawScript.startsWith("=") ? rawScript.substring(1).trim() : rawScript.trim();
+      PAType paType = PAType.fromCohortString(scriptTypes.get(sni));
+      PrimitiveArray pa = PrimitiveArray.factory(paType, nRows, false);
+      Set<String> neededCols = scriptNeedsColumns.get(rawScript);
+
+      // 1. FAST-PATH: Direct Column Copy/Rename (=row.colName)
+      if (scriptExpr.startsWith("row.") && isSimpleIdentifier(scriptExpr.substring(4))) {
+        String srcCol = scriptExpr.substring(4);
+        int srcColIndex = table.findColumnNumber(srcCol);
+        if (srcColIndex >= 0) {
+          PrimitiveArray srcPa = table.getColumn(srcColIndex);
+          pa.append(srcPa);
+          table.addColumn(rawScript, pa);
+          continue;
+        }
+      }
+
+      // 2. FAST-PATH: Constant Expressions (evaluated once for all rows)
+      if (neededCols == null || neededCols.isEmpty()) {
+        JexlScript jscript = Script2.jexlEngine().createScript(scriptExpr);
         MapContext jcontext = Script2.jexlMapContext();
         ScriptRow scriptRow = new ScriptRow(fullFileName, table);
         jcontext.set("row", scriptRow);
-        boolean firstError = true;
+        Object val = null;
+        try {
+          val = jscript.execute(jcontext);
+        } catch (Exception e) {
+          String2.log(
+              "Caught: first script error (for col="
+                  + String2.toJson(rawScript)
+                  + " row[0]):\n"
+                  + MustBe.throwableToString(e));
+        }
 
-        if (scriptNeedsColumns.get(scriptNames.get(sni)).size() == 0) {
-          // script doesn't refer to any columns (e.g., =10.0),
-          // so just parse once and duplicate that value.
-          // scriptRow.setRow(0); //already done
-          Object o = null;
-          try {
-            o = jscript.execute(jcontext);
-          } catch (Exception e2) {
-            if (firstError) {
-              String2.log(
-                  "Caught: first script error (for col="
-                      + String2.toJson(scriptNames.get(sni))
-                      + " row[0]):\n"
-                      + MustBe.throwableToString(e2));
-              firstError = false;
-            }
-            o = null;
-          }
-          for (int row = 0; row < nRows; row++) pa.addObject(o);
+        for (int row = 0; row < nRows; row++) pa.addObject(val);
+        table.addColumn(rawScript, pa);
+        continue;
+      }
 
-        } else {
-          for (int row = 0; row < nRows; row++) {
-            scriptRow.setRow(row);
-            Object o = null;
-            try {
-              o = jscript.execute(jcontext);
-            } catch (Exception e2) {
-              if (firstError) {
-                String2.log(
-                    "Caught: first script error (for col="
-                        + String2.toJson(scriptNames.get(sni))
-                        + " row["
-                        + row
-                        + "]):\n"
-                        + MustBe.throwableToString(e2));
-                firstError = false;
-              }
-              o = null;
-            }
-            pa.addObject(o);
-            // if (debugMode && row < 5) String2.log(">> row[" + row + "] o.class().getName()=" +
-            // o.getClass().getName() + " value=" + (o instanceof Number? ((Number)o).doubleValue()
-            // : o.toString()));
+      // 3. JEXL EVALUATION WITH UNBOXED PRIMITIVE APPENDS
+      JexlScript jscript = Script2.jexlEngine().createScript(scriptExpr);
+      MapContext jcontext = Script2.jexlMapContext();
+      ScriptRow scriptRow = new ScriptRow(fullFileName, table);
+      jcontext.set("row", scriptRow);
+      boolean firstError = true;
+
+      for (int row = 0; row < nRows; row++) {
+        scriptRow.setRow(row);
+        Object o = null;
+        try {
+          o = jscript.execute(jcontext);
+        } catch (Exception e2) {
+          if (firstError) {
+            String2.log(
+                "Caught: first script error (for col="
+                    + String2.toJson(rawScript)
+                    + " row["
+                    + row
+                    + "]):\n"
+                    + MustBe.throwableToString(e2));
+            firstError = false;
           }
         }
-        table.addColumn(scriptNames.get(sni), pa);
+
+        // Direct primitive append to bypass pa.addObject() reflection/boxing overhead
+        addTypedObject(pa, paType, o);
       }
+
+      table.addColumn(rawScript, pa);
+    }
+  }
+
+  private static boolean isSimpleIdentifier(String s) {
+    if (s.isEmpty()) return false;
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (!Character.isJavaIdentifierPart(c)) return false;
+    }
+    return true;
+  }
+
+  private static void addTypedObject(PrimitiveArray pa, PAType paType, Object o) {
+    if (o == null) {
+      pa.addString("");
+      return;
+    }
+    if (o instanceof Number num) {
+      switch (paType) {
+        case DOUBLE -> ((DoubleArray) pa).add(num.doubleValue());
+        case FLOAT -> ((FloatArray) pa).add(num.floatValue());
+        case INT -> ((IntArray) pa).add(num.intValue());
+        case LONG -> ((LongArray) pa).add(num.longValue());
+        case SHORT -> ((ShortArray) pa).add(num.shortValue());
+        case BYTE -> ((ByteArray) pa).add(num.byteValue());
+        default -> pa.addObject(o);
+      }
+    } else {
+      pa.addObject(o);
     }
   }
 
@@ -20260,6 +20308,7 @@ public abstract class EDDTable extends EDD {
     int nCols = sourceTable.nColumns();
     Test.ensureEqual(nCols, destTable.nColumns(), "sourceTable.nColumns != destTable.nColumns");
     StringArray suggest = new StringArray();
+    BitSet keep = new BitSet();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = (PrimitiveArray) sourceTable.getColumn(col).clone();
       pa.sort();
@@ -20268,7 +20317,7 @@ public abstract class EDDTable extends EDD {
         PAOne tmv = pa.tryToFindNumericMissingValue();
         if (tmv != null) {
 
-          BitSet keep = new BitSet();
+          keep.clear();
           keep.set(0, nRows);
           pa.applyConstraint(
               false, // morePrecise,

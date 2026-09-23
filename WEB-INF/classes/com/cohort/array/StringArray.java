@@ -2163,9 +2163,15 @@ public class StringArray extends PrimitiveArray {
    *     (e.g., "a quote "" within a phrase"). The resulting parts are all trim'd.
    */
   public static List<String> wordsAndQuotedPhrases(final String searchFor, final List<String> sa) {
+    return wordsAndQuotedPhrases(searchFor, sa, null);
+  }
+
+  public static List<String> wordsAndQuotedPhrases(
+      final String searchFor, final List<String> sa, final boolean[] isColumnNeeded) {
     sa.clear();
     if (searchFor == null) return sa;
     int po = 0;
+    int col = 0;
     final int n = searchFor.length();
     while (po < n) {
       final char ch = searchFor.charAt(po);
@@ -2181,8 +2187,13 @@ public class StringArray extends PrimitiveArray {
             po2++;
           }
         }
-        final String s = searchFor.substring(po + 1, po2);
-        sa.add(String2.replaceAll(s, "\"\"", "\""));
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          sa.add(null);
+        } else {
+          final String s = searchFor.substring(po + 1, po2);
+          sa.add(String2.replaceAll(s, "\"\"", "\""));
+        }
+        col++;
         po = po2 + 1;
       } else if (String2.isWhite(ch) || ch == ',') {
         // whitespace or comma
@@ -2194,7 +2205,12 @@ public class StringArray extends PrimitiveArray {
             && !String2.isWhite(searchFor.charAt(po2))
             && searchFor.charAt(po2) != ',') po2++;
         // String2.log("searchFor=" + searchFor + " wordPo=" + po + " po2=" + po2);
-        sa.add(searchFor.substring(po, po2));
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          sa.add(null);
+        } else {
+          sa.add(searchFor.substring(po, po2));
+        }
+        col++;
         po = po2;
       }
     }
@@ -2356,11 +2372,23 @@ public class StringArray extends PrimitiveArray {
       final boolean trim,
       final boolean keepNothing,
       final List<String> al) {
+    return arrayListFromCSV(word, searchFor, separatorChars, trim, keepNothing, al, null);
+  }
+
+  public static List<String> arrayListFromCSV(
+      final StringBuilder word,
+      final String searchFor,
+      final String separatorChars,
+      final boolean trim,
+      final boolean keepNothing,
+      final List<String> al,
+      final boolean[] isColumnNeeded) {
     word.setLength(0);
     al.clear();
     if (searchFor == null || searchFor.length() == 0) return al;
     // String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
     int po = 0; // next char to be looked at
+    int col = 0;
     int n = searchFor.length();
     boolean isQuoted = false; // is this item quoted?
     while (po <= n) { // ==n closes things out
@@ -2455,7 +2483,9 @@ public class StringArray extends PrimitiveArray {
 
         // end of word?
       } else if (po == n + 1 || separatorChars.indexOf(ch) >= 0) { // e.g., comma or semicolon
-        if (trim && !isQuoted) {
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          al.add(null);
+        } else if (trim && !isQuoted) {
           String s = String2.trimAndToString(word);
           if (s.length() > 0 || keepNothing || isQuoted) {
             al.add(s);
@@ -2463,6 +2493,7 @@ public class StringArray extends PrimitiveArray {
         } else if (word.length() > 0 || keepNothing || isQuoted) {
           al.add(word.toString());
         }
+        col++;
         word.setLength(0);
         isQuoted = false;
         if (po == n + 1) break;
@@ -2495,11 +2526,23 @@ public class StringArray extends PrimitiveArray {
       final boolean trim,
       final boolean keepNothing,
       final List<String> al) {
+    return arrayListFromCSV(word, searchFor, separatorChars, trim, keepNothing, al, null);
+  }
+
+  public static List<String> arrayListFromCSV(
+      final StringBuilder word,
+      final String searchFor,
+      final char separatorChars,
+      final boolean trim,
+      final boolean keepNothing,
+      final List<String> al,
+      final boolean[] isColumnNeeded) {
     word.setLength(0);
     al.clear();
     if (searchFor == null || searchFor.length() == 0) return al;
     // String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
     int po = 0; // next char to be looked at
+    int col = 0;
     int n = searchFor.length();
     boolean isQuoted = false; // is this item quoted?
     while (po <= n) { // ==n closes things out
@@ -2595,7 +2638,9 @@ public class StringArray extends PrimitiveArray {
         // end of word?
         // separatorChars.indexOf(ch) >= 0
       } else if (po == n + 1 || ch == separatorChars) { // e.g., comma or semicolon
-        if (trim && !isQuoted) {
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          al.add(null);
+        } else if (trim && !isQuoted) {
           String s = String2.trimAndToString(word);
           if (s.length() > 0 || keepNothing || isQuoted) {
             al.add(s);
@@ -2603,6 +2648,7 @@ public class StringArray extends PrimitiveArray {
         } else if (word.length() > 0 || keepNothing || isQuoted) {
           al.add(word.toString());
         }
+        col++;
         word.setLength(0);
         isQuoted = false;
         if (po == n + 1) break;

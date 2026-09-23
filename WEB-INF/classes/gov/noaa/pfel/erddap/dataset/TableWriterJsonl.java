@@ -145,27 +145,31 @@ public class TableWriterJsonl extends TableWriter {
     Math2.ensureArraySizeOkay(totalNRows.get(), "jsonl");
 
     // write the data
+    StringBuilder jsonSB = new StringBuilder();
     for (int row = 0; row < nRows; row++) {
-      writer.write(writeKVP ? '{' : '['); // beginRow
+      jsonSB.setLength(0);
+      jsonSB.append(writeKVP ? '{' : '['); // beginRow
       for (int col = 0; col < nColumns; col++) {
-        if (col > 0) writer.write(", ");
+        if (col > 0) jsonSB.append(", ");
         if (writeKVP) {
-          writer.write(String2.toJson(table.getColumnName(col)));
-          writer.write(':');
+          String2.toJson(table.getColumnName(col), jsonSB);
+          jsonSB.append(':');
         }
         if (isTimeStamp[col]) {
           double d = pas[col].getDouble(row);
-          writer.write(
-              Double.isNaN(d)
-                  ? "null"
-                  : "\""
-                      + Calendar2.epochSecondsToLimitedIsoStringT(time_precision[col], d, "")
-                      + "\"");
+          if (Double.isNaN(d)) {
+            jsonSB.append("null");
+          } else {
+            jsonSB.append('"');
+            jsonSB.append(Calendar2.epochSecondsToLimitedIsoStringT(time_precision[col], d, ""));
+            jsonSB.append('"');
+          }
         } else {
-          writer.write(pas[col].getJsonString(row));
+          pas[col].getJsonString(row, jsonSB);
         }
       }
-      writer.write(writeKVP ? "}\n" : "]\n"); // endRow    //recommended: always just \n
+      jsonSB.append(writeKVP ? "}\n" : "]\n"); // endRow    //recommended: always just \n
+      writer.write(jsonSB.toString());
     }
 
     if (flushAfterward) writer.flush();

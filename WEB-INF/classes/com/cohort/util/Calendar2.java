@@ -2269,6 +2269,11 @@ public class Calendar2 {
   // not hasT because of 'T'hursday
   public static char[] letterRegexTimeFormatLastChar = new char[letterRegexTimeFormat.size()];
 
+  public static final Pattern[] digitRegexTimeFormatPatterns =
+      new Pattern[digitRegexTimeFormat.size()];
+  public static final Pattern[] letterRegexTimeFormatPatterns =
+      new Pattern[letterRegexTimeFormat.size()];
+
   static {
     for (int i = 0; i < digitRegexTimeFormat.size(); i += 2) {
       String drtf = digitRegexTimeFormat.get(i);
@@ -2276,7 +2281,9 @@ public class Calendar2 {
       digitRegexTimeFormatHasColon.set(i, drtf.indexOf(':') >= 0);
       digitRegexTimeFormatHasPeriod.set(i, drtf.indexOf('.') >= 0);
       digitRegexTimeFormatHasSlash.set(i, drtf.indexOf('/') >= 0);
-      dateTimeFormatPatternHM.put(digitRegexTimeFormat.get(i + 1), Pattern.compile(drtf));
+      Pattern p = Pattern.compile(drtf);
+      digitRegexTimeFormatPatterns[i] = p;
+      dateTimeFormatPatternHM.put(digitRegexTimeFormat.get(i + 1), p);
     }
 
     for (int i = 0; i < allDigitsRegexTimeFormat.size(); i += 2) {
@@ -2287,8 +2294,9 @@ public class Calendar2 {
     for (int i = 0; i < letterRegexTimeFormat.size(); i += 2) {
       letterRegexTimeFormatLastChar[i] =
           letterRegexTimeFormat.get(i).charAt(letterRegexTimeFormat.get(i).length() - 1);
-      dateTimeFormatPatternHM.put(
-          letterRegexTimeFormat.get(i + 1), Pattern.compile(letterRegexTimeFormat.get(i)));
+      Pattern p = Pattern.compile(letterRegexTimeFormat.get(i));
+      letterRegexTimeFormatPatterns[i] = p;
+      dateTimeFormatPatternHM.put(letterRegexTimeFormat.get(i + 1), p);
     }
   }
 
@@ -4630,7 +4638,8 @@ public class Calendar2 {
               || digitRegexTimeFormatHasSlash.get(i) != hasSlash) continue;
 
           // does it match this regex?
-          if (sample.matches(digitRegexTimeFormat.get(i))) return digitRegexTimeFormat.get(i + 1);
+          if (digitRegexTimeFormatPatterns[i].matcher(sample).matches())
+            return digitRegexTimeFormat.get(i + 1);
         }
       }
 
@@ -4647,7 +4656,8 @@ public class Calendar2 {
             continue;
         }
         // does it match this regex?
-        if (sample.matches(letterRegexTimeFormat.get(i))) return letterRegexTimeFormat.get(i + 1);
+        if (letterRegexTimeFormatPatterns[i].matcher(sample).matches())
+          return letterRegexTimeFormat.get(i + 1);
       }
     }
 
@@ -4765,6 +4775,8 @@ public class Calendar2 {
     return isoStringToEpochSeconds(isoString);
   }
 
+  private static final Pattern ENDS_WITH_ZEROES = Pattern.compile("[:.0]*");
+
   /**
    * This tries to find a format string for a dateTimeString.
    *
@@ -4793,7 +4805,7 @@ public class Calendar2 {
       if (zeroTimePo < 0) zeroTimePo = ts.indexOf("T00");
       if (zeroTimePo > 0) {
         String remains = ts.substring(zeroTimePo + 3);
-        if (remains.matches("[:.0]*")) { // ends with e.g., 00:00:0.0
+        if (ENDS_WITH_ZEROES.matcher(remains).matches()) { // ends with e.g., 00:00:0.0
           ts = ts.substring(0, zeroTimePo);
         }
       }
@@ -4842,7 +4854,7 @@ public class Calendar2 {
       if (zeroTimePo < 0) zeroTimePo = ts.indexOf("T00");
       if (zeroTimePo > 0) {
         String remains = ts.substring(zeroTimePo + 3);
-        if (remains.matches("[:.0]*")) { // ends with e.g., 00:00:0.0
+        if (ENDS_WITH_ZEROES.matcher(remains).matches()) { // ends with e.g., 00:00:0.0
           ts = ts.substring(0, zeroTimePo);
           append = remains.indexOf('.') >= 0 ? "T00:00:00.000Z" : "T00:00:00Z";
         }

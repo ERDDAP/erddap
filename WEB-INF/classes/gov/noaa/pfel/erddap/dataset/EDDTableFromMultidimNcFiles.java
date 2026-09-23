@@ -168,14 +168,13 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFilesNcLow {
     addGlobalAttributes.remove(TREAT_DIMENSIONS_AS);
   }
 
-  @Override
-  protected PrimitiveArray loadSingleVar(Variable var, Attributes atts, String fileName)
-      throws Exception {
+  protected PrimitiveArray loadSingleVar(
+      Variable var, Attributes atts, String fileName, ucar.ma2.Section section) throws Exception {
     Table tempTable = new Table();
     TableFromMultidimNcFile loader = new TableFromMultidimNcFile(tempTable);
 
     Pair<PrimitiveArray, Attributes> result =
-        loader.loadSingleVariable(fileName, var.getFullName(), this.standardizeWhat);
+        loader.loadSingleVariable(fileName, var.getFullName(), this.standardizeWhat, section);
 
     PrimitiveArray data = result.getLeft();
     Attributes metadata = result.getRight();
@@ -191,6 +190,47 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFilesNcLow {
       atts.set("_FillValue", PrimitiveArray.factory(paPAType, 1, ""));
     }
     return data;
+  }
+
+  @Override
+  protected PrimitiveArray loadSingleVar(Variable var, Attributes atts, String fileName)
+      throws Exception {
+    return loadSingleVar(var, atts, fileName, null);
+  }
+
+  public ucar.ma2.Section makeSectionFromSortedBounds(
+      Variable var, double minSorted, double maxSorted) {
+    try {
+      if (Double.isNaN(minSorted) || Double.isNaN(maxSorted)) return null;
+      int totalLen = var.getDimension(0).getLength();
+      if (totalLen < 2) return null;
+
+      double v0 = NcHelper.getDouble(var, 0);
+      double vN = NcHelper.getDouble(var, totalLen - 1);
+      if (Double.isNaN(v0) || Double.isNaN(vN)) return null;
+
+      int minIdx = 0;
+      int maxIdx = totalLen - 1;
+      if (v0 <= vN) {
+        minIdx = NcHelper.binaryFindFirstGE(var, 0, totalLen - 1, minSorted);
+        maxIdx = NcHelper.binaryFindLastLE(var, 0, totalLen - 1, maxSorted);
+      } else {
+        minIdx = NcHelper.binaryFindFirstGE(var, 0, totalLen - 1, maxSorted);
+        maxIdx = NcHelper.binaryFindLastLE(var, 0, totalLen - 1, minSorted);
+      }
+
+      if (minIdx > maxIdx) return TableFromMultidimNcFile.EMPTY_SECTION;
+      if (minIdx == 0 && maxIdx == totalLen - 1) return null;
+
+      List<ucar.ma2.Range> ranges = new java.util.ArrayList<>();
+      ranges.add(new ucar.ma2.Range(minIdx, maxIdx));
+      for (int d = 1; d < var.getRank(); d++) {
+        ranges.add(new ucar.ma2.Range(0, var.getDimension(d).getLength() - 1));
+      }
+      return new ucar.ma2.Section(ranges);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   /**
@@ -224,6 +264,29 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFilesNcLow {
             EDStatic.decompressedCacheMaxGB,
             true); // reuseExisting
     if (mustGetData) {
+      if (sourceDataNames != null
+          && sourceDataNames.size() == 1
+          && !removeMVRows
+          && (treatDimensionsAs == null || treatDimensionsAs.length == 0)) {
+        String varName = sourceDataNames.get(0);
+        try (ucar.nc2.NetcdfFile nc = NcHelper.openFile(decompFullName)) {
+          Variable var = nc.findVariable(varName);
+          if (var != null && var.getRank() == 1) {
+            ucar.ma2.Section section = makeSectionFromSortedBounds(var, minSorted, maxSorted);
+            if (section == TableFromMultidimNcFile.EMPTY_SECTION) {
+              return table;
+            }
+            if (section != null) {
+              Attributes atts = new Attributes();
+              PrimitiveArray pa = loadSingleVar(var, atts, decompFullName, section);
+              table.addColumn(0, varName, pa, atts);
+              return table;
+            }
+          }
+        } catch (Exception e) {
+          // fall back
+        }
+      }
 
       TableFromMultidimNcFile reader = new TableFromMultidimNcFile(table);
       reader.readMultidimNc(
