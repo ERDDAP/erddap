@@ -111,6 +111,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3CrtAsyncClientBuilder;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.utils.builder.SdkBuilder;
 
@@ -4639,12 +4640,16 @@ public class EDStatic {
             credentialsProvider = AnonymousCredentialsProvider.create();
           }
           if (EDStatic.config.useAwsCrt) {
-            builder =
+            S3CrtAsyncClientBuilder crtBuilder =
                 S3AsyncClient.crtBuilder()
                     .credentialsProvider(credentialsProvider)
                     .region(Region.of(region))
-                    .targetThroughputInGbps(20.0) // ??? make a separate setting?
+                    .targetThroughputInGbps(EDStatic.config.s3TargetThroughputInGbps)
                     .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+            if (EDStatic.config.s3MaxConcurrency != null && EDStatic.config.s3MaxConcurrency > 0) {
+              crtBuilder.maxConcurrency(EDStatic.config.s3MaxConcurrency);
+            }
+            builder = crtBuilder;
           } else {
             builder =
                 S3AsyncClient.builder()
