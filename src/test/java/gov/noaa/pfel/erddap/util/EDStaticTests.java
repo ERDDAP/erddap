@@ -4,10 +4,16 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 import com.cohort.array.Attributes;
+import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import testDataset.Initialization;
 
@@ -496,5 +502,59 @@ public class EDStaticTests {
 
   private void checkUrlExpectation(String message, String expected, String result) {
     Test.ensureEqual(result, expected, message + ": expected=" + expected + " got=" + result);
+  }
+
+  /**
+   * A request that names a real dataset but matches no data returned 404, which a client cannot
+   * distinguish from a missing dataset. The status is now admin-settable, still defaulting to 404.
+   * See https://github.com/ERDDAP/erddap/issues/410
+   */
+  @org.junit.jupiter.api.Test
+  void testNoDataStatusCodeIsConfigurable() throws Exception {
+    String2.log("\n***** EDStatic.testNoDataStatusCodeIsConfigurable");
+    int cachedNoDataStatusCode = EDStatic.config.noDataStatusCode;
+    int cachedSlowDown = EDStatic.config.slowDownTroubleMillis;
+    try {
+      EDStatic.config.slowDownTroubleMillis = 0; // no need to delay a test
+
+      EDStatic.config.noDataStatusCode = EDConfig.DEFAULT_noDataStatusCode;
+      Test.ensureEqual(
+          statusSentFor(new SimpleException(MustBe.THERE_IS_NO_DATA)),
+          404,
+          "no data keeps 404 by default");
+
+      EDStatic.config.noDataStatusCode = 200;
+      Test.ensureEqual(
+          statusSentFor(new SimpleException(MustBe.THERE_IS_NO_DATA)),
+          200,
+          "no data uses the configured status");
+
+      // A dataset that genuinely is not there stays 404 whatever the setting says.
+      Test.ensureEqual(
+          statusSentFor(
+              new SimpleException(
+                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0) + " datasetID=x")),
+          404,
+          "a missing resource is unaffected");
+
+    } finally {
+      EDStatic.config.noDataStatusCode = cachedNoDataStatusCode;
+      EDStatic.config.slowDownTroubleMillis = cachedSlowDown;
+    }
+  }
+
+  /** Returns the HTTP status EDStatic.sendError puts on the response for the given error. */
+  private int statusSentFor(Throwable t) throws Exception {
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(request.getRequestURI()).thenReturn("/erddap/tabledap/testTable.csv");
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(response.isCommitted()).thenReturn(false);
+    Mockito.when(response.getOutputStream()).thenReturn(Mockito.mock(ServletOutputStream.class));
+
+    EDStatic.sendError(1, request, response, t);
+
+    ArgumentCaptor<Integer> status = ArgumentCaptor.forClass(Integer.class);
+    Mockito.verify(response).setStatus(status.capture());
+    return status.getValue();
   }
 }

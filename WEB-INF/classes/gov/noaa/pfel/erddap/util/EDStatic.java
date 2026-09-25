@@ -4149,9 +4149,16 @@ public class EDStatic {
       if (tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) >= 0
           || tError.indexOf(MustBe.THERE_IS_NO_DATA)
               >= 0) { // check this first, since may also be Query error
-        errorNo = HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
+        // A missing resource is always 404. A real dataset that matched no data is
+        // indistinguishable from that for a client, so admins can set noDataStatusCode
+        // in setup.xml. It defaults to 404, the long-standing behavior.
         // I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for
         // these codes
+        errorNo =
+            tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0
+                    && tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) < 0
+                ? config.noDataStatusCode
+                : HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
 
       } else if (tError.indexOf(messages.get(Message.QUERY_ERROR, 0)) >= 0) {
         errorNo = HttpServletResponse.SC_BAD_REQUEST; // http error 400 (won't succeed later)
