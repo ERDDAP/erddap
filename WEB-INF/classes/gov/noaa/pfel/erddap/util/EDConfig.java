@@ -180,14 +180,6 @@ public class EDConfig {
   public static final boolean DEFAULT_showLoadErrorsOnStatusPage = true;
   public static final int DEFAULT_lowMemCacheGbLimit = 4;
 
-  /**
-   * The HTTP status code for a request that names a real dataset but matches no data. 404 is the
-   * long-standing behavior and stays the default, but it is indistinguishable from a missing
-   * resource, so admins fronting ERDDAP with a browser client or a scanner-banning proxy can move
-   * it to 200 or 400. See https://github.com/ERDDAP/erddap/issues/410
-   */
-  public static final int DEFAULT_noDataStatusCode = 404;
-
   // Mqtt default configs
   public static final String DEFAULT_MQTT_HOST = "localhost";
   public static final int DEFAULT_MQTT_PORT = 1883;
@@ -203,7 +195,6 @@ public class EDConfig {
   public long cacheClearMillis = cacheMillis / 4;
   public long requestCacheMillis = cacheMillis / 15;
   public int lowMemCacheGbLimit = DEFAULT_lowMemCacheGbLimit;
-  public int noDataStatusCode = DEFAULT_noDataStatusCode;
   public String drawLandMask = DEFAULT_drawLandMask;
   public boolean emailDiagnosticsToErdData = true;
   public Color graphBackgroundColor = new Color(DEFAULT_graphBackgroundColorInt, true); // hasAlpha
@@ -288,6 +279,15 @@ public class EDConfig {
   @FeatureFlag public boolean ncHeaderMakeFile = false;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
+
+  /**
+   * When true, a request that names a real dataset but matches no data answers 422 Unprocessable
+   * Content instead of 404, so a client can tell it apart from a dataset that is not there while
+   * raise_for_status() and similar checks still fire. Off by default, which keeps the long-standing
+   * 404. See https://github.com/ERDDAP/erddap/issues/410
+   */
+  @FeatureFlag public boolean use422ForNoDataStatusCode = false;
+
   @FeatureFlag public boolean useHeadersForUrl = true;
   @FeatureFlag public boolean verifyHostNameErddapUrl = true;
   public java.util.Set<String> allowedHosts =
@@ -650,7 +650,6 @@ public class EDConfig {
     backgroundCreateSubsetTables =
         getSetupEVBoolean(setup, ev, "backgroundCreateSubsetTables", true);
     lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
-    noDataStatusCode = getSetupEVInt(setup, ev, "noDataStatusCode", DEFAULT_noDataStatusCode);
     loadDatasetsMinMillis =
         Math.max(
                 1,
@@ -690,6 +689,7 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
+    use422ForNoDataStatusCode = getSetupEVBoolean(setup, ev, "use422ForNoDataStatusCode", false);
     useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
 
     verifyHostNameErddapUrl = getSetupEVBoolean(setup, ev, "verifyHostNameErddapUrl", true);

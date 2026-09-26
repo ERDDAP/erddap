@@ -506,30 +506,38 @@ public class EDStaticTests {
 
   /**
    * A request that names a real dataset but matches no data returned 404, which a client cannot
-   * distinguish from a missing dataset. The status is now admin-settable, still defaulting to 404.
-   * See https://github.com/ERDDAP/erddap/issues/410
+   * distinguish from a missing dataset. use422ForNoDataStatusCode answers 422 for it instead,
+   * staying in the 4xx range so raise_for_status() and similar checks still fire. See
+   * https://github.com/ERDDAP/erddap/issues/410
    */
   @org.junit.jupiter.api.Test
-  void testNoDataStatusCodeIsConfigurable() throws Exception {
-    String2.log("\n***** EDStatic.testNoDataStatusCodeIsConfigurable");
-    int cachedNoDataStatusCode = EDStatic.config.noDataStatusCode;
+  void testUse422ForNoDataStatusCode() throws Exception {
+    String2.log("\n***** EDStatic.testUse422ForNoDataStatusCode");
+    boolean cachedUse422 = EDStatic.config.use422ForNoDataStatusCode;
     int cachedSlowDown = EDStatic.config.slowDownTroubleMillis;
     try {
       EDStatic.config.slowDownTroubleMillis = 0; // no need to delay a test
 
-      EDStatic.config.noDataStatusCode = EDConfig.DEFAULT_noDataStatusCode;
+      EDStatic.config.use422ForNoDataStatusCode = false;
       Test.ensureEqual(
           statusSentFor(new SimpleException(MustBe.THERE_IS_NO_DATA)),
           404,
-          "no data keeps 404 by default");
+          "no data keeps 404 while the flag is off");
 
-      EDStatic.config.noDataStatusCode = 200;
+      EDStatic.config.use422ForNoDataStatusCode = true;
       Test.ensureEqual(
           statusSentFor(new SimpleException(MustBe.THERE_IS_NO_DATA)),
-          200,
-          "no data uses the configured status");
+          422,
+          "no data answers 422 while the flag is on");
+      // lowSendError puts the status name at the front of the body, so 422 needs to be
+      // known there too or the body loses it.
+      Test.ensureTrue(
+          bodySentFor(new SimpleException(MustBe.THERE_IS_NO_DATA))
+                  .indexOf("Unprocessable Content:")
+              >= 0,
+          "the 422 body names its status");
 
-      // A dataset that genuinely is not there stays 404 whatever the setting says.
+      // A dataset that genuinely is not there stays 404 either way.
       Test.ensureEqual(
           statusSentFor(
               new SimpleException(
@@ -538,9 +546,37 @@ public class EDStaticTests {
           "a missing resource is unaffected");
 
     } finally {
-      EDStatic.config.noDataStatusCode = cachedNoDataStatusCode;
+      EDStatic.config.use422ForNoDataStatusCode = cachedUse422;
       EDStatic.config.slowDownTroubleMillis = cachedSlowDown;
     }
+  }
+
+  /** Returns the body EDStatic.sendError writes to the response for the given error. */
+  private String bodySentFor(Throwable t) throws Exception {
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(request.getRequestURI()).thenReturn("/erddap/tabledap/testTable.csv");
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(response.isCommitted()).thenReturn(false);
+    java.io.ByteArrayOutputStream body = new java.io.ByteArrayOutputStream();
+    Mockito.when(response.getOutputStream())
+        .thenReturn(
+            new ServletOutputStream() {
+              @Override
+              public boolean isReady() {
+                return true;
+              }
+
+              @Override
+              public void setWriteListener(jakarta.servlet.WriteListener listener) {}
+
+              @Override
+              public void write(int b) {
+                body.write(b);
+              }
+            });
+
+    EDStatic.sendError(1, request, response, t);
+    return body.toString(java.nio.charset.StandardCharsets.UTF_8);
   }
 
   /** Returns the HTTP status EDStatic.sendError puts on the response for the given error. */
