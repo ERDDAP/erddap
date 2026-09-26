@@ -4150,9 +4150,19 @@ public class EDStatic {
       if (tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) >= 0
           || tError.indexOf(MustBe.THERE_IS_NO_DATA)
               >= 0) { // check this first, since may also be Query error
-        errorNo = HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
+        // A missing resource is always 404. A real dataset that matched no data is
+        // indistinguishable from that for a client, so use422ForNoDataStatusCode lets an
+        // admin answer 422 for it instead. Staying in the 4xx range keeps
+        // raise_for_status() and similar client checks firing. The flag is off by
+        // default, which keeps the long-standing 404.
         // I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for
         // these codes
+        errorNo =
+            config.use422ForNoDataStatusCode
+                    && tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0
+                    && tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) < 0
+                ? 422 // Unprocessable Content, not defined in HttpServletResponse
+                : HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
 
       } else if (tError.indexOf(messages.get(Message.QUERY_ERROR, 0)) >= 0) {
         errorNo = HttpServletResponse.SC_BAD_REQUEST; // http error 400 (won't succeed later)
@@ -4294,6 +4304,8 @@ public class EDStatic {
       msg = "Payload Too Large: " + msg;
       else if (errorNo == HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE) // http error 416
       msg = "Requested Range Not Satisfiable: " + msg;
+      else if (errorNo == 422) // http error 422  isn't defined in HttpServletResponse.
+      msg = "Unprocessable Content: " + msg;
       else if (errorNo == 429) // http error 429  isn't defined in HttpServletResponse.
       msg = "Too Many Requests: " + msg;
       else if (errorNo == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) // http error 500
