@@ -35,6 +35,7 @@ import gov.noaa.pfel.erddap.variable.EDVLon;
 import gov.noaa.pfel.erddap.variable.EDVTime;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
 import opendap.dap.BaseType;
@@ -48,6 +49,7 @@ import thredds.client.catalog.ServiceType;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
@@ -402,7 +404,8 @@ public class EDDTableFromDapSequence extends EDDTable {
     } else {
       // Fetch from NetcdfDataset
       DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, localSourceUrl);
-      try (NetcdfDataset dataset = NetcdfDatasets.openDataset(durl, null, -1, null, null)) {
+      try (NetcdfDataset dataset =
+          NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
         sourceGlobalAttributes = new Attributes();
         NcHelper.getGroupAttributes(dataset.getRootGroup(), sourceGlobalAttributes);
 

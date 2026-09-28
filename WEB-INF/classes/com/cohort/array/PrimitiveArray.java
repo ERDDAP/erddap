@@ -1090,26 +1090,17 @@ public abstract class PrimitiveArray {
   public abstract String getString(int index);
 
   /**
-   * Return a value from the array as a String suitable for a JSON file. char returns a String with
-   * 1 character. String returns a json String with chars above 127 encoded as \\udddd.
-   *
-   * @param index the index number 0 ... size-1
-   * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
-   *     Represent NaN as null? yes, that is what json library does If I go to https://jsonlint.com/
-   *     and enter [1, 2.0, 1e30], it says it is valid. If I enter [1, 2.0, NaN, 1e30], it says NaN
-   *     is not valid.
-   */
-  public abstract String getJsonString(int index);
-
-  /**
-   * Appends a value from the array as a String suitable for a JSON file directly to sb.
+   * Appends a value from the array as a String suitable for a JSON file directly to sb. char
+   * returns a String with 1 character. String returns a json String with chars above 127 encoded as
+   * \\udddd. For numeric types, this appends ("" + ar[index]), or null for NaN or infinity.
+   * Represent NaN as null? yes, that is what json library does If I go to https://jsonlint.com/ and
+   * enter [1, 2.0, 1e30], it says it is valid. If I enter [1, 2.0, NaN, 1e30], it says NaN is not
+   * valid.
    *
    * @param index the index number 0 ... size-1
    * @param sb the StringBuilder to append to
    */
-  public void getJsonString(int index, StringBuilder sb) {
-    sb.append(getJsonString(index));
-  }
+  public abstract void getJsonString(int index, StringBuilder sb);
 
   /**
    * Return a value from the array as a String suitable for the data section of an NCCSV file. This
@@ -1895,7 +1886,7 @@ public abstract class PrimitiveArray {
    * @param dos
    * @param i the index of the element to be written
    */
-  public void externalizeForDODS(DataOutputStream dos, int i) throws Exception {
+  public void externalizeForDODS(DataOutputStream dos, int i, byte[] workBuffer) throws Exception {
     writeDos(dos, i);
   }
 

@@ -15,6 +15,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.BufferedFileChannel;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.io.DataInputStream;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,12 +38,14 @@ public class TableWriterAll extends TableWriter {
 
   // set by constructor
   protected final String dir;
+  protected final Path basePath; // Cached normalized path to avoid repeated normalization
   protected final String fileNameNoExt;
 
   // set firstTime
   // POLICY: because this class may be used in more than one thread,
   // each instance makes unique temp files names by adding randomInt to name.
   protected volatile BufferedFileChannel[] columnStreams;
+  protected volatile String[] columnFilePaths; // Cached absolute paths per column
   protected volatile long totalNRows = 0;
 
   protected Table cumulativeTable; // set by writeAllAndFinish, if used
@@ -64,17 +67,16 @@ public class TableWriterAll extends TableWriter {
     // Normally, this is cacheDirectory and it already exists,
     //  but my testing environment (2+ things running) may have removed it.
     File2.makeDirectory(dir);
+    basePath = Paths.get(dir).toAbsolutePath().normalize();
     fileNameNoExt = tFileNameNoExt;
-    cleanupAction = new CleanupTableWriterAction(dir, fileNameNoExt, randomInt);
+    cleanupAction = new CleanupTableWriterAction();
     EDStatic.cleaner.register(this, cleanupAction);
   }
 
-  public static String sanitizePath(String relativeOrFullPath, String baseDir)
-      throws SecurityException {
+  /** Instance helper using pre-normalized basePath to avoid repeated Path conversions */
+  private String sanitizePath(String relativeOrFullPath) {
     try {
-      Path basePath = Paths.get(baseDir).toAbsolutePath().normalize();
       Path targetPath = basePath.resolve(relativeOrFullPath).toAbsolutePath().normalize();
-
       if (!targetPath.startsWith(basePath)) {
         throw new SecurityException(
             String2.ERROR + " in sanitizePath: Path traversal outside base directory");
@@ -89,19 +91,16 @@ public class TableWriterAll extends TableWriter {
   private static final class CleanupTableWriterAction implements Runnable {
 
     private BufferedFileChannel[] columnStreams;
-    private String[] columnNames;
-    private final String dir;
-    private final String fileNameNoExt;
-    private final int randomInt;
+    private String[] columnFilePaths;
 
-    private CleanupTableWriterAction(String dir, String fileNameNoExt, int randomInt) {
-      this.dir = dir;
-      this.fileNameNoExt = fileNameNoExt;
-      this.randomInt = randomInt;
-    }
+    private CleanupTableWriterAction() {}
 
     private void setColumnStreams(BufferedFileChannel[] columnStreams) {
       this.columnStreams = columnStreams;
+    }
+
+    private void setColumnFilePaths(String[] columnFilePaths) {
+      this.columnFilePaths = columnFilePaths;
     }
 
     @Override
@@ -121,24 +120,18 @@ public class TableWriterAll extends TableWriter {
           columnStreams = null;
         }
 
-        if (columnNames == null) return;
-        for (String columnName : columnNames) {
-          File2.simpleDelete(
-              dir
-                  + fileNameNoExt
-                  + "."
-                  + randomInt
-                  + "."
-                  + String2.encodeFileNameSafe(columnName)
-                  + ".temp");
+        // Use pre-computed paths if available
+        if (columnFilePaths != null) {
+          for (String path : columnFilePaths) {
+            if (path != null) {
+              File2.simpleDelete(path);
+            }
+          }
+          return;
         }
       } catch (Throwable t) {
         String2.log("TableWriterAll.releaseResources caught:\n" + MustBe.throwableToString(t));
       }
-    }
-
-    private void setColumnNames(String[] columnNames) {
-      this.columnNames = columnNames;
     }
   }
 
@@ -152,11 +145,14 @@ public class TableWriterAll extends TableWriter {
     int nColumns = table.nColumns();
     if (firstTime) {
       columnStreams = new BufferedFileChannel[nColumns];
-      cleanupAction.setColumnStreams(columnStreams);
-      cleanupAction.setColumnNames(columnNames);
+      columnFilePaths = new String[nColumns];
+
       for (int col = 0; col < nColumns; col++) {
         String tFileName = columnFileName(col);
-        String sanitizedFileName = sanitizePath(tFileName, dir);
+        // Compute and cache sanitized absolute path once per column
+        String sanitizedFileName = sanitizePath(tFileName);
+        columnFilePaths[col] = sanitizedFileName;
+
         FileChannel fc =
             FileChannel.open(
                 Paths.get(sanitizedFileName),
@@ -173,6 +169,9 @@ public class TableWriterAll extends TableWriter {
                   + " col0 file="
                   + tFileName);
       }
+
+      cleanupAction.setColumnStreams(columnStreams);
+      cleanupAction.setColumnFilePaths(columnFilePaths);
     }
 
     long newTotalNRows = totalNRows + table.nRows();
@@ -216,23 +215,38 @@ public class TableWriterAll extends TableWriter {
     if (channel == null || destBuffer == null || maxRows <= 0 || startRow < 0) {
       return;
     }
+
     if (destBuffer instanceof com.cohort.array.StringArray sa) {
       if (startRow == 0) {
         channel.position(0);
-      } else if (channel.position() == 0) {
-        DataInputStream dis =
-            new DataInputStream(java.nio.channels.Channels.newInputStream(channel));
+      }
+
+      DataInputStream dis = new DataInputStream(Channels.newInputStream(channel));
+
+      // Seek to startRow if startRow > 0
+      if (startRow > 0 && channel.position() == 0) {
         for (long i = 0; i < startRow; i++) {
-          dis.readUTF();
+          try {
+            int utfLen = dis.readUnsignedShort();
+            int skipped = dis.skipBytes(utfLen);
+            if (skipped < utfLen) {
+              return; // EOF reached during seek
+            }
+          } catch (java.io.EOFException eof) {
+            return;
+          }
         }
       }
-      DataInputStream dis = new DataInputStream(java.nio.channels.Channels.newInputStream(channel));
-      try {
-        sa.ensureCapacity(sa.size() + maxRows);
-        for (int i = 0; i < maxRows; i++) {
+
+      sa.ensureCapacity(sa.size() + maxRows);
+
+      // Read target rows; EOFException signals clean end-of-file
+      for (int i = 0; i < maxRows; i++) {
+        try {
           sa.add(dis.readUTF());
+        } catch (java.io.EOFException eof) {
+          break; // Standard and correct exit at EOF
         }
-      } catch (java.io.EOFException eof) {
       }
     } else {
       int elementSize = destBuffer.elementSize();
@@ -256,8 +270,13 @@ public class TableWriterAll extends TableWriter {
     Math2.ensureArraySizeOkay(totalNRows, "TableWriterAll");
     PrimitiveArray pa = PrimitiveArray.factory(columnType(col), (int) totalNRows, false);
     pa.setMaxIsMV(columnMaxIsMV[col]);
-    String tFileName = columnFileName(col);
-    String sanitizedFileName = sanitizePath(tFileName, dir);
+
+    // Use pre-computed column path if available
+    String sanitizedFileName =
+        (columnFilePaths != null && columnFilePaths[col] != null)
+            ? columnFilePaths[col]
+            : sanitizePath(columnFileName(col));
+
     try (FileChannel channel =
         FileChannel.open(Paths.get(sanitizedFileName), StandardOpenOption.READ)) {
       readColumnChunk(col, channel, pa, 0, (int) totalNRows);
@@ -270,8 +289,10 @@ public class TableWriterAll extends TableWriter {
   }
 
   public FileChannel openColumnChannel(int col) throws Exception {
-    String tFileName = columnFileName(col);
-    String sanitizedFileName = sanitizePath(tFileName, dir);
+    String sanitizedFileName =
+        (columnFilePaths != null && columnFilePaths[col] != null)
+            ? columnFilePaths[col]
+            : sanitizePath(columnFileName(col));
     return FileChannel.open(Paths.get(sanitizedFileName), StandardOpenOption.READ);
   }
 
@@ -289,7 +310,11 @@ public class TableWriterAll extends TableWriter {
   }
 
   public void ensureMemoryForCumulativeTable() {
-    Table table = makeEmptyTable();
+    ensureMemoryForCumulativeTable(makeEmptyTable());
+  }
+
+  /** Overload to reuse an already-instantiated Table object */
+  public void ensureMemoryForCumulativeTable(Table table) {
     Math2.ensureMemoryAvailable(
         nColumns() * nRows() * table.estimatedBytesPerRow(), "TableWriterAll.cumulativeTable");
   }
@@ -300,7 +325,7 @@ public class TableWriterAll extends TableWriter {
     Table table = makeEmptyTable();
 
     int nColumns = nColumns();
-    ensureMemoryForCumulativeTable();
+    ensureMemoryForCumulativeTable(table); // Reuses table instead of calling makeEmptyTable() again
 
     for (int col = 0; col < nColumns; col++) table.setColumn(col, column(col));
 
@@ -326,10 +351,19 @@ public class TableWriterAll extends TableWriter {
         columnStreams = null;
       }
 
+      if (columnFilePaths != null) {
+        for (int col = 0; col < columnFilePaths.length; col++) {
+          if (columnFilePaths[col] != null) {
+            File2.simpleDelete(columnFilePaths[col]);
+          }
+        }
+        return;
+      }
+
       if (columnNames == null) return;
       int nColumns = nColumns();
       for (int col = 0; col < nColumns; col++) {
-        File2.simpleDelete(sanitizePath(columnFileName(col), dir));
+        File2.simpleDelete(sanitizePath(columnFileName(col)));
       }
     } catch (Throwable t) {
       String2.log("TableWriterAll.releaseResources caught:\n" + MustBe.throwableToString(t));
