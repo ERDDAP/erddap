@@ -18,6 +18,8 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import dev.zarr.zarrjava.ZarrException;
+import dev.zarr.zarrjava.core.Array;
+import dev.zarr.zarrjava.core.ArrayMetadata;
 import dev.zarr.zarrjava.core.Group;
 import dev.zarr.zarrjava.core.Node;
 import dev.zarr.zarrjava.store.FilesystemStore;
@@ -25,6 +27,7 @@ import dev.zarr.zarrjava.store.HttpStore;
 import dev.zarr.zarrjava.store.S3Store;
 import dev.zarr.zarrjava.store.Store;
 import dev.zarr.zarrjava.store.StoreHandle;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.erddap.Erddap;
@@ -44,8 +47,11 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -304,47 +310,22 @@ public class EDDGridFromZarr extends EDDGrid {
     if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
       combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
 
-    // Initialize axes and data variables
-    if (tDataVariables != null) {
-      dataVariables = new EDV[tDataVariables.size()];
-      for (int dv = 0; dv < tDataVariables.size(); dv++) {
-        String tDataSourceName = tDataVariables.get(dv).sourceName();
-        String tDataDestName = tDataVariables.get(dv).destinationName();
-        if (!String2.isSomething(tDataDestName)) tDataDestName = tDataSourceName;
+    // Discover Zarr metadata
+    Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata();
 
-        Attributes tDataSourceAtts = new Attributes();
-        LocalizedAttributes tDataAddAtts = tDataVariables.get(dv).attributes();
-        if (tDataAddAtts == null) tDataAddAtts = new LocalizedAttributes();
+    // Build grid axes
+    this.axisVariables = buildGridAxes(tAxisVariables, arrayMap);
 
-        String dvSourceDataType = tDataVariables.get(dv).dataType();
-        if (!String2.isSomething(dvSourceDataType)) dvSourceDataType = "double";
-
-        if (tDataDestName.equals(EDV.TIME_NAME))
-          throw new RuntimeException(
-              errorInMethod + "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
-        else if (EDVTime.hasTimeUnits(language, tDataSourceAtts, tDataAddAtts))
-          dataVariables[dv] =
-              new EDVTimeStamp(
-                  datasetID,
-                  tDataSourceName,
-                  tDataDestName,
-                  tDataSourceAtts,
-                  tDataAddAtts,
-                  dvSourceDataType);
-        else
-          dataVariables[dv] =
-              new EDV(
-                  datasetID,
-                  tDataSourceName,
-                  tDataDestName,
-                  tDataSourceAtts,
-                  tDataAddAtts,
-                  dvSourceDataType,
-                  PAOne.fromDouble(Double.NaN),
-                  PAOne.fromDouble(Double.NaN));
-        dataVariables[dv].extractAndSetActualRange(language);
+    // Collect axis source names
+    Set<String> axisSourceNames = new HashSet<>();
+    for (EDVGridAxis axis : this.axisVariables) {
+      if (axis != null && axis.sourceName() != null) {
+        axisSourceNames.add(axis.sourceName());
       }
     }
+
+    // Build data variables
+    this.dataVariables = buildDataVariables(tDataVariables, arrayMap, axisSourceNames);
 
     ensureValid();
 
@@ -503,8 +484,10 @@ public class EDDGridFromZarr extends EDDGrid {
    * // TODO (Prompt 2) / // TODO (Prompt 3)
    */
   public PrimitiveArray getAxisData(int axisIndex) throws Throwable {
-    // TODO (Prompt 2) / // TODO (Prompt 3): Implement axis variable data extraction from Zarr store
-    throw new UnsupportedOperationException("getAxisData not yet implemented.");
+    if (axisVariables != null && axisIndex >= 0 && axisIndex < axisVariables.length) {
+      return axisVariables[axisIndex].sourceValues();
+    }
+    return null;
   }
 
   /**
@@ -559,5 +542,466 @@ public class EDDGridFromZarr extends EDDGrid {
       throws Throwable {
     // TODO (Prompt 2) / // TODO (Prompt 3): Implement datasets.xml generation for Zarr datasets
     throw new UnsupportedOperationException("generateDatasetsXml for Zarr not yet implemented.");
+  }
+
+  /**
+   * Helper class to hold metadata for a Zarr array discovered in the store/group.
+   */
+  protected static class ZarrArrayInfo {
+    public String name;
+    public Array array;
+    public long[] shape;
+    public int[] chunkShape;
+    public PAType paType;
+    public Attributes attributes;
+    public String[] dimensionNames;
+
+    public boolean is1D() {
+      return shape != null && shape.length == 1;
+    }
+  }
+
+  /**
+   * Parses Zarr metadata from the open Zarr group, discovering all array nodes,
+   * extracting array shapes, chunk dimensions, data types, attributes, and dimension names.
+   *
+   * @return Map of array name to ZarrArrayInfo
+   * @throws Throwable if error
+   */
+  protected Map<String, ZarrArrayInfo> parseZarrMetadata() throws Throwable {
+    Map<String, ZarrArrayInfo> arrayMap = new LinkedHashMap<>();
+    Node[] nodes;
+    try {
+      nodes = this.zarrGroup.listAsArray();
+    } catch (Exception e) {
+      nodes = new Node[0];
+    }
+
+    for (Node node : nodes) {
+      if (node instanceof Array zarray) {
+        String name = getArrayName(zarray);
+        if (String2.isSomething(name)) {
+          ZarrArrayInfo info = createZarrArrayInfo(name, zarray);
+          if (info != null) {
+            arrayMap.put(name, info);
+          }
+        }
+      }
+    }
+    return arrayMap;
+  }
+
+  private ZarrArrayInfo getOrOpenZarrArrayInfo(String name, Map<String, ZarrArrayInfo> arrayMap) {
+    if (arrayMap.containsKey(name)) {
+      return arrayMap.get(name);
+    }
+    try {
+      Node node = this.zarrGroup.get(name);
+      if (node instanceof Array zarray) {
+        ZarrArrayInfo info = createZarrArrayInfo(name, zarray);
+        if (info != null) {
+          arrayMap.put(name, info);
+          return info;
+        }
+      }
+    } catch (Throwable e) {
+      try {
+        StoreHandle childHandle = this.zarrGroup.storeHandle.resolve(name);
+        Array zarray = Array.open(childHandle);
+        ZarrArrayInfo info = createZarrArrayInfo(name, zarray);
+        if (info != null) {
+          arrayMap.put(name, info);
+          return info;
+        }
+      } catch (Throwable e2) {
+        // ignore
+      }
+    }
+    return null;
+  }
+
+  private static String getArrayName(Array zarray) {
+    if (zarray != null && zarray.storeHandle != null && zarray.storeHandle.keys != null && zarray.storeHandle.keys.length > 0) {
+      return zarray.storeHandle.keys[zarray.storeHandle.keys.length - 1];
+    }
+    return "";
+  }
+
+  private static ZarrArrayInfo createZarrArrayInfo(String name, Array zarray) throws Throwable {
+    ArrayMetadata metadata = zarray.metadata();
+    if (metadata == null) return null;
+    long[] shape = metadata.shape;
+    if (shape == null) shape = new long[0];
+    int[] chunkShape = metadata.chunkShape();
+    dev.zarr.zarrjava.core.DataType zType = metadata.dataType();
+    ucar.ma2.DataType ma2Type = zType != null ? zType.getMA2DataType() : ucar.ma2.DataType.DOUBLE;
+    PAType paType = NcHelper.getElementPAType(ma2Type);
+
+    Attributes erddapAtts = new Attributes();
+    dev.zarr.zarrjava.core.Attributes zattrs = metadata.attributes();
+    if (zattrs != null) {
+      populateAttributesFromZarr(zattrs, erddapAtts);
+    }
+
+    if (erddapAtts.get("_FillValue") == null && metadata.parsedFillValue() != null) {
+      Object fv = metadata.parsedFillValue();
+      if (fv instanceof Number n) {
+        if (fv instanceof Double || fv instanceof Float) {
+          erddapAtts.set("_FillValue", n.doubleValue());
+        } else if (fv instanceof Long) {
+          erddapAtts.set("_FillValue", n.longValue());
+        } else {
+          erddapAtts.set("_FillValue", n.intValue());
+        }
+      } else if (fv instanceof String s) {
+        erddapAtts.set("_FillValue", s);
+      }
+    }
+
+    String[] dimNames = extractDimensionNames(metadata, shape.length);
+
+    ZarrArrayInfo info = new ZarrArrayInfo();
+    info.name = name;
+    info.array = zarray;
+    info.shape = shape;
+    info.chunkShape = chunkShape;
+    info.paType = paType;
+    info.attributes = erddapAtts;
+    info.dimensionNames = dimNames;
+    return info;
+  }
+
+  private static String[] extractDimensionNames(ArrayMetadata metadata, int rank) {
+    // 1. Check Zarr v3 dimensionNames
+    if (metadata instanceof dev.zarr.zarrjava.v3.ArrayMetadata v3Meta) {
+      if (v3Meta.dimensionNames != null && v3Meta.dimensionNames.length == rank) {
+        boolean valid = true;
+        for (String d : v3Meta.dimensionNames) {
+          if (!String2.isSomething(d)) {
+            valid = false;
+            break;
+          }
+        }
+        if (valid) return v3Meta.dimensionNames;
+      }
+    }
+
+    // 2. Check _ARRAY_DIMENSIONS attribute (Zarr v2 / xarray convention)
+    try {
+      dev.zarr.zarrjava.core.Attributes zattrs = metadata.attributes();
+      if (zattrs != null && zattrs.containsKey("_ARRAY_DIMENSIONS")) {
+        Object obj = zattrs.get("_ARRAY_DIMENSIONS");
+        String[] dims = parseStringArrayObject(obj);
+        if (dims != null && dims.length == rank) {
+          return dims;
+        }
+      }
+    } catch (Exception e) {
+      // ignore
+    }
+
+    // 3. Fallback to dim0, dim1, ...
+    String[] defaultDims = new String[rank];
+    for (int i = 0; i < rank; i++) {
+      defaultDims[i] = "dim" + i;
+    }
+    return defaultDims;
+  }
+
+  private static String[] parseStringArrayObject(Object obj) {
+    if (obj == null) return null;
+    if (obj instanceof String[] sa) return sa;
+    if (obj instanceof List<?> list) {
+      String[] res = new String[list.size()];
+      for (int i = 0; i < list.size(); i++) {
+        Object item = list.get(i);
+        res[i] = item != null ? item.toString().trim() : "";
+      }
+      return res;
+    }
+    if (obj instanceof Object[] oa) {
+      String[] res = new String[oa.length];
+      for (int i = 0; i < oa.length; i++) {
+        res[i] = oa[i] != null ? oa[i].toString().trim() : "";
+      }
+      return res;
+    }
+    if (obj instanceof String s) {
+      String trimmed = s.trim();
+      if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+        trimmed = trimmed.substring(1, trimmed.length() - 1);
+      }
+      String[] parts = String2.split(trimmed, ',');
+      for (int i = 0; i < parts.length; i++) {
+        parts[i] = stripQuotes(parts[i]);
+      }
+      return parts;
+    }
+    return null;
+  }
+
+  private static String stripQuotes(String s) {
+    if (s == null) return "";
+    s = s.trim();
+    if (s.length() >= 2 && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))) {
+      s = s.substring(1, s.length() - 1);
+    }
+    return s.trim();
+  }
+
+  /**
+   * Builds ERDDAP EDVGridAxis instances for each dimension.
+   *
+   * @param tAxisVariables explicit axis specifications from XML (or empty/null for auto-discovery)
+   * @param arrayMap map of Zarr array metadata
+   * @return EDVGridAxis[] array of constructed grid axes
+   * @throws Throwable if error or missing/invalid axes
+   */
+  protected EDVGridAxis[] buildGridAxes(
+      List<AxisVariableInfo> tAxisVariables, Map<String, ZarrArrayInfo> arrayMap)
+      throws Throwable {
+
+    List<EDVGridAxis> axesList = new ArrayList<>();
+
+    if (tAxisVariables != null && !tAxisVariables.isEmpty()) {
+      for (int av = 0; av < tAxisVariables.size(); av++) {
+        AxisVariableInfo avi = tAxisVariables.get(av);
+        String sourceName = avi.sourceName();
+        String destName = avi.destinationName();
+        if (!String2.isSomething(destName)) destName = sourceName;
+
+        ZarrArrayInfo info = getOrOpenZarrArrayInfo(sourceName, arrayMap);
+        PrimitiveArray pa = null;
+        Attributes sourceAtts = new Attributes();
+
+        if (info != null) {
+          if (!info.is1D()) {
+            throw new SimpleException(
+                "Axis variable '" + sourceName + "' is not a 1D Zarr array (shape rank=" + info.shape.length + ").");
+          }
+          if (info.attributes != null) info.attributes.copyTo(sourceAtts);
+
+          ucar.ma2.Array nc2Array = info.array.read();
+          boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
+          pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
+        } else if (avi.values() != null && avi.values().size() > 0) {
+          pa = avi.values();
+        } else {
+          throw new SimpleException(
+              "Axis variable '" + sourceName + "' not found in Zarr store as 1D array.");
+        }
+
+        if (pa == null || pa.size() == 0) {
+          throw new SimpleException("Axis variable '" + sourceName + "' contains no values.");
+        }
+
+        sourceAtts.remove("_FillValue");
+        sourceAtts.remove("missing_value");
+
+        LocalizedAttributes addAtts = avi.attributes() != null ? avi.attributes() : new LocalizedAttributes();
+
+        EDVGridAxis edvga = makeAxisVariable(
+            datasetID, av, sourceName, destName, sourceAtts, addAtts, pa);
+        axesList.add(edvga);
+      }
+    } else {
+      // Auto-discovery mode: gather dimension names in order from N-dimensional data arrays
+      List<String> orderedDimNames = new ArrayList<>();
+      Map<String, Long> dimLengths = new LinkedHashMap<>();
+
+      for (ZarrArrayInfo info : arrayMap.values()) {
+        if (!info.is1D() && info.dimensionNames != null) {
+          for (int d = 0; d < info.dimensionNames.length; d++) {
+            String dimName = info.dimensionNames[d];
+            long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
+            if (!dimLengths.containsKey(dimName)) {
+              orderedDimNames.add(dimName);
+              dimLengths.put(dimName, len);
+            }
+          }
+        }
+      }
+
+      // If no N-dimensional arrays, fallback to all 1D arrays
+      if (orderedDimNames.isEmpty()) {
+        for (ZarrArrayInfo info : arrayMap.values()) {
+          if (info.is1D()) {
+            orderedDimNames.add(info.name);
+            dimLengths.put(info.name, info.shape[0]);
+          }
+        }
+      }
+
+      for (int av = 0; av < orderedDimNames.size(); av++) {
+        String dimName = orderedDimNames.get(av);
+        long dimLen = dimLengths.getOrDefault(dimName, 0L);
+
+        ZarrArrayInfo info = getOrOpenZarrArrayInfo(dimName, arrayMap);
+        PrimitiveArray pa = null;
+        Attributes sourceAtts = new Attributes();
+
+        if (info != null && info.is1D()) {
+          if (info.attributes != null) info.attributes.copyTo(sourceAtts);
+          ucar.ma2.Array nc2Array = info.array.read();
+          boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
+          pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
+        } else {
+          // Fallback: generate default index array 0, 1, ..., dimLen - 1
+          pa = PrimitiveArray.factory(PAType.INT, (int) dimLen, false);
+          for (int i = 0; i < dimLen; i++) {
+            pa.addInt(i);
+          }
+        }
+
+        if (pa == null || pa.size() == 0) {
+          throw new SimpleException("Dimension '" + dimName + "' has size 0.");
+        }
+
+        sourceAtts.remove("_FillValue");
+        sourceAtts.remove("missing_value");
+
+        EDVGridAxis edvga = makeAxisVariable(
+            datasetID, av, dimName, dimName, sourceAtts, new LocalizedAttributes(), pa);
+        axesList.add(edvga);
+      }
+    }
+
+    return axesList.toArray(new EDVGridAxis[0]);
+  }
+
+  /**
+   * Builds ERDDAP EDV data variables for gridded data arrays.
+   *
+   * @param tDataVariables explicit data variable specifications from XML (or null/empty for auto-discovery)
+   * @param arrayMap map of Zarr array metadata
+   * @param axisSourceNames set of array names used as coordinate axes
+   * @return EDV[] array of constructed data variables
+   * @throws Throwable if error
+   */
+  protected EDV[] buildDataVariables(
+      List<DataVariableInfo> tDataVariables,
+      Map<String, ZarrArrayInfo> arrayMap,
+      Set<String> axisSourceNames)
+      throws Throwable {
+
+    int language = EDMessages.DEFAULT_LANGUAGE;
+    List<EDV> dvList = new ArrayList<>();
+
+    if (tDataVariables != null && !tDataVariables.isEmpty()) {
+      for (int dv = 0; dv < tDataVariables.size(); dv++) {
+        DataVariableInfo dvi = tDataVariables.get(dv);
+        String tDataSourceName = dvi.sourceName();
+        String tDataDestName = dvi.destinationName();
+        if (!String2.isSomething(tDataDestName)) tDataDestName = tDataSourceName;
+
+        ZarrArrayInfo info = getOrOpenZarrArrayInfo(tDataSourceName, arrayMap);
+
+        Attributes tDataSourceAtts = new Attributes();
+        if (info != null && info.attributes != null) {
+          info.attributes.copyTo(tDataSourceAtts);
+        }
+
+        LocalizedAttributes tDataAddAtts = dvi.attributes();
+        if (tDataAddAtts == null) tDataAddAtts = new LocalizedAttributes();
+
+        String dvSourceDataType = dvi.dataType();
+        if (!String2.isSomething(dvSourceDataType) && info != null && info.paType != null) {
+          dvSourceDataType = PAType.toCohortString(info.paType);
+        }
+        if (!String2.isSomething(dvSourceDataType)) dvSourceDataType = "double";
+
+        if (tDataDestName.equals(EDV.TIME_NAME)) {
+          throw new SimpleException(
+              "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
+        }
+
+        EDV edv;
+        if (EDVTime.hasTimeUnits(language, tDataSourceAtts, tDataAddAtts)) {
+          edv = new EDVTimeStamp(
+              datasetID,
+              tDataSourceName,
+              tDataDestName,
+              tDataSourceAtts,
+              tDataAddAtts,
+              dvSourceDataType);
+        } else {
+          edv = new EDV(
+              datasetID,
+              tDataSourceName,
+              tDataDestName,
+              tDataSourceAtts,
+              tDataAddAtts,
+              dvSourceDataType,
+              PAOne.fromDouble(Double.NaN),
+              PAOne.fromDouble(Double.NaN));
+        }
+        edv.extractAndSetActualRange(language);
+        dvList.add(edv);
+      }
+    } else {
+      // Auto-discovery mode: find all N-dimensional arrays in group not used as axes
+      for (ZarrArrayInfo info : arrayMap.values()) {
+        if (axisSourceNames.contains(info.name)) continue;
+        if (info.is1D() && isLikelyAxisArray(info)) continue;
+
+        String tDataSourceName = info.name;
+        String tDataDestName = info.name;
+
+        Attributes tDataSourceAtts = new Attributes();
+        if (info.attributes != null) {
+          info.attributes.copyTo(tDataSourceAtts);
+        }
+
+        LocalizedAttributes tDataAddAtts = new LocalizedAttributes();
+        String dvSourceDataType = info.paType != null ? PAType.toCohortString(info.paType) : "double";
+
+        if (tDataDestName.equals(EDV.TIME_NAME)) continue;
+
+        EDV edv;
+        if (EDVTime.hasTimeUnits(language, tDataSourceAtts, tDataAddAtts)) {
+          edv = new EDVTimeStamp(
+              datasetID,
+              tDataSourceName,
+              tDataDestName,
+              tDataSourceAtts,
+              tDataAddAtts,
+              dvSourceDataType);
+        } else {
+          edv = new EDV(
+              datasetID,
+              tDataSourceName,
+              tDataDestName,
+              tDataSourceAtts,
+              tDataAddAtts,
+              dvSourceDataType,
+              PAOne.fromDouble(Double.NaN),
+              PAOne.fromDouble(Double.NaN));
+        }
+        edv.extractAndSetActualRange(language);
+        dvList.add(edv);
+      }
+    }
+
+    if (dvList.isEmpty()) {
+      throw new SimpleException("No gridded data variables found in Zarr store.");
+    }
+
+    return dvList.toArray(new EDV[0]);
+  }
+
+  private static boolean isLikelyAxisArray(ZarrArrayInfo info) {
+    if (info == null || !info.is1D()) return false;
+    String name = info.name.toLowerCase();
+    if (name.equals("time") || name.equals("lat") || name.equals("latitude")
+        || name.equals("lon") || name.equals("longitude") || name.equals("depth")
+        || name.equals("alt") || name.equals("altitude") || name.equals("elevation")) {
+      return true;
+    }
+    if (info.attributes != null) {
+      if (info.attributes.get("axis") != null || info.attributes.get("_CoordinateAxisType") != null) {
+        return true;
+      }
+    }
+    return false;
   }
 }

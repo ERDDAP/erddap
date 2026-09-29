@@ -137,7 +137,96 @@ class EDDGridFromZarrTests {
   }
 
   @Test
-  void testStubsThrowUnsupportedOperationException() throws Throwable {
+  void testZarrArrayMetadataDiscoveryAndGridAxes() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_discovery_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store = new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      // Create latitude 1D coordinate array
+      dev.zarr.zarrjava.v3.Array latArray = dev.zarr.zarrjava.v3.Array.create(
+          store.resolve("latitude"),
+          mb -> mb.withShape(3).withDataType(float64).withDimensionNames("latitude"),
+          true);
+      double[] latVals = new double[] {10.0, 20.0, 30.0};
+      latArray.write(ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {3}, latVals));
+
+      // Create longitude 1D coordinate array
+      dev.zarr.zarrjava.v3.Array lonArray = dev.zarr.zarrjava.v3.Array.create(
+          store.resolve("longitude"),
+          mb -> mb.withShape(4).withDataType(float64).withDimensionNames("longitude"),
+          true);
+      double[] lonVals = new double[] {-100.0, -90.0, -80.0, -70.0};
+      lonArray.write(ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {4}, lonVals));
+
+      // Create 2D data array (latitude, longitude)
+      dev.zarr.zarrjava.v3.Array tempArray = dev.zarr.zarrjava.v3.Array.create(
+          store.resolve("sst"),
+          mb -> mb.withShape(3, 4).withDataType(float64).withDimensionNames("latitude", "longitude"),
+          true);
+
+      dev.zarr.zarrjava.core.Attributes sstZattrs = new dev.zarr.zarrjava.core.Attributes();
+      sstZattrs.set("ioos_category", "Temperature");
+      tempArray.setAttributes(sstZattrs);
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Zarr Discovery Test");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_discovery_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              new ArrayList<>(),
+              new ArrayList<>(),
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      assertNotNull(dataset);
+      assertEquals("zarr_discovery_id", dataset.datasetID());
+
+      // Verify axis variables
+      assertEquals(2, dataset.axisVariables().length);
+      assertEquals("latitude", dataset.axisVariables()[0].sourceName());
+      assertEquals("longitude", dataset.axisVariables()[1].sourceName());
+
+      // Verify coordinate values loaded into memory
+      com.cohort.array.PrimitiveArray latPA = dataset.getAxisData(0);
+      assertNotNull(latPA);
+      assertEquals(3, latPA.size());
+      assertEquals(10.0, latPA.getDouble(0), 1e-6);
+      assertEquals(30.0, latPA.getDouble(2), 1e-6);
+
+      // Verify data variables
+      assertEquals(1, dataset.dataVariables().length);
+      assertEquals("sst", dataset.dataVariables()[0].sourceName());
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testRemainingStubsThrowUnsupportedOperationException() throws Throwable {
     Initialization.edStatic();
     Path tempDir = Files.createTempDirectory("zarr_stub_test");
 
@@ -154,8 +243,10 @@ class EDDGridFromZarrTests {
       LocalizedAttributes varAtts = new LocalizedAttributes();
       varAtts.set(0, "ioos_category", "Temperature");
 
+      LocalizedAttributes sstAtts = new LocalizedAttributes();
+      sstAtts.set(0, "ioos_category", "Temperature");
       List<DataVariableInfo> dataVars = new ArrayList<>();
-      dataVars.add(new DataVariableInfo("temp", "temp", varAtts, "double"));
+      dataVars.add(new DataVariableInfo("sst", "sst", sstAtts, "double"));
 
       EDDGridFromZarr dataset =
           new EDDGridFromZarr(
@@ -179,7 +270,6 @@ class EDDGridFromZarrTests {
               -1,
               true);
 
-      assertThrows(UnsupportedOperationException.class, () -> dataset.getAxisData(0));
       assertThrows(UnsupportedOperationException.class, () -> dataset.getSourceData(0, null, null, null, null));
       assertThrows(UnsupportedOperationException.class, () -> EDDGridFromZarr.generateDatasetsXml(tempDir.toString(), ""));
 
