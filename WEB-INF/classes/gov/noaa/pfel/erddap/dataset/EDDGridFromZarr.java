@@ -479,9 +479,11 @@ public class EDDGridFromZarr extends EDDGrid {
   }
 
   /**
-   * Helper method stub to retrieve axis values from Zarr dataset.
+   * Helper method to retrieve axis values from Zarr dataset.
    *
-   * // TODO (Prompt 2) / // TODO (Prompt 3)
+   * @param axisIndex index of axis variable
+   * @return PrimitiveArray containing axis values
+   * @throws Throwable if error
    */
   public PrimitiveArray getAxisData(int axisIndex) throws Throwable {
     if (axisVariables != null && axisIndex >= 0 && axisIndex < axisVariables.length) {
@@ -491,24 +493,340 @@ public class EDDGridFromZarr extends EDDGrid {
   }
 
   /**
+   * Fetches a strided multidimensional subset for a single data variable from the Zarr store.
+   *
+   * @param edv the data variable requested
+   * @param start 0-based start indices for each dimension
+   * @param stride step sizes for each dimension
+   * @param stop 0-based stop indices (inclusive) for each dimension
+   * @return flat 1D PrimitiveArray containing requested data subset in row-major order
+   * @throws Throwable if error
+   */
+  public PrimitiveArray getSourceDataFromFile(
+      EDV edv, IntArray start, IntArray stride, IntArray stop) throws Throwable {
+    if (start == null || stride == null || stop == null) {
+      throw new IllegalArgumentException("start, stride, and stop parameters cannot be null.");
+    }
+    return getSourceDataFromFile(edv, start.toArray(), stride.toArray(), stop.toArray());
+  }
+
+  /**
+   * Fetches a strided multidimensional subset for a single data variable from the Zarr store.
+   *
+   * <p>Math behind chunk-to-index mapping and slicing:
+   * 1. For a given dimension d with Zarr total length S_d and chunk size C_d:
+   *    - Min chunk index overlapping [start_d, stop_d]: c_min,d = start_d / C_d
+   *    - Max chunk index overlapping [start_d, stop_d]: c_max,d = stop_d / C_d
+   * 2. For each chunk at chunk coordinates (c_0, c_1, ..., c_{rank-1}):
+   *    - Physical chunk start offset in full Zarr array: P_start,d = c_d * C_d
+   *    - Physical chunk end offset (exclusive): P_end,d = min((c_d + 1) * C_d, S_d)
+   * 3. Requested output element index k_d in range [0, N_d - 1] corresponds to full Zarr index:
+   *    - i_d = start_d + k_d * stride_d
+   *    - Overlap with this chunk requires: P_start,d <= i_d < P_end,d
+   * 4. Output index bounds k_min,d and k_max,d for dimension d in this chunk are:
+   *    - k_min,d = max(0, ceilDiv(P_start,d - start_d, stride_d))
+   *    - k_max,d = min(N_d - 1, floorDiv(P_end,d - 1 - start_d, stride_d))
+   * 5. If k_min,d > k_max,d for any dimension d, the chunk does not overlap requested range.
+   * 6. Otherwise, for each point (k_0, ..., k_{rank-1}) in range [k_min, k_max]:
+   *    - Local chunk offset: localOffset_d = (start_d + k_d * stride_d) - P_start,d
+   *    - Flat 1D output offset in C-order row-major layout:
+   *      outIdx = sum(k_d * product_{m=d+1}^{rank-1} N_m)
+   *
+   * @param edv the data variable requested
+   * @param start 0-based start indices for each dimension
+   * @param stride step sizes for each dimension
+   * @param stop 0-based stop indices (inclusive) for each dimension
+   * @return flat 1D PrimitiveArray containing requested data subset in row-major order
+   * @throws Throwable if error
+   */
+  public PrimitiveArray getSourceDataFromFile(
+      EDV edv, int[] start, int[] stride, int[] stop) throws Throwable {
+
+    if (edv == null) {
+      throw new IllegalArgumentException("EDV data variable cannot be null.");
+    }
+    String sourceName = edv.sourceName();
+    if (!String2.isSomething(sourceName)) {
+      throw new IllegalArgumentException("EDV sourceName is empty.");
+    }
+
+    // Retrieve Zarr array handle
+    ZarrArrayInfo info = getOrOpenZarrArrayInfo(sourceName, new LinkedHashMap<>());
+    Array zarray = info != null ? info.array : null;
+    if (zarray == null) {
+      try {
+        Node node = zarrGroup.get(sourceName);
+        if (node instanceof Array za) {
+          zarray = za;
+        }
+      } catch (Throwable t) {
+        try {
+          StoreHandle childHandle = zarrGroup.storeHandle.resolve(sourceName);
+          zarray = Array.open(childHandle);
+        } catch (Throwable t2) {
+          throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.", t2);
+        }
+      }
+    }
+    if (zarray == null) {
+      throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.");
+    }
+
+    ArrayMetadata metadata = zarray.metadata();
+    long[] shape = metadata.shape;
+    int[] chunkShape = metadata.chunkShape();
+    int rank = shape.length;
+
+    if (start.length != rank || stride.length != rank || stop.length != rank) {
+      throw new IllegalArgumentException(
+          "Constraint dimension count (" + start.length + ") does not match Zarr array rank (" + rank + ") for variable '" + sourceName + "'.");
+    }
+
+    // Validate request bounds and calculate output dimension lengths
+    int[] nRequested = new int[rank];
+    long totalSizeL = 1;
+    for (int d = 0; d < rank; d++) {
+      if (start[d] < 0 || stop[d] >= shape[d] || start[d] > stop[d] || stride[d] < 1) {
+        throw new IllegalArgumentException(
+            "Invalid slice bounds for dimension " + d + " on '" + sourceName + "': start=" + start[d] + ", stride=" + stride[d] + ", stop=" + stop[d] + ", shape=" + shape[d]);
+      }
+      nRequested[d] = (stop[d] - start[d]) / stride[d] + 1;
+      totalSizeL *= nRequested[d];
+    }
+
+    if (totalSizeL > Integer.MAX_VALUE) {
+      throw new SimpleException("Requested data size (" + totalSizeL + ") exceeds maximum allowed PrimitiveArray length.");
+    }
+    int totalSize = (int) totalSizeL;
+
+    // Determine unpacking & target PrimitiveArray type
+    double scaleFactor = edv.scaleFactor();
+    double addOffset = edv.addOffset();
+    boolean unpack = edv.scaleAddOffset();
+
+    PAType destPAType = unpack ? edv.destinationDataPAType() : edv.sourceDataPAType();
+    PrimitiveArray destPA = PrimitiveArray.factory(destPAType, totalSize, true);
+
+    // Missing value definitions
+    double sourceMissingDouble = edv.sourceMissingValue();
+    double sourceFillDouble = edv.sourceFillValue();
+    double destMissingDouble = edv.destinationMissingValue();
+
+    // Check Zarr parsed fill value from metadata if available
+    Object parsedFV = metadata.parsedFillValue();
+    if (parsedFV instanceof Number n) {
+      double fvDouble = n.doubleValue();
+      if (Double.isNaN(sourceFillDouble)) {
+        sourceFillDouble = fvDouble;
+      }
+    }
+
+    // Compute chunk coordinate ranges for each dimension
+    int[] minChunk = new int[rank];
+    int[] maxChunk = new int[rank];
+    int[] nChunks = new int[rank];
+    int totalChunks = 1;
+
+    for (int d = 0; d < rank; d++) {
+      int cSize = chunkShape[d];
+      minChunk[d] = start[d] / cSize;
+      maxChunk[d] = stop[d] / cSize;
+      nChunks[d] = maxChunk[d] - minChunk[d] + 1;
+      totalChunks *= nChunks[d];
+    }
+
+    // Precompute dimension multiplier strides for C-order row-major output index mapping
+    int[] outStrides = new int[rank];
+    if (rank > 0) {
+      outStrides[rank - 1] = 1;
+      for (int d = rank - 2; d >= 0; d--) {
+        outStrides[d] = outStrides[d + 1] * nRequested[d + 1];
+      }
+    }
+
+    // Process overlapping chunks
+    int[] chunkCoordOffset = new int[rank];
+    long[] chunkCoords = new long[rank];
+    int[] kMin = new int[rank];
+    int[] kMax = new int[rank];
+
+    for (int cIdx = 0; cIdx < totalChunks; cIdx++) {
+      int temp = cIdx;
+      for (int d = rank - 1; d >= 0; d--) {
+        chunkCoordOffset[d] = temp % nChunks[d];
+        temp /= nChunks[d];
+        chunkCoords[d] = minChunk[d] + chunkCoordOffset[d];
+      }
+
+      // Calculate chunk physical bounds and output index overlap bounds [kMin, kMax]
+      boolean hasOverlap = true;
+      long[] physStart = new long[rank];
+      long[] physEnd = new long[rank];
+
+      for (int d = 0; d < rank; d++) {
+        int cSize = chunkShape[d];
+        physStart[d] = chunkCoords[d] * cSize;
+        physEnd[d] = Math.min((chunkCoords[d] + 1) * cSize, shape[d]);
+
+        long pStart = physStart[d];
+        long pEnd = physEnd[d];
+
+        // Smallest k >= 0 such that start_d + k * stride_d >= pStart
+        int minK = 0;
+        if (pStart > start[d]) {
+          long num = pStart - start[d];
+          minK = (int) ((num + stride[d] - 1) / stride[d]);
+        }
+        kMin[d] = Math.max(0, minK);
+
+        // Largest k < nRequested such that start_d + k * stride_d < pEnd
+        int maxK = nRequested[d] - 1;
+        if (pEnd - 1 < start[d] + (long) (nRequested[d] - 1) * stride[d]) {
+          long num = (pEnd - 1) - start[d];
+          maxK = num < 0 ? -1 : (int) (num / stride[d]);
+        }
+        kMax[d] = Math.min(nRequested[d] - 1, maxK);
+
+        if (kMin[d] > kMax[d]) {
+          hasOverlap = false;
+          break;
+        }
+      }
+
+      if (!hasOverlap) continue;
+
+      // Read chunk data via zarr-java
+      ucar.ma2.Array chunkData = null;
+      try {
+        chunkData = zarray.readChunk(chunkCoords);
+      } catch (Throwable t) {
+        // Unwritten, missing, or empty chunk -> treated as missing fill region
+        chunkData = null;
+      }
+
+      // Calculate total element iterations within overlap for this chunk
+      int[] overlapShape = new int[rank];
+      int chunkIterTotal = 1;
+      for (int d = 0; d < rank; d++) {
+        overlapShape[d] = kMax[d] - kMin[d] + 1;
+        chunkIterTotal *= overlapShape[d];
+      }
+
+      int[] localK = new int[rank];
+      int[] chunkLocalOffset = new int[rank];
+
+      for (int iter = 0; iter < chunkIterTotal; iter++) {
+        int tempIter = iter;
+        int outIdx = 0;
+
+        for (int d = rank - 1; d >= 0; d--) {
+          int offsetInOverlap = tempIter % overlapShape[d];
+          tempIter /= overlapShape[d];
+
+          localK[d] = kMin[d] + offsetInOverlap;
+          outIdx += localK[d] * outStrides[d];
+
+          long fullIdx = start[d] + (long) localK[d] * stride[d];
+          chunkLocalOffset[d] = (int) (fullIdx - physStart[d]);
+        }
+
+        if (chunkData == null) {
+          // Fill missing chunk elements with missing value
+          setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
+        } else {
+          ucar.ma2.Index ma2Idx = chunkData.getIndex();
+          ma2Idx.set(chunkLocalOffset);
+
+          if (destPAType == PAType.STRING || destPAType == PAType.CHAR) {
+            Object obj = chunkData.getObject(ma2Idx);
+            String sVal = obj != null ? obj.toString() : "";
+            destPA.setString(outIdx, sVal);
+          } else {
+            double rawVal = chunkData.getDouble(ma2Idx);
+
+            boolean isMissing = Double.isNaN(rawVal)
+                || (!Double.isNaN(sourceMissingDouble) && rawVal == sourceMissingDouble)
+                || (!Double.isNaN(sourceFillDouble) && rawVal == sourceFillDouble);
+
+            if (isMissing) {
+              setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
+            } else {
+              if (unpack) {
+                double unpackedVal = rawVal * scaleFactor + addOffset;
+                destPA.setDouble(outIdx, unpackedVal);
+              } else {
+                destPA.setDouble(outIdx, rawVal);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return destPA;
+  }
+
+  private static void setMissingInDest(PrimitiveArray destPA, int index, PAType paType, double missingDouble) {
+    if (paType == PAType.STRING || paType == PAType.CHAR) {
+      destPA.setString(index, "");
+    } else if (Double.isNaN(missingDouble)) {
+      destPA.setDouble(index, Double.NaN);
+    } else {
+      destPA.setDouble(index, missingDouble);
+    }
+  }
+
+  /**
    * Gets source data (not yet converted to destination data) for this EDDGrid dataset.
    *
    * @param language user language
    * @param tDirTable directory table if applicable
    * @param tFileTable file table if applicable
    * @param tDataVariables requested data variables
-   * @param tConstraints requested constraints (start, stride, stop)
+   * @param tConstraints requested constraints (start, stride, stop) for each axis variable
    * @return PrimitiveArray[] containing axis values followed by data values
    * @throws Throwable if error
-   *
-   * // TODO (Prompt 2) / // TODO (Prompt 3)
    */
   @Override
   public PrimitiveArray[] getSourceData(
       int language, Table tDirTable, Table tFileTable, EDV tDataVariables[], IntArray tConstraints)
       throws Throwable {
-    // TODO (Prompt 2) / // TODO (Prompt 3): Implement Zarr chunk data reading and array slice loading
-    throw new UnsupportedOperationException("getSourceData for Zarr not yet implemented.");
+
+    if (tConstraints == null) {
+      throw new IllegalArgumentException("tConstraints cannot be null.");
+    }
+    int nav = axisVariables != null ? axisVariables.length : 0;
+    if (tConstraints.size() != nav * 3) {
+      throw new IllegalArgumentException(
+          "tConstraints size (" + tConstraints.size() + ") must equal nav * 3 (" + (nav * 3) + ").");
+    }
+
+    int[] start = new int[nav];
+    int[] stride = new int[nav];
+    int[] stop = new int[nav];
+
+    for (int av = 0; av < nav; av++) {
+      start[av] = tConstraints.get(av * 3);
+      stride[av] = tConstraints.get(av * 3 + 1);
+      stop[av] = tConstraints.get(av * 3 + 2);
+    }
+
+    int ndv = tDataVariables != null ? tDataVariables.length : 0;
+    PrimitiveArray[] results = new PrimitiveArray[nav + ndv];
+
+    // 1. Subset axis variables
+    for (int av = 0; av < nav; av++) {
+      PrimitiveArray sourceValues = axisVariables[av].sourceValues();
+      results[av] = sourceValues.subset(start[av], stride[av], stop[av]);
+    }
+
+    // 2. Extract data variables
+    for (int dv = 0; dv < ndv; dv++) {
+      EDV edv = tDataVariables[dv];
+      results[nav + dv] = getSourceDataFromFile(edv, start, stride, stop);
+    }
+
+    return results;
   }
 
   /**
