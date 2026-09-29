@@ -5,6 +5,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -12,7 +13,6 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.util.Metrics.FeatureFlag;
 import java.awt.Color;
@@ -20,6 +20,7 @@ import java.awt.Image;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 public class EDConfig {
@@ -215,9 +216,11 @@ public class EDConfig {
   // these are all non-null if in awsS3Output mode, otherwise all are null
   public String awsS3OutputBucketUrl = null; // ends in slash
   public String awsS3OutputBucket = null; // the short name of the bucket
-  public S3TransferManager awsS3OutputTransferManager = null;
+  public String awsS3OutputRegion = null;
   public boolean useAwsCrt;
   public boolean useAwsAnonymous;
+  public double s3TargetThroughputInGbps = 20.0;
+  public Integer s3MaxConcurrency = null;
 
   public final String corsAllowHeaders;
   public final String[] corsAllowOrigin;
@@ -537,10 +540,7 @@ public class EDConfig {
                 + String2.AWS_S3_REGEX());
 
       awsS3OutputBucket = bro[0];
-      String region = bro[1];
-
-      // build the awsS3OutputTransferManager
-      awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
+      awsS3OutputRegion = bro[1];
 
       // note that I could set LifecycleRule(s) for the bucket via
       // awsS3OutputClient.putBucketLifecycleConfiguration
@@ -551,6 +551,9 @@ public class EDConfig {
     // optional parameter to disable AWS Common Runtime
     useAwsCrt = getSetupEVBoolean(setup, ev, "useAwsCrt", true);
     useAwsAnonymous = getSetupEVBoolean(setup, ev, "useAwsAnonymous", false);
+    s3TargetThroughputInGbps = getSetupEVDouble(setup, ev, "s3TargetThroughputInGbps", 20.0);
+    int maxConcurrency = getSetupEVInt(setup, ev, "s3MaxConcurrency", -1);
+    s3MaxConcurrency = maxConcurrency > 0 ? Integer.valueOf(maxConcurrency) : null;
 
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 
@@ -761,6 +764,16 @@ public class EDConfig {
     lazyInitializeStatics();
   }
 
+  // access the transfer manager from the cache
+  public S3TransferManager getS3TransferManager() {
+    try {
+      return EDStatic.buildS3TransferManager(awsS3OutputRegion);
+    } catch (ExecutionException e) {
+      String2.log(MustBe.throwableToString(e));
+      throw new RuntimeException(e);
+    }
+  }
+
   private void copyContentImagesToWebApps() {
     // copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and
     // subdirectories)
@@ -837,8 +850,7 @@ public class EDConfig {
    * @param tDefault the default value
    * @return the desired value (or the default if it isn't defined anywhere)
    */
-  private int getSetupEVInt(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
+  int getSetupEVInt(ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
     String value = ev.get("ERDDAP_" + paramName);
     if (value != null) {
       int valuei = String2.parseInt(value);
@@ -868,5 +880,29 @@ public class EDConfig {
       return value;
     }
     return setup.getNotNothingString(paramName, errorInMethod);
+  }
+
+  /**
+   * This gets a double from setup.xml or environmentalVariables (preferred). Ensures the value is
+   * positive (> 0) and finite; falls back to tDefault otherwise.
+   *
+   * @param setup from setup.xml
+   * @param ev from System.getenv()
+   * @param paramName If present in ev, it will be ERDDAP_paramName.
+   * @param tDefault the default value
+   * @return the desired value (or default if not defined or <= 0/invalid)
+   */
+  double getSetupEVDouble(
+      ResourceBundle2 setup, Map<String, String> ev, String paramName, double tDefault) {
+    String s = getSetupEVString(setup, ev, paramName, null);
+    if (String2.isSomething(s)) {
+      double valued = String2.parseDouble(s);
+      if (Double.isFinite(valued) && valued > 0) {
+        return valued;
+      }
+      String2.log(
+          "WARNING: " + paramName + " (" + s + ") is invalid or <= 0. Using default: " + tDefault);
+    }
+    return tDefault;
   }
 }

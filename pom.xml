@@ -45,18 +45,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
+        <compiler.args></compiler.args>
         <erddapcontent.download.version>content1.0.1</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
         <netcdfJavaVersion>5.10.0</netcdfJavaVersion>
         <test.resources.version>test1.06</test.resources.version>
-        <jettyVersion>12.1.12</jettyVersion>
+        <jettyVersion>12.1.13</jettyVersion>
         <error-prone.version>2.50.0</error-prone.version>
-        <prometheusVersion>1.8.0</prometheusVersion>
-        <parquetVersion>1.18.0</parquetVersion>
-        <awssdkVersion>2.54.2</awssdkVersion>
+        <prometheusVersion>1.9.0</prometheusVersion>
+        <parquetVersion>1.18.1</parquetVersion>
+        <awssdkVersion>2.55.1</awssdkVersion>
         <luceneVersion>10.5.1</luceneVersion>
-        <nettyVersion>4.2.17.Final</nettyVersion>
-        <mavenTestPluginVersion>3.5.6</mavenTestPluginVersion>
+        <nettyVersion>4.2.18.Final</nettyVersion>
+        <mavenTestPluginVersion>3.6.0</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.15</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
         <argLine.extra></argLine.extra>
@@ -102,7 +103,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.21.0</version>
+                <version>2.22.0</version>
                 <configuration>
                     <!-- some location that makes sense for your company/project -->
                     <rulesUri>file:///${project.basedir}/versionrules.xml</rulesUri>
@@ -124,7 +125,7 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
+                <version>3.16.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
                     <source>${maven.compiler.source}</source>   <!-- java version -->
@@ -136,6 +137,7 @@
                         <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
                         <arg>-Xplugin:ErrorProne -Xep:StatementSwitchToExpressionSwitch:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:EmptyCatch:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF -Xep:MisleadingEscapedSpace:OFF</arg>
                         <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+                        <arg>${compiler.args}</arg>
                     </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
@@ -381,7 +383,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.10.3.0</version>
+                <version>4.10.4.1</version>
                 <configuration>
                     <effort>max</effort>
                     <maxHeap>2048</maxHeap>
@@ -609,11 +611,11 @@
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>4.0.3</version>
+                    <version>4.1.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.15.0</version>
+                    <version>3.16.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -753,7 +755,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.36.0</version>
+                <version>4.36.2</version>
             </dependency>
 
             <!-- updating indirect dependencies from hivemq -->
@@ -761,13 +763,13 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>2.4.10</version>
+                <version>2.4.20</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk18on</artifactId>
-                <version>1.85</version>
+                <version>1.86</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
             <dependency>
@@ -797,7 +799,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.85.2</version>
+                <version>1.86</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
             <dependency>
@@ -809,7 +811,7 @@
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>10.9.1</version>
+                <version>10.10</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
             <dependency>
@@ -856,7 +858,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.4.240</version>
+            <version>2.5.250</version>
             <scope>test</scope>
         </dependency>
 
@@ -976,7 +978,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.18</version>
+            <version>2.0.19</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -1148,7 +1150,7 @@
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.11.2</version>
+            <version>1.11.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
@@ -1156,7 +1158,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.39</version>
+            <version>4.2.40</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -1219,7 +1221,7 @@
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.50.0</version>
+            <version>1.52.0</version>
         </dependency>
 
         <dependency>
@@ -1245,7 +1247,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.193</version>
+            <version>4.8.195</version>
         </dependency>
          <dependency>
             <groupId>org.apache.hadoop</groupId>

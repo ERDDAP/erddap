@@ -1377,16 +1377,32 @@ public class Math2 {
 
   /** This creates a String based on the results of guessFrac() */
   public static String guessFracString(final double d) {
+    StringBuilder sb = new StringBuilder();
+    guessFracString(d, sb);
+    return sb.toString();
+  }
+
+  /** Appends a String based on the results of guessFrac() directly into sb */
+  public static void guessFracString(final double d, final StringBuilder sb) {
     final int[] ar3 = new int[3];
     guessFrac(d, ar3);
 
-    if ((ar3[0] == 0) && (ar3[1] == 0)) return "0";
+    if ((ar3[0] == 0) && (ar3[1] == 0)) {
+      sb.append('0');
+      return;
+    }
 
-    if (ar3[0] == 0) return ar3[1] + "/" + ar3[2];
+    if (ar3[0] == 0) {
+      sb.append(ar3[1]).append('/').append(ar3[2]);
+      return;
+    }
 
-    if (ar3[1] == 0) return ar3[0] + "";
+    if (ar3[1] == 0) {
+      sb.append(ar3[0]);
+      return;
+    }
 
-    return ar3[0] + " " + Math.abs(ar3[1]) + "/" + ar3[2];
+    sb.append(ar3[0]).append(' ').append(Math.abs(ar3[1])).append('/').append(ar3[2]);
   }
 
   /**
@@ -1461,6 +1477,67 @@ public class Math2 {
   public static final float doubleToFloatNaN(final double d) {
     if (Double.isFinite(d) && Math.abs(d) <= Float.MAX_VALUE) return (float) d;
     return Float.NaN;
+  }
+
+  /**
+   * Appends full-precision double representation directly into an existing StringBuilder.
+   *
+   * @param d the double value
+   * @param sb the StringBuilder to append to
+   */
+  public static void doubleToString(final double d, final StringBuilder sb) {
+    sb.append(d);
+  }
+
+  /**
+   * Returns full-precision double representation as a String.
+   *
+   * @param d the double value
+   * @return the double as a String
+   */
+  public static String doubleToString(final double d) {
+    return Double.toString(d);
+  }
+
+  /**
+   * Appends compact/rounded double value (stripping unnecessary trailing zeros and constraining
+   * excessive decimal places) directly into an existing StringBuilder.
+   *
+   * @param d the double value
+   * @param sb the StringBuilder to append to
+   */
+  public static void doubleToShortString(final double d, final StringBuilder sb) {
+    String2.genEFormat10(d, sb);
+  }
+
+  /**
+   * Returns a compact/rounded double value as a String.
+   *
+   * @param d the double value
+   * @return the double formatted as a short String
+   */
+  public static String doubleToShortString(final double d) {
+    return String2.genEFormat10(d);
+  }
+
+  /**
+   * Appends single-precision float representation directly into an existing StringBuilder.
+   *
+   * @param f the float value
+   * @param sb the StringBuilder to append to
+   */
+  public static void floatToString(final float f, final StringBuilder sb) {
+    sb.append(f);
+  }
+
+  /**
+   * Returns single-precision float representation as a String.
+   *
+   * @param f the float value
+   * @return the float as a String
+   */
+  public static String floatToString(final float f) {
+    return Float.toString(f);
   }
 
   /**

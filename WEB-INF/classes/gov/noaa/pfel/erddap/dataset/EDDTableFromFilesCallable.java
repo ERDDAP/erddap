@@ -92,6 +92,20 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
     sourceConValues = tSourceConValues;
   }
 
+  public static boolean isRethrowException(Throwable t) {
+    if (t == null) return false;
+    String tString = t.toString();
+    return Thread.currentThread().isInterrupted()
+        || t instanceof WaitThenTryAgainException
+        || t instanceof InterruptedException
+        || t instanceof TimeoutException
+        || EDStatic.isClientAbortException(t)
+        || t instanceof OutOfMemoryError
+        || tString.indexOf(Math2.memoryTooMuchData) >= 0
+        || tString.indexOf(Math2.TooManyOpenFiles) >= 0
+        || tString.indexOf("NDimensionalIndex") >= 0;
+  }
+
   /**
    * This gets data from one source file.
    *
@@ -126,18 +140,16 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
 
       } catch (Throwable t2) {
 
-        // if OutOfMemory or too much data (or some other reasons), rethrow t so request fails
-        String t2String = t2.toString();
+        // if OutOfMemory or too much data or query/runtime exception, rethrow t so request fails
+        // without marking bad file
         String2.log(
-            identifier + ": caught while reading file=" + fileDir + fileName + ": " + t2String);
-        if (Thread.currentThread().isInterrupted()
-            || t2 instanceof WaitThenTryAgainException
-            || t2 instanceof InterruptedException
-            || t2 instanceof TimeoutException
-            || EDStatic.isClientAbortException(t2)
-            || t2 instanceof OutOfMemoryError
-            || t2String.indexOf(Math2.memoryTooMuchData) >= 0
-            || t2String.indexOf(Math2.TooManyOpenFiles) >= 0) {
+            identifier
+                + ": caught while reading file="
+                + fileDir
+                + fileName
+                + ": "
+                + t2.toString());
+        if (isRethrowException(t2)) {
           throw t2;
         }
 
@@ -162,15 +174,9 @@ public class EDDTableFromFilesCallable implements Callable<Table> {
                   true); // getMetadata, mustGetData  //???what about global att promoted to var?
 
         } catch (Throwable t3) {
-          String t3String = t3.toString();
-          if (debugMode) String2.log(identifier + ": caught while 2nd reading file: " + t3String);
-          if (Thread.currentThread().isInterrupted()
-              || t3 instanceof WaitThenTryAgainException
-              || t3 instanceof InterruptedException
-              || EDStatic.isClientAbortException(t3)
-              || t3 instanceof OutOfMemoryError
-              || t3String.indexOf(Math2.memoryTooMuchData) >= 0
-              || t3String.indexOf(Math2.TooManyOpenFiles) >= 0) {
+          if (debugMode)
+            String2.log(identifier + ": caught while 2nd reading file: " + t3.toString());
+          if (isRethrowException(t3)) {
             throw t3;
           }
 

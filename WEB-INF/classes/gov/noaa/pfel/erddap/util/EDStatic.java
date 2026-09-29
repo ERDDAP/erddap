@@ -20,6 +20,9 @@ import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.sun.management.UnixOperatingSystemMXBean;
@@ -74,8 +77,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -85,7 +90,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -99,6 +106,14 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.semver4j.Semver;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3CrtAsyncClientBuilder;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -583,6 +598,20 @@ public class EDStatic {
   // during testing. This should only be set to tru during testing.
   public static boolean testingDontDestroy = false;
 
+  // cache S3TransferManager by region for 1 hour each, and close on removal
+  private static final Cache<String, S3TransferManager> s3TransferManagerCache =
+      CacheBuilder.newBuilder()
+          .expireAfterWrite(Duration.of(1, ChronoUnit.HOURS))
+          .removalListener(
+              (RemovalListener<String, S3TransferManager>)
+                  notification -> {
+                    final S3TransferManager s3TransferManager = notification.getValue();
+                    if (s3TransferManager != null) {
+                      s3TransferManager.close();
+                    }
+                  })
+          .build();
+
   /**
    * This static block reads this class's static String values from contentDirectory, which must
    * contain setup.xml and datasets.xml (and may contain messages.xml). It may be a defined
@@ -661,10 +690,11 @@ public class EDStatic {
             File2.makeDirectory(fullNdName);
             String oldFileList[] = new File(oldBaseDir + odName).list();
             int oldFileListSize = oldFileList == null ? 0 : oldFileList.length;
+            Pattern tempFilesNamePattern = Pattern.compile(".*[0-9]{7}");
             for (int of = 0; of < oldFileListSize; of++) {
               String ofName = oldFileList[of];
               String fullOfName = oldBaseDir + odName + "/" + ofName;
-              if (!ofName.matches(".*[0-9]{7}")) // skip temp files
+              if (!tempFilesNamePattern.matcher(ofName).matches()) // skip temp files
               File2.copy(fullOfName, fullNdName + ofName); // dir will be created
               File2.delete(fullOfName);
             }
@@ -947,6 +977,13 @@ public class EDStatic {
     return sb.toString();
   }
 
+  private static final Pattern ALLOWED_CHARACTERS_PATTERN =
+      Pattern.compile("^[A-Za-z0-9._~:/\\[\\]-]+$");
+  private static final Pattern HEX_AND_COLON_PATTERN = Pattern.compile("^[0-9a-f:]+$");
+  private static final Pattern HOST_CHARACTERS_PATTERN = Pattern.compile("^[a-z0-9._-]+$");
+  private static final Pattern PORT_PATTERN = Pattern.compile("^[0-9]+$");
+  private static final Pattern PATH_SEGMENT_PATTERN = Pattern.compile("^/[a-zA-Z0-9/_-]*$");
+
   /**
    * Keep the overload simple: only reject dangerous characters; otherwise preserve host and port.
    */
@@ -961,7 +998,7 @@ public class EDStatic {
     if (value.contains("\\") || value.indexOf('%') >= 0 || value.contains("..")) {
       return "";
     }
-    if (!value.matches("^[A-Za-z0-9._~:/\\[\\]-]+$")) {
+    if (!ALLOWED_CHARACTERS_PATTERN.matcher(value).matches()) {
       return "";
     }
 
@@ -992,16 +1029,16 @@ public class EDStatic {
     // contain only lowercase letters, digits, dots, underscores, and hyphens.
     if (host.startsWith("[") && host.endsWith("]")) {
       String inner = host.substring(1, host.length() - 1);
-      if (!inner.matches("^[0-9a-f:]+$")) {
+      if (!HEX_AND_COLON_PATTERN.matcher(inner).matches()) {
         return "";
       }
-    } else if (!host.matches("^[a-z0-9._-]+$")) {
+    } else if (!HOST_CHARACTERS_PATTERN.matcher(host).matches()) {
       return "";
     }
 
     if (!port.isEmpty()) {
       String portNumber = port.substring(1);
-      if (!portNumber.matches("^[0-9]+$")) {
+      if (!PORT_PATTERN.matcher(portNumber).matches()) {
         return "";
       }
     }
@@ -1066,7 +1103,7 @@ public class EDStatic {
     }
 
     String prefix = request.getHeader("X-Forwarded-Prefix");
-    if (prefix != null && prefix.matches("^/[a-zA-Z0-9/_-]*$")) {
+    if (prefix != null && PATH_SEGMENT_PATTERN.matcher(prefix).matches()) {
       prefix = cleanUrlChars(prefix, true);
     } else {
       prefix = "";
@@ -1076,7 +1113,7 @@ public class EDStatic {
       String approvedHost = getApprovedHost(request);
       if (approvedHost != null) {
         return approvedHost
-            + (prefix != null && prefix.matches("^/[a-zA-Z0-9/_-]*$")
+            + (prefix != null && PATH_SEGMENT_PATTERN.matcher(prefix).matches()
                 ? cleanUrlChars(prefix, true)
                 : "");
       }
@@ -2696,6 +2733,10 @@ public class EDStatic {
         emailThread.interrupt();
         emailThread = null;
       }
+
+      // invalidate and cleanup all remaining S3TransferManagers
+      s3TransferManagerCache.invalidateAll();
+      s3TransferManagerCache.cleanUp();
 
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
@@ -4582,5 +4623,40 @@ public class EDStatic {
       // ignore if directory doesn't exist or can't be accessed
     }
     return nDeleted;
+  }
+
+  /**
+   * This builds an S3TransferManager
+   *
+   * @param region The S3 region from bro[1].
+   */
+  public static S3TransferManager buildS3TransferManager(String region) throws ExecutionException {
+    return s3TransferManagerCache.get(
+        region,
+        () -> {
+          final SdkBuilder<?, S3AsyncClient> builder;
+          AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+          if (EDStatic.config.useAwsAnonymous) {
+            credentialsProvider = AnonymousCredentialsProvider.create();
+          }
+          if (EDStatic.config.useAwsCrt) {
+            S3CrtAsyncClientBuilder crtBuilder =
+                S3AsyncClient.crtBuilder()
+                    .credentialsProvider(credentialsProvider)
+                    .region(Region.of(region))
+                    .targetThroughputInGbps(EDStatic.config.s3TargetThroughputInGbps)
+                    .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+            if (EDStatic.config.s3MaxConcurrency != null && EDStatic.config.s3MaxConcurrency > 0) {
+              crtBuilder.maxConcurrency(EDStatic.config.s3MaxConcurrency);
+            }
+            builder = crtBuilder;
+          } else {
+            builder =
+                S3AsyncClient.builder()
+                    .credentialsProvider(credentialsProvider)
+                    .region(Region.of(region));
+          }
+          return S3TransferManager.builder().s3Client(builder.build()).build();
+        });
   }
 }
