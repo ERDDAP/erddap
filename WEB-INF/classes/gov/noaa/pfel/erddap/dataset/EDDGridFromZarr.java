@@ -853,13 +853,287 @@ public class EDDGridFromZarr extends EDDGrid {
    * @param zarrGroupName group name within the store
    * @return suggested XML string
    * @throws Throwable if error
-   *
-   * // TODO (Prompt 2) / // TODO (Prompt 3)
    */
   public static String generateDatasetsXml(String zarrStorePath, String zarrGroupName)
       throws Throwable {
-    // TODO (Prompt 2) / // TODO (Prompt 3): Implement datasets.xml generation for Zarr datasets
-    throw new UnsupportedOperationException("generateDatasetsXml for Zarr not yet implemented.");
+    return generateDatasetsXml(
+        zarrStorePath, zarrGroupName, "", DEFAULT_RELOAD_EVERY_N_MINUTES, null, null);
+  }
+
+  /**
+   * Generates a suggested datasets.xml configuration block for a Zarr store with custom settings.
+   *
+   * @param zarrStorePath path or URL to the Zarr store
+   * @param zarrGroupName group name within the store (or "" for root)
+   * @param datasetIDPrefix optional prefix for generated dataset ID
+   * @param reloadEveryNMinutes dataset reload interval in minutes
+   * @param cacheFromUrl cache directory/URL for remote store files
+   * @return suggested XML string
+   * @throws Throwable if error
+   */
+  public static String generateDatasetsXml(
+      String zarrStorePath,
+      String zarrGroupName,
+      String datasetIDPrefix,
+      int reloadEveryNMinutes,
+      String cacheFromUrl)
+      throws Throwable {
+    return generateDatasetsXml(
+        zarrStorePath, zarrGroupName, datasetIDPrefix, reloadEveryNMinutes, cacheFromUrl, null);
+  }
+
+  /**
+   * Generates a suggested datasets.xml configuration block for a Zarr store with external global attributes.
+   *
+   * @param zarrStorePath path or URL to the Zarr store
+   * @param zarrGroupName group name within the store
+   * @param datasetIDPrefix optional prefix for dataset ID
+   * @param reloadEveryNMinutes dataset reload interval in minutes
+   * @param cacheFromUrl cache URL/directory
+   * @param externalAddGlobalAttributes external global attributes to merge
+   * @return suggested XML string
+   * @throws Throwable if error
+   */
+  public static String generateDatasetsXml(
+      String zarrStorePath,
+      String zarrGroupName,
+      String datasetIDPrefix,
+      int reloadEveryNMinutes,
+      String cacheFromUrl,
+      Attributes externalAddGlobalAttributes)
+      throws Throwable {
+
+    String2.log(
+        "\n*** EDDGridFromZarr.generateDatasetsXml"
+            + "\nzarrStorePath=" + zarrStorePath
+            + "\nzarrGroupName=" + zarrGroupName
+            + "\ndatasetIDPrefix=" + datasetIDPrefix
+            + "\nreloadEveryNMinutes=" + reloadEveryNMinutes
+            + "\ncacheFromUrl=" + cacheFromUrl);
+
+    if (!String2.isSomething(zarrStorePath)) {
+      throw new IllegalArgumentException("zarrStorePath wasn't specified.");
+    }
+    if (zarrGroupName == null) {
+      zarrGroupName = "";
+    }
+    if (reloadEveryNMinutes <= 0 || reloadEveryNMinutes == Integer.MAX_VALUE) {
+      reloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES; // 1440
+    }
+
+    Store zarrStore = createZarrStore(zarrStorePath);
+    StoreHandle handle;
+    if (zarrGroupName.isEmpty() || "/".equals(zarrGroupName)) {
+      handle = zarrStore.resolve();
+    } else {
+      String[] groupKeys = String2.split(zarrGroupName, '/');
+      handle = zarrStore.resolve(groupKeys);
+    }
+    Group zarrGroup = Group.open(handle);
+
+    Table axisSourceTable = new Table();
+    Table axisAddTable = new Table();
+    Table dataSourceTable = new Table();
+    Table dataAddTable = new Table();
+
+    try {
+      dev.zarr.zarrjava.core.Attributes zattrs = zarrGroup.metadata().attributes();
+      if (zattrs != null) {
+        populateAttributesFromZarr(zattrs, axisSourceTable.globalAttributes());
+      }
+    } catch (ZarrException ze) {
+      String2.log("Warning: Could not read Zarr global attributes: " + ze.getMessage());
+    }
+
+    Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata(zarrGroup);
+
+    List<String> axisNames = new ArrayList<>();
+    Map<String, Long> dimLengths = new LinkedHashMap<>();
+
+    for (ZarrArrayInfo info : arrayMap.values()) {
+      if (!info.is1D() && info.dimensionNames != null) {
+        for (int d = 0; d < info.dimensionNames.length; d++) {
+          String dimName = info.dimensionNames[d];
+          long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
+          if (!dimLengths.containsKey(dimName)) {
+            axisNames.add(dimName);
+            dimLengths.put(dimName, len);
+          }
+        }
+      }
+    }
+
+    if (axisNames.isEmpty()) {
+      for (ZarrArrayInfo info : arrayMap.values()) {
+        if (info.is1D()) {
+          axisNames.add(info.name);
+          dimLengths.put(info.name, info.shape[0]);
+        }
+      }
+    }
+
+    Set<String> axisNameSet = new HashSet<>(axisNames);
+
+    for (int av = 0; av < axisNames.size(); av++) {
+      String axisName = axisNames.get(av);
+      long dimLen = dimLengths.getOrDefault(axisName, 0L);
+
+      ZarrArrayInfo info = getOrOpenZarrArrayInfo(zarrGroup, axisName, arrayMap);
+      PrimitiveArray pa = null;
+      Attributes sourceAtts = new Attributes();
+
+      if (info != null && info.is1D()) {
+        if (info.attributes != null) info.attributes.copyTo(sourceAtts);
+        ucar.ma2.Array nc2Array = info.array.read();
+        boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
+        pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
+      } else {
+        pa = PrimitiveArray.factory(PAType.INT, (int) dimLen, false);
+        for (int i = 0; i < dimLen; i++) {
+          pa.addInt(i);
+        }
+      }
+
+      sourceAtts.remove("_FillValue");
+      sourceAtts.remove("missing_value");
+
+      axisSourceTable.addColumn(av, axisName, pa, sourceAtts);
+
+      Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+          axisSourceTable.globalAttributes(),
+          sourceAtts,
+          null,
+          axisName,
+          true,
+          true,
+          true);
+      axisAddTable.addColumn(av, axisName, (PrimitiveArray) pa.clone(), addAtts);
+    }
+
+    int dvCount = 0;
+    for (ZarrArrayInfo info : arrayMap.values()) {
+      if (axisNameSet.contains(info.name)) continue;
+      if (info.is1D() && isLikelyAxisArray(info)) continue;
+
+      String varName = info.name;
+      Attributes sourceAtts = new Attributes();
+      if (info.attributes != null) {
+        info.attributes.copyTo(sourceAtts);
+      }
+
+      PAType paType = info.paType != null ? info.paType : PAType.DOUBLE;
+      PrimitiveArray sourcePA = PrimitiveArray.factory(paType, 1, false);
+
+      dataSourceTable.addColumn(dvCount, varName, sourcePA, sourceAtts);
+
+      Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+          axisSourceTable.globalAttributes(),
+          sourceAtts,
+          null,
+          varName,
+          paType != PAType.STRING,
+          paType != PAType.STRING,
+          false);
+
+      PrimitiveArray destPA = PrimitiveArray.factory(paType, 1, false);
+      dataAddTable.addColumn(dvCount, varName, destPA, addAtts);
+      dvCount++;
+    }
+
+    tryToFindLLAT(axisSourceTable, axisAddTable);
+    ensureValidNames(dataSourceTable, dataAddTable);
+
+    Attributes globalAddAtts = axisAddTable.globalAttributes();
+    globalAddAtts.set(
+        makeReadyToUseAddGlobalAttributesForDatasetsXml(
+            axisSourceTable.globalAttributes(),
+            "Grid",
+            zarrStorePath,
+            externalAddGlobalAttributes,
+            suggestKeywords(dataSourceTable, dataAddTable)));
+
+    String tDatasetID = suggestZarrDatasetID(datasetIDPrefix, zarrStorePath, zarrGroupName);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+        "<dataset type=\"EDDGridFromZarr\" datasetID=\""
+            + XML.encodeAsXML(tDatasetID)
+            + "\" active=\"true\">\n");
+    sb.append("    <reloadEveryNMinutes>" + reloadEveryNMinutes + "</reloadEveryNMinutes>\n");
+
+    if (String2.isSomething(cacheFromUrl)) {
+      sb.append("    <cacheFromUrl>" + XML.encodeAsXML(cacheFromUrl) + "</cacheFromUrl>\n");
+    }
+
+    sb.append("    <zarrStorePath>" + XML.encodeAsXML(zarrStorePath) + "</zarrStorePath>\n");
+    sb.append("    <zarrGroupName>" + XML.encodeAsXML(zarrGroupName) + "</zarrGroupName>\n");
+
+    sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
+    sb.append(writeAttsForDatasetsXml(true, globalAddAtts, "    "));
+
+    sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
+    sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
+
+    sb.append("</dataset>\n\n");
+
+    return sb.toString();
+  }
+
+  /**
+   * Helper method to derive a valid datasetID for a Zarr store/group.
+   *
+   * @param prefix optional dataset ID prefix
+   * @param zarrStorePath Zarr store path or URL
+   * @param zarrGroupName Zarr group name
+   * @return sanitized dataset ID string
+   */
+  public static String suggestZarrDatasetID(String prefix, String zarrStorePath, String zarrGroupName) {
+    String name = "";
+    if (String2.isSomething(zarrGroupName) && !"/".equals(zarrGroupName.trim())) {
+      String[] parts = String2.split(zarrGroupName, '/');
+      for (int i = parts.length - 1; i >= 0; i--) {
+        if (String2.isSomething(parts[i])) {
+          name = parts[i];
+          break;
+        }
+      }
+    }
+    if (!String2.isSomething(name) && String2.isSomething(zarrStorePath)) {
+      String cleanPath = zarrStorePath.trim();
+      while (cleanPath.endsWith("/") || cleanPath.endsWith("\\")) {
+        cleanPath = cleanPath.substring(0, cleanPath.length() - 1);
+      }
+      int slashIdx = Math.max(cleanPath.lastIndexOf('/'), cleanPath.lastIndexOf('\\'));
+      if (slashIdx >= 0 && slashIdx < cleanPath.length() - 1) {
+        name = cleanPath.substring(slashIdx + 1);
+      } else {
+        name = cleanPath;
+      }
+    }
+    if (!String2.isSomething(name)) {
+      name = "dataset";
+    }
+
+    if (name.toLowerCase().endsWith(".zarr")) {
+      name = name.substring(0, name.length() - 5);
+    }
+
+    String sanitized = name.replaceAll("[^a-zA-Z0-9_]", "_").replaceAll("_+", "_");
+    if (sanitized.startsWith("_")) {
+      sanitized = sanitized.substring(1);
+    }
+    if (sanitized.endsWith("_")) {
+      sanitized = sanitized.substring(0, sanitized.length() - 1);
+    }
+    if (!String2.isSomething(sanitized)) {
+      sanitized = "dataset";
+    }
+
+    if (String2.isSomething(prefix)) {
+      return prefix.endsWith("_") || prefix.endsWith("-") ? prefix + sanitized : prefix + "_" + sanitized;
+    } else {
+      return "zarr_" + sanitized;
+    }
   }
 
   /**
@@ -887,10 +1161,21 @@ public class EDDGridFromZarr extends EDDGrid {
    * @throws Throwable if error
    */
   protected Map<String, ZarrArrayInfo> parseZarrMetadata() throws Throwable {
+    return parseZarrMetadata(this.zarrGroup);
+  }
+
+  /**
+   * Parses Zarr metadata from a given Zarr group.
+   *
+   * @param zarrGroup target Zarr group
+   * @return Map of array name to ZarrArrayInfo
+   * @throws Throwable if error
+   */
+  protected static Map<String, ZarrArrayInfo> parseZarrMetadata(Group zarrGroup) throws Throwable {
     Map<String, ZarrArrayInfo> arrayMap = new LinkedHashMap<>();
     Node[] nodes;
     try {
-      nodes = this.zarrGroup.listAsArray();
+      nodes = zarrGroup.listAsArray();
     } catch (Exception e) {
       nodes = new Node[0];
     }
@@ -910,11 +1195,15 @@ public class EDDGridFromZarr extends EDDGrid {
   }
 
   private ZarrArrayInfo getOrOpenZarrArrayInfo(String name, Map<String, ZarrArrayInfo> arrayMap) {
+    return getOrOpenZarrArrayInfo(this.zarrGroup, name, arrayMap);
+  }
+
+  private static ZarrArrayInfo getOrOpenZarrArrayInfo(Group zarrGroup, String name, Map<String, ZarrArrayInfo> arrayMap) {
     if (arrayMap.containsKey(name)) {
       return arrayMap.get(name);
     }
     try {
-      Node node = this.zarrGroup.get(name);
+      Node node = zarrGroup.get(name);
       if (node instanceof Array zarray) {
         ZarrArrayInfo info = createZarrArrayInfo(name, zarray);
         if (info != null) {
@@ -924,7 +1213,7 @@ public class EDDGridFromZarr extends EDDGrid {
       }
     } catch (Throwable e) {
       try {
-        StoreHandle childHandle = this.zarrGroup.storeHandle.resolve(name);
+        StoreHandle childHandle = zarrGroup.storeHandle.resolve(name);
         Array zarray = Array.open(childHandle);
         ZarrArrayInfo info = createZarrArrayInfo(name, zarray);
         if (info != null) {
