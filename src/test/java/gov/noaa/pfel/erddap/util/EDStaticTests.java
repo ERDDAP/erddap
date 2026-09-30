@@ -4,10 +4,16 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 import com.cohort.array.Attributes;
+import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.EDMessages.Message;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import testDataset.Initialization;
 
@@ -496,5 +502,95 @@ public class EDStaticTests {
 
   private void checkUrlExpectation(String message, String expected, String result) {
     Test.ensureEqual(result, expected, message + ": expected=" + expected + " got=" + result);
+  }
+
+  /**
+   * A request that names a real dataset but matches no data returned 404, which a client cannot
+   * distinguish from a missing dataset. use422ForNoDataStatusCode answers 422 for it instead,
+   * staying in the 4xx range so raise_for_status() and similar checks still fire. See
+   * https://github.com/ERDDAP/erddap/issues/410
+   */
+  @org.junit.jupiter.api.Test
+  void testUse422ForNoDataStatusCode() throws Exception {
+    String2.log("\n***** EDStatic.testUse422ForNoDataStatusCode");
+    boolean cachedUse422 = EDStatic.config.use422ForNoDataStatusCode;
+    int cachedSlowDown = EDStatic.config.slowDownTroubleMillis;
+    try {
+      EDStatic.config.slowDownTroubleMillis = 0; // no need to delay a test
+
+      EDStatic.config.use422ForNoDataStatusCode = false;
+      Test.ensureEqual(
+          statusSentFor(new SimpleException(MustBe.THERE_IS_NO_DATA)),
+          404,
+          "no data keeps 404 while the flag is off");
+
+      EDStatic.config.use422ForNoDataStatusCode = true;
+      Test.ensureEqual(
+          statusSentFor(new SimpleException(MustBe.THERE_IS_NO_DATA)),
+          422,
+          "no data answers 422 while the flag is on");
+      // lowSendError puts the status name at the front of the body, so 422 needs to be
+      // known there too or the body loses it.
+      Test.ensureTrue(
+          bodySentFor(new SimpleException(MustBe.THERE_IS_NO_DATA))
+                  .indexOf("Unprocessable Content:")
+              >= 0,
+          "the 422 body names its status");
+
+      // A dataset that genuinely is not there stays 404 either way.
+      Test.ensureEqual(
+          statusSentFor(
+              new SimpleException(
+                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0) + " datasetID=x")),
+          404,
+          "a missing resource is unaffected");
+
+    } finally {
+      EDStatic.config.use422ForNoDataStatusCode = cachedUse422;
+      EDStatic.config.slowDownTroubleMillis = cachedSlowDown;
+    }
+  }
+
+  /** Returns the body EDStatic.sendError writes to the response for the given error. */
+  private String bodySentFor(Throwable t) throws Exception {
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(request.getRequestURI()).thenReturn("/erddap/tabledap/testTable.csv");
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(response.isCommitted()).thenReturn(false);
+    java.io.ByteArrayOutputStream body = new java.io.ByteArrayOutputStream();
+    Mockito.when(response.getOutputStream())
+        .thenReturn(
+            new ServletOutputStream() {
+              @Override
+              public boolean isReady() {
+                return true;
+              }
+
+              @Override
+              public void setWriteListener(jakarta.servlet.WriteListener listener) {}
+
+              @Override
+              public void write(int b) {
+                body.write(b);
+              }
+            });
+
+    EDStatic.sendError(1, request, response, t);
+    return body.toString(java.nio.charset.StandardCharsets.UTF_8);
+  }
+
+  /** Returns the HTTP status EDStatic.sendError puts on the response for the given error. */
+  private int statusSentFor(Throwable t) throws Exception {
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(request.getRequestURI()).thenReturn("/erddap/tabledap/testTable.csv");
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(response.isCommitted()).thenReturn(false);
+    Mockito.when(response.getOutputStream()).thenReturn(Mockito.mock(ServletOutputStream.class));
+
+    EDStatic.sendError(1, request, response, t);
+
+    ArgumentCaptor<Integer> status = ArgumentCaptor.forClass(Integer.class);
+    Mockito.verify(response).setStatus(status.capture());
+    return status.getValue();
   }
 }

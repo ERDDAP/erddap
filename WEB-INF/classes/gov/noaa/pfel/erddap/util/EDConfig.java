@@ -281,6 +281,15 @@ public class EDConfig {
   @FeatureFlag public boolean ncHeaderMakeFile = false;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
+
+  /**
+   * When true, a request that names a real dataset but matches no data answers 422 Unprocessable
+   * Content instead of 404, so a client can tell it apart from a dataset that is not there while
+   * raise_for_status() and similar checks still fire. Off by default, which keeps the long-standing
+   * 404. See https://github.com/ERDDAP/erddap/issues/410
+   */
+  @FeatureFlag public boolean use422ForNoDataStatusCode = false;
+
   @FeatureFlag public boolean useHeadersForUrl = true;
   @FeatureFlag public boolean verifyHostNameErddapUrl = true;
   public java.util.Set<String> allowedHosts =
@@ -685,6 +694,7 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
+    use422ForNoDataStatusCode = getSetupEVBoolean(setup, ev, "use422ForNoDataStatusCode", false);
     useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
 
     verifyHostNameErddapUrl = getSetupEVBoolean(setup, ev, "verifyHostNameErddapUrl", true);
