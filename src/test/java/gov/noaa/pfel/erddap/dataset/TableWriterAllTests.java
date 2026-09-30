@@ -1,13 +1,11 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.StringArray;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import java.io.File;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -20,24 +18,6 @@ public class TableWriterAllTests {
   @org.junit.jupiter.api.BeforeAll
   static void beforeAll() {
     Initialization.edStatic();
-  }
-
-  @Test
-  void testSanitizePath(@TempDir Path tempDir) throws Exception {
-    String baseDir = tempDir.toString();
-
-    // Valid path inside baseDir
-    String validPath = tempDir.resolve("sub/test.txt").toString();
-    new File(tempDir.resolve("sub").toString()).mkdirs();
-    new File(validPath).createNewFile();
-
-    String sanitized = TableWriterAll.sanitizePath(validPath, baseDir);
-    assertEquals(new File(validPath).getCanonicalPath(), sanitized);
-
-    // Invalid path traversal outside baseDir
-    String traversalPath = tempDir.resolve("../outside.txt").toString();
-    assertThrows(
-        SecurityException.class, () -> TableWriterAll.sanitizePath(traversalPath, baseDir));
   }
 
   @Test

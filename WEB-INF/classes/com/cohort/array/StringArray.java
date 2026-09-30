@@ -1248,8 +1248,8 @@ public class StringArray extends PrimitiveArray {
    * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
    */
   @Override
-  public String getJsonString(final int index) {
-    return String2.toJson(get(index));
+  public void getJsonString(final int index, final StringBuilder sb) {
+    String2.toJson(get(index), sb);
   }
 
   /**
@@ -1852,21 +1852,30 @@ public class StringArray extends PrimitiveArray {
    * @param s
    * @throws Exception if trouble
    */
-  public static void externalizeForDODS(final DataOutputStream dos, final String s)
-      throws Exception {
+  public static void externalizeForDODS(
+      final DataOutputStream dos, final String s, byte[] workBuffer) throws Exception {
     int n = s.length();
-    dos.writeInt(n); // for Strings, just write size once
-    for (int i = 0; i < n; i++) { // just low 8 bits written; no utf or other unicode support,
-      final char c =
-          s.charAt(i); // 2016-11-29 I added: char>255 -> '?', it's better than low 8 bits
-      dos.writeByte(
-          c < 256
-              ? c
-              : '?'); // dods.dap.DString reader assumes ISO-8859-1, which is first page of unicode
+    dos.writeInt(n); // Write 4-byte length prefix
+
+    // Ensure workBuffer is large enough for length + padding
+    int paddedLen = n + ((4 - (n % 4)) % 4);
+    if (workBuffer.length < paddedLen) {
+      workBuffer = new byte[Math.max(paddedLen, workBuffer.length * 2)];
     }
 
-    // pad to 4 bytes boundary at end
-    while (n++ % 4 != 0) dos.writeByte(0);
+    // Pack characters into byte array in memory
+    for (int i = 0; i < n; i++) {
+      char c = s.charAt(i);
+      workBuffer[i] = (byte) (c < 256 ? c : '?');
+    }
+
+    // Add 4-byte boundary padding
+    for (int i = n; i < paddedLen; i++) {
+      workBuffer[i] = 0;
+    }
+
+    // Single I/O call to underlying stream
+    dos.write(workBuffer, 0, paddedLen);
   }
 
   /**
@@ -1881,7 +1890,8 @@ public class StringArray extends PrimitiveArray {
   public void externalizeForDODS(final DataOutputStream dos) throws Exception {
     dos.writeInt(size);
     dos.writeInt(size); // yes, a second time
-    for (int i = 0; i < size; i++) externalizeForDODS(dos, get(i));
+    byte[] buffer = new byte[1024];
+    for (int i = 0; i < size; i++) externalizeForDODS(dos, get(i), buffer);
   }
 
   /**
@@ -1894,8 +1904,9 @@ public class StringArray extends PrimitiveArray {
    * @throws Exception if trouble
    */
   @Override
-  public void externalizeForDODS(final DataOutputStream dos, final int i) throws Exception {
-    externalizeForDODS(dos, get(i));
+  public void externalizeForDODS(final DataOutputStream dos, final int i, byte[] workBuffer)
+      throws Exception {
+    externalizeForDODS(dos, get(i), workBuffer);
   }
 
   /**

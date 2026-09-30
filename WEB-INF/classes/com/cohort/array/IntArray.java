@@ -978,9 +978,13 @@ public class IntArray extends PrimitiveArray {
    *     this PA is unsigned, this method returns the unsigned value (never "null").
    */
   @Override
-  public String getJsonString(final int index) {
+  public void getJsonString(final int index, final StringBuilder sb) {
     final int i = get(index);
-    return maxIsMV && i == Integer.MAX_VALUE ? "null" : String.valueOf(i);
+    if (maxIsMV && i == Integer.MAX_VALUE) {
+      sb.append("null");
+    } else {
+      sb.append(String.valueOf(i));
+    }
   }
 
   /**

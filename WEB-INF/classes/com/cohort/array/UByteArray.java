@@ -1168,9 +1168,13 @@ public class UByteArray extends PrimitiveArray {
    *     this PA is unsigned, this method returns the unsigned value (never "null").
    */
   @Override
-  public String getJsonString(final int index) {
+  public void getJsonString(final int index, final StringBuilder sb) {
     final byte b = getPacked(index);
-    return maxIsMV && b == PACKED_MAX_VALUE ? "null" : String.valueOf(unpack(b));
+    if (maxIsMV && b == PACKED_MAX_VALUE) {
+      sb.append("null");
+    } else {
+      sb.append(String.valueOf(unpack(b)));
+    }
   }
 
   /**
@@ -1602,7 +1606,8 @@ public class UByteArray extends PrimitiveArray {
    * @throws Exception if trouble
    */
   @Override
-  public void externalizeForDODS(final DataOutputStream dos, final int i) throws Exception {
+  public void externalizeForDODS(final DataOutputStream dos, final int i, byte[] workbuffer)
+      throws Exception {
     dos.writeInt(array[i] << 24); // as if byte + 3 padding bytes
   }
 

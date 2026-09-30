@@ -501,6 +501,134 @@ class NcHelperTests {
     }
   }
 
+  @org.junit.jupiter.api.Test
+  void benchmarkGetPrimitiveArray() throws Throwable {
+    int n = 100000;
+    ucar.ma2.ArrayDouble.D1 arrayDouble = new ucar.ma2.ArrayDouble.D1(n);
+    for (int i = 0; i < n; i++) arrayDouble.set(i, i * 1.1);
+
+    // Warmup JVM
+    for (int i = 0; i < 100; i++) {
+      PrimitiveArray.factory(arrayDouble.copyTo1DJavaArray(), false);
+      NcHelper.getPrimitiveArray(arrayDouble, true, false);
+    }
+
+    int iterations = 1000;
+
+    // Time Old Way: copyTo1DJavaArray() + PrimitiveArray.factory()
+    long t0 = System.nanoTime();
+    for (int i = 0; i < iterations; i++) {
+      PrimitiveArray paOld = PrimitiveArray.factory(arrayDouble.copyTo1DJavaArray(), false);
+    }
+    long elapsedOld = System.nanoTime() - t0;
+
+    // Time New Way: NcHelper.getPrimitiveArray (zero-copy storage wrapping)
+    long t1 = System.nanoTime();
+    for (int i = 0; i < iterations; i++) {
+      PrimitiveArray paNew = NcHelper.getPrimitiveArray(arrayDouble, true, false);
+    }
+    long elapsedNew = System.nanoTime() - t1;
+
+    double msOld = elapsedOld / 1e6;
+    double msNew = elapsedNew / 1e6;
+    String2.log(
+        String.format(
+            "Benchmark getPrimitiveArray [%d iterations of %d elements]: Old copyTo1DJavaArray = %.2f ms, New zero-copy = %.2f ms",
+            iterations, n, msOld, msNew));
+
+    Test.ensureTrue(
+        msNew < msOld,
+        "New zero-copy getPrimitiveArray should be faster than old copyTo1DJavaArray");
+  }
+
+  @org.junit.jupiter.api.Test
+  void benchmarkGetUnpackedPrimitiveArray() throws Throwable {
+    String scaleFile = NcHelperTests.class.getResource("/data/nc/scale_factor.nc").getFile();
+    try (NetcdfFile nc = NcHelper.openFile(scaleFile)) {
+      Variable var = nc.findVariable("analysed_sst");
+      Test.ensureNotNull(var, "analysed_sst variable should exist in scale_factor.nc");
+      Array nc2Array = var.read();
+
+      // Warmup JVM
+      for (int i = 0; i < 100; i++) {
+        PrimitiveArray pa1 = NcHelper.getPrimitiveArray(nc2Array, true, NcHelper.isUnsigned(var));
+        NcHelper.unpackPA(var, pa1, true, true);
+        NcHelper.getUnpackedPrimitiveArray(var, nc2Array, NcHelper.isUnsigned(var));
+      }
+
+      int iterations = 1000;
+
+      // Time Old Approach: getPrimitiveArray (allocates raw copy) + unpackPA
+      long t0 = System.nanoTime();
+      for (int i = 0; i < iterations; i++) {
+        PrimitiveArray paOld = NcHelper.getPrimitiveArray(nc2Array, true, NcHelper.isUnsigned(var));
+        paOld = NcHelper.unpackPA(var, paOld, true, true);
+      }
+      long elapsedOld = System.nanoTime() - t0;
+
+      // Time New Fused Approach: getUnpackedPrimitiveArray
+      long t1 = System.nanoTime();
+      for (int i = 0; i < iterations; i++) {
+        PrimitiveArray paNew =
+            NcHelper.getUnpackedPrimitiveArray(var, nc2Array, NcHelper.isUnsigned(var));
+      }
+      long elapsedNew = System.nanoTime() - t1;
+
+      double msOld = elapsedOld / 1e6;
+      double msNew = elapsedNew / 1e6;
+      String2.log(
+          String.format(
+              "Benchmark [%d iterations]: Old approach = %.2f ms, New fused approach = %.2f ms",
+              iterations, msOld, msNew));
+
+      Test.ensureTrue(
+          msNew <= msOld * 1.5, "New fused approach should be as fast or faster than old approach");
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testGetUnpackedPrimitiveArray() throws Throwable {
+    String scaleFile = NcHelperTests.class.getResource("/data/nc/scale_factor.nc").getFile();
+    try (NetcdfFile nc = NcHelper.openFile(scaleFile)) {
+      Variable var = nc.findVariable("analysed_sst");
+      Test.ensureNotNull(var, "analysed_sst variable should exist in scale_factor.nc");
+      PrimitiveArray pa =
+          NcHelper.getUnpackedPrimitiveArray(var, var.read(), NcHelper.isUnsigned(var));
+      Test.ensureTrue(pa instanceof DoubleArray, "Unpacked sst should be DoubleArray");
+      Test.ensureTrue(pa.size() > 0, "Unpacked sst size should be > 0");
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testZeroCopyGetPrimitiveArray() throws Throwable {
+    double[] rawDoubles = new double[] {1.1, 2.2, 3.3, 4.4};
+    ucar.ma2.ArrayDouble.D1 arrayDouble = new ucar.ma2.ArrayDouble.D1(4);
+    for (int i = 0; i < 4; i++) arrayDouble.set(i, rawDoubles[i]);
+    com.cohort.array.DoubleArray dpa =
+        (com.cohort.array.DoubleArray) NcHelper.getPrimitiveArray(arrayDouble, true, false);
+    Test.ensureTrue(
+        dpa.array == arrayDouble.getStorage(),
+        "DoubleArray should wrap NetCDF storage directly without extra copy");
+
+    float[] rawFloats = new float[] {1.0f, 2.0f, 3.0f};
+    ucar.ma2.ArrayFloat.D1 arrayFloat = new ucar.ma2.ArrayFloat.D1(3);
+    for (int i = 0; i < 3; i++) arrayFloat.set(i, rawFloats[i]);
+    com.cohort.array.FloatArray fpa =
+        (com.cohort.array.FloatArray) NcHelper.getPrimitiveArray(arrayFloat, true, false);
+    Test.ensureTrue(
+        fpa.array == arrayFloat.getStorage(),
+        "FloatArray should wrap NetCDF storage directly without extra copy");
+
+    byte[] rawBytes = new byte[] {10, 20, 30};
+    ucar.ma2.ArrayByte.D1 arrayByte = new ucar.ma2.ArrayByte.D1(3, false);
+    for (int i = 0; i < 3; i++) arrayByte.set(i, rawBytes[i]);
+    com.cohort.array.ByteArray bpa =
+        (com.cohort.array.ByteArray) NcHelper.getPrimitiveArray(arrayByte, true, false);
+    Test.ensureTrue(
+        bpa.array == arrayByte.getStorage(),
+        "ByteArray should wrap NetCDF storage directly without extra copy");
+  }
+
   /** ERDDAP: require that all vars be in same structure */
   @org.junit.jupiter.api.Test
   void testReadStructure2() throws Throwable {

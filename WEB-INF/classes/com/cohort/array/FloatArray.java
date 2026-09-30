@@ -874,11 +874,6 @@ public class FloatArray extends PrimitiveArray {
    * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
    */
   @Override
-  public String getJsonString(final int index) {
-    return String2.toJson(get(index));
-  }
-
-  @Override
   public void getJsonString(final int index, final StringBuilder sb) {
     String2.toJson(get(index), sb);
   }

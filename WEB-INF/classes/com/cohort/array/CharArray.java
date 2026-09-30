@@ -963,12 +963,16 @@ public class CharArray extends PrimitiveArray {
    * 1 character. String returns a json String with chars above 127 encoded as \\udddd.
    *
    * @param index the index number 0 ... size-1
-   * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
+   * @param sb the StringBuilder to append to
    */
   @Override
-  public String getJsonString(final int index) {
+  public void getJsonString(final int index, StringBuilder sb) {
     final char ch = get(index);
-    return ch == Character.MAX_VALUE ? "null" : String2.toJson("" + ch);
+    if (ch == Character.MAX_VALUE) {
+      sb.append("null");
+    } else {
+      String2.toJson("" + ch, sb);
+    }
   }
 
   /**
@@ -1526,7 +1530,8 @@ public class CharArray extends PrimitiveArray {
    * @throws Exception if trouble
    */
   @Override
-  public void externalizeForDODS(final DataOutputStream dos, final int i) throws Exception {
+  public void externalizeForDODS(final DataOutputStream dos, final int i, byte[] workbuffer)
+      throws Exception {
     externalizeForDODS(dos, array[i]);
   }
 
