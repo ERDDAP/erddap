@@ -48,13 +48,13 @@
         <compiler.args></compiler.args>
         <erddapcontent.download.version>content1.0.1</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
-        <netcdfJavaVersion>5.10.0</netcdfJavaVersion>
+        <netcdfJavaVersion>5.11.0</netcdfJavaVersion>
         <test.resources.version>test1.06</test.resources.version>
         <jettyVersion>12.1.13</jettyVersion>
         <error-prone.version>2.50.0</error-prone.version>
         <prometheusVersion>1.9.0</prometheusVersion>
         <parquetVersion>1.18.1</parquetVersion>
-        <awssdkVersion>2.55.6</awssdkVersion>
+        <awssdkVersion>2.55.9</awssdkVersion>
         <luceneVersion>10.5.1</luceneVersion>
         <nettyVersion>4.2.18.Final</nettyVersion>
         <mavenTestPluginVersion>3.6.0</mavenTestPluginVersion>
@@ -68,7 +68,7 @@
              Published advice: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html
              Repository https://artifacts.unidata.ucar.edu/repository/unidata-all/      (on web page)
                 or      https://artifacts.unidata.ucar.edu/repository/unidata-releases/ (privately)
-              Browse either https://artifacts.unidata.ucar.edu/#browse/browse
+             Browse either https://artifacts.unidata.ucar.edu/#browse/browse
              -->
         <repository>
             <id>unidata-releases</id>
@@ -191,7 +191,7 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>3.6.3</version>
+                                    <version>3.9.0</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -265,17 +265,18 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.2.0</version>
                 <executions>
-                    <!-- create data directory for testing -->
+                    <!-- create required build/test directories -->
                     <execution>
                         <?m2e execute onConfiguration?>
-                        <id>make-data-dir</id>
-                        <phase>initialize</phase>
+                        <id>make-dirs</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
                                 <mkdir dir="${project.basedir}/target/data"/>
+                                <mkdir dir="${project.basedir}/target/temp"/>
                             </target>
                         </configuration>
                     </execution>
@@ -494,7 +495,7 @@
             <plugin>
                 <groupId>com.cosium.code</groupId>
                 <artifactId>git-code-format-maven-plugin</artifactId>
-                <version>6.1</version>
+                <version>6.2</version>
                 <executions>
                     <!-- On commit, format the modified files -->
                     <execution>
@@ -518,7 +519,7 @@
                     <dependency>
                     <groupId>com.cosium.code</groupId>
                     <artifactId>google-java-format</artifactId>
-                    <version>6.1</version>
+                    <version>6.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -775,7 +776,7 @@
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>1.6.3</version>
+                <version>1.6.5</version>
             </dependency>
 
             <!--
@@ -858,7 +859,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.5.250</version>
+            <version>2.5.252</version>
             <scope>test</scope>
         </dependency>
 
@@ -978,7 +979,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.19</version>
+            <version>2.0.20</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -1136,7 +1137,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.7.1-jre</version>
+            <version>33.7.2-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -1208,14 +1209,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.48.4</version>
+            <version>0.48.5</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.52.0</version>
+            <version>1.54.0</version>
         </dependency>
 
         <dependency>
