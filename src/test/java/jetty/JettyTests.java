@@ -20571,7 +20571,7 @@ completeness, or usefulness, of this information.";
             + "https://oceanview.pfeg.noaa.gov/las_fish1/doc/names_describe.html and\\n"
             + "https://oceanview.pfeg.noaa.gov/las_fish1/doc/marketlist.html .\\n"
             + "cdm_data_type=Other\\n"
-            + "Conventions=COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\\n"
+            + "Conventions=COARDS, CF-1.6, ACDD-1.3\\n"
             + "infoUrl=https://oceanview.pfeg.noaa.gov/las_fish1/doc/names_describe.html\\n"
             + "institution=CA DFG, NOAA ERD\\n"
             + "keywords_vocabulary=GCMD Science Keywords\\n"
