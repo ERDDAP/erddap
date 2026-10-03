@@ -58,6 +58,8 @@ import ucar.nc2.dataset.NetcdfDatasets;
 @SaxHandlerClass(EDDTableFromErddapHandler.class)
 public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
+  private static final String NCCSV_CONVENTION_SUFFIX = "(?i),\\s*NCCSV-\\d+\\.\\d+\\s*,?\\s*$";
+
   // default = last version before /version service was added
   protected Semver sourceErddapVersion = EDStatic.getSemver("1.22");
   boolean useNccsv; // when requesting data from the remote ERDDAP
@@ -332,6 +334,12 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
       }
     }
 
+    // .nccsvMetadata adds NCCSV-x.x to Conventions for transport. It isn't a convention of the
+    // source dataset, so don't expose it or persist it in the quick restart metadata.
+    sourceGlobalAttributes.set(
+        "Conventions",
+        removeNccsvConventionSuffix(sourceGlobalAttributes.getString("Conventions")));
+
     combinedGlobalAttributes =
         new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
     combinedGlobalAttributes.removeValue("\"null\"");
@@ -513,6 +521,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
               + "ms"
               + (cTime >= 600000 ? "  (>10m!)" : cTime >= 10000 ? "  (>10s!)" : "")
               + "\n");
+  }
+
+  static String removeNccsvConventionSuffix(String conventions) {
+    if (!String2.isSomething(conventions)) return conventions;
+
+    String cleaned = conventions.replaceFirst(NCCSV_CONVENTION_SUFFIX, "").trim();
+    return cleaned.replaceFirst("^,\\s*", "").replaceFirst(",\\s*$", "").trim();
   }
 
   /** This returns the source ERDDAP's version number, e.g., 1.22 */
