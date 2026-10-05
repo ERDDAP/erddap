@@ -7,9 +7,7 @@ import gov.noaa.pfel.erddap.dataset.EDDGridFromZarr;
 import gov.noaa.pfel.erddap.variable.EDVAlt;
 import org.xml.sax.Attributes;
 
-/**
- * SAX Handler for EDDGridFromZarr datasets.
- */
+/** SAX Handler for EDDGridFromZarr datasets. */
 public class EDDGridFromZarrHandler extends BaseGridHandler {
 
   private String tZarrStorePath = null;

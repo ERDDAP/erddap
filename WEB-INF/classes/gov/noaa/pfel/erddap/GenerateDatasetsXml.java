@@ -1463,18 +1463,20 @@ public class GenerateDatasetsXml {
    * @throws Throwable if error
    */
   public void doGridFromZarr(String args[]) throws Throwable {
-    String s1 = get(args, 1, "", "Zarr store path or URL (local file path, http://, https://, or s3://)");
+    String s1 =
+        get(args, 1, "", "Zarr store path or URL (local file path, http://, https://, or s3://)");
     String s2 = get(args, 2, "", "Sub-group path (or \"\" for root)");
     String s3 = get(args, 3, "", "Dataset ID prefix (or \"\" for default)");
-    String s4 = get(args, 4, Integer.toString(EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), "ReloadEveryNMinutes (e.g., " + EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ")");
+    String s4 =
+        get(
+            args,
+            4,
+            Integer.toString(EDD.DEFAULT_RELOAD_EVERY_N_MINUTES),
+            "ReloadEveryNMinutes (e.g., " + EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ")");
     String s5 = get(args, 5, "", "cacheFromUrl");
     String2.log("working...");
     printToBoth(
         EDDGridFromZarr.generateDatasetsXml(
-            s1,
-            s2,
-            s3,
-            String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES),
-            s5));
+            s1, s2, s3, String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), s5));
   }
 }
