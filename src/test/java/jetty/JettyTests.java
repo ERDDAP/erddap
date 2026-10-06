@@ -7788,1426 +7788,1472 @@ class JettyTests extends WireMockLifecycle {
     // json-ld all datasets
     expected =
         EDStatic.config.generateCroissantSchema
-            ? "<script type=\"application/ld+json\">\n"
-                + "{\n"
-                + "  \"@context\": \"http://schema.org\",\n"
-                + "  \"@type\": \"DataCatalog\",\n"
-                + "  \"name\": \"ERDDAP Data Server at ERDDAP Jetty Install\",\n"
-                + "  \"url\": \"http://localhost:8080/erddap\",\n"
-                + "  \"publisher\": {\n"
-                + "    \"@type\": \"Organization\",\n"
-                + "    \"name\": \"ERDDAP Jetty Install\",\n"
-                + "    \"address\": {\n"
-                + "      \"@type\": \"PostalAddress\",\n"
-                + "      \"addressCountry\": \"USA\",\n"
-                + "      \"addressLocality\": \"123 Irrelevant St., Nowhere\",\n"
-                + "      \"addressRegion\": \"AK\",\n"
-                + "      \"postalCode\": \"99504\"\n"
-                + "    },\n"
-                + "    \"telephone\": \"555-555-5555\",\n"
-                + "    \"email\": \"nobody@example.com\",\n"
-                + "    \"sameAs\": \"http://example.com\"\n"
-                + "  },\n"
-                + "  \"fileFormat\": [\n"
-                + "    \"application/geo+json\",\n"
-                + "    \"application/json\",\n"
-                + "    \"text/csv\"\n"
-                + "  ],\n"
-                + "  \"isAccessibleForFree\": \"True\",\n"
-                + "  \"dataset\": [\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"A Great Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTablePseudoSourceNames/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AAD - Collection of atmospheric pressure at altitude (ATMP) TimeSeries - IN SITU MultiPointTimeSeriesObservation\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/TS_ATMP_AAD/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Argo Float Vertical Profiles\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ArgoFloats/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Argo Float Vertical Profiles\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testCharAsChar/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Argo Float Vertical Profiles\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testCharAsString/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Audio data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridWav/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Audio data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableWav/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-2018, Daytime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testMinimalReadSource/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Daytime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nceiPH53sstd1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nceiPH53sstn1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridFromErddap/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CalCOFI Fish Larvae Count, 1984-2004\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNcCF1b/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CalCOFI Subsurface Physical Data, 1949-1998\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGlobal/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Commercial Fish Landings, 1931-1978\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/fedCalLandings/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Long List, 1928-2002, Monthly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatLM/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Long List, 1928-2002, Yearly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatLY/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Short List, 1928-2002, Monthly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatSM/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Short List, 1928-2002, Yearly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatSY/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Underwater Glider Network - Line 90\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/binnedCUGN90/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Channel Islands, Kelp Forest Monitoring, Sea Temperature, 1993-2007\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCinpKfmT/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat, 1985-2007\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCinpKfmSFNH/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdVHNchlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite), Lon0360\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/test_erdVHNchlamday_Lon0360/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMH1chla1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMH1chla8day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/rMH1chla8day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMH1chlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Orbview-2 SeaWiFS, 0.1Â°, Global, 1997-2010 (Monthly Composite) DEPRECATED\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdSWchlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1Ã¯Â¿Â½, Global, 1997-2010 (Monthly Composite) DEPRECATED\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdSW1chlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CPS Trawl Life History Haul Catch Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testQuotes/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CYGNSS Level 3 Climate Data Record Version 1.0\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSuperPreciseTimeUnits/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Daily MUR SST, Interim near-real-time (nrt) product\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testEDDGridFromNcFilesUnpacked/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/test_chars_e886_d14c_7d71/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testKevin20130109/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testParquet/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testStructure/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testStructurePrivate/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_fillValues/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_gridCompressedData/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_griddTypes/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_gridFillValues/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_testData/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"dfo-marvin1003-20250925T1927\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/Grid_NC_1D_2D/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"ECMWF (RSMC) data from a local source., Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ECMWF-FIXED/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"EPA SeaMap water station profiles in Gulf of Mexico\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/epaseamapTimeSeriesProfiles/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP MOCNESS Plankton (MOC1) Data, 2000-2002\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecMoc1/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Northern California Current Bird Data NH0005, 2000-2000, 0007\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecBirds/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Rosette Bottle Data (2002)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecBottle/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Rosette Bottle Data (2002)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGlobecBottle/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Rosette Bottle Data (2002)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableCopy/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Vertical Plankton Tow (VPT) Data, 1997-2001\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecVpt/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Great Lakes Average Surface Water Temperature, Daily\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/glerlAvgTemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Great Lakes Ice Concentration, Daily\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/glerlIce/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Great Lakes Long Term Average Surface Water Temperature, Lake Superior, Daily\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/glerlLTAvgTemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Historical Total Solar Irradiance Reconstruction -- testTimeAxis\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeAxis/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"JPL MUR SST Images\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testFileNames/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"L1b Magnetometer (MAG) Geomagnetic Field Product\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimePrecisionMillis/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"L1b Magnetometer (MAG) Geomagnetic Field Product\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimePrecisionMillisTable/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Liquid Robotics Wave Glider, Honey Badger (G3), 2015, Weather\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/LiquidR_HBG3_2015_weather/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMPOC1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/TableAggregateRows_nceiPH53sst/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODISA L3 SMI,\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUInt16File/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODISA L3 SMI,\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUInt16FileUnpacked/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Mooring Power System Controller (PSC) Status Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testLong/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"My Great Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testFromHttpGet/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"My Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSimpleTestNc/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"My Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSimpleTestNcTable/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NCEP/CPC 4km Global (60N - 60S) IR Dataset\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/mergeIR/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NCEP/CPC 4km Global (60N - 60S) IR Dataset\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/mergeIRgz/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NCEP/CPC 4km Global (60N - 60S) IR Dataset\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/mergeIRZ/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miniNdbc/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miniNdbc410/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNc2D/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNc3D/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data 4103\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miniNdbc4103/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Near Real Time Geostrophic Currents\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miamicurrents/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testActualRange/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA GOES-17 ABI L1b Radiances CONUS\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/noaa_goes17_abi_l1b_radc/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Highly Reflective Clouds, 25N-25S (noaa hrc, hrc.nmissdays), 1.0°, 1971-1985\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testActualRange2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Air Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosATemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Barometric Pressure\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosBPres/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Level\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosWLevel/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosWTemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1902-present, Conductivity\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosCond/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1902-present, Salinity\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosSalinity/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Ship Pisces Underway Meteorological Data, Realtime\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testWTDLwoSV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Ship Pisces Underway Meteorological Data, Realtime\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testWTDLwSV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA/NCEI 1/4 Degree Daily Optimum Interpolation Sea Surface Temperature (OISST) Analysis,, Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testPM180LonValidMinMax/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA/PIBHMC 5-m Bathymetry: American Samoa: Ofu And Olosega\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testIslandShift/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"North Pacific High, 1967 - 2014\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdNph/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"PacIOOS Water Quality Buoy 04 (WQB-04): Hilo Bay, Big Island, Hawaii\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testPrecision/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"PMEL EcoFOCI Chukchi Sea profile data, 2010-2012\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ChukchiSea_454a_037a_fcf4/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Snapshot of NDBC NRT files, saved as .csv\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ndbcMet2Csv/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb_LonPM180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMBsstdmday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite), Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMBsstdmday_LonPM180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SST, Pathfinder Ver 5.2 (L3C), Day, Global, 0.0417°, 1981-2012, Science Quality (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nodcPH2sstd1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data, 1987-2015\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdFedRockfishStation/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/pmelTaoDySst/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/pmelTaoMonPos/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test for EDDGridLon0630, Lon0360\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testLon0360Insert/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of CoastWatch HDF files\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testCwHdf/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of EDDGridFromNcFiles with GRIB files\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGribFiles_42/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of EDDGridFromNcFiles with GRIB files\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGribFiles_43/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of Grib2\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGrib2_42/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of Grib2\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGrib2_43/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of JSON Lines CSV\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testJsonlCSV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test time_zone\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeZone/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test WOD .ncCF file\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNcCF7SampleDimensions/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TestStandardizeWhat\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testStandardizeWhat/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"testTime2\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeZone2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"testTimeMV\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeMV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Newer Title!\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testAwsXml/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Newer Title!\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableAscii2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Newer Title!\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableColumnarAscii/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Title for testTableAscii\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableAscii/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Title for testTreatDimensionsAs\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTreatDimensionsAs/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"This is EDDTableWithDepth\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableWithDepth/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"title of testSpecialAxis0FileNameInt\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSpecialAxis0FileNameInt/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"title of testSpecialAxis0GlobalDouble\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSpecialAxis0GlobalDouble/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/etopo180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude 0 to 360), (Ice Sheet Surface)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/etopo360/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"University of Maine, B01 Accelerometer Buoy Sensor\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/UMaineAccB01/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Unknown institution data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTreatDimensionsAs2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"VIIRSN L3 SMI,\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUnsignedGrid/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"West Virginia Borehole Temperatures, AASG State Geothermal Data, 1936-2010\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/earthCubeKgsBoreTempWV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind Stress, Metop-A ASCAT, 0.25Ã¯Â¿Â½, Global, Near Real Time, 2009-present (1 Day)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridNThreads/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdQSwindmday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly), Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdQSwindmday_LonPM180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, Meridional (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdQSuy10mday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridCopy/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGriddedNcFiles/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"World Ocean Database, Multi-cast file\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testInvalidCRAFiles/index.html\"\n"
-                + "    }\n"
-                + "  ]\n"
-                + "}\n"
-                + "</script>\n"
-            : "<script type=\"application/ld+json\">\n"
-                + "{\n"
-                + "  \"@context\": \"http://schema.org\",\n"
-                + "  \"@type\": \"DataCatalog\",\n"
-                + "  \"name\": \"ERDDAP Data Server at ERDDAP Jetty Install\",\n"
-                + "  \"url\": \"http://localhost:8080/erddap\",\n"
-                + "  \"publisher\": {\n"
-                + "    \"@type\": \"Organization\",\n"
-                + "    \"name\": \"ERDDAP Jetty Install\",\n"
-                + "    \"address\": {\n"
-                + "      \"@type\": \"PostalAddress\",\n"
-                + "      \"addressCountry\": \"USA\",\n"
-                + "      \"addressLocality\": \"123 Irrelevant St., Nowhere\",\n"
-                + "      \"addressRegion\": \"AK\",\n"
-                + "      \"postalCode\": \"99504\"\n"
-                + "    },\n"
-                + "    \"telephone\": \"555-555-5555\",\n"
-                + "    \"email\": \"nobody@example.com\",\n"
-                + "    \"sameAs\": \"http://example.com\"\n"
-                + "  },\n"
-                + "  \"fileFormat\": [\n"
-                + "    \"application/geo+json\",\n"
-                + "    \"application/json\",\n"
-                + "    \"text/csv\"\n"
-                + "  ],\n"
-                + "  \"isAccessibleForFree\": \"True\",\n"
-                + "  \"dataset\": [\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"A Great Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTablePseudoSourceNames/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AAD - Collection of atmospheric pressure at altitude (ATMP) TimeSeries - IN SITU MultiPointTimeSeriesObservation\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/TS_ATMP_AAD/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Argo Float Vertical Profiles\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ArgoFloats/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Argo Float Vertical Profiles\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testCharAsChar/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Argo Float Vertical Profiles\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testCharAsString/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Audio data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridWav/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Audio data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableWav/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-2018, Daytime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testMinimalReadSource/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Daytime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nceiPH53sstd1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nceiPH53sstn1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridFromErddap/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CalCOFI Fish Larvae Count, 1984-2004\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNcCF1b/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CalCOFI Subsurface Physical Data, 1949-1998\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGlobal/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Commercial Fish Landings, 1931-1978\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/fedCalLandings/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Long List, 1928-2002, Monthly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatLM/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Long List, 1928-2002, Yearly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatLY/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Short List, 1928-2002, Monthly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatSM/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Fish Market Catch Landings, Short List, 1928-2002, Yearly\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCAMarCatSY/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"California Underwater Glider Network - Line 90\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/binnedCUGN90/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Channel Islands, Kelp Forest Monitoring, Sea Temperature, 1993-2007\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCinpKfmT/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat, 1985-2007\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdCinpKfmSFNH/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdVHNchlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite), Lon0360\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/test_erdVHNchlamday_Lon0360/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMH1chla1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMH1chla8day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/rMH1chla8day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMH1chlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Orbview-2 SeaWiFS, 0.1Â°, Global, 1997-2010 (Monthly Composite) DEPRECATED\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdSWchlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1Ã¯Â¿Â½, Global, 1997-2010 (Monthly Composite) DEPRECATED\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdSW1chlamday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CPS Trawl Life History Haul Catch Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testQuotes/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"CYGNSS Level 3 Climate Data Record Version 1.0\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSuperPreciseTimeUnits/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Daily MUR SST, Interim near-real-time (nrt) product\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testEDDGridFromNcFilesUnpacked/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/test_chars_e886_d14c_7d71/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testKevin20130109/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testParquet/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testStructure/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testStructurePrivate/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_fillValues/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_gridCompressedData/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_griddTypes/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_gridFillValues/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/zarr_testData/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"dfo-marvin1003-20250925T1927\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/Grid_NC_1D_2D/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"ECMWF (RSMC) data from a local source., Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ECMWF-FIXED/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"EPA SeaMap water station profiles in Gulf of Mexico\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/epaseamapTimeSeriesProfiles/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP MOCNESS Plankton (MOC1) Data, 2000-2002\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecMoc1/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Northern California Current Bird Data NH0005, 2000-2000, 0007\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecBirds/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Rosette Bottle Data (2002)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecBottle/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Rosette Bottle Data (2002)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGlobecBottle/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Rosette Bottle Data (2002)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableCopy/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"GLOBEC NEP Vertical Plankton Tow (VPT) Data, 1997-2001\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdGlobecVpt/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Great Lakes Average Surface Water Temperature, Daily\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/glerlAvgTemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Great Lakes Ice Concentration, Daily\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/glerlIce/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Great Lakes Long Term Average Surface Water Temperature, Lake Superior, Daily\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/glerlLTAvgTemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Historical Total Solar Irradiance Reconstruction -- testTimeAxis\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeAxis/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"JPL MUR SST Images\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testFileNames/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"L1b Magnetometer (MAG) Geomagnetic Field Product\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimePrecisionMillis/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"L1b Magnetometer (MAG) Geomagnetic Field Product\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimePrecisionMillisTable/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Liquid Robotics Wave Glider, Honey Badger (G3), 2015, Weather\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/LiquidR_HBG3_2015_weather/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMPOC1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/TableAggregateRows_nceiPH53sst/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODISA L3 SMI,\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUInt16File/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"MODISA L3 SMI,\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUInt16FileUnpacked/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Mooring Power System Controller (PSC) Status Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testLong/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"My Great Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testFromHttpGet/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"My Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSimpleTestNc/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"My Title\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSimpleTestNcTable/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NCEP/CPC 4km Global (60N - 60S) IR Dataset\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/mergeIR/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NCEP/CPC 4km Global (60N - 60S) IR Dataset\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/mergeIRgz/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NCEP/CPC 4km Global (60N - 60S) IR Dataset\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/mergeIRZ/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miniNdbc/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miniNdbc410/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNc2D/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNc3D/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NDBC Standard Meteorological Buoy Data 4103\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miniNdbc4103/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Near Real Time Geostrophic Currents\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/miamicurrents/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testActualRange/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA GOES-17 ABI L1b Radiances CONUS\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/noaa_goes17_abi_l1b_radc/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Highly Reflective Clouds, 25N-25S (noaa hrc, hrc.nmissdays), 1.0°, 1971-1985\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testActualRange2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Air Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosATemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Barometric Pressure\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosBPres/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Level\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosWLevel/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosWTemp/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1902-present, Conductivity\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosCond/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA NOS SOS, EXPERIMENTAL, 1902-present, Salinity\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nosSosSalinity/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Ship Pisces Underway Meteorological Data, Realtime\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testWTDLwoSV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA Ship Pisces Underway Meteorological Data, Realtime\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testWTDLwSV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA/NCEI 1/4 Degree Daily Optimum Interpolation Sea Surface Temperature (OISST) Analysis,, Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testPM180LonValidMinMax/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"NOAA/PIBHMC 5-m Bathymetry: American Samoa: Ofu And Olosega\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testIslandShift/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"North Pacific High, 1967 - 2014\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdNph/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"PacIOOS Water Quality Buoy 04 (WQB-04): Hilo Bay, Big Island, Hawaii\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testPrecision/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"PMEL EcoFOCI Chukchi Sea profile data, 2010-2012\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ChukchiSea_454a_037a_fcf4/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Snapshot of NDBC NRT files, saved as .csv\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/ndbcMet2Csv/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb_LonPM180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMBsstdmday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite), Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdMBsstdmday_LonPM180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SST, Pathfinder Ver 5.2 (L3C), Day, Global, 0.0417°, 1981-2012, Science Quality (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/nodcPH2sstd1day/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data, 1987-2015\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdFedRockfishStation/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/pmelTaoDyAirt/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/pmelTaoDySst/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/rlPmelTaoDySst/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/pmelTaoMonPos/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test for EDDGridLon0630, Lon0360\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testLon0360Insert/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of CoastWatch HDF files\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testCwHdf/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of EDDGridFromNcFiles with GRIB files\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGribFiles_42/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of EDDGridFromNcFiles with GRIB files\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGribFiles_43/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of Grib2\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGrib2_42/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of Grib2\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGrib2_43/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test of JSON Lines CSV\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testJsonlCSV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test time_zone\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeZone/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Test WOD .ncCF file\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testNcCF7SampleDimensions/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"TestStandardizeWhat\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testStandardizeWhat/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"testTime2\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeZone2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"testTimeMV\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTimeMV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Newer Title!\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testAwsXml/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Newer Title!\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableAscii2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Newer Title!\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableColumnarAscii/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Title for testTableAscii\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableAscii/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"The Title for testTreatDimensionsAs\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTreatDimensionsAs/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"This is EDDTableWithDepth\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTableWithDepth/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"title of testSpecialAxis0FileNameInt\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSpecialAxis0FileNameInt/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"title of testSpecialAxis0GlobalDouble\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testSpecialAxis0GlobalDouble/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/etopo180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude 0 to 360), (Ice Sheet Surface)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/etopo360/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"University of Maine, B01 Accelerometer Buoy Sensor\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/UMaineAccB01/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Unknown institution data from a local source.\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testTreatDimensionsAs2/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"VIIRSN L3 SMI,\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testUnsignedGrid/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"West Virginia Borehole Temperatures, AASG State Geothermal Data, 1936-2010\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/earthCubeKgsBoreTempWV/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind Stress, Metop-A ASCAT, 0.25Ã¯Â¿Â½, Global, Near Real Time, 2009-present (1 Day)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridNThreads/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdQSwindmday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly), Lon+/-180\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdQSwindmday_LonPM180/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, Meridional (Monthly Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/erdQSuy10mday/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGridCopy/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testGriddedNcFiles/index.html\"\n"
-                + "    },\n"
-                + "    {\n"
-                + "      \"@type\": \"Dataset\",\n"
-                + "      \"name\": \"World Ocean Database, Multi-cast file\",\n"
-                + "      \"sameAs\": \"http://localhost:8080/erddap/info/testInvalidCRAFiles/index.html\"\n"
-                + "    }\n"
-                + "  ]\n"
-                + "}\n"
-                + "</script>\n";
+            ?
+"""
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "DataCatalog",
+  "name": "ERDDAP Data Server at ERDDAP Jetty Install",
+  "url": "http://localhost:8080/erddap",
+  "publisher": {
+    "@type": "Organization",
+    "name": "ERDDAP Jetty Install",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "USA",
+      "addressLocality": "123 Irrelevant St., Nowhere",
+      "addressRegion": "AK",
+      "postalCode": "99504"
+    },
+    "telephone": "555-555-5555",
+    "email": "nobody@example.com",
+    "sameAs": "http://example.com"
+  },
+  "fileFormat": [
+    "application/geo+json",
+    "application/json",
+    "text/csv"
+  ],
+  "isAccessibleForFree": "True",
+  "dataset": [
+    {
+      "@type": "Dataset",
+      "name": "A Great Title",
+      "sameAs": "http://localhost:8080/erddap/info/testTablePseudoSourceNames/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AAD - Collection of atmospheric pressure at altitude (ATMP) TimeSeries - IN SITU MultiPointTimeSeriesObservation",
+      "sameAs": "http://localhost:8080/erddap/info/TS_ATMP_AAD/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Argo Float Vertical Profiles",
+      "sameAs": "http://localhost:8080/erddap/info/ArgoFloats/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Argo Float Vertical Profiles",
+      "sameAs": "http://localhost:8080/erddap/info/testCharAsChar/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Argo Float Vertical Profiles",
+      "sameAs": "http://localhost:8080/erddap/info/testCharAsString/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Audio data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testGridWav/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Audio data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testTableWav/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-2018, Daytime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testMinimalReadSource/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Daytime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/nceiPH53sstd1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/nceiPH53sstn1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testGridFromErddap/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CalCOFI Fish Larvae Count, 1984-2004",
+      "sameAs": "http://localhost:8080/erddap/info/testNcCF1b/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CalCOFI Subsurface Physical Data, 1949-1998",
+      "sameAs": "http://localhost:8080/erddap/info/testGlobal/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Commercial Fish Landings, 1931-1978",
+      "sameAs": "http://localhost:8080/erddap/info/fedCalLandings/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Long List, 1928-2002, Monthly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatLM/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Long List, 1928-2002, Yearly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatLY/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Short List, 1928-2002, Monthly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatSM/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Short List, 1928-2002, Yearly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatSY/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Underwater Glider Network - Line 90",
+      "sameAs": "http://localhost:8080/erddap/info/binnedCUGN90/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Channel Islands, Kelp Forest Monitoring, Sea Temperature, 1993-2007",
+      "sameAs": "http://localhost:8080/erddap/info/erdCinpKfmT/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat, 1985-2007",
+      "sameAs": "http://localhost:8080/erddap/info/erdCinpKfmSFNH/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdVHNchlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite), Lon0360",
+      "sameAs": "http://localhost:8080/erddap/info/test_erdVHNchlamday_Lon0360/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMH1chla1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMH1chla8day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/rMH1chla8day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMH1chlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Orbview-2 SeaWiFS, 0.1Â°, Global, 1997-2010 (Monthly Composite) DEPRECATED",
+      "sameAs": "http://localhost:8080/erddap/info/erdSWchlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1Ã¯Â¿Â½, Global, 1997-2010 (Monthly Composite) DEPRECATED",
+      "sameAs": "http://localhost:8080/erddap/info/erdSW1chlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CPS Trawl Life History Haul Catch Data",
+      "sameAs": "http://localhost:8080/erddap/info/testQuotes/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CYGNSS Level 3 Climate Data Record Version 1.0",
+      "sameAs": "http://localhost:8080/erddap/info/testSuperPreciseTimeUnits/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Daily MUR SST, Interim near-real-time (nrt) product",
+      "sameAs": "http://localhost:8080/erddap/info/testEDDGridFromNcFilesUnpacked/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/test_chars_e886_d14c_7d71/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testKevin20130109/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testParquet/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testStructure/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testStructurePrivate/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_fillValues/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridCompressedData/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridCompressedData_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_griddTypes/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_griddTypes_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridFillValues/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridFillValues_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridTestData_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_testData/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "dfo-marvin1003-20250925T1927",
+      "sameAs": "http://localhost:8080/erddap/info/Grid_NC_1D_2D/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "ECMWF (RSMC) data from a local source., Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/ECMWF-FIXED/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "EPA SeaMap water station profiles in Gulf of Mexico",
+      "sameAs": "http://localhost:8080/erddap/info/epaseamapTimeSeriesProfiles/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP MOCNESS Plankton (MOC1) Data, 2000-2002",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecMoc1/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Northern California Current Bird Data NH0005, 2000-2000, 0007",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecBirds/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Rosette Bottle Data (2002)",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecBottle/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Rosette Bottle Data (2002)",
+      "sameAs": "http://localhost:8080/erddap/info/testGlobecBottle/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Rosette Bottle Data (2002)",
+      "sameAs": "http://localhost:8080/erddap/info/testTableCopy/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Vertical Plankton Tow (VPT) Data, 1997-2001",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecVpt/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Great Lakes Average Surface Water Temperature, Daily",
+      "sameAs": "http://localhost:8080/erddap/info/glerlAvgTemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Great Lakes Ice Concentration, Daily",
+      "sameAs": "http://localhost:8080/erddap/info/glerlIce/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Great Lakes Long Term Average Surface Water Temperature, Lake Superior, Daily",
+      "sameAs": "http://localhost:8080/erddap/info/glerlLTAvgTemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Historical Total Solar Irradiance Reconstruction -- testTimeAxis",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeAxis/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "JPL MUR SST Images",
+      "sameAs": "http://localhost:8080/erddap/info/testFileNames/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "L1b Magnetometer (MAG) Geomagnetic Field Product",
+      "sameAs": "http://localhost:8080/erddap/info/testTimePrecisionMillis/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "L1b Magnetometer (MAG) Geomagnetic Field Product",
+      "sameAs": "http://localhost:8080/erddap/info/testTimePrecisionMillisTable/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Liquid Robotics Wave Glider, Honey Badger (G3), 2015, Weather",
+      "sameAs": "http://localhost:8080/erddap/info/LiquidR_HBG3_2015_weather/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMPOC1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table",
+      "sameAs": "http://localhost:8080/erddap/info/TableAggregateRows_nceiPH53sst/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODISA L3 SMI,",
+      "sameAs": "http://localhost:8080/erddap/info/testUInt16File/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODISA L3 SMI,",
+      "sameAs": "http://localhost:8080/erddap/info/testUInt16FileUnpacked/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Mooring Power System Controller (PSC) Status Data",
+      "sameAs": "http://localhost:8080/erddap/info/testLong/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "My Great Title",
+      "sameAs": "http://localhost:8080/erddap/info/testFromHttpGet/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "My Title",
+      "sameAs": "http://localhost:8080/erddap/info/testSimpleTestNc/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "My Title",
+      "sameAs": "http://localhost:8080/erddap/info/testSimpleTestNcTable/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NCEP/CPC 4km Global (60N - 60S) IR Dataset",
+      "sameAs": "http://localhost:8080/erddap/info/mergeIR/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NCEP/CPC 4km Global (60N - 60S) IR Dataset",
+      "sameAs": "http://localhost:8080/erddap/info/mergeIRgz/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NCEP/CPC 4km Global (60N - 60S) IR Dataset",
+      "sameAs": "http://localhost:8080/erddap/info/mergeIRZ/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/miniNdbc/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/miniNdbc410/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/testNc2D/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/testNc3D/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data 4103",
+      "sameAs": "http://localhost:8080/erddap/info/miniNdbc4103/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Near Real Time Geostrophic Currents",
+      "sameAs": "http://localhost:8080/erddap/info/miamicurrents/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present",
+      "sameAs": "http://localhost:8080/erddap/info/testActualRange/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA GOES-17 ABI L1b Radiances CONUS",
+      "sameAs": "http://localhost:8080/erddap/info/noaa_goes17_abi_l1b_radc/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Highly Reflective Clouds, 25N-25S (noaa hrc, hrc.nmissdays), 1.0°, 1971-1985",
+      "sameAs": "http://localhost:8080/erddap/info/testActualRange2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Air Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosATemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Barometric Pressure",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosBPres/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Level",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosWLevel/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosWTemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1902-present, Conductivity",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosCond/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1902-present, Salinity",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosSalinity/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Ship Pisces Underway Meteorological Data, Realtime",
+      "sameAs": "http://localhost:8080/erddap/info/testWTDLwoSV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Ship Pisces Underway Meteorological Data, Realtime",
+      "sameAs": "http://localhost:8080/erddap/info/testWTDLwSV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA/NCEI 1/4 Degree Daily Optimum Interpolation Sea Surface Temperature (OISST) Analysis,, Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/testPM180LonValidMinMax/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA/PIBHMC 5-m Bathymetry: American Samoa: Ofu And Olosega",
+      "sameAs": "http://localhost:8080/erddap/info/testIslandShift/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "North Pacific High, 1967 - 2014",
+      "sameAs": "http://localhost:8080/erddap/info/erdNph/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "PacIOOS Water Quality Buoy 04 (WQB-04): Hilo Bay, Big Island, Hawaii",
+      "sameAs": "http://localhost:8080/erddap/info/testPrecision/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "PMEL EcoFOCI Chukchi Sea profile data, 2010-2012",
+      "sameAs": "http://localhost:8080/erddap/info/ChukchiSea_454a_037a_fcf4/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Snapshot of NDBC NRT files, saved as .csv",
+      "sameAs": "http://localhost:8080/erddap/info/ndbcMet2Csv/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)",
+      "sameAs": "http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb_LonPM180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMBsstdmday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite), Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/erdMBsstdmday_LonPM180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SST, Pathfinder Ver 5.2 (L3C), Day, Global, 0.0417°, 1981-2012, Science Quality (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/nodcPH2sstd1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data, 1987-2015",
+      "sameAs": "http://localhost:8080/erddap/info/erdFedRockfishStation/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/pmelTaoDyAirt/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/pmelTaoDySst/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/rlPmelTaoDySst/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position",
+      "sameAs": "http://localhost:8080/erddap/info/pmelTaoMonPos/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test for EDDGridLon0630, Lon0360",
+      "sameAs": "http://localhost:8080/erddap/info/testLon0360Insert/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of CoastWatch HDF files",
+      "sameAs": "http://localhost:8080/erddap/info/testCwHdf/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of EDDGridFromNcFiles with GRIB files",
+      "sameAs": "http://localhost:8080/erddap/info/testGribFiles_42/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of EDDGridFromNcFiles with GRIB files",
+      "sameAs": "http://localhost:8080/erddap/info/testGribFiles_43/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of Grib2",
+      "sameAs": "http://localhost:8080/erddap/info/testGrib2_42/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of Grib2",
+      "sameAs": "http://localhost:8080/erddap/info/testGrib2_43/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of JSON Lines CSV",
+      "sameAs": "http://localhost:8080/erddap/info/testJsonlCSV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test time_zone",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeZone/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test WOD .ncCF file",
+      "sameAs": "http://localhost:8080/erddap/info/testNcCF7SampleDimensions/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TestStandardizeWhat",
+      "sameAs": "http://localhost:8080/erddap/info/testStandardizeWhat/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "testTime2",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeZone2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "testTimeMV",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeMV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Newer Title!",
+      "sameAs": "http://localhost:8080/erddap/info/testAwsXml/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Newer Title!",
+      "sameAs": "http://localhost:8080/erddap/info/testTableAscii2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Newer Title!",
+      "sameAs": "http://localhost:8080/erddap/info/testTableColumnarAscii/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Title for testTableAscii",
+      "sameAs": "http://localhost:8080/erddap/info/testTableAscii/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Title for testTreatDimensionsAs",
+      "sameAs": "http://localhost:8080/erddap/info/testTreatDimensionsAs/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "This is EDDTableWithDepth",
+      "sameAs": "http://localhost:8080/erddap/info/testTableWithDepth/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "title of testSpecialAxis0FileNameInt",
+      "sameAs": "http://localhost:8080/erddap/info/testSpecialAxis0FileNameInt/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "title of testSpecialAxis0GlobalDouble",
+      "sameAs": "http://localhost:8080/erddap/info/testSpecialAxis0GlobalDouble/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)",
+      "sameAs": "http://localhost:8080/erddap/info/etopo180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Topography, ETOPO1, 0.0166667 degrees, Global (longitude 0 to 360), (Ice Sheet Surface)",
+      "sameAs": "http://localhost:8080/erddap/info/etopo360/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "University of Maine, B01 Accelerometer Buoy Sensor",
+      "sameAs": "http://localhost:8080/erddap/info/UMaineAccB01/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Unknown institution data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testTreatDimensionsAs2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "VIIRSN L3 SMI,",
+      "sameAs": "http://localhost:8080/erddap/info/testUnsignedGrid/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "West Virginia Borehole Temperatures, AASG State Geothermal Data, 1936-2010",
+      "sameAs": "http://localhost:8080/erddap/info/earthCubeKgsBoreTempWV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind Stress, Metop-A ASCAT, 0.25Ã¯Â¿Â½, Global, Near Real Time, 2009-present (1 Day)",
+      "sameAs": "http://localhost:8080/erddap/info/testGridNThreads/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)",
+      "sameAs": "http://localhost:8080/erddap/info/erdQSwindmday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly), Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/erdQSwindmday_LonPM180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, Meridional (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdQSuy10mday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testGridCopy/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testGriddedNcFiles/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "World Ocean Database, Multi-cast file",
+      "sameAs": "http://localhost:8080/erddap/info/testInvalidCRAFiles/index.html"
+    }
+  ]
+}
+</script>
+                    """
+            :
+"""
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "DataCatalog",
+  "name": "ERDDAP Data Server at ERDDAP Jetty Install",
+  "url": "http://localhost:8080/erddap",
+  "publisher": {
+    "@type": "Organization",
+    "name": "ERDDAP Jetty Install",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "USA",
+      "addressLocality": "123 Irrelevant St., Nowhere",
+      "addressRegion": "AK",
+      "postalCode": "99504"
+    },
+    "telephone": "555-555-5555",
+    "email": "nobody@example.com",
+    "sameAs": "http://example.com"
+  },
+  "fileFormat": [
+    "application/geo+json",
+    "application/json",
+    "text/csv"
+  ],
+  "isAccessibleForFree": "True",
+  "dataset": [
+    {
+      "@type": "Dataset",
+      "name": "A Great Title",
+      "sameAs": "http://localhost:8080/erddap/info/testTablePseudoSourceNames/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AAD - Collection of atmospheric pressure at altitude (ATMP) TimeSeries - IN SITU MultiPointTimeSeriesObservation",
+      "sameAs": "http://localhost:8080/erddap/info/TS_ATMP_AAD/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Argo Float Vertical Profiles",
+      "sameAs": "http://localhost:8080/erddap/info/ArgoFloats/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Argo Float Vertical Profiles",
+      "sameAs": "http://localhost:8080/erddap/info/testCharAsChar/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Argo Float Vertical Profiles",
+      "sameAs": "http://localhost:8080/erddap/info/testCharAsString/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Audio data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testGridWav/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Audio data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testTableWav/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-2018, Daytime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testMinimalReadSource/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Daytime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/nceiPH53sstd1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/nceiPH53sstn1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Nighttime (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testGridFromErddap/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CalCOFI Fish Larvae Count, 1984-2004",
+      "sameAs": "http://localhost:8080/erddap/info/testNcCF1b/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CalCOFI Subsurface Physical Data, 1949-1998",
+      "sameAs": "http://localhost:8080/erddap/info/testGlobal/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Commercial Fish Landings, 1931-1978",
+      "sameAs": "http://localhost:8080/erddap/info/fedCalLandings/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Long List, 1928-2002, Monthly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatLM/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Long List, 1928-2002, Yearly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatLY/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Short List, 1928-2002, Monthly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatSM/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Fish Market Catch Landings, Short List, 1928-2002, Yearly",
+      "sameAs": "http://localhost:8080/erddap/info/erdCAMarCatSY/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "California Underwater Glider Network - Line 90",
+      "sameAs": "http://localhost:8080/erddap/info/binnedCUGN90/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Channel Islands, Kelp Forest Monitoring, Sea Temperature, 1993-2007",
+      "sameAs": "http://localhost:8080/erddap/info/erdCinpKfmT/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat, 1985-2007",
+      "sameAs": "http://localhost:8080/erddap/info/erdCinpKfmSFNH/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdVHNchlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite), Lon0360",
+      "sameAs": "http://localhost:8080/erddap/info/test_erdVHNchlamday_Lon0360/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMH1chla1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMH1chla8day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (8 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/rMH1chla8day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMH1chlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Orbview-2 SeaWiFS, 0.1Â°, Global, 1997-2010 (Monthly Composite) DEPRECATED",
+      "sameAs": "http://localhost:8080/erddap/info/erdSWchlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1Ã¯Â¿Â½, Global, 1997-2010 (Monthly Composite) DEPRECATED",
+      "sameAs": "http://localhost:8080/erddap/info/erdSW1chlamday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CPS Trawl Life History Haul Catch Data",
+      "sameAs": "http://localhost:8080/erddap/info/testQuotes/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "CYGNSS Level 3 Climate Data Record Version 1.0",
+      "sameAs": "http://localhost:8080/erddap/info/testSuperPreciseTimeUnits/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Daily MUR SST, Interim near-real-time (nrt) product",
+      "sameAs": "http://localhost:8080/erddap/info/testEDDGridFromNcFilesUnpacked/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/test_chars_e886_d14c_7d71/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testKevin20130109/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testParquet/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testStructure/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testStructurePrivate/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_fillValues/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridCompressedData/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridCompressedData_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_griddTypes/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_griddTypes_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridFillValues/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridFillValues_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridTestData_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_testData/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "dfo-marvin1003-20250925T1927",
+      "sameAs": "http://localhost:8080/erddap/info/Grid_NC_1D_2D/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "ECMWF (RSMC) data from a local source., Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/ECMWF-FIXED/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "EPA SeaMap water station profiles in Gulf of Mexico",
+      "sameAs": "http://localhost:8080/erddap/info/epaseamapTimeSeriesProfiles/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP MOCNESS Plankton (MOC1) Data, 2000-2002",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecMoc1/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Northern California Current Bird Data NH0005, 2000-2000, 0007",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecBirds/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Rosette Bottle Data (2002)",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecBottle/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Rosette Bottle Data (2002)",
+      "sameAs": "http://localhost:8080/erddap/info/testGlobecBottle/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Rosette Bottle Data (2002)",
+      "sameAs": "http://localhost:8080/erddap/info/testTableCopy/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "GLOBEC NEP Vertical Plankton Tow (VPT) Data, 1997-2001",
+      "sameAs": "http://localhost:8080/erddap/info/erdGlobecVpt/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Great Lakes Average Surface Water Temperature, Daily",
+      "sameAs": "http://localhost:8080/erddap/info/glerlAvgTemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Great Lakes Ice Concentration, Daily",
+      "sameAs": "http://localhost:8080/erddap/info/glerlIce/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Great Lakes Long Term Average Surface Water Temperature, Lake Superior, Daily",
+      "sameAs": "http://localhost:8080/erddap/info/glerlLTAvgTemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Historical Total Solar Irradiance Reconstruction -- testTimeAxis",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeAxis/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "JPL MUR SST Images",
+      "sameAs": "http://localhost:8080/erddap/info/testFileNames/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "L1b Magnetometer (MAG) Geomagnetic Field Product",
+      "sameAs": "http://localhost:8080/erddap/info/testTimePrecisionMillis/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "L1b Magnetometer (MAG) Geomagnetic Field Product",
+      "sameAs": "http://localhost:8080/erddap/info/testTimePrecisionMillisTable/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Liquid Robotics Wave Glider, Honey Badger (G3), 2015, Weather",
+      "sameAs": "http://localhost:8080/erddap/info/LiquidR_HBG3_2015_weather/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMPOC1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite) as Table",
+      "sameAs": "http://localhost:8080/erddap/info/TableAggregateRows_nceiPH53sst/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODISA L3 SMI,",
+      "sameAs": "http://localhost:8080/erddap/info/testUInt16File/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "MODISA L3 SMI,",
+      "sameAs": "http://localhost:8080/erddap/info/testUInt16FileUnpacked/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Mooring Power System Controller (PSC) Status Data",
+      "sameAs": "http://localhost:8080/erddap/info/testLong/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "My Great Title",
+      "sameAs": "http://localhost:8080/erddap/info/testFromHttpGet/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "My Title",
+      "sameAs": "http://localhost:8080/erddap/info/testSimpleTestNc/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "My Title",
+      "sameAs": "http://localhost:8080/erddap/info/testSimpleTestNcTable/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NCEP/CPC 4km Global (60N - 60S) IR Dataset",
+      "sameAs": "http://localhost:8080/erddap/info/mergeIR/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NCEP/CPC 4km Global (60N - 60S) IR Dataset",
+      "sameAs": "http://localhost:8080/erddap/info/mergeIRgz/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NCEP/CPC 4km Global (60N - 60S) IR Dataset",
+      "sameAs": "http://localhost:8080/erddap/info/mergeIRZ/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/miniNdbc/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/miniNdbc410/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/testNc2D/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data",
+      "sameAs": "http://localhost:8080/erddap/info/testNc3D/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NDBC Standard Meteorological Buoy Data 4103",
+      "sameAs": "http://localhost:8080/erddap/info/miniNdbc4103/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Near Real Time Geostrophic Currents",
+      "sameAs": "http://localhost:8080/erddap/info/miamicurrents/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Coral Reef Watch 25km Ocean Acidification, Caribbean, Preliminary, 0.25°, 2016-present",
+      "sameAs": "http://localhost:8080/erddap/info/testActualRange/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA GOES-17 ABI L1b Radiances CONUS",
+      "sameAs": "http://localhost:8080/erddap/info/noaa_goes17_abi_l1b_radc/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Highly Reflective Clouds, 25N-25S (noaa hrc, hrc.nmissdays), 1.0°, 1971-1985",
+      "sameAs": "http://localhost:8080/erddap/info/testActualRange2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Air Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosATemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Barometric Pressure",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosBPres/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Level",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosWLevel/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Water Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosWTemp/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1902-present, Conductivity",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosCond/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA NOS SOS, EXPERIMENTAL, 1902-present, Salinity",
+      "sameAs": "http://localhost:8080/erddap/info/nosSosSalinity/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Ship Pisces Underway Meteorological Data, Realtime",
+      "sameAs": "http://localhost:8080/erddap/info/testWTDLwoSV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA Ship Pisces Underway Meteorological Data, Realtime",
+      "sameAs": "http://localhost:8080/erddap/info/testWTDLwSV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA/NCEI 1/4 Degree Daily Optimum Interpolation Sea Surface Temperature (OISST) Analysis,, Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/testPM180LonValidMinMax/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "NOAA/PIBHMC 5-m Bathymetry: American Samoa: Ofu And Olosega",
+      "sameAs": "http://localhost:8080/erddap/info/testIslandShift/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "North Pacific High, 1967 - 2014",
+      "sameAs": "http://localhost:8080/erddap/info/erdNph/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "PacIOOS Water Quality Buoy 04 (WQB-04): Hilo Bay, Big Island, Hawaii",
+      "sameAs": "http://localhost:8080/erddap/info/testPrecision/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "PMEL EcoFOCI Chukchi Sea profile data, 2010-2012",
+      "sameAs": "http://localhost:8080/erddap/info/ChukchiSea_454a_037a_fcf4/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Snapshot of NDBC NRT files, saved as .csv",
+      "sameAs": "http://localhost:8080/erddap/info/ndbcMet2Csv/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths)",
+      "sameAs": "http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/hawaii_d90f_20ee_c4cb_LonPM180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdMBsstdmday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite), Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/erdMBsstdmday_LonPM180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SST, Pathfinder Ver 5.2 (L3C), Day, Global, 0.0417°, 1981-2012, Science Quality (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/nodcPH2sstd1day/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data, 1987-2015",
+      "sameAs": "http://localhost:8080/erddap/info/erdFedRockfishStation/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/pmelTaoDyAirt/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/pmelTaoDySst/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature",
+      "sameAs": "http://localhost:8080/erddap/info/rlPmelTaoDySst/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position",
+      "sameAs": "http://localhost:8080/erddap/info/pmelTaoMonPos/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test for EDDGridLon0630, Lon0360",
+      "sameAs": "http://localhost:8080/erddap/info/testLon0360Insert/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of CoastWatch HDF files",
+      "sameAs": "http://localhost:8080/erddap/info/testCwHdf/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of EDDGridFromNcFiles with GRIB files",
+      "sameAs": "http://localhost:8080/erddap/info/testGribFiles_42/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of EDDGridFromNcFiles with GRIB files",
+      "sameAs": "http://localhost:8080/erddap/info/testGribFiles_43/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of Grib2",
+      "sameAs": "http://localhost:8080/erddap/info/testGrib2_42/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of Grib2",
+      "sameAs": "http://localhost:8080/erddap/info/testGrib2_43/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test of JSON Lines CSV",
+      "sameAs": "http://localhost:8080/erddap/info/testJsonlCSV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test time_zone",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeZone/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Test WOD .ncCF file",
+      "sameAs": "http://localhost:8080/erddap/info/testNcCF7SampleDimensions/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "TestStandardizeWhat",
+      "sameAs": "http://localhost:8080/erddap/info/testStandardizeWhat/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "testTime2",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeZone2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "testTimeMV",
+      "sameAs": "http://localhost:8080/erddap/info/testTimeMV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Newer Title!",
+      "sameAs": "http://localhost:8080/erddap/info/testAwsXml/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Newer Title!",
+      "sameAs": "http://localhost:8080/erddap/info/testTableAscii2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Newer Title!",
+      "sameAs": "http://localhost:8080/erddap/info/testTableColumnarAscii/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Title for testTableAscii",
+      "sameAs": "http://localhost:8080/erddap/info/testTableAscii/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "The Title for testTreatDimensionsAs",
+      "sameAs": "http://localhost:8080/erddap/info/testTreatDimensionsAs/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "This is EDDTableWithDepth",
+      "sameAs": "http://localhost:8080/erddap/info/testTableWithDepth/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "title of testSpecialAxis0FileNameInt",
+      "sameAs": "http://localhost:8080/erddap/info/testSpecialAxis0FileNameInt/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "title of testSpecialAxis0GlobalDouble",
+      "sameAs": "http://localhost:8080/erddap/info/testSpecialAxis0GlobalDouble/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)",
+      "sameAs": "http://localhost:8080/erddap/info/etopo180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Topography, ETOPO1, 0.0166667 degrees, Global (longitude 0 to 360), (Ice Sheet Surface)",
+      "sameAs": "http://localhost:8080/erddap/info/etopo360/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "University of Maine, B01 Accelerometer Buoy Sensor",
+      "sameAs": "http://localhost:8080/erddap/info/UMaineAccB01/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Unknown institution data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/testTreatDimensionsAs2/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "VIIRSN L3 SMI,",
+      "sameAs": "http://localhost:8080/erddap/info/testUnsignedGrid/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "West Virginia Borehole Temperatures, AASG State Geothermal Data, 1936-2010",
+      "sameAs": "http://localhost:8080/erddap/info/earthCubeKgsBoreTempWV/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind Stress, Metop-A ASCAT, 0.25Ã¯Â¿Â½, Global, Near Real Time, 2009-present (1 Day)",
+      "sameAs": "http://localhost:8080/erddap/info/testGridNThreads/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)",
+      "sameAs": "http://localhost:8080/erddap/info/erdQSwindmday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly), Lon+/-180",
+      "sameAs": "http://localhost:8080/erddap/info/erdQSwindmday_LonPM180/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, Meridional (Monthly Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/erdQSuy10mday/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testGridCopy/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)",
+      "sameAs": "http://localhost:8080/erddap/info/testGriddedNcFiles/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "World Ocean Database, Multi-cast file",
+      "sameAs": "http://localhost:8080/erddap/info/testInvalidCRAFiles/index.html"
+    }
+  ]
+}
+</script>
+""";
     po = Math.max(0, results.indexOf(expected.substring(0, 30)));
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
