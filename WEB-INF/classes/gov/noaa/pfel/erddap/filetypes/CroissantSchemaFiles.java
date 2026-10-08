@@ -24,8 +24,7 @@ public class CroissantSchemaFiles extends FileTypeInterface {
           requestInfo.loggedInAs(),
           requestInfo.language(),
           writer,
-          requestInfo.edd(),
-          true /* useCroissant */);
+          requestInfo.edd());
       writer.flush();
     }
   }

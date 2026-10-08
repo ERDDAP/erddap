@@ -260,12 +260,6 @@ public class NcHeaderFiles extends FileTypeInterface {
 
   @Override
   public void writeTableToStream(DapRequestInfo requestInfo) throws Throwable {
-    if (EDStatic.config.ncHeaderMakeFile) {
-      FileTypeInterface ncFiles = new NcFiles(true);
-      ncFiles.writeTableToStream(requestInfo);
-      return;
-    }
-
     String cdlOutput = "";
     NetcdfFormatWriter.Builder writerBuilder =
         NetcdfFormatWriter.builder()
@@ -477,12 +471,6 @@ public class NcHeaderFiles extends FileTypeInterface {
 
   @Override
   public void writeGridToStream(DapRequestInfo requestInfo) throws Throwable {
-    if (EDStatic.config.ncHeaderMakeFile) {
-      FileTypeInterface ncFiles = new NcFiles(true);
-      ncFiles.writeGridToStream(requestInfo);
-      return;
-    }
-
     String cdlOutput = "";
     NetcdfFormatWriter.Builder writerBuilder =
         NetcdfFormatWriter.builder()

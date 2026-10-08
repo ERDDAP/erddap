@@ -2979,10 +2979,8 @@ public class EDStatic {
 
       // touchThread isn't running
       // are there touches?
-      if (config.touchThreadOnlyWhenItems) {
-        int nPending = touchList.size() - nextTouch.get();
-        if (nPending <= 0) return; // no need to start
-      }
+      int nPending = touchList.size() - nextTouch.get();
+      if (nPending <= 0) return; // no need to start
 
       touchThread = new TouchThread(nextTouch.get());
       runningThreads.put(touchThread.getName(), touchThread);
