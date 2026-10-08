@@ -275,7 +275,6 @@ public class EDConfig {
   @FeatureFlag public boolean publishMqttNotif;
   @FeatureFlag public boolean enableEnvParsing;
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
-  @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
@@ -678,7 +677,6 @@ public class EDConfig {
     publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
     enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
     updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", true);
     enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
     corsAllowHeaders =
         getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
