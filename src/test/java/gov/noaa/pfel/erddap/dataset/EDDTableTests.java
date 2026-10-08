@@ -76,6 +76,70 @@ class EDDTableTests {
     verifyNoMoreInteractions(request);
   }
 
+  @org.junit.jupiter.api.Test
+  void testDataAccessFormApplyConstraint() throws Throwable {
+    int language = 0;
+    EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTableAscii();
+
+    // 1. Test unconstrained form (default query: userDapQuery = "")
+    java.io.StringWriter sw = new java.io.StringWriter();
+    eddTable.writeDapHtmlForm(null, language, null, "", sw);
+    String html = sw.toString();
+
+    // Verify the Apply Constraint header and bulk buttons
+    Test.ensureTrue(html.contains("Apply<br>Constraint"), "Missing Apply Constraint header");
+    Test.ensureTrue(html.contains("name=\"CheckAllCon\""), "Missing CheckAllCon button");
+    Test.ensureTrue(html.contains("name=\"UncheckAllCon\""), "Missing UncheckAllCon button");
+    Test.ensureTrue(html.contains(".conch0.checked=true;"), "Missing check all onclick logic");
+    Test.ensureTrue(html.contains(".conch0.checked=false;"), "Missing uncheck all onclick logic");
+
+    // Verify conch checkbox per variable row defaults to checked
+    Test.ensureTrue(html.contains("name=\"conch0\""), "Missing conch0 checkbox");
+    Test.ensureTrue(
+        html.contains("name=\"previous&#x5f;conch0\" value=\"true\""),
+        "conch0 should default to checked for unconstrained form");
+    Test.ensureTrue(
+        html.contains("name=\"previous&#x5f;conch3\" value=\"true\""),
+        "conch3 (time) should default to checked for unconstrained form");
+    Test.ensureTrue(
+        html.contains("Check to apply the optional constraints for this variable"),
+        "Missing conch tooltip");
+
+    // Verify the oninput auto-check handlers on value inputs
+    Test.ensureTrue(
+        html.contains(".conch0.checked=true;"), "Missing auto-check conch handler on value input");
+
+    // Verify slider colspan is 6
+    Test.ensureTrue(html.contains("colspan=\"6\""), "Missing colspan=6 for sliders");
+
+    // Verify JavaScript URL builder checks conch
+    Test.ensureTrue(html.contains(".conch\" + dv);"), "Missing tConch logic in JS");
+    Test.ensureTrue(
+        html.contains("if (tConch && tConch.checked)"), "Missing conch checked guard in JS");
+
+    // 2. Test constrained form: userDapQuery specifies constraints for time (dv=3) and wspd (dv=6)
+    java.io.StringWriter swConstrained = new java.io.StringWriter();
+    eddTable.writeDapHtmlForm(
+        null, language, null, "time,wspd&time%3E=2005-01-01T00:00:00Z&wspd%3C=10", swConstrained);
+    String htmlConstrained = swConstrained.toString();
+
+    // Constrained variables must have conch checked
+    Test.ensureTrue(
+        htmlConstrained.contains("name=\"previous&#x5f;conch3\" value=\"true\""),
+        "conch3 (time) should be checked when constrained in userDapQuery");
+    Test.ensureTrue(
+        htmlConstrained.contains("name=\"previous&#x5f;conch6\" value=\"true\""),
+        "conch6 (wspd) should be checked when constrained in userDapQuery");
+
+    // Unconstrained variables must NOT be checked when userDapQuery is provided
+    Test.ensureTrue(
+        htmlConstrained.contains("name=\"previous&#x5f;conch0\" value=\"false\""),
+        "conch0 (longitude) should not be checked when unconstrained in userDapQuery");
+    Test.ensureTrue(
+        htmlConstrained.contains("name=\"previous&#x5f;conch1\" value=\"false\""),
+        "conch1 (latitude) should not be checked when unconstrained in userDapQuery");
+  }
+
   /** Test SOS server using cwwcNDBCMet. */
   @org.junit.jupiter.api.Test
   @TagDisabledExternalOther

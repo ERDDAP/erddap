@@ -2447,6 +2447,10 @@ set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 ]]></EDDTableDownloadDataTooltip>
 <EDDTableFromEDDGridSummary>नोट: यह डेटासेट ग्रिडेड डेटासेट का सारणीबद्ध संस्करण है जो इस ERDDAP में भी उपलब्ध है (डेटासेटआईडी={0} देखें)। अधिकांश लोग, अधिकांश समय, इस डेटासेट के मूल ग्रिडेड संस्करण का उपयोग करना पसंद करेंगे। यह डेटासेट ग्रिडेड डेटासेट से सभी अक्ष चर और डेटा चर को डेटा की एक विशाल डेटाबेस जैसी तालिका में स्तंभों के रूप में प्रस्तुत करता है। आप इस डेटासेट को उसी तरह क्वेरी कर सकते हैं जैसे आप ERDDAP में किसी अन्य सारणीबद्ध डेटासेट को क्वेरी करते हैं; हालाँकि, यदि आप किसी भी मूल डेटा चर को क्वेरी करते हैं, तो आपको अक्ष चर [0] (आमतौर पर &quot;समय&quot;) को सीमित करना होगा ताकि {1} अक्ष चर [0] मानों से अधिक के लिए डेटा खोजा न जाए। ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 वैकल्पिक
 <br>बाधा #1

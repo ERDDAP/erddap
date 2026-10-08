@@ -4930,8 +4930,39 @@ public abstract class EDDTable extends EDD {
             EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
             "onclick=\"" + uncheckAll + "\""));
 
+    writer.write("  &nbsp;</th>\n");
+
+    StringBuilder checkAllConstraints = new StringBuilder();
+    StringBuilder uncheckAllConstraints = new StringBuilder();
+    for (int dv = 0; dv < nDv; dv++) {
+      checkAllConstraints.append(formName + ".conch" + dv + ".checked=true;");
+      uncheckAllConstraints.append(formName + ".conch" + dv + ".checked=false;");
+    }
     writer.write(
-        "  &nbsp;</th>\n"
+        "  <th>"
+            + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_HTML, language)
+            + " "
+            + EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"narrow_max_width\">"
+                    + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language)
+                    + "</div>")
+            + "<br>"
+            + widgets.button(
+                "button",
+                "CheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL, language),
+                "onclick=\"" + checkAllConstraints + "\"")
+            + widgets.button(
+                "button",
+                "UncheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
+                "onclick=\"" + uncheckAllConstraints + "\"")
+            + "  &nbsp;</th>\n"
             + "  <th colspan=\"2\">"
             + EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT1_HTML, language)
             + " "
@@ -5019,25 +5050,11 @@ public abstract class EDDTable extends EDD {
         extra = edv.longName() + (extra.length() == 0 ? "" : ", " + extra);
       if (extra.length() > 0) extra = " (" + extra + ")";
 
-      // variables: checkbox varname (longName, units)
-      writer.write("  <td>");
-      writer.write(
-          widgets.checkbox(
-              "varch" + dv,
-              EDStatic.messages.get(Message.EDD_TABLE_CHECK_THE_VARIABLES, language),
-              userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0),
-              edv.destinationName(),
-              edv.destinationName()
-                  + extra
-                  + " "
-                  + EDStatic.htmlTooltipImageEDV(request, language, loggedInAs, edv),
-              ""));
-      writer.write("  &nbsp;</td>\n");
-
       // get default constraints
       String[] tOp = {">=", "<="};
       double[] tValD = {Double.NaN, Double.NaN};
       String[] tValS = {null, null};
+      boolean hasUserConstraint = false;
       if (userDapQuery.length() > 0) {
         // get constraints from userDapQuery?
         boolean done0 = false;
@@ -5045,6 +5062,7 @@ public abstract class EDDTable extends EDD {
         for (int con = 0; con < 2; con++) {
           int tConi = constraintVariables.indexOf(edv.destinationName());
           if (tConi >= 0) {
+            hasUserConstraint = true;
             String cOp = constraintOps.get(tConi);
             int putIn = cOp.startsWith("<") || done0 ? 1 : 0; // prefer 0 first
             if (putIn == 0) done0 = true;
@@ -5072,6 +5090,34 @@ public abstract class EDDTable extends EDD {
           tValS[0] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tValD[0], "");
         }
       }
+
+      // variables: checkbox varname (longName, units)
+      writer.write("  <td>");
+      writer.write(
+          widgets.checkbox(
+              "varch" + dv,
+              EDStatic.messages.get(Message.EDD_TABLE_CHECK_THE_VARIABLES, language),
+              userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0),
+              edv.destinationName(),
+              edv.destinationName()
+                  + extra
+                  + " "
+                  + EDStatic.htmlTooltipImageEDV(request, language, loggedInAs, edv),
+              ""));
+      writer.write("  &nbsp;</td>\n");
+
+      // apply constraint checkbox
+      boolean conchChecked = userDapQuery.length() > 0 ? hasUserConstraint : true;
+      writer.write("  <td>");
+      writer.write(
+          widgets.checkbox(
+              "conch" + dv,
+              EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language),
+              conchChecked,
+              "1",
+              "",
+              ""));
+      writer.write("  &nbsp;</td>\n");
 
       // write constraints html
       String valueWidgetName = "val" + dv + "_";
@@ -5110,7 +5156,14 @@ public abstract class EDDTable extends EDD {
         } else if (tOp[con].equals(PrimitiveArray.REGEX_OP) || isChar || isString) {
           tVal = String2.toJson(tVal); // enclose in "
         }
-        writer.write(widgets.textField(valueWidgetName + con, tTooltip, 19, 255, tVal, ""));
+        writer.write(
+            widgets.textField(
+                valueWidgetName + con,
+                tTooltip,
+                19,
+                255,
+                tVal,
+                "oninput=\"" + docFormName + ".conch" + dv + ".checked=true;\""));
         writer.write("  </td>\n");
       }
 
@@ -5157,6 +5210,11 @@ public abstract class EDDTable extends EDD {
                         + ".val"
                         + dv
                         + "_0.value=this.value;"
+                        + " "
+                        + docFormName
+                        + ".conch"
+                        + dv
+                        + ".checked=true;"
                         + "'",
                     true)
                 + // encodeSpaces solves the problem with consecutive internal spaces
@@ -5196,6 +5254,11 @@ public abstract class EDDTable extends EDD {
                 + dv
                 + "_0.value="
                 + "dis.options[dis.selectedIndex].text;\n"
+                + "      "
+                + docFormName
+                + ".conch"
+                + dv
+                + ".checked=true;\n"
                 + "    }\" >\n"
                 + "  </td>\n"
                 + "  <td class=\"B\">"
@@ -5231,6 +5294,11 @@ public abstract class EDDTable extends EDD {
                 + dv
                 + "_0.value="
                 + "dis.options[dis.selectedIndex].text;\n"
+                + "      "
+                + docFormName
+                + ".conch"
+                + dv
+                + ".checked=true;\n"
                 + "    }\" >\n"
                 + "  </td>\n"
                 + "  <td>&nbsp;"
@@ -5304,7 +5372,7 @@ public abstract class EDDTable extends EDD {
         if (sliderInitToPositions[dv] == -1) sliderInitToPositions[dv] = EDV.SLIDER_PIXELS - 1;
         writer.write(
             "<tr>\n"
-                + "  <td colspan=\"5\">\n"
+                + "  <td colspan=\"6\">\n"
                 + widgets.spacer(10, 1, "")
                 + // was "style=\"text-align:left\"") +
                 widgets.dualSlider(dv, EDV.SLIDER_PIXELS - 1, "")
@@ -5428,20 +5496,25 @@ public abstract class EDDTable extends EDD {
             + formName
             + ".varch\" + dv);\n"
             + "    if (tVar.checked) rv.push(tVar.value);\n"
-            + "    var tOp  = eval(\"d."
+            + "    var tConch = eval(\"d."
+            + formName
+            + ".conch\" + dv);\n"
+            + "    if (tConch && tConch.checked) {\n"
+            + "      var tOp  = eval(\"d."
             + formName
             + ".op\"  + dv + \"_0\");\n"
-            + "    var tVal = eval(\"d."
+            + "      var tVal = eval(\"d."
             + formName
             + ".val\" + dv + \"_0\");\n"
-            + "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
-            + "    tOp  = eval(\"d."
+            + "      if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "      tOp  = eval(\"d."
             + formName
             + ".op\"  + dv + \"_1\");\n"
-            + "    tVal = eval(\"d."
+            + "      tVal = eval(\"d."
             + formName
             + ".val\" + dv + \"_1\");\n"
-            + "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "      if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "    }\n"
             + "  }\n"
             + (addVariablesWhereAttNames == null
                 ? ""

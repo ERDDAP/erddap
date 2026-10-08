@@ -489,6 +489,10 @@ public class EDMessages {
     EDD_TABLE_CHECK_THE_VARIABLES,
     EDD_TABLE_SELECT_AN_OPERATOR,
     EDD_TABLE_FROM_EDD_GRID_SUMMARY,
+    EDD_TABLE_APPLY_CONSTRAINT_HTML,
+    EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP,
+    EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP,
+    EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP,
     EDD_TABLE_OPT_CONSTRAINT1_HTML,
     EDD_TABLE_OPT_CONSTRAINT2_HTML,
     EDD_TABLE_OPT_CONSTRAINT_VAR,
@@ -2102,6 +2106,18 @@ public class EDMessages {
     translatedMessages.put(
         Message.EDD_TABLE_FROM_EDD_GRID_SUMMARY,
         getNotNothingString(messagesAr, "EDDTableFromEDDGridSummary", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_APPLY_CONSTRAINT_HTML,
+        getNotNothingString(messagesAr, "EDDTableApplyConstraintHtml", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP,
+        getNotNothingString(messagesAr, "EDDTableApplyConstraintTooltip", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP,
+        getNotNothingString(messagesAr, "EDDTableCheckAllConstraintsTooltip", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP,
+        getNotNothingString(messagesAr, "EDDTableUncheckAllConstraintsTooltip", errorInMethod));
     translatedMessages.put(
         Message.EDD_TABLE_OPT_CONSTRAINT1_HTML,
         getNotNothingString(messagesAr, "EDDTableOptConstraint1Html", errorInMethod));
