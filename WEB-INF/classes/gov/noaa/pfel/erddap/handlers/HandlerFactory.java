@@ -96,6 +96,9 @@ public class HandlerFactory {
         case "EDDGridFromDap" -> {
           return new EDDGridFromDapHandler(saxHandler, datasetID, completeState);
         }
+        case "EDDGridFromZarr" -> {
+          return new EDDGridFromZarrHandler(saxHandler, datasetID, completeState);
+        }
         case "EDDGridLonPM180" -> {
           return new EDDGridLonPM180Handler(saxHandler, datasetID, completeState, context);
         }

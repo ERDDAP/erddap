@@ -1011,6 +1011,12 @@
         </dependency>
 
         <dependency>
+            <groupId>dev.zarr</groupId>
+            <artifactId>zarr-java</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>grib</artifactId>
             <version>${netcdfJavaVersion}</version>
