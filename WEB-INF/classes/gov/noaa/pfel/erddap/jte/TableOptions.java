@@ -2,11 +2,11 @@ package gov.noaa.pfel.erddap.jte;
 
 import com.cohort.array.Attributes;
 import com.cohort.util.Calendar2;
+import com.cohort.util.LinkHelper;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import java.util.List;
 
 public class TableOptions {
 
@@ -172,26 +172,22 @@ public class TableOptions {
   }
 
   public boolean checkContainsUrl(String s) {
-    return needEncodingAsHtml && String2.containsUrl(s);
+    return needEncodingAsHtml && LinkHelper.containsUrl(s);
   }
 
   public boolean checkMouseOver(String s) {
     return !needEncodingAsHtml
         && !s.contains("href=")
         && !s.contains("onmouseover")
-        && String2.containsUrl(XML.decodeEntities(s));
-  }
-
-  public List<String> getExtractUrls(String s) {
-    return String2.extractUrls(s);
+        && LinkHelper.containsUrl(XML.decodeEntities(s));
   }
 
   public boolean getContainsUrl(String s) {
-    return String2.containsUrl(s);
+    return LinkHelper.containsUrl(s);
   }
 
   public String encodeAddHttps(String s) {
-    return XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(s));
+    return XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(s));
   }
 
   public boolean checkDecodeEntities(String s) {

@@ -1,6 +1,8 @@
 package com.cohort.util;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
@@ -137,6 +139,35 @@ public class LinkHelper {
     void handle(String text, boolean isUrl);
   }
 
+  public static class LinkSegment {
+    private final String text;
+    private final boolean isUrl;
+
+    public LinkSegment(String text, boolean isUrl) {
+      this.text = text;
+      this.isUrl = isUrl;
+    }
+
+    public String getText() {
+      return text;
+    }
+
+    public boolean isUrl() {
+      return isUrl;
+    }
+
+    public String getHref() {
+      return addHttpsForWWW(text);
+    }
+  }
+
+  /** Splits text into plain text and URL segments. */
+  public static List<LinkSegment> segment(String input) {
+    List<LinkSegment> segments = new ArrayList<>();
+    linkify(input, (text, isUrl) -> segments.add(new LinkSegment(text, isUrl)));
+    return segments;
+  }
+
   /**
    * Processes the input string, identifying links and plain text segments, and passes each to the
    * handler.
@@ -167,6 +198,26 @@ public class LinkHelper {
       handler.handle(input.substring(lastEnd), false);
     }
     return found;
+  }
+
+  /**
+   * Checks whether the input string contains at least one valid URL/link.
+   *
+   * @param input the text to check
+   * @return true if a valid link is present
+   */
+  public static boolean containsUrl(String input) {
+    if (input == null || input.isEmpty()) {
+      return false;
+    }
+
+    CharSequence searchIn = new NormalizedCharSequence(input);
+    for (LinkSpan span : EXTRACTOR.extractLinks(searchIn)) {
+      if (isValidLink(searchIn, span)) {
+        return true; // Short-circuits immediately on first match
+      }
+    }
+    return false;
   }
 
   /**

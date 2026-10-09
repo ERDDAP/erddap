@@ -1,3 +1,5 @@
+@import com.cohort.util.LinkHelper
+@import com.cohort.util.XML
 @import gov.noaa.pfel.erddap.jte.TableOptions
 @import gov.noaa.pfel.coastwatch.pointdata.Table
 @param TableOptions tableOptions
@@ -36,14 +38,11 @@
                                 </a>
 
                             @elseif(tableOptions.checkContainsUrl(s) || tableOptions.checkMouseOver(s))
-                                !{var separatedText = tableOptions.getExtractUrls(s);}
-                                @for(String text : separatedText)
-                                    @if(tableOptions.getContainsUrl(text))
-                                        <a href="${tableOptions.encodeAddHttps(text)}">
-                                            ${tableOptions.getEncodeAsHtml(text)}
-                                        </a>
+                                @for(var segment : LinkHelper.segment(s))
+                                    @if(segment.isUrl())
+                                        <a href="${XML.encodeAsHTMLAttribute(segment.getHref())}">${tableOptions.getEncodeAsHtml(segment.getText())}</a>
                                     @else
-                                        <p>${tableOptions.getEncodeAsHtml(text)}</p>
+                                        ${tableOptions.getEncodeAsHtml(segment.getText())}
                                     @endif
                                 @endfor
 

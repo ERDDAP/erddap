@@ -110,6 +110,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18936,25 +18937,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
           for (int i = 0; i < valueSA.size(); i++) {
             String s = valueSA.get(i);
-            if (String2.containsUrl(s)) {
-              List<String> separatedText = String2.extractUrls(s);
-              StringBuilder output = new StringBuilder();
-              for (String text : separatedText) {
-                if (String2.containsUrl(text)) {
-                  // display as a link
-                  boolean isLocal = text.startsWith(EDStatic.config.baseUrl);
-                  text = XML.encodeAsHTMLAttribute(text);
-                  output.append(
-                      "<a href=\""
-                          + String2.addHttpsForWWW(text)
-                          + "\">"
-                          + text
-                          + (isLocal ? "" : externalLinkHtml)
-                          + "</a>");
-                } else {
-                  output.append(text);
-                }
-              }
+            StringBuilder output = new StringBuilder();
+            if (LinkHelper.linkify(
+                s,
+                (text, isUrl) -> {
+                  if (isUrl) {
+                    // display as a link
+                    boolean isLocal = text.startsWith(EDStatic.config.baseUrl);
+                    output.append(
+                        "<a href=\""
+                            + XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(text))
+                            + "\">"
+                            + XML.encodeAsHTML(text)
+                            + (isLocal ? "" : externalLinkHtml)
+                            + "</a>");
+                  } else {
+                    output.append(text);
+                  }
+                })) {
               valueSA.set(i, output.toString());
             } else if (String2.isEmailAddress(s)) {
               // to improve security, convert "@" to " at "
