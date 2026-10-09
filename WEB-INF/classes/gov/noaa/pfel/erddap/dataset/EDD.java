@@ -675,176 +675,24 @@ public abstract class EDD {
     if (type == null) {
       throw new SimpleException(startError + xmlReader.lineNumber() + ": Missing <dataset> type");
     }
-
-    if (EDStatic.config.useEddReflection) {
-      // use reflection to find the fromXml method
-      EDDClassInfo eddClassInfo = EDD_CLASS_INFO_MAP.get(type);
-      if (eddClassInfo == null || !eddClassInfo.hasFromXmlMethod()) {
-        throw new RuntimeException(
-            startError + xmlReader.lineNumber() + ": Unexpected <daFtaset> type=" + type + ".");
-      }
-
-      try {
-        return (EDD) eddClassInfo.fromXmlMethod().get().invoke(null, erddap, xmlReader);
-      } catch (Throwable t) {
-        // unwrap InvocationTargetExceptions
-        if (t instanceof InvocationTargetException && t.getCause() != null) {
-          t = t.getCause();
-        }
-        String msg = MustBe.getShortErrorMessage(t);
-        throw new RuntimeException(
-            (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ")
-                + msg,
-            t);
-      }
-    } else {
-      // legacy hardcoded approach
-      try {
-        switch (type) {
-          case "EDDGridAggregateExistingDimension" -> {
-            return EDDGridAggregateExistingDimension.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridCopy" -> {
-            return EDDGridCopy.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromAudioFiles" -> {
-            return EDDGridFromAudioFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromNcFilesUnpacked" -> {
-            return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromNcFiles" -> {
-            return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromMergeIRFiles" -> {
-            return EDDGridFromMergeIRFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridLonPM180" -> {
-            return EDDGridLonPM180.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridLon0360" -> {
-            return EDDGridLon0360.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridSideBySide" -> {
-            return EDDGridSideBySide.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromDap" -> {
-            return EDDGridFromDap.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromEDDTable" -> {
-            return EDDGridFromEDDTable.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromErddap" -> {
-            return EDDGridFromErddap.fromXml(erddap, xmlReader);
-          }
-          case "EDDGridFromEtopo" -> {
-            return EDDGridFromEtopo.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableAggregateRows" -> {
-            return EDDTableAggregateRows.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableCopy" -> {
-            return EDDTableCopy.fromXml(erddap, xmlReader);
-          }
-          // if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap,
-          // xmlReader); //inactive
-          case "EDDTableFromAsciiServiceNOS" -> {
-            return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
-          }
-          // if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(erddap,
-          // xmlReader); //inactive
-          case "EDDTableFromCassandra" -> {
-            return EDDTableFromCassandra.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromDapSequence" -> {
-            return EDDTableFromDapSequence.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromDatabase" -> {
-            return EDDTableFromDatabase.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromEDDGrid" -> {
-            return EDDTableFromEDDGrid.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromErddap" -> {
-            return EDDTableFromErddap.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromFileNames" -> {
-            return EDDTableFromFileNames.fromXml(erddap, xmlReader);
-          }
-          // if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(erddap,
-          // xmlReader); //inactive as of 2009-01-14
-          case "EDDTableFromAsciiFiles" -> {
-            return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromAudioFiles" -> {
-            return EDDTableFromAudioFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromAwsXmlFiles" -> {
-            return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromColumnarAsciiFiles" -> {
-            return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromHttpGet" -> {
-            return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromInvalidCRAFiles" -> {
-            return EDDTableFromInvalidCRAFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromJsonlCSVFiles" -> {
-            return EDDTableFromJsonlCSVFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromParquetFiles" -> {
-            return EDDTableFromParquetFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromHyraxFiles" -> {
-            return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromMultidimNcFiles" -> {
-            return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromNcFiles" -> {
-            return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromNcCFFiles" -> {
-            return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromNccsvFiles" -> {
-            return EDDTableFromNccsvFiles.fromXml(erddap, xmlReader);
-          }
-          // if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap,
-          // xmlReader); //inactive 2010-09-08
-          // if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap,
-          // xmlReader); //inactive 2011-12-16
-          case "EDDTableFromOBIS" -> {
-            return EDDTableFromOBIS.fromXml(erddap, xmlReader);
-          }
-          // if (type.equals("EDDTableFromPostDatabase"))return
-          // EDDTableFromPostDatabase.fromXml(erddap,
-          // xmlReader);
-          // if (type.equals("EDDTableFromPostNcFiles")) return
-          // EDDTableFromPostNcFiles.fromXml(erddap,
-          // xmlReader);
-          case "EDDTableFromSOS" -> {
-            return EDDTableFromSOS.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromThreddsFiles" -> {
-            return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
-          }
-          case "EDDTableFromWFSFiles" -> {
-            return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
-          }
-        }
-
-      } catch (Throwable t) {
-        String msg = MustBe.getShortErrorMessage(t);
-        throw new RuntimeException(
-            (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ")
-                + msg,
-            t);
-      }
+    // use reflection to find the fromXml method
+    EDDClassInfo eddClassInfo = EDD_CLASS_INFO_MAP.get(type);
+    if (eddClassInfo == null || !eddClassInfo.hasFromXmlMethod()) {
       throw new RuntimeException(
-          startError + xmlReader.lineNumber() + ": Unexpected <dataset> type=" + type + ".");
+          startError + xmlReader.lineNumber() + ": Unexpected <daFtaset> type=" + type + ".");
+    }
+
+    try {
+      return (EDD) eddClassInfo.fromXmlMethod().get().invoke(null, erddap, xmlReader);
+    } catch (Throwable t) {
+      // unwrap InvocationTargetExceptions
+      if (t instanceof InvocationTargetException && t.getCause() != null) {
+        t = t.getCause();
+      }
+      String msg = MustBe.getShortErrorMessage(t);
+      throw new RuntimeException(
+          (msg.startsWith(startStartError) ? "" : startError + xmlReader.lineNumber() + ": ") + msg,
+          t);
     }
   }
 
