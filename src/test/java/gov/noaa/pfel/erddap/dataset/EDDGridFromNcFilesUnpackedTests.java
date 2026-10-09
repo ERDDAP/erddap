@@ -13,7 +13,6 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import java.nio.file.Path;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -25,17 +24,10 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 class EDDGridFromNcFilesUnpackedTests {
-  static boolean initialCroissantSetting = false;
 
   @BeforeAll
   static void init() {
     Initialization.edStatic();
-    initialCroissantSetting = EDStatic.config.generateCroissantSchema;
-  }
-
-  @AfterEach
-  void cleanup() {
-    EDStatic.config.generateCroissantSchema = initialCroissantSetting;
   }
 
   /**
@@ -369,10 +361,8 @@ class EDDGridFromNcFilesUnpackedTests {
   /**
    * @throws Throwable if trouble
    */
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  void testSchema(boolean generateCroissantSchema) throws Throwable {
-    EDStatic.config.generateCroissantSchema = generateCroissantSchema;
+  @org.junit.jupiter.api.Test
+  void testSchema() throws Throwable {
     int language = 0;
     String tName, results, tResults, expected;
 

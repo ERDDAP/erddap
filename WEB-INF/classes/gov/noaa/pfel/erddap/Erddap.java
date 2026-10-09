@@ -18591,8 +18591,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       HttpServletRequest request, String loggedInAs, int language, Writer writer, EDD edd)
       throws IOException {
     writer.write("<script type=\"application/ld+json\">\n");
-    theSchemaDotOrgDatasetJson(
-        request, loggedInAs, language, writer, edd, EDStatic.config.generateCroissantSchema);
+    theSchemaDotOrgDatasetJson(request, loggedInAs, language, writer, edd);
     writer.write("</script>\n");
   }
 
@@ -18617,72 +18616,63 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   }
 
   public static void theSchemaDotOrgDatasetJson(
-      HttpServletRequest request,
-      String loggedInAs,
-      int language,
-      Writer writer,
-      EDD edd,
-      boolean useCroissant)
+      HttpServletRequest request, String loggedInAs, int language, Writer writer, EDD edd)
       throws IOException {
     String baseUrl = EDStatic.preferredErddapUrl;
     Attributes gatts = edd.combinedGlobalAttributes().toAttributes(language);
     String ts;
     writer.write(
         "{\n"
-            + (useCroissant
-                ? "  \"@context\":  {\n"
-                    + "    \"@language\": \""
-                    + TranslateMessages.languageCodeList.get(language)
-                    + "\",\n"
-                    + "    \"@vocab\": \"https://schema.org/\",\n"
-                    + "    \"sc\": \"https://schema.org/\",\n"
-                    + "    \"cr\": \"http://mlcommons.org/croissant/\",\n"
-                    + "    \"rai\": \"http://mlcommons.org/croissant/RAI/\",\n"
-                    + "    \"dct\": \"http://purl.org/dc/terms/\",\n"
-                    + "    \"citeAs\": \"cr:citeAs\",\n"
-                    + "    \"column\": \"cr:column\",\n"
-                    + "    \"conformsTo\": \"dct:conformsTo\",\n"
-                    + "    \"data\": {\n"
-                    + "      \"@id\": \"cr:data\",\n"
-                    + "      \"@type\": \"@json\"\n"
-                    + "    },\n"
-                    + "    \"dataType\": {\n"
-                    + "      \"@id\": \"cr:dataType\",\n"
-                    + "      \"@type\": \"@vocab\"\n"
-                    + "    },\n"
-                    + "    \"examples\": {\n"
-                    + "      \"@id\": \"cr:examples\",\n"
-                    + "      \"@type\": \"@json\"\n"
-                    + "    },\n"
-                    + "    \"extract\": \"cr:extract\",\n"
-                    + "    \"field\": \"cr:field\",\n"
-                    + "    \"fileProperty\": \"cr:fileProperty\",\n"
-                    + "    \"fileObject\": \"cr:fileObject\",\n"
-                    + "    \"fileSet\": \"cr:fileSet\",\n"
-                    + "    \"format\": \"cr:format\",\n"
-                    + "    \"includes\": \"cr:includes\",\n"
-                    + "    \"isLiveDataset\": \"cr:isLiveDataset\",\n"
-                    + "    \"jsonPath\": \"cr:jsonPath\",\n"
-                    + "    \"key\": \"cr:key\",\n"
-                    + "    \"md5\": \"cr:md5\",\n"
-                    + "    \"parentField\": \"cr:parentField\",\n"
-                    + "    \"path\": \"cr:path\",\n"
-                    + "    \"recordSet\": \"cr:recordSet\",\n"
-                    + "    \"references\": \"cr:references\",\n"
-                    + "    \"regex\": \"cr:regex\",\n"
-                    + "    \"repeated\": \"cr:repeated\",\n"
-                    + "    \"replace\": \"cr:replace\",\n"
-                    + "    \"separator\": \"cr:separator\",\n"
-                    + "    \"source\": \"cr:source\",\n"
-                    + "    \"subField\": \"cr:subField\",\n"
-                    + "    \"transform\": \"cr:transform\""
-                    + "  },\n"
-                : "  \"@context\": \"http://schema.org\",\n")
+            + "  \"@context\":  {\n"
+            + "    \"@language\": \""
+            + TranslateMessages.languageCodeList.get(language)
+            + "\",\n"
+            + "    \"@vocab\": \"https://schema.org/\",\n"
+            + "    \"sc\": \"https://schema.org/\",\n"
+            + "    \"cr\": \"http://mlcommons.org/croissant/\",\n"
+            + "    \"rai\": \"http://mlcommons.org/croissant/RAI/\",\n"
+            + "    \"dct\": \"http://purl.org/dc/terms/\",\n"
+            + "    \"citeAs\": \"cr:citeAs\",\n"
+            + "    \"column\": \"cr:column\",\n"
+            + "    \"conformsTo\": \"dct:conformsTo\",\n"
+            + "    \"data\": {\n"
+            + "      \"@id\": \"cr:data\",\n"
+            + "      \"@type\": \"@json\"\n"
+            + "    },\n"
+            + "    \"dataType\": {\n"
+            + "      \"@id\": \"cr:dataType\",\n"
+            + "      \"@type\": \"@vocab\"\n"
+            + "    },\n"
+            + "    \"examples\": {\n"
+            + "      \"@id\": \"cr:examples\",\n"
+            + "      \"@type\": \"@json\"\n"
+            + "    },\n"
+            + "    \"extract\": \"cr:extract\",\n"
+            + "    \"field\": \"cr:field\",\n"
+            + "    \"fileProperty\": \"cr:fileProperty\",\n"
+            + "    \"fileObject\": \"cr:fileObject\",\n"
+            + "    \"fileSet\": \"cr:fileSet\",\n"
+            + "    \"format\": \"cr:format\",\n"
+            + "    \"includes\": \"cr:includes\",\n"
+            + "    \"isLiveDataset\": \"cr:isLiveDataset\",\n"
+            + "    \"jsonPath\": \"cr:jsonPath\",\n"
+            + "    \"key\": \"cr:key\",\n"
+            + "    \"md5\": \"cr:md5\",\n"
+            + "    \"parentField\": \"cr:parentField\",\n"
+            + "    \"path\": \"cr:path\",\n"
+            + "    \"recordSet\": \"cr:recordSet\",\n"
+            + "    \"references\": \"cr:references\",\n"
+            + "    \"regex\": \"cr:regex\",\n"
+            + "    \"repeated\": \"cr:repeated\",\n"
+            + "    \"replace\": \"cr:replace\",\n"
+            + "    \"separator\": \"cr:separator\",\n"
+            + "    \"source\": \"cr:source\",\n"
+            + "    \"subField\": \"cr:subField\",\n"
+            + "    \"transform\": \"cr:transform\""
+            + "  },\n"
             + // for now, leave as http://
-            "  \"@type\": \""
-            + (useCroissant ? "sc:" : "")
-            + "Dataset\",\n"
-            + (useCroissant ? "  \"conformsTo\": \"http://mlcommons.org/croissant/1.0\",\n" : "")
+            "  \"@type\": \"sc:Dataset\",\n"
+            + "  \"conformsTo\": \"http://mlcommons.org/croissant/1.0\",\n"
             + "  \"name\": "
             + String2.toJson65536(edd.title(language))
             + ",\n"
@@ -18690,7 +18680,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             + String2.toJson65536(edd.datasetID())
             + ",\n");
 
-    if (useCroissant && edd.accessibleViaFiles()) {
+    if (edd.accessibleViaFiles()) {
       writer.write("  \"isLiveDataset\": true,\n");
       writer.write("  \"distribution\": [\n");
       writer.write(
@@ -18720,62 +18710,30 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "  }\n");
       writer.write("  ],\n");
     }
-    if (useCroissant) {
-      try {
-        writer.write(
-            """
-            "recordSet": [
-              {
-                "@type": "cr:RecordSet",
-                "@id": "default",
-                "name": "default",
-                "field": [
-          """);
-        if (edd instanceof EDDGrid grid) {
-          for (int i = 0; i < grid.axisVariables().length; i++) {
-            EDV axisVariable = grid.axisVariables()[i];
-            writer.write(
-                "        {\n"
-                    + "          \"@type\": \"cr:Field\",\n"
-                    + "          \"@id\": \"default/"
-                    + axisVariable.destinationName()
-                    + "\",\n"
-                    + "          \"description\": \""
-                    + axisVariable.longName()
-                    + "\",\n"
-                    + "          \"dataType\": \""
-                    + variableTypeToSchemaType(axisVariable.destinationDataType())
-                    + "\",\n"
-                    + "          \"source\": {\n"
-                    + "            \"fileSet\": {\n"
-                    + "              \"@id\": \"files\"\n"
-                    + "            },\n"
-                    + "            \"extract\": {\n"
-                    + "              \"column\": "
-                    + String2.toJson65536(axisVariable.sourceName())
-                    + "\n"
-                    + "            }\n"
-                    + "          }\n"
-                    + "        }"
-                    + (i == grid.axisVariables().length - 1 && grid.dataVariables().length == 0
-                        ? ""
-                        : ",")
-                    + "\n");
-          }
-        }
-        for (int i = 0; i < edd.dataVariables().length; i++) {
-          EDV dataVariable = edd.dataVariables()[i];
+    try {
+      writer.write(
+          """
+          "recordSet": [
+            {
+              "@type": "cr:RecordSet",
+              "@id": "default",
+              "name": "default",
+              "field": [
+        """);
+      if (edd instanceof EDDGrid grid) {
+        for (int i = 0; i < grid.axisVariables().length; i++) {
+          EDV axisVariable = grid.axisVariables()[i];
           writer.write(
               "        {\n"
                   + "          \"@type\": \"cr:Field\",\n"
                   + "          \"@id\": \"default/"
-                  + dataVariable.destinationName()
+                  + axisVariable.destinationName()
                   + "\",\n"
                   + "          \"description\": \""
-                  + dataVariable.longName()
+                  + axisVariable.longName()
                   + "\",\n"
                   + "          \"dataType\": \""
-                  + variableTypeToSchemaType(dataVariable.destinationDataType())
+                  + variableTypeToSchemaType(axisVariable.destinationDataType())
                   + "\",\n"
                   + "          \"source\": {\n"
                   + "            \"fileSet\": {\n"
@@ -18783,22 +18741,52 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + "            },\n"
                   + "            \"extract\": {\n"
                   + "              \"column\": "
-                  + String2.toJson65536(dataVariable.sourceName())
+                  + String2.toJson65536(axisVariable.sourceName())
                   + "\n"
                   + "            }\n"
                   + "          }\n"
                   + "        }"
-                  + (i == edd.dataVariables().length - 1 ? "" : ",")
+                  + (i == grid.axisVariables().length - 1 && grid.dataVariables().length == 0
+                      ? ""
+                      : ",")
                   + "\n");
         }
-
-        writer.write("      ]\n");
-        writer.write("    }\n");
-        writer.write("  ],\n");
-      } catch (Throwable e) {
-        String2.log(
-            "Error generating RecordSet for dataset: " + edd.datasetID() + "\n" + e.getMessage());
       }
+      for (int i = 0; i < edd.dataVariables().length; i++) {
+        EDV dataVariable = edd.dataVariables()[i];
+        writer.write(
+            "        {\n"
+                + "          \"@type\": \"cr:Field\",\n"
+                + "          \"@id\": \"default/"
+                + dataVariable.destinationName()
+                + "\",\n"
+                + "          \"description\": \""
+                + dataVariable.longName()
+                + "\",\n"
+                + "          \"dataType\": \""
+                + variableTypeToSchemaType(dataVariable.destinationDataType())
+                + "\",\n"
+                + "          \"source\": {\n"
+                + "            \"fileSet\": {\n"
+                + "              \"@id\": \"files\"\n"
+                + "            },\n"
+                + "            \"extract\": {\n"
+                + "              \"column\": "
+                + String2.toJson65536(dataVariable.sourceName())
+                + "\n"
+                + "            }\n"
+                + "          }\n"
+                + "        }"
+                + (i == edd.dataVariables().length - 1 ? "" : ",")
+                + "\n");
+      }
+
+      writer.write("      ]\n");
+      writer.write("    }\n");
+      writer.write("  ],\n");
+    } catch (Throwable e) {
+      String2.log(
+          "Error generating RecordSet for dataset: " + edd.datasetID() + "\n" + e.getMessage());
     }
 
     // add everything not used elsewhere into description

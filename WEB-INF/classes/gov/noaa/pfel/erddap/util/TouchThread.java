@@ -5,7 +5,6 @@
 package gov.noaa.pfel.erddap.util;
 
 import com.cohort.util.Calendar2;
-import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -47,20 +46,7 @@ public class TouchThread extends Thread {
   /** This does any pending tasks, then exits. */
   @Override
   public void run() {
-    if (EDStatic.config.touchThreadOnlyWhenItems) {
-      handleQueuedTouches();
-    } else {
-      while (true) {
-        Math2.sleep(sleepMillis);
-        if (isInterrupted()) {
-          String2.log(
-              "%%% TouchThread was interrupted at "
-                  + Calendar2.getCurrentISODateTimeStringLocalTZ());
-        }
-
-        handleQueuedTouches();
-      }
-    }
+    handleQueuedTouches();
   }
 
   private void handleQueuedTouches() {

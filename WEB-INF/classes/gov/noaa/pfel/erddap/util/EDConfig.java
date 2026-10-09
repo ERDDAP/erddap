@@ -277,8 +277,6 @@ public class EDConfig {
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
   @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
-  @FeatureFlag public boolean includeNcCFSubsetVariables;
-  @FeatureFlag public boolean ncHeaderMakeFile = false;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
 
@@ -294,11 +292,8 @@ public class EDConfig {
   @FeatureFlag public boolean verifyHostNameErddapUrl = true;
   public java.util.Set<String> allowedHosts =
       java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
-  @FeatureFlag public boolean generateCroissantSchema = true;
-  @FeatureFlag public boolean touchThreadOnlyWhenItems = true;
   @FeatureFlag public boolean taskCacheClear = true;
   @FeatureFlag public boolean useNcMetadataForFileTable = true;
-  @FeatureFlag public boolean backgroundCreateSubsetTables = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -649,11 +644,8 @@ public class EDConfig {
         getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
     requestCacheMillis =
         getSetupEVInt(setup, ev, "requestCacheMinutes", DEFAULT_cacheMinutes / 15) * 60000L;
-    touchThreadOnlyWhenItems = getSetupEVBoolean(setup, ev, "touchThreadOnlyWhenItems", true);
     taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
     useNcMetadataForFileTable = getSetupEVBoolean(setup, ev, "useNcMetadataForFileTable", true);
-    backgroundCreateSubsetTables =
-        getSetupEVBoolean(setup, ev, "backgroundCreateSubsetTables", true);
     lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
     loadDatasetsMinMillis =
         Math.max(
@@ -738,11 +730,8 @@ public class EDConfig {
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
-    includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
-    ncHeaderMakeFile = getSetupEVBoolean(setup, ev, "ncHeaderMakeFile", false);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     useSisISO19139 = getSetupEVBoolean(setup, ev, "useSisISO19139", false);
-    generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
     // Mqtt flags initialization
     mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);
