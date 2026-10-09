@@ -8,11 +8,15 @@ package com.cohort.array;
 import com.cohort.util.Math2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
+import gov.noaa.pfel.erddap.util.BufferedFileChannel;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -211,7 +215,10 @@ public abstract class PrimitiveArray {
    */
   @Override
   public Object clone() {
-    return subset(null, 0, 1, size - 1);
+    PrimitiveArray pa = factory(elementType(), size, false);
+    pa.setMaxIsMV(getMaxIsMV());
+    pa.append(this);
+    return pa;
   }
 
   /**
@@ -682,6 +689,15 @@ public abstract class PrimitiveArray {
   public abstract void add(StructureData sd, String memberName);
 
   /**
+   * This reads one value from the StrutureData and adds it to this PA.
+   *
+   * @param sd from an .nc file
+   * @param memberName
+   * @param count number of times to add
+   */
+  public abstract void addN(StructureData sd, String memberName, int count);
+
+  /**
    * This adds PAOne's value to the array.
    *
    * @param value the value, as a PAOne (or null).
@@ -1074,16 +1090,17 @@ public abstract class PrimitiveArray {
   public abstract String getString(int index);
 
   /**
-   * Return a value from the array as a String suitable for a JSON file. char returns a String with
-   * 1 character. String returns a json String with chars above 127 encoded as \\udddd.
+   * Appends a value from the array as a String suitable for a JSON file directly to sb. char
+   * returns a String with 1 character. String returns a json String with chars above 127 encoded as
+   * \\udddd. For numeric types, this appends ("" + ar[index]), or null for NaN or infinity.
+   * Represent NaN as null? yes, that is what json library does If I go to https://jsonlint.com/ and
+   * enter [1, 2.0, 1e30], it says it is valid. If I enter [1, 2.0, NaN, 1e30], it says NaN is not
+   * valid.
    *
    * @param index the index number 0 ... size-1
-   * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
-   *     Represent NaN as null? yes, that is what json library does If I go to https://jsonlint.com/
-   *     and enter [1, 2.0, 1e30], it says it is valid. If I enter [1, 2.0, NaN, 1e30], it says NaN
-   *     is not valid.
+   * @param sb the StringBuilder to append to
    */
-  public abstract String getJsonString(int index);
+  public abstract void getJsonString(int index, StringBuilder sb);
 
   /**
    * Return a value from the array as a String suitable for the data section of an NCCSV file. This
@@ -1766,6 +1783,55 @@ public abstract class PrimitiveArray {
    */
   public abstract void reverseBytes();
 
+  public static final int IO_BYTES = 65536; // 64 KB
+
+  protected static final ThreadLocal<ByteBuffer> IO_BUFFER =
+      ThreadLocal.withInitial(
+          () ->
+              ByteBuffer.allocateDirect(IO_BYTES).order(ByteOrder.BIG_ENDIAN)); // always big-endian
+
+  /** Returns a clean, thread-local off-heap ByteBuffer with position=0 and limit=capacity. */
+  protected static ByteBuffer getCleanIoBuffer() {
+    ByteBuffer buf = IO_BUFFER.get();
+    buf.clear(); // Always resets position to 0 and limit to capacity (65536)
+    return buf;
+  }
+
+  /**
+   * This writes all elements to a BufferedFileChannel using native byte order.
+   *
+   * @param channel the BufferedFileChannel
+   * @return the number of bytes written
+   * @throws Exception if trouble
+   */
+  public long writeToChannel(BufferedFileChannel channel) throws Exception {
+    return writeToChannel(channel, 0, size);
+  }
+
+  /**
+   * This writes a subset of elements (offset ... offset+length-1) to a BufferedFileChannel using
+   * native byte order.
+   *
+   * @param channel the BufferedFileChannel
+   * @param offset the starting index
+   * @param length the number of elements to write
+   * @return the number of bytes written
+   * @throws Exception if trouble
+   */
+  public abstract long writeToChannel(BufferedFileChannel channel, int offset, int length)
+      throws Exception;
+
+  /**
+   * This reads/adds n elements from a FileChannel using native byte order. Note: This method
+   * modifies the FileChannel's current position.
+   *
+   * @param channel the FileChannel
+   * @param n the number of elements to read
+   * @throws java.io.EOFException if EOF is reached before n elements are fully read
+   * @throws Exception if other trouble
+   */
+  public abstract void readFromChannel(FileChannel channel, int n) throws Exception;
+
   /**
    * This writes 'size' elements to a DataOutputStream.
    *
@@ -1820,7 +1886,7 @@ public abstract class PrimitiveArray {
    * @param dos
    * @param i the index of the element to be written
    */
-  public void externalizeForDODS(DataOutputStream dos, int i) throws Exception {
+  public void externalizeForDODS(DataOutputStream dos, int i, byte[] workBuffer) throws Exception {
     writeDos(dos, i);
   }
 
@@ -1893,7 +1959,7 @@ public abstract class PrimitiveArray {
     if (matchNDigits <= 0) // no testing
     return "";
 
-    if (this instanceof StringArray || other instanceof StringArray) {
+    if (this.elementType() == PAType.STRING || other.elementType() == PAType.STRING) {
       for (int i = 0; i < size; i++) {
         String s1 = getString(i);
         String s2 = other.getString(i);
@@ -1907,7 +1973,7 @@ public abstract class PrimitiveArray {
       return "";
     }
 
-    if (this instanceof FloatArray || other instanceof FloatArray) {
+    if (this.elementType() == PAType.FLOAT || other.elementType() == PAType.FLOAT) {
       matchNDigits = matchNDigits == Integer.MAX_VALUE ? 5 : matchNDigits;
       if (matchNDigits > 18) {
         for (int i = 0; i < size; i++) {
@@ -1937,7 +2003,7 @@ public abstract class PrimitiveArray {
       return "";
     }
 
-    if (this instanceof DoubleArray || other instanceof DoubleArray) {
+    if (this.elementType() == PAType.DOUBLE || other.elementType() == PAType.DOUBLE) {
       matchNDigits = matchNDigits == Integer.MAX_VALUE ? 9 : matchNDigits;
       if (matchNDigits > 18) {
         for (int i = 0; i < size; i++) {
@@ -1964,7 +2030,7 @@ public abstract class PrimitiveArray {
       return "";
     }
 
-    if (this instanceof ULongArray || other instanceof ULongArray) {
+    if (this.elementType() == PAType.ULONG || other.elementType() == PAType.ULONG) {
       for (int i = 0; i < size; i++) {
         BigInteger bi1 = getULong(i);
         BigInteger bi2 = other.getULong(i);
@@ -3003,23 +3069,41 @@ public abstract class PrimitiveArray {
    *     this or the other primitiveArray.
    */
   public int diffIndex(PrimitiveArray other) {
-    int i = 0;
-    int otherSize = other.size();
+    int size1 = this.size();
+    int size2 = other.size();
+    int minSize = Math.min(size1, size2);
 
-    while (true) {
-      if (i == size && size == otherSize) return -1;
-      if (i == size || i == otherSize) return i;
-      String s = getString(i);
-      String so = other.getString(i);
-      if (s == null && so != null) return i;
-      if (so == null && s != null) return i;
-      if (s != null && so != null && !s.equals(so)) return i;
-      i++;
+    // Fast path for numeric arrays: avoids String allocations and handles NaN/Infinity correctly
+    if (this.isFloatingPointType() && other.isFloatingPointType()) {
+      for (int i = 0; i < minSize; i++) {
+        double d1 = this.getDouble(i);
+        double d2 = other.getDouble(i);
+        // Double.compare considers Double.NaN == Double.NaN to be true
+        if (Double.compare(d1, d2) != 0) {
+          return i;
+        }
+      }
+    } else if (this.isIntegerType() && other.isIntegerType()) {
+      for (int i = 0; i < minSize; i++) {
+        long d1 = this.getLong(i);
+        long d2 = other.getLong(i);
+        if (Long.compare(d1, d2) != 0) {
+          return i;
+        }
+      }
+    } else {
+      // Fallback path for StringArray or mixed object arrays
+      for (int i = 0; i < minSize; i++) {
+        String s1 = this.getString(i);
+        String s2 = other.getString(i);
+        if (!java.util.Objects.equals(s1, s2)) {
+          return i;
+        }
+      }
     }
 
-    // you could do a double test if both pa's were numeric
-    // but tests with inifinity and nan are awkward and time consuming
-    // so string test is pretty good approach.
+    // If common elements match, return minSize if lengths differ, or -1 if identical
+    return size1 == size2 ? -1 : minSize;
   }
 
   /**

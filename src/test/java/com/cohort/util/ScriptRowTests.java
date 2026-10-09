@@ -7,6 +7,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlFeatures;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 
@@ -23,11 +24,16 @@ class ScriptRowTests {
     // if !silent, it throws exception if trouble
     // if strict, it requires variables, methods and functions to be defined
     // (instead of treating unknowns as null, like javascript)
+    JexlFeatures features =
+        new JexlFeatures()
+            .sideEffect(true) // Allow assignments
+            .sideEffectGlobal(true); // Allow assignments to global variables
     JexlEngine jengine =
         new JexlBuilder()
             .permissions(Script2.permissions)
             .silent(false)
             .strict(true)
+            .features(features)
             .create(); // see better/safer constructor below
     JexlScript jscript; // multiple statements. Has support for if/for/while/var/{} etc.
     JexlContext jcontext;

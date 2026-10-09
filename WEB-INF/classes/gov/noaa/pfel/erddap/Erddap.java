@@ -16,6 +16,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.LinkHelper;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -59,6 +60,7 @@ import gov.noaa.pfel.erddap.dataset.TableWriterJsonl;
 import gov.noaa.pfel.erddap.dataset.TableWriterNccsv;
 import gov.noaa.pfel.erddap.dataset.TableWriterSeparatedValue;
 import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
+import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
 import gov.noaa.pfel.erddap.jte.Index;
@@ -108,7 +110,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -117,6 +118,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
+import org.apache.http.HttpStatus;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
@@ -127,6 +129,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.semver4j.Semver;
@@ -1196,6 +1199,8 @@ public class Erddap extends HttpServlet {
         doVersion(request, response);
       } else if (endOfRequest.equals("version_string")) {
         doVersionString(request, response);
+      } else if (endOfRequest.equals("suggestVariableAttributes")) {
+        doSuggestVariableAttributes(language, requestNumber, request, response);
       } else {
         sendResourceNotFoundError(
             requestNumber,
@@ -1319,6 +1324,187 @@ public class Erddap extends HttpServlet {
       } catch (Throwable t2) {
         String2.log("Caught: " + MustBe.throwableToString(t2));
       }
+    }
+  }
+
+  /**
+   * Make ERDDAP's variable attribute suggestions available as a web service for dataset
+   * configuration use cases. Accept an ncoJson style request payload of variables with attributes
+   * and return variable attribute suggestions provided by
+   * EDD.makeReadyToUseAddVariableAttributesForDatasetsXml
+   *
+   * @param language the language index
+   * @param requestNumber the request number
+   * @param request the HttpServletRequest
+   * @param response the HttpServletResponse
+   * @throws Throwable if an error is encountered during request processing
+   */
+  private void doSuggestVariableAttributes(
+      int language, int requestNumber, HttpServletRequest request, HttpServletResponse response)
+      throws Throwable {
+    String contentType = request.getHeader("Content-Type");
+    String applicationJson = "application/json";
+    if (contentType == null || !contentType.toLowerCase().startsWith(applicationJson)) {
+      contentType = contentType == null ? "(unset)" : contentType;
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+          "Unsupported Content-Type: " + contentType + ". Expected: " + applicationJson,
+          null);
+      return;
+    }
+
+    String jsonp = request.getParameter("jsonp");
+    if (jsonp != null && !String2.isJsonpNameSafe(jsonp)) {
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Unsafe jsonp parameter: " + jsonp,
+          "jsonp parameter must be a valid JavaScript callback function name.");
+      return;
+    }
+
+    String acceptHeader = request.getHeader("Accept");
+    if (acceptHeader != null && !acceptHeader.equals("*/*")) {
+      acceptHeader = acceptHeader.toLowerCase();
+      if (acceptHeader.equals("application/json")) {
+        jsonp = null; // if Accept header is application/json, ignore jsonp parameter
+      } else if (acceptHeader.equals("application/javascript")) {
+        if (jsonp == null)
+          jsonp =
+              "callback"; // default callback name if Accept header is application/javascript and no
+        // jsonp parameter is provided
+      } else {
+        sendGeoServicesRestError(
+            requestNumber,
+            request,
+            response,
+            true,
+            HttpServletResponse.SC_BAD_REQUEST,
+            "Unsupported Accept header: " + acceptHeader,
+            "Allowed values: application/json, application/javascript");
+        return;
+      }
+    }
+
+    String ncoJsonLevel = Objects.requireNonNullElse(request.getParameter("ncoJsonLevel"), "0");
+    if (!ncoJsonLevel.equals("0") && !ncoJsonLevel.equals("2")) {
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Unsupported ncoJsonLevel",
+          "Allowed values: 0, 2");
+      return;
+    }
+
+    // read request body as JSON
+    JSONObject requestJson;
+    try {
+      JSONTokener tokener = new JSONTokener(request.getReader());
+      if (!tokener.more()) {
+        sendGeoServicesRestError(
+            requestNumber,
+            request,
+            response,
+            true,
+            HttpServletResponse.SC_BAD_REQUEST,
+            "Request body must not be empty.",
+            """
+                Provide an ncoJson style request body containing a "variables" object with attributes. Example:
+                {"variables": {"air_temp": {"name": "Air Temperature", "units": "degrees_Celsius"}}}
+                """);
+        return;
+      }
+      requestJson = new JSONObject(tokener);
+    } catch (JSONException e) {
+      sendGeoServicesRestError(
+          requestNumber,
+          request,
+          response,
+          true,
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Error parsing json",
+          e.getMessage());
+      return;
+    }
+
+    // load global attributes
+    // NOTE: global attributes are only used for some corner case podaac datasets in variable
+    // attribute suggestion,
+    // so we can accept them but don't need to suggest their inclusion in the request payload
+    Attributes globalAtts = new Attributes();
+    if (requestJson.has("attributes")) {
+      JSONObject globalAttsJson = requestJson.getJSONObject("attributes");
+      globalAttsJson.keySet().forEach(key -> globalAtts.add(key, globalAttsJson.get(key)));
+    }
+
+    JSONObject processedVariablesJson = new JSONObject();
+
+    if (requestJson.has("variables")) {
+      JSONObject variablesJson = requestJson.getJSONObject("variables");
+      for (String varName : variablesJson.keySet()) {
+        Attributes varAtts = new Attributes();
+        JSONObject varJson = variablesJson.getJSONObject(varName);
+
+        // unwrap attributes if they are wrapped in an "attributes" object (standard ncoJson)
+        JSONObject varAttsJson =
+            varJson.has("attributes") ? varJson.getJSONObject("attributes") : varJson;
+
+        // load provided var attributes into Attributes
+        for (String att : varAttsJson.keySet()) {
+          if (varAttsJson.get(att) instanceof JSONObject
+              && ((JSONObject) varAttsJson.get(att)).has("data")) {
+            // unwrap ncoJson level 1 or 2 "data" attribute
+            varAtts.add(att, ((JSONObject) varAttsJson.get(att)).get("data"));
+          } else {
+            varAtts.add(att, varAttsJson.get(att));
+          }
+        }
+
+        // get suggested attributes
+        Attributes suggestedVarAttrs =
+            EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                globalAtts, varAtts, null, varName, true, false, true);
+
+        JSONObject processedVariableJson = new JSONObject();
+        if (ncoJsonLevel.equals("2")) {
+          // ncoJson level 2: use Attributes.toNcoJsonString
+          processedVariableJson.put(
+              "attributes", new JSONObject(suggestedVarAttrs.toNcoJsonString("", false, false)));
+        } else {
+          // ncoJson level 0: use simple key value pairs
+          JSONObject suggestedVarAttrsJson = new JSONObject();
+          for (String attr : suggestedVarAttrs.getNames()) {
+            suggestedVarAttrsJson.put(attr, suggestedVarAttrs.get(attr));
+          }
+          processedVariableJson.put("attributes", suggestedVarAttrsJson);
+        }
+
+        processedVariablesJson.put(varName, processedVariableJson);
+      }
+    }
+
+    JSONObject resultJson = new JSONObject();
+    resultJson.put("variables", processedVariablesJson);
+
+    try (Writer writer = response.getWriter()) {
+      if (jsonp != null) {
+        writer.write(jsonp + "(");
+        response.setContentType("application/javascript");
+      } else {
+        response.setContentType(applicationJson);
+      }
+      writer.write(resultJson.toString(0));
+      if (jsonp != null) writer.write(");");
     }
   }
 
@@ -5694,7 +5880,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               .replaceAll(
                   "&plainLinkExamples3;",
                   plainLinkExamples(
-                      tErddapUrl, "/info/" + EDStatic.messages.EDDGridIdExample + "/index", ""))
+                      tErddapUrl,
+                      "/info/" + EDStatic.messages.EDDGridIdExample + "/index",
+                      "",
+                      ".ncoJson"))
               .replaceAll(
                   "&plainLinkExamples4;",
                   plainLinkExamples(
@@ -5884,6 +6073,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           "<li>.nccsv - a flat, table-like, NetCDF-like, ASCII CSV file.\n" +
               "(<a rel=\"help\" href=\"https://erddap.github.io/docs/user/nccsv-1.20\">more&nbsp;information" +
               EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>)\n" +
+          "<li>.ncoJson - a JSON file (NCO-style) with the dataset's metadata only (global attributes," +
+              "dimensions, and variables with their attributes, type, and shape) and no data values." +
+              "(<a rel="help" href="https://nco.sourceforge.net/nco.html#json">more&nbsp;information" +
+              "&externalLinkHtml;</a>)" +
           "<li>.tsv - a tab-separated ASCII text table.\n" +
               "(<a rel=\"help\" href=\"https://jkorpela.fi/TSV.html\">more&nbsp;information" +
               EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>)\n" +
@@ -6622,6 +6815,11 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // it flushes
   }
 
+  protected static ImmutableList<String> getExtendedPlainFileTypes(String... extraTypes) {
+    return ImmutableList.sortedCopyOf(
+        new ImmutableList.Builder<String>().addAll(plainFileTypes).add(extraTypes).build());
+  }
+
   /**
    * This is used to generate examples for the plainFileTypes in the method above.
    *
@@ -6629,22 +6827,25 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    *     erddapHttpsUrl if user is logged in)
    * @param relativeUrl without the fileType, e.g., "/griddap/index" (no "?" or "?query" at end)
    * @param query after the "?", already HTML encoded, e.g., "searchfor=temperature" or "".
+   * @param extraTypes optional extra file types to include in the list of links (e.g., ".ncoJson")
    * @return a string with a series of html links to information about the plainFileTypes
    */
-  protected String plainLinkExamples(String tErddapUrl, String relativeUrl, String query)
-      throws Throwable {
+  protected String plainLinkExamples(
+      String tErddapUrl, String relativeUrl, String query, String... extraTypes) throws Throwable {
 
     StringBuilder sb = new StringBuilder();
-    int n = plainFileTypes.size();
+    ImmutableList<String> allFileTypes = getExtendedPlainFileTypes(extraTypes);
+
+    int n = allFileTypes.size();
     for (int pft = 0; pft < n; pft++) {
       sb.append(
           "    <a href=\""
               + tErddapUrl
               + relativeUrl
-              + plainFileTypes.get(pft)
+              + allFileTypes.get(pft)
               + EDStatic.questionQuery(query)
               + "\">"
-              + plainFileTypes.get(pft)
+              + allFileTypes.get(pft)
               + "</a>");
       if (pft <= n - 3) sb.append(",\n");
       if (pft == n - 2) sb.append(", or\n");
@@ -7735,10 +7936,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + (nextPath == null ? "" : nextPath)
               + nameAndExt;
       SSR.uploadFileToAwsS3(
-          EDStatic.config.awsS3OutputTransferManager,
-          localDir + nameAndExt,
-          fullAwsUrl,
-          contentType);
+          EDStatic.config.getS3TransferManager(), localDir + nameAndExt, fullAwsUrl, contentType);
       response.sendRedirect(fullAwsUrl);
 
     } else {
@@ -12570,8 +12768,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // json
     if (fParamIsJson) {
-
-      try (Writer writer = getJsonWriter(request, response, "error", ".jsonText")) {
+      response.setStatus(httpErrorNumber);
+      try (Writer writer = getJsonWriter(request, response, "error", ".json")) {
         writer.write(
             "{\n"
                 + "  \"error\" :\n"
@@ -14363,12 +14561,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (String2.isSomething(datasetID)) datasetID = datasetID.trim();
       if (String2.isSomething(flagKey)) flagKey = flagKey.trim();
 
+      int httpStatus = HttpStatus.SC_OK;
       if (!String2.isSomething(datasetID) || !String2.isSomething(flagKey)) {
         message = String2.ERROR + ": Incomplete request.";
+        httpStatus = HttpStatus.SC_BAD_REQUEST;
       } else if (!String2.isFileNameSafe(datasetID)) {
         message = String2.ERROR + ": Invalid datasetID.";
+        httpStatus = HttpStatus.SC_BAD_REQUEST;
       } else if (!EDD.flagKey(datasetID).equals(flagKey)) {
         message = String2.ERROR + ": Invalid flagKey.";
+        httpStatus = HttpStatus.SC_UNAUTHORIZED;
       } else {
         // It's ok if it isn't an existing edd.  An inactive dataset is a valid one to flag.
         // And ok of it isn't even in datasets.xml.  Unknown files are removed.
@@ -14385,6 +14587,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       EDStatic.tally.add("SetDatasetFlag " + sf + ", IP Address (since startup)", ipAddress);
 
       Math2.sleep(delaySeconds * 1000L);
+      response.setStatus(httpStatus);
       writer.write(message);
       if (verbose) String2.log(message + " setDatasetFlag(" + ipAddress + ")");
     }
@@ -18128,15 +18331,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     String parts[] = String2.split(endOfRequestUrl, '/');
     int nParts = parts.length;
+    if (nParts == 1 && !parts[0].startsWith("index.") && String2.countAll(parts[0], ".") == 1) {
+      // This is a /info/<datasetID>.<metadataFormat> request,
+      // reformat to /info/<datasetID>/index.<metadataFormat>
+      // for processing below. (This is a convenience for users.)
+      String[] datasetIDAndExt = String2.split(parts[0], '.');
+      if (datasetIDAndExt.length == 2
+          && datasetIDAndExt[0].length() > 0
+          && datasetIDAndExt[1].length() > 0) {
+        parts = new String[] {datasetIDAndExt[0], "index." + datasetIDAndExt[1]};
+        nParts = 2;
+      }
+    }
     if (nParts == 0 || !parts[nParts - 1].startsWith("index.")) {
       StringArray sa = new StringArray(parts);
+
       sa.add("index.html");
       parts = sa.toArray();
       nParts = parts.length;
       // now last part is "index...."
     }
     String fileTypeName = File2.getExtension(endOfRequestUrl);
-    boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index");
+    boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index", ".ncoJson");
     if (!endsWithPlainFileType && !fileTypeName.equals(".html")) {
       sendResourceNotFoundError(
           requestNumber,
@@ -18152,6 +18368,22 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     }
     EDStatic.tally.add("Info File Type (since startup)", fileTypeName);
     EDStatic.tally.add("Info File Type (since last daily report)", fileTypeName);
+    if (fileTypeName.equals(".ncoJson") && nParts < 2) {
+      // .ncoJson info is the metadata of a single dataset; there is no such document
+      // for the list of all datasets (bad request)
+      sendHttpError(
+          requestNumber,
+          request,
+          response,
+          EDStatic.bilingual(
+              language,
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.UNSUPPORTED_FILE_TYPE, 0), fileTypeName),
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.UNSUPPORTED_FILE_TYPE, language), fileTypeName)),
+          HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
     if (nParts < 2) {
       // *** info/index.xxx    view all datasets
 
@@ -18422,6 +18654,45 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // request is valid -- make the table
     EDStatic.tally.add("Info (since startup)", tID);
     EDStatic.tally.add("Info (since last daily report)", tID);
+
+    if (fileTypeName.equals(".ncoJson")) {
+      // write metadata-only ncoJson response (no data)
+      // these should always be very fast because we're not reading any actual data!
+      NcoJsonFiles ncoJsonFiles = new NcoJsonFiles();
+      String jsonp = request.getParameter("jsonp");
+      String fileName = edd.suggestFileName(loggedInAs, tID, fileTypeName);
+      OutputStreamSource outSource =
+          new OutputStreamFromHttpResponse(
+              request,
+              response,
+              fileName,
+              jsonp == null ? ".ncoJson" : ".jsonp", // .jsonp pseudo fileType for correct mime type
+              fileTypeName);
+      if (edd instanceof EDDTable) {
+        ncoJsonFiles.saveTableAsNcoJson(
+            outSource,
+            new NcoJsonFiles().new NcoJsonEDDTableMetadataProvider((EDDTable) edd, language),
+            null,
+            jsonp);
+      } else if (edd instanceof EDDGrid) {
+        GridDataAccessor gridDataAccessor =
+            new GridDataAccessor(
+                language,
+                (EDDGrid) edd,
+                null, // requestUrl
+                null, // userDapQuery
+                true,
+                false,
+                false);
+        ncoJsonFiles.saveGridAsNcoJson(
+            outSource, (EDDGrid) edd, null, gridDataAccessor, jsonp, false);
+      } else {
+        throw new RuntimeException(
+            "Unsupported EDD type for .ncoJson: " + edd.getClass().getName());
+      }
+      return;
+    }
+
     Table table = new Table();
     StringArray rowTypeSA = new StringArray();
     StringArray variableNameSA = new StringArray();
@@ -18557,25 +18828,24 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         String externalLinkHtml = EDStatic.messages.externalLinkHtml(language, tErddapUrl);
         for (int i = 0; i < valueSA.size(); i++) {
           String s = valueSA.get(i);
-          if (String2.containsUrl(s)) {
-            List<String> separatedText = String2.extractUrls(s);
-            StringBuilder output = new StringBuilder();
-            for (String text : separatedText) {
-              if (String2.containsUrl(text)) {
-                // display as a link
-                boolean isLocal = text.startsWith(EDStatic.config.baseUrl);
-                text = XML.encodeAsHTMLAttribute(text);
-                output.append(
-                    "<a href=\""
-                        + String2.addHttpsForWWW(text)
-                        + "\">"
-                        + text
-                        + (isLocal ? "" : externalLinkHtml)
-                        + "</a>");
-              } else {
-                output.append(text);
-              }
-            }
+          StringBuilder output = new StringBuilder();
+          if (LinkHelper.linkify(
+              s,
+              (text, isUrl) -> {
+                if (isUrl) {
+                  // display as a link
+                  boolean isLocal = text.startsWith(EDStatic.config.baseUrl);
+                  output.append(
+                      "<a href=\""
+                          + XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(text))
+                          + "\">"
+                          + XML.encodeAsHTML(text)
+                          + (isLocal ? "" : externalLinkHtml)
+                          + "</a>");
+                } else {
+                  output.append(text);
+                }
+              })) {
             valueSA.set(i, output.toString());
           } else if (String2.isEmailAddress(s)) {
             // to improve security, convert "@" to " at "
@@ -24311,8 +24581,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    * This indicates if the string 's' equals 'start' (e.g., "index") plus one of the plain file
    * types.
    */
-  protected static boolean endsWithPlainFileType(String s, String start) {
-    for (String plainFileType : plainFileTypes) {
+  protected static boolean endsWithPlainFileType(String s, String start, String... extraTypes) {
+    for (String plainFileType : getExtendedPlainFileTypes(extraTypes)) {
       if (s.equals(start + plainFileType)) return true;
     }
     return false;
@@ -24544,8 +24814,27 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    */
   public static void sendResourceNotFoundError(
       int requestNumber, HttpServletRequest request, HttpServletResponse response, String message) {
+    sendHttpError(requestNumber, request, response, message, HttpServletResponse.SC_NOT_FOUND);
+  }
 
-    EDStatic.lowSendError(requestNumber, response, HttpServletResponse.SC_NOT_FOUND, message);
+  /**
+   * This sends the HTTP error with the specified error code. This always also sends the error to
+   * String2.log.
+   *
+   * @param requestNumber The requestNumber assigned to this request by doGet().
+   * @param request The user's request.
+   * @param response The response to be written to.
+   * @param message use "" if nothing specific.
+   * @param errorCode the HTTP error code to send
+   */
+  public static void sendHttpError(
+      int requestNumber,
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String message,
+      int errorCode) {
+
+    EDStatic.lowSendError(requestNumber, response, errorCode, message);
   }
 
   /**

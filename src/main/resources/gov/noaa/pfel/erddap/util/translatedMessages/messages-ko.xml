@@ -3089,6 +3089,8 @@ ERDDAP 는 일반 파일 형식으로 과학 데이터 세트의 하위 집합�
 <fileHelp_nc4Header>NetCDF-4 .nc 파일의 UTF-8 헤더(메타데이터)를 확인하세요.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>데이터 세트의 메타데이터를 7비트 ASCII NCCSV .csv 파일의 위쪽 절반으로 봅니다.</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>COARDS/CF/ACDD 메타데이터가 포함된 UTF-8 NCO lvl=2 JSON 파일을 다운로드합니다.</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>UTF-8 헤더 보기 (the metadata)NCOlvl=2 JSON 파일.
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>NetCDF-3 CF 이산 샘플링 형상 파일(연속 비정형 배열)을 다운로드합니다.</fileHelp_ncCF>
 <fileHelp_ncCFHeader>.ncCF 파일의 UTF-8 헤더(메타데이터)를 확인하세요.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>NetCDF-3 CF 이산 샘플링 형상 파일(다차원 배열)을 다운로드합니다.</fileHelp_ncCFMA>
@@ -4594,179 +4596,168 @@ A-Za-z0-9_-!.~&#39;()*를 제외한 모든 문자는 %HH로 인코딩되어야 �
 <resourceNotFound>리소스를 찾을 수 없습니다:</resourceNotFound>
 <restfulWebServices>RESTful 웹 서비스</restfulWebServices>
 <restfulHTML><![CDATA[
+ ERDDAP 모두:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> 웹 신청
+ &externalLinkHtml;  </a> &ndash; 브라우저가 사용할 수있는 형태로 웹 페이지 (이 경우 datasets에 대한 데이터, 그래프 또는 정보 얻기) ·
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> · RESTful 웹 서비스
+ &externalLinkHtml;  </a> &ndash; 컴퓨터 프로그램이 사용할 수있는 URL (이 경우 datasets에 대한 데이터, 그래프 및 정보 얻기) ·
+ </ul> 모든 것 ERDDAP 웹 페이지는 브라우저가 사용할 수있는 인간의 형태, 거기
+이름 * ERDDAP 컴퓨터 프로그램 및 스크립트를 사용하기 쉬운 웹 서비스.
+예를 들어, 인간은이 URL을 사용하여 흥미로운 데이터 세트에 대한 전체 텍스트 검색을 할 수 있습니다.
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> .html에서 URL의 파일 확장을 변경하여 .json  (또는 .csv, 또는 .htmlTable , 또는 .jsonlCSV1 , 또는 .xhtml , ...) ::
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> 우리는 컴퓨터 프로그램 또는 URL을 얻을 Java Script 스크립트는 동일하게 사용할 수 있습니다.
+더 많은 컴퓨터 프로그램 친절한 체재에 있는 정보
+ <a rel="help" href="https://www.json.org/"> 구글 맵
+ &externalLinkHtml;  </a> ·
 
-ERDDAP 둘 다입니다:
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">웹 애플리케이션 &externalLinkHtml;</a> – 브라우저를 사용하는 사람이 사용할 수 있는 형식이 포함된 웹 페이지(이 경우 데이터, 그래프 또는 데이터 세트에 대한 정보를 얻기 위해).
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">RESTful 웹 서비스 &externalLinkHtml;</a> – 컴퓨터 프로그램이 사용할 수 있는 URL(이 경우 데이터 세트에 대한 데이터, 그래프 및 정보를 얻기 위해)
-</ul>
-브라우저를 사용하는 인간이 사용할 수 있는 양식이 있는 모든 ERDDAP 웹 페이지에는 컴퓨터 프로그램과 스크립트가 사용하기 쉽도록 설계된 해당 ERDDAP 웹 서비스가 있습니다.
-예를 들어, 인간은 이 URL을 사용하여 흥미로운 데이터 세트에 대한 전체 텍스트 검색을 수행할 수 있습니다.
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>URL의 파일 확장자를 .html에서 .json (또는 .csv, .htmlTable, .jsonlCSV1, .xhtml, ...)으로 변경:
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>우리는 컴퓨터 프로그램이나 Java 스크립트 스크립트가
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> 과 같은 컴퓨터 프로그램 친화적인 형식으로 동일한 정보를 얻는 데 사용할 수 있는 URL을 얻습니다.
-.
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">ERDDAP 위에 사물 구축</a></h3>
-ERDDAP 에는 컴퓨터 프로그램이나 사용자가 작성하는 스크립트에서 사용할 수 있는 많은 기능이 있습니다.
-이를 사용하여 ERDDAP 위에 다른 웹 애플리케이션이나 웹 서비스를 구축하여 ERDDAP 대부분의 작업을 수행하도록 할 수 있습니다! 따라서 ERDDAP 제공하는 데이터에 대한 더 나은 인터페이스나 데이터에 쉽게 액세스할 수 있는 방법이 필요한 웹 페이지에 대한 아이디어가 있는 경우 자체 웹 애플리케이션, 웹 서비스 또는 웹 페이지를 구축하고 ERDDAP 기반.
-귀하의 시스템은 ERD 의 ERDDAP 또는 다른 ERDDAP 설치로부터 데이터, 그래프 및 기타 정보를 얻을 수 있습니다.<!-- setup always from coastwatch's erddap --> 공개적으로 액세스할 수 있거나 개인적으로 액세스할 수 있는
-<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">자체 ERDDAP 서버를 설정하세요</a> .
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL 요청</a></h3>
-ERDDAP 의 사용자 인터페이스 정보(예:
-검색 결과)에 대한 요청은 요청에 대한 웹의 범용 표준인
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> 사용합니다.
-<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a> 통해 전송됨 .
-이는 웹페이지에서 양식을 작성하고 <kbd>Submit</kbd> 클릭할 때 브라우저가 사용하는 것과 동일한 메커니즘입니다.
-HTTP GET 사용하려면 특수하게 구성된 URL(쿼리 포함 가능)을 생성하고 이를 HTTP GET 과 함께 보냅니다.
-이러한 URL을 직접 구성하여 브라우저의 주소 텍스트 필드에 입력할 수 있습니다(예:
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
-<br>또는 컴퓨터 프로그램이나 웹페이지 스크립트를 작성하여 URL을 생성하고 전송하고 응답을 받을 수 있습니다.
-HTTP GET 통한 URL이 선택된 이유는 다음과 같습니다.
-<ul>
-<li>사용이 간단합니다.
-<li>그들은 잘 작동합니다.
-<li>브라우저, 컴퓨터 언어, 운영 체제 도구 등에서 보편적으로 지원됩니다.
-<li>이는
-<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST (Representational State Transfer) &externalLinkHtml;</a> 의 기초입니다.
-및
-<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">자원 지향 아키텍처(ROA ) &externalLinkHtml;</a>
-<li>예를 들어
-<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups &externalLinkHtml;</a> 통해 월드 와이드 웹을 대규모 분산 애플리케이션으로 사용하는 것을 촉진합니다.
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX 애플리케이션 &externalLinkHtml;</a>
-<li>이는
-<a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">무국적 &externalLinkHtml;</a> 입니다.
-ERDDAP 도 마찬가지로 시스템을 더 단순하게 만듭니다.
-<li>URL은 주어진 요청을 완전히 정의하므로 브라우저에서 북마크에 추가하거나 메모에 기록하거나 친구에게 이메일로 보낼 수 있습니다.
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">퍼센트 인코딩</a></h3>
-URL에서 일부 문자는 허용되지 않으며(예:
-공백) 다른 문자는 특별한 의미를 갖습니다(예:
-&#39;&amp;&#39;는 쿼리에서 키=값 쌍을 구분합니다).
-웹페이지에서 양식을 작성하고 제출을 클릭하면 브라우저가 자동으로
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; 퍼센트 인코딩합니다.</a> URL의 특수 문자(예:
-공백은 %20이 됨), 예:
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>그러나 컴퓨터 프로그램이나 스크립트가 URL을 생성하는 경우 아마도 자체적으로 퍼센트 인코딩을 수행해야 할 것입니다.
-그렇다면 쿼리 값(&#39;=&#39; 기호 뒤의 부분)에서 A-Za-z0-9_-!.~&#39;()* 이외의 모든 문자는 %HH로 인코딩되어야 합니다.
-여기서 HH는 문자의 2자리 16진수 값, 예를 들어 공백은 %20이 됩니다.
-#127 위의 문자는 UTF-8 바이트로 변환되어야 하며, 각 UTF-8 바이트는 퍼센트 인코딩되어야 합니다(프로그래머에게 도움을 요청하세요).
-프로그래밍 언어에는 이를 수행하는 도구가 있으며(예:
-Java 의
-<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a> 및 Java Script의
-<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml; 참조</a>)
-<a class="N" rel="help" href="https://www.url-encode-decode.com">% 인코딩/디코딩을 지원하는 웹사이트가 있습니다 &externalLinkHtml;</a>
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">응답 파일 유형</a></h3>
-브라우저를 사용하는 인간은 사용자 인터페이스 결과(예:
-검색 결과)를 HTML 문서로 받기를 원하지만 컴퓨터 프로그램은 간단하고 쉽게 구문 분석되며 덜 장황한 문서로 결과를 얻는 것을 선호하는 경우가 많습니다.
-ERDDAP 사용자 인터페이스 결과를 다음과 같은 컴퓨터 프로그램 친화적인 일반적인 파일 형식의 데이터 테이블로 반환할 수 있습니다.
-<ul>
-<li>.csv - 쉼표로 구분된 ASCII 텍스트 테이블입니다.
-(<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.htmlTable - 테이블의 데이터가 포함된 .html 웹페이지입니다.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.itx - 각 데이터 열에 대한 웨이브가 포함된 Igor 텍스트 파일입니다.
-(<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.json - 테이블 형식의 JSON 파일입니다.
-(<a rel="help" href="https://www.json.org/">더&nbsp;정보 &externalLinkHtml;</a> 또는
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP 관련 정보</a>)
-<li>.jsonlCSV1 - 첫 번째 줄에 열 이름이 있는 &quot;CSV보다 나은&quot; JSON 줄 파일입니다.
-(<a rel="help" href="https://jsonlines.org/">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.jsonlCSV - 열 이름이 없는 &quot;CSV보다 나은&quot; JSON Lines 파일입니다.
-(<a rel="help" href="https://jsonlines.org/">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.jsonlKVP - 키:값 쌍이 포함된 JSON Lines 파일입니다.
-(<a rel="help" href="https://jsonlines.org/">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.mat - MATLAB 바이너리 파일입니다.
-(<a rel="help" href="https://www.mathworks.com/">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.nc - 플랫하고 테이블 같은 NetCDF -3 바이너리 파일입니다.
-(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.nccsv - 테이블 형식의 플랫, NetCDF 형식의 ASCII CSV 파일입니다.
-(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.tsv - 탭으로 구분된 ASCII 텍스트 테이블입니다.
-(<a rel="help" href="https://jkorpela.fi/TSV.html">더&nbsp;정보 &externalLinkHtml;</a>)
-<li>.xhtml - 테이블의 데이터가 포함된 XHTML(XML) 파일입니다.
-(<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">더&nbsp;정보 &externalLinkHtml;</a>)
-</ul>
-모든 결과 테이블 형식에서(열 이름이 모든 행에 있는 .jsonlKVP 제외):
-<ul>
-<li>각 열에는 열 이름과 한 가지 유형의 정보가 있습니다.
-<li>테이블의 첫 번째 행에는 열 이름이 있습니다.
-<li>후속 행에는 요청한 정보가 있습니다.
-</ul>
-<p>이러한 일반 파일 형식의 콘텐츠도 .html 응답과 약간 다릅니다.
-이는 컴퓨터 프로그램이 작업하기 더 쉽도록 의도적으로 기본만 구성되어 있습니다.
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">응답에 대한 일관된 데이터 구조</a>
-<br>이 페이지에 설명된 모든 사용자 인터페이스 서비스는 위에 나열된 일반적인 파일 형식으로 데이터 테이블을 반환할 수 있습니다.
-다음 형식 중 하나로 데이터 테이블을 구문 분석하는 프로시저를 하나만 작성할 수 있기를 바랍니다.
-그런 다음 해당 프로시저를 재사용하여 이러한 서비스의 응답을 구문 분석할 수 있습니다.
-이렇게 하면 ERDDAP 처리하기가 더 쉬워집니다.
-<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> 및 .tsv 세부정보
-<ul>
-<li>.csv 파일의 데이터에 내부 큰따옴표나 쉼표가 있는 경우 ERDDAP .csv 사양을 엄격하게 따릅니다.
-즉, 데이터 주위에 큰따옴표를 넣고 내부 큰따옴표를 두 배로 늘립니다.
-<li>.csv 또는 .tsv 파일의 특수 문자는
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> 처럼 인코딩됩니다.
-백슬래시로 인코딩된 문자:
-\n(개행), \\(백슬래시), \f(formfeed), \t(탭), \r(캐리지 리턴) 또는 \u <i>hhhh</i> 구문 사용.
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>이제 .json 파일에 대한 요청에 선택적
-<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp &externalLinkHtml;</a> 이 포함될 수 있습니다.
-쿼리 끝에 &quot;&amp; .json p= <i>functionName</i>&quot;을 추가하여 요청하세요.
-기본적으로 이는 ERDDAP &quot;<i>functionName</i> (&quot;을 응답 시작 부분에 추가하고 &quot;)&quot;를 응답 끝에 추가하도록 지시합니다.
-<i>functionName</i> 의 첫 번째 문자는 ISO 8859 문자 또는 &quot;_&quot;여야 합니다.
-각 선택적 후속 문자는 ISO 8859 문자, &quot;_&quot;, 숫자 또는 &quot;.&quot;이어야 합니다.
-원래 쿼리가 없었다면 쿼리에서 &quot;&amp;&quot;를 삭제하세요.
-<p>Griddap과 tabledap 다양한 파일 형식을 제공합니다.
-<br>위에 나열된 파일 형식은 ERDDAP 사용자 인터페이스 유형의 요청(예:
-검색 요청)에 응답하는 데 사용할 수 있는 파일 형식입니다.
-ERDDAP 과학 데이터(예:
-위성 및 부표 데이터) 요청에 대해 다양한 파일 형식 세트를 지원합니다(<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a> 및
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a> 설명서 참조).
-&acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">ERDDAP 서비스에 대한 액세스 URL</a></h3>
-ERDDAP 컴퓨터 프로그램에 대한 다음과 같은 URL 액세스 지점이 있습니다.
-<ul>
-<li><strong>기본 리소스 액세스 URL</strong> 목록을 얻으려면 다음을 사용하세요.
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li><strong>모든 데이터 세트</strong> 의 현재 목록을 얻으려면 다음을 사용하십시오.
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>특정 데이터 세트(변수 및 해당 속성 목록)에 대한 <strong>메타데이터를</strong> 얻으려면 다음을 사용합니다.
-<br>&tErddapUrl; /info/ <i>datasetID</i> /index <i>.fileType</i>
-<br>예를 들어,
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>데이터 세트에 대한 <strong>전체 텍스트 검색</strong> 결과를 얻으려면(예를 들어 &quot;searchFor=wind%20speed&quot; 사용) 다음을 사용하십시오.
-<br>&plainLinkExamples4;
-<br>(귀하의 프로그램이나 스크립트는 쿼리의 값을
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; 퍼센트 인코딩</a> 해야 할 수도 있습니다.)
-<br>&nbsp;
-<br>또는
-<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a> 표준을 사용하여 데이터세트에 대한 전체 텍스트 검색을 수행합니다.
-<br>&nbsp;
-<li>데이터 세트에 대한 <strong>고급 검색</strong> 결과를 얻으려면(예를 들어 &quot;searchFor=wind%20speed&quot; 사용) 다음을 사용하십시오.
-<br>&plainLinkExamples5;
-<br>하지만
-<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a> 사용해 보세요.
-브라우저에서 모든 선택적 매개변수를 파악합니다.
-(귀하의 프로그램이나 스크립트는 쿼리의 값을
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; 퍼센트 인코딩</a> 해야 할 수도 있습니다.)
-<br>&nbsp;
-<li><strong>categoryAttributes</strong> (예:
-기관, long_name, 표준_이름) 목록을 가져오려면 다음을 사용하세요.
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li><strong>특정 CategoryAttribute에 대한 카테고리</strong> 목록을 가져오려면(예:
-&quot;standard_name&quot; 사용) 다음을 사용하세요.
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li><strong>특정 카테고리의 데이터세트</strong> 목록을 가져오려면(예:
-&quot;standard_name=time&quot; 사용) 다음을 사용하세요.
-<br>&plainLinkExamples8;
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> 상단의 것들 ERDDAP  </a>  </h3> 많은 특징이 있습니다. ERDDAP 그것은 컴퓨터 프로그램 또는 스크립트에 의해 사용될 수있다
+당신이 쓰기. 다른 웹 애플리케이션 또는 웹 서비스를 구축 할 수 있습니다.
+맨 위로 ERDDAP , 만들기 ERDDAP 작품의 대부분을&#33;
+그래서 당신은 데이터에 더 나은 인터페이스에 대한 아이디어를 가지고 있다면 ERDDAP 서비스 또는 웹
+데이터에 액세스 할 수있는 쉬운 방법을 필요로하는 페이지, 우리는 당신의 자신의 구축을 격려
+웹 응용 프로그램, 웹 서비스, 또는 웹 페이지 및 사용 ERDDAP 기초로.
+시스템에서 데이터, 그래프 및 기타 정보를 얻을 수 있습니다. ERD 이름 * ERDDAP 또는 에서
+이름 * ERDDAP 임명, 또는 당신은 할 수 있습니다
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> 설정하기 ERDDAP 계정 관리 </a> ·
+할 수 있는
+자주 묻는 질문
+
+
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful URL 요청 </a>  </h3> 사용자 인터페이스 정보 요청 ERDDAP  (예를 들어, 검색 결과) 요청에 대한 웹의 범용 표준을 사용합니다.
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> 사이트 맵
+ &externalLinkHtml;  </a> 본문 바로가기
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> ·
+브라우저가 양식을 작성할 때 같은 메커니즘입니다.
+웹페이지에서 클릭 <kbd> 제출하기 </kbd> 이용안내 HTTP GET , 당신은 특별히 형성된 URL을 생성합니다 (자주 묻는 질문) 그리고 그것을 보내십시오 HTTP GET . 이 URL을 손으로 입력하여 입력할 수 있습니다.
+자주 묻는 질문 (예를 들어,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> 또는, 당신은 컴퓨터 프로그램 또는 웹 페이지 스크립트를 작성할 수 있습니다 URL을 만들, 그것을 보내,
+그리고 응답을 얻을. URL을 통해 HTTP GET 때문에 선택
+ <ul>  <li> 그들은 사용하기 쉽습니다.
+ <li> 그들은 잘 작동합니다.
+ <li> 그들은 보편적으로 지원됩니다 (브라우저, 컴퓨터 언어, 운영 체제
+공구, 등) ·
+ <li> 그들은의 기초입니다
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> 관련 국가 ( REST )  &externalLinkHtml;  </a> ·
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> Resource Oriented 건축 ( ROA )  &externalLinkHtml;  </a>  <li> 그들은 큰 분산 응용 프로그램으로 World Wide Web을 사용하여 용이합니다.
+예를 들면
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX 제품정보
+ &externalLinkHtml;  </a>  <li> 그들은 <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> 사이트맵
+ &externalLinkHtml;  </a> 으로 ERDDAP , 이는 체계 simpler를 만듭니다.
+ <li> URL은 완전히 주어진 요청을 정의하므로 브라우저에서 책갈피 할 수 있습니다.
+메모에 쓰기, 친구에게 이메일을 보내, 등.
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> 퍼센트 인코딩 </a>  </h3> URL에서 일부 문자는 허용되지 않습니다. (예를 들면, 공백) 다른 문자
+특별한 의미 (예를 들어, '&amp;'는 쿼리에 key=value 쌍을 분리합니다.) ·
+웹 페이지에 양식을 작성하고 제출을 클릭하면 브라우저가 자동으로
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % 인코딩
+ &externalLinkHtml;  </a> URL의 특수 문자 (예를 들어, 공간은 %20이 됩니다.) , 예를 들면,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> 그러나 컴퓨터 프로그램 또는 스크립트가 URL을 생성하면 아마 %를해야
+인코딩 자체. 그래서, 아마 모든 문자는 다른 A-Za-z0-9 -&#33;.~' () * 이름
+쿼리의 값 (부속 후에 '=' 이름 *) 인코딩 할 필요
+%HH로, HH는 문자의 2 자리 hexadecimal 값입니다. 예를 들어, 공간은 %20이됩니다.
+#127 위의 문자는 UTF-8 바이트로 변환되어야하며, 각 UTF-8 바이트는 인코딩 된 %이어야합니다.
+ (도움을위한 프로그래머 요청) . 프로그래밍 언어는이 도구를 가지고 (예를 들어, 참조 Java 이름 *
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> · Java 스크립트
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> 인코딩URIComponent ()  &externalLinkHtml;  </a> ) 그리고 거기에
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> 웹 사이트 % encode / decode 당신을 위해
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> 응답 파일 형식 </a>  </h3> 브라우저를 사용하여 인간은 사용자 인터페이스 결과를 수신하고 싶어 (예를 들어,
+검색 결과) HTML 문서로, 컴퓨터 프로그램은 종종 결과를 얻을 선호
+간단한, 쉽게 파싱, 덜 동사 문서. ERDDAP 사용자 인터페이스를 반환할 수 있습니다.
+이 일반 데이터의 테이블으로 결과, 컴퓨터 프로그램 친화적 인, 파일 유형 :
+ <ul>  <li> .csv - comma-separated ASCII 텍스트 테이블.
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - 테이블의 데이터가있는 .html 웹 페이지.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .itx - 데이터의 각 열에 대한 파를 가진 Igor 텍스트 파일.
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .json - JSON 파일과 같은 표식.
+ ( <a rel="help" href="https://www.json.org/"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> 또는
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP - 특정 정보 </a> )  <li>  .jsonlCSV1 - 첫 번째 라인의 열 이름과 \"CPT보다 더 나은\" JSON Lines 파일.
+ ( <a rel="help" href="https://jsonlines.org/"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - \"CPT보다 더 나은\" JSON 라인은 열 이름없이 파일입니다.
+ ( <a rel="help" href="https://jsonlines.org/"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - Key:Value 쌍을 가진 JSON 선 파일.
+ ( <a rel="help" href="https://jsonlines.org/"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .mat - MATLAB 바이너리 파일.
+ ( <a rel="help" href="https://www.mathworks.com/"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .nc - 평면, 테이블 같은, NetCDF -3 바이너리 파일.
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .nccsv - 평면, 테이블 같은, NetCDF -like, ASCII CSV 파일.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .nc oJson - JSON 파일 ( NCO - 스타일) dataset의 metadata와 함께 (글로벌 특성,
+차원 및 속성, 유형 및 모양과 변수) 데이터 값이 없습니다.
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> ) . 이 체재는 단 하나 dataset metadata 요구에만 적용합니다.
+ <li>  .tsv - 탭 변환 ASCII 텍스트 테이블.
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  <li>  .xhtml - XHTML (사이트맵) 테이블에 있는 자료로 파일.
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> 더 보기 &nbsp; * 이름
+ &externalLinkHtml;  </a> )  </ul> 모든 결과 테이블 형식 (이름 * .jsonlKVP , 열 이름은 각 행에 있습니다) ::
+ <ul>  <li> 각 열에는 열 이름과 1개의 유형의 정보가 있습니다.
+ <li> 테이블의 첫 번째 행에는 열 이름이 있습니다.
+ <li> 자주 묻는 질문
+ </ul>  <p> 이 일반 파일 유형의 내용도 .html에서 약간 다릅니다.
+응답 &mdash; 그것은 의도적으로 컴퓨터를 위해 더 쉬운 것을 보였습니다
+함께 일하는 프로그램.
+
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> 응답을위한 일관된 데이터 구조 </a>  <br> 이 페이지에 설명된 모든 사용자 인터페이스 서비스는 테이블을 반환할 수 있습니다.
+위에 나열된 일반적인 파일 형식의 데이터. 희망적으로, 당신은 쓸 수 있습니다
+한 번의 절차는 형식 중 하나에 데이터의 테이블을 파싱합니다. 그런 다음
+이 서비스의 응답을 파는 절차가 다시 사용. 으로
+쉽게 처리 할 수 ERDDAP ·
+
+
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> 사이트맵 </a> · .tsv 제품 정보 <ul>  <li> .csv 파일에 있는 datum이 내부 두 배 인용 또는 commas가 있는 경우에, ERDDAP 이름 *
+.csv 명세는 엄격히: 그것은 datum와 두 배의 주위에 두 배 인용을 둡니다
+내부 두 배 인용.
+ <li> .csv 또는 특수 문자 .tsv 파일처럼 인코딩
+ <a rel="help" href="https://www.json.org/"> 구글 맵
+ &externalLinkHtml;  </a> backslash 인코딩된 문자:
+₢ 킹 (새 소식) · (백슬래시) · (관련 링크) · (탭 탭) · (화물 운송) 또는 \\u <i> 뚱 베어 </i> 구문.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> 뚱 베어 </a>  <br> 문의 사항 .json 파일은 현재 옵션이 포함될 수 있습니다.
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> 뚱 베어
+ &externalLinkHtml;  </a> 관련 기사
+추가 \"&amp; .json ₢ 킹 <i> 기능이름 </i> \"질문의 끝에. 기본적으로, 이것은 말한다
+ ERDDAP 추가하기 <i> 기능이름 </i>  (\" 응답의 시작과 \") \"에
+응답의 끝. 첫 번째 문자 <i> 기능이름 </i> ISO 8859 편지 또는 \" \"이어야합니다.
+각 선택적인 후속 문자는 ISO 8859 편지, \" \", 손가락, 또는 \"이어야 합니다.\".
+원래 쿼리가 없었다면, \"&amp;\"를 쿼리에 남기십시오.
+
+
+ <p> 격자 및 tabledap 다른 파일 형식을 제공
+ <br> 위의 파일 형식은 파일 유형입니다. ERDDAP 응답 할 수 있습니다
+사용자 인터페이스 유형의 요청 (예를 들어, 검색 요청) · ERDDAP 지원하다
+과학적인 자료의 다른 유형 (예를 들어, 위성 및 부표
+제품정보) 이름 * (자세히보기
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> 다운로드 </a> ·
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> 제품정보) ·
+
+
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> 액세스 URL ERDDAP 's 서비스 </a>  </h3>  ERDDAP 컴퓨터 프로그램에 대한 이러한 URL 액세스 포인트가 있습니다:
+ <ul>  <li> 자주 묻는 질문 <strong> 주요 리소스 액세스 URL </strong> , 사용
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> 현재 목록을 얻기 <strong> 모든 datasets </strong> , 사용
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> 으로 <strong> 메타데이터 </strong> 특정 데이터 설정
+ (변수와 속성의 목록) , 사용
+ <br>  &tErddapUrl; / 정보/ <i>  datasetID  </i> (주) <i>  .fileType  </i>  <br> 또는 짧은 URL 양식
+ <br>  &tErddapUrl; / 정보/ <i>  datasetID  .fileType  </i>  <br> 예를 들어,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> 결과 얻기 <strong> 전체 텍스트 검색 </strong> datasets를 위해
+ (제품정보 "searchFor=wind%20speed" 예를 들어) , 사용
+ <br>  &plainLinkExamples4;  <br>  (프로그램 또는 스크립트가 필요할 수 있습니다.
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % 인코딩
+ &externalLinkHtml;  </a> 쿼리의 값.)  <br>  &nbsp;  <br> 또는, 사용
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 마일 </a> datasets에 대한 전체 텍스트 검색을 수행하는 표준.
+ <br>  &nbsp;  <li> 결과 얻기 <strong> 고급 검색 </strong> datasets를 위해
+ (제품정보 "searchFor=wind%20speed" 예를 들어) , 사용
+ <br>  &plainLinkExamples5;  <br> 그러나 실험과
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> 옵션 매개 변수의 모든 것을 파악하는 브라우저에서.
+ (프로그램 또는 스크립트가 필요할 수 있습니다.
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> % 인코딩
+ &externalLinkHtml;  </a> 쿼리의 값.)  <br>  &nbsp;  <li> 자주 묻는 질문 <strong>  categoryAttributes  </strong>  (예를 들면, 기관, long_name , 표준 이름) , 사용
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> 자주 묻는 질문 <strong> 특정 카테고리Attribute </strong>  (예를 들어 \"standard name\"을 사용) , 사용
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> 자주 묻는 질문 <strong> 특정 카테고리의 datasets </strong>  (예를 들어 \"standard name=time\"을 사용) , 사용
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> 으로 <strong> Variable metadata 속성 제안 </strong> , JSON을 보냅니다 (내용 유형: 신청/json) POST 요청
+제품정보 <a href="https://nco.sourceforge.net/nco.html#json"> 뚱 베어 </a> 속성과 스타일 변수, 예:
+ <br>  <code> &#123;\"variables\": &#123;\"air temp\": &#123;\"attributes\": &#123;\"name\": \"공기 온도\", \"단위\": \"degC\"&#125;&#125; </code>  <br> 으로 &tErddapUrl; /suggestVariable아트트리뷰
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

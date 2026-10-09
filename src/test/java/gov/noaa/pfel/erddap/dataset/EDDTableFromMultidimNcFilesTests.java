@@ -1,8 +1,11 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
@@ -4871,5 +4874,201 @@ class EDDTableFromMultidimNcFilesTests extends WireMockLifecycle {
             + //
             "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Mawson%22&integrator_id=%22aad%22&distinct()\n",
         results);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testNDBCMetBadFileMapBug() throws Throwable {
+    String dir = EDStatic.config.fullTestCacheDirectory;
+    String testDir = dir + "ndbc_test/";
+    File2.makeDirectory(testDir);
+    File2.deleteAllFiles(testDir);
+
+    String testNcFile = testDir + "NDBC_test_file.nc";
+
+    // 1. Create a synthetic NetCDF file mimicking NDBC Met structure:
+    // Dimensions: station (len=2), time (len=3)
+    // 1D Vars: station_id(station), time(time)
+    // 2D Var: wspd(station, time)
+    ucar.nc2.write.NetcdfFormatWriter.Builder ncOut =
+        ucar.nc2.write.NetcdfFormatWriter.createNewNetcdf3(testNcFile);
+    ucar.nc2.Group.Builder rootGroup = ncOut.getRootGroup();
+
+    ucar.nc2.Dimension dimStation = NcHelper.addDimension(rootGroup, "station", 2);
+    ucar.nc2.Dimension dimTime = NcHelper.addDimension(rootGroup, "time", 3);
+
+    NcHelper.addVariable(
+        rootGroup, "station_id", ucar.ma2.DataType.INT, java.util.List.of(dimStation));
+    NcHelper.addVariable(
+        rootGroup, "latitude", ucar.ma2.DataType.DOUBLE, java.util.List.of(dimStation));
+    NcHelper.addVariable(
+        rootGroup, "longitude", ucar.ma2.DataType.DOUBLE, java.util.List.of(dimStation));
+    NcHelper.addVariable(rootGroup, "time", ucar.ma2.DataType.DOUBLE, java.util.List.of(dimTime));
+    NcHelper.addVariable(
+        rootGroup, "wspd", ucar.ma2.DataType.FLOAT, java.util.List.of(dimStation, dimTime));
+
+    try (ucar.nc2.write.NetcdfFormatWriter writer = ncOut.build()) {
+      writer.write(
+          writer.findVariable("station_id"), NcHelper.get1DArray(new int[] {41001, 41002}, false));
+      writer.write(
+          writer.findVariable("latitude"), NcHelper.get1DArray(new double[] {28.5, 29.5}, false));
+      writer.write(
+          writer.findVariable("longitude"),
+          NcHelper.get1DArray(new double[] {-80.5, -81.5}, false));
+      writer.write(
+          writer.findVariable("time"), NcHelper.get1DArray(new double[] {1000, 2000, 3000}, false));
+      writer.write(
+          writer.findVariable("wspd"),
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.FLOAT,
+              new int[] {2, 3},
+              new float[] {5.1f, 5.2f, 5.3f, 6.1f, 6.2f, 6.3f}));
+    }
+
+    // 2. Instantiate an EDDTableFromMultidimNcFiles dataset pointing to this local directory
+    String xml =
+        "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"testNDBCMetLocal\" active=\"true\">\n"
+            + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
+            + "    <fileDir>"
+            + testDir
+            + "</fileDir>\n"
+            + "    <fileNameRegex>.*\\.nc</fileNameRegex>\n"
+            + "    <recursive>false</recursive>\n"
+            + "    <metadataFrom>last</metadataFrom>\n"
+            + "    <fileTableInMemory>false</fileTableInMemory>\n"
+            + "    <addAttributes>\n"
+            + "        <att name=\"cdm_data_type\">Point</att>\n"
+            + "        <att name=\"infoUrl\">http://example.com</att>\n"
+            + "        <att name=\"institution\">Test Institution</att>\n"
+            + "        <att name=\"summary\">Test Summary</att>\n"
+            + "        <att name=\"title\">Test Title</att>\n"
+            + "        <att name=\"sourceUrl\">(local files)</att>\n"
+            + "    </addAttributes>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>station_id</sourceName>\n"
+            + "        <destinationName>station_id</destinationName>\n"
+            + "        <dataType>int</dataType>\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Identifier</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>latitude</sourceName>\n"
+            + "        <destinationName>latitude</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"units\">degrees_north</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>longitude</sourceName>\n"
+            + "        <destinationName>longitude</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Location</att>\n"
+            + "            <att name=\"units\">degrees_east</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>time</sourceName>\n"
+            + "        <destinationName>time</destinationName>\n"
+            + "        <dataType>double</dataType>\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Time</att>\n"
+            + "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "    <dataVariable>\n"
+            + "        <sourceName>wspd</sourceName>\n"
+            + "        <destinationName>wspd</destinationName>\n"
+            + "        <dataType>float</dataType>\n"
+            + "        <addAttributes>\n"
+            + "            <att name=\"ioos_category\">Wind</att>\n"
+            + "        </addAttributes>\n"
+            + "    </dataVariable>\n"
+            + "</dataset>\n";
+
+    EDDTableFromMultidimNcFiles eddTable =
+        (EDDTableFromMultidimNcFiles) EDD.oneFromXmlFragment(null, xml);
+
+    File2.delete(eddTable.badFileMapFileName());
+
+    // 3. Query ONLY 1D metadata/dimension variables (station_id, time) with server-side orderBy
+    // This forces loadDims = [station, time], exposing the bug in loadVars()!
+    String userDapQuery = "station_id,time&orderByMinMax(\"station_id,time\")";
+
+    try {
+      eddTable.makeNewFileForDapQuery(0, null, null, userDapQuery, dir, "testNDBC_out", ".csv");
+    } catch (Throwable t) {
+      // Expected exception on unpatched code
+    }
+
+    // 4. Verify badFileMap status
+    java.util.concurrent.ConcurrentHashMap<String, Object[]> badFileMap = eddTable.readBadFileMap();
+
+    assertTrue(
+        badFileMap == null || badFileMap.isEmpty(),
+        "badFileMap should be empty, but healthy file was marked bad: "
+            + (badFileMap == null ? "null" : badFileMap.keySet()));
+
+    // Clean up
+    File2.deleteAllFiles(testDir);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testMultiDimConstructedFile() throws Throwable {
+    String dir = EDStatic.config.fullTestCacheDirectory;
+
+    // --- Direct method verification on synthetic multi-dim NetCDF ---
+    String testNcFile = dir + "test_no_2d_vars.nc";
+    File2.delete(testNcFile);
+
+    ucar.nc2.write.NetcdfFormatWriter.Builder ncOut =
+        ucar.nc2.write.NetcdfFormatWriter.createNewNetcdf3(testNcFile);
+    ucar.nc2.Group.Builder rootGroup = ncOut.getRootGroup();
+    ucar.nc2.Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
+    ucar.nc2.Dimension dim2 = NcHelper.addDimension(rootGroup, "dim2", 4);
+    NcHelper.addVariable(rootGroup, "var1", ucar.ma2.DataType.INT, java.util.List.of(dim1));
+    NcHelper.addVariable(rootGroup, "var2", ucar.ma2.DataType.FLOAT, java.util.List.of(dim2));
+
+    try (ucar.nc2.write.NetcdfFormatWriter writer = ncOut.build()) {
+      writer.write(writer.findVariable("var1"), NcHelper.get1DArray(new int[] {10, 20, 30}, false));
+      writer.write(
+          writer.findVariable("var2"),
+          NcHelper.get1DArray(new float[] {1.1f, 2.2f, 3.3f, 4.4f}, false));
+    }
+
+    gov.noaa.pfel.coastwatch.pointdata.Table sourceTable =
+        new gov.noaa.pfel.coastwatch.pointdata.Table();
+    gov.noaa.pfel.coastwatch.pointdata.TableFromMultidimNcFile reader =
+        new gov.noaa.pfel.coastwatch.pointdata.TableFromMultidimNcFile(sourceTable);
+
+    // Load var1 and var2 (2 1D variables spanning 2 distinct dimensions)
+    reader.readMultidimNc(
+        testNcFile,
+        new StringArray(),
+        new StringArray(new String[] {"dim1", "dim2"}),
+        null,
+        true,
+        0,
+        false,
+        null,
+        null,
+        null);
+
+    assertNotNull(sourceTable, "Source table should not be null");
+    assertEquals(12, sourceTable.nRows(), "Source table should have 3*4 = 12 combined rows");
+
+    File2.delete(testNcFile);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testIsRethrowException() {
+    assertTrue(
+        EDDTableFromFilesCallable.isRethrowException(
+            new RuntimeException("NDimensionalIndex constructor: shape=[0, 0]")));
+    assertFalse(
+        EDDTableFromFilesCallable.isRethrowException(
+            new java.io.IOException("Corrupt netCDF file header")));
   }
 }

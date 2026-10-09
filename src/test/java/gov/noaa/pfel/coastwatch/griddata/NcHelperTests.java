@@ -501,6 +501,49 @@ class NcHelperTests {
     }
   }
 
+  @org.junit.jupiter.api.Test
+  void testGetUnpackedPrimitiveArray() throws Throwable {
+    String scaleFile = NcHelperTests.class.getResource("/data/nc/scale_factor.nc").getFile();
+    try (NetcdfFile nc = NcHelper.openFile(scaleFile)) {
+      Variable var = nc.findVariable("analysed_sst");
+      Test.ensureNotNull(var, "analysed_sst variable should exist in scale_factor.nc");
+      PrimitiveArray pa =
+          NcHelper.getUnpackedPrimitiveArray(var, var.read(), NcHelper.isUnsigned(var));
+      Test.ensureTrue(pa instanceof DoubleArray, "Unpacked sst should be DoubleArray");
+      Test.ensureTrue(pa.size() > 0, "Unpacked sst size should be > 0");
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testZeroCopyGetPrimitiveArray() throws Throwable {
+    double[] rawDoubles = new double[] {1.1, 2.2, 3.3, 4.4};
+    ucar.ma2.ArrayDouble.D1 arrayDouble = new ucar.ma2.ArrayDouble.D1(4);
+    for (int i = 0; i < 4; i++) arrayDouble.set(i, rawDoubles[i]);
+    com.cohort.array.DoubleArray dpa =
+        (com.cohort.array.DoubleArray) NcHelper.getPrimitiveArray(arrayDouble, true, false);
+    Test.ensureTrue(
+        dpa.array == arrayDouble.getStorage(),
+        "DoubleArray should wrap NetCDF storage directly without extra copy");
+
+    float[] rawFloats = new float[] {1.0f, 2.0f, 3.0f};
+    ucar.ma2.ArrayFloat.D1 arrayFloat = new ucar.ma2.ArrayFloat.D1(3);
+    for (int i = 0; i < 3; i++) arrayFloat.set(i, rawFloats[i]);
+    com.cohort.array.FloatArray fpa =
+        (com.cohort.array.FloatArray) NcHelper.getPrimitiveArray(arrayFloat, true, false);
+    Test.ensureTrue(
+        fpa.array == arrayFloat.getStorage(),
+        "FloatArray should wrap NetCDF storage directly without extra copy");
+
+    byte[] rawBytes = new byte[] {10, 20, 30};
+    ucar.ma2.ArrayByte.D1 arrayByte = new ucar.ma2.ArrayByte.D1(3, false);
+    for (int i = 0; i < 3; i++) arrayByte.set(i, rawBytes[i]);
+    com.cohort.array.ByteArray bpa =
+        (com.cohort.array.ByteArray) NcHelper.getPrimitiveArray(arrayByte, true, false);
+    Test.ensureTrue(
+        bpa.array == arrayByte.getStorage(),
+        "ByteArray should wrap NetCDF storage directly without extra copy");
+  }
+
   /** ERDDAP: require that all vars be in same structure */
   @org.junit.jupiter.api.Test
   void testReadStructure2() throws Throwable {
@@ -744,5 +787,35 @@ class NcHelperTests {
     String2.log(pas13.toString());
 
     String2.log("diffString=\n" + pas14.diffString(pas13));
+  }
+
+  @org.junit.jupiter.api.Test
+  void testGetPrimitiveArrayWithSection() throws Exception {
+    String file = "test-data/data/briand/6900536_prof.nc";
+    try (NetcdfFile ncfile = NetcdfFiles.open(file)) {
+      Variable presVar = ncfile.findVariable("PRES");
+      Test.ensureNotNull(presVar, "Variable 'PRES' should be present");
+
+      // Numeric bounded section test on 2D numeric variable PRES(N_PROF=1, N_LEVELS=118)
+      ucar.ma2.Section section2D = new ucar.ma2.Section("0:0,0:9");
+      PrimitiveArray paBounded = NcHelper.getPrimitiveArray(presVar, section2D, true);
+      Test.ensureEqual(paBounded.size(), 10, "Bounded PA size matches section size");
+      Test.ensureTrue(
+          paBounded.size() < presVar.getSize(),
+          "Bounded PA size is strictly less than full variable size");
+
+      // CHAR section auto rank expansion test (passing 1D section for 2D char var
+      // PLATFORM_NUMBER(N_PROF=1, DATE_TIME_STRING_LENGTH=8))
+      Variable platformVar = ncfile.findVariable("PLATFORM_NUMBER");
+      Test.ensureNotNull(platformVar, "Variable 'PLATFORM_NUMBER' should be present");
+      Test.ensureEqual(
+          platformVar.getDataType(), DataType.CHAR, "PLATFORM_NUMBER is DataType.CHAR");
+      ucar.ma2.Section charSectionSubRank = new ucar.ma2.Section("0:0");
+      Test.ensureEqual(
+          charSectionSubRank.getRank(), platformVar.getRank() - 1, "Section rank is rank - 1");
+      PrimitiveArray charPa = NcHelper.getPrimitiveArray(platformVar, charSectionSubRank, true);
+      Test.ensureNotNull(charPa, "Char PA should not be null");
+      Test.ensureEqual(charPa.size(), 1, "Char PA size should be 1 string");
+    }
   }
 }

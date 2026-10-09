@@ -2629,6 +2629,8 @@ ERDDAP एक डेटा सर्वर है जो आपको साम�
 <fileHelp_nc4Header>NetCDF-4 .nc फ़ाइल के लिए UTF-8 हेडर (मेटाडेटा) देखें।</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>डेटासेट के मेटाडेटा को 7-बिट ASCII NCCSV .csv फ़ाइल के ऊपरी आधे भाग के रूप में देखें।</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>COARDS/CF/ACDD मेटाडेटा के साथ UTF-8 NCO lvl=2 JSON फ़ाइल डाउनलोड करें।</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>एक के लिए UTF-8 हेडर (the मेटाडाटा) देखेंNCOlvl=2 JSON फ़ाइल।
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>NetCDF-3 CF डिस्क्रीट सैम्पलिंग जियोमेट्रीज़ फ़ाइल (कंटिग्यूअस रैग्ड ऐरे) डाउनलोड करें।</fileHelp_ncCF>
 <fileHelp_ncCFHeader>.ncCF फ़ाइल के लिए UTF-8 हेडर (मेटाडेटा) देखें।</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>NetCDF-3 CF डिस्क्रीट सैम्पलिंग जियोमेट्रीज़ फ़ाइल (बहुआयामी सारणी) डाउनलोड करें।</fileHelp_ncCFMA>
@@ -3946,134 +3948,168 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
 <resourceNotFound>संसाधन नही मिला:</resourceNotFound>
 <restfulWebServices>रेस्टफुल वेब सेवाएँ</restfulWebServices>
 <restfulHTML><![CDATA[
+ ERDDAP दोनों ही हैं:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> वेब अनुप्रयोग
+ &externalLinkHtml;  </a> A web page with a form that मनुष्य ब्राउज़रों के साथ उपयोग कर सकते हैं (इस मामले में डेटा सेट के बारे में डेटा, ग्राफ़ या जानकारी प्राप्त करने के लिए) ।
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful वेब सेवा
+ &externalLinkHtml;  </a> एक यूआरएल जो कंप्यूटर प्रोग्राम का उपयोग कर सकता है (इस मामले में डेटा सेट के बारे में डेटा, ग्राफ़ और जानकारी प्राप्त करने के लिए) ।
+ </ul> प्रत्येक के लिए ERDDAP एक रूप के साथ वेब पेज जो आप एक ब्राउज़र के साथ एक इंसान के रूप में उपयोग कर सकते हैं, वहाँ एक है
+अनुरूप ERDDAP वेब सेवा जो कंप्यूटर प्रोग्राम्स और स्क्रिप्ट्स के उपयोग के लिए आसान होने के लिए डिज़ाइन की गई है।
+उदाहरण के लिए, मनुष्य दिलचस्प डेटासेट के लिए एक पूर्ण पाठ खोज करने के लिए इस यूआरएल का उपयोग कर सकते हैं:
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> यूआरएल में फ़ाइल एक्सटेंशन को .html से बदलकर .json  (या csv, या .htmlTable या .jsonlCSV1 या .xhtml ...) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> हम एक URL प्राप्त करते हैं जो कंप्यूटर प्रोग्राम या Java स्क्रिप्ट स्क्रिप्ट एक ही प्राप्त करने के लिए उपयोग कर सकते हैं
+अधिक कंप्यूटर प्रोग्राम-फ्रेंडली प्रारूप में जानकारी जैसे
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> ।
 
-ERDDAP दोनों है:
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">एक वेब अनुप्रयोग &externalLinkHtml;</a> - एक वेब पेज जिसमें एक ऐसा प्रारूप होता है जिसे ब्राउज़र वाले मनुष्य उपयोग कर सकते हैं (इस मामले में, डेटा, ग्राफ़ या डेटासेट के बारे में जानकारी प्राप्त करने के लिए)।
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">एक RESTful वेब सेवा &externalLinkHtml;</a> - एक URL जिसका उपयोग कंप्यूटर प्रोग्राम कर सकते हैं (इस मामले में, डेटा, ग्राफ़ और डेटासेट के बारे में जानकारी प्राप्त करने के लिए)।
-</ul>
-प्रत्येक ERDDAP वेब पेज के लिए, जिसमें एक फ़ॉर्म है जिसे आप ब्राउज़र के साथ एक इंसान के रूप में उपयोग कर सकते हैं, एक संगत ERDDAP वेब सेवा है जिसे कंप्यूटर प्रोग्राम और स्क्रिप्ट के उपयोग के लिए आसान बनाने के लिए डिज़ाइन किया गया है। उदाहरण के लिए, मनुष्य दिलचस्प डेटासेट के लिए पूर्ण पाठ खोज करने के लिए इस URL का उपयोग कर सकते हैं:
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>URL में फ़ाइल एक्सटेंशन को .html से .json (या .csv, या .htmlTable, या .jsonlCSV1, या .xhtml, ...) में बदलकर:
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>हमें एक यूआरएल मिलता है जिसे कंप्यूटर प्रोग्राम या Java स्क्रिप्ट स्क्रिप्ट
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> जैसे अधिक कंप्यूटर-प्रोग्राम-अनुकूल प्रारूप में समान जानकारी प्राप्त करने के लिए उपयोग कर सकती है।
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">ERDDAP के शीर्ष पर चीज़ें बनाएँ</a></h3>
-ERDDAP में कई विशेषताएं हैं जिनका उपयोग आपके द्वारा लिखे गए कंप्यूटर प्रोग्राम या स्क्रिप्ट द्वारा किया जा सकता है। आप उनका उपयोग ERDDAP के शीर्ष पर अन्य वेब एप्लिकेशन या वेब सेवाएँ बनाने के लिए कर सकते हैं, जिससे ERDDAP अधिकांश कार्य कर सकता है! इसलिए यदि आपके पास ERDDAP द्वारा प्रदान किए जाने वाले डेटा के लिए बेहतर इंटरफ़ेस या डेटा तक पहुँचने के लिए आसान तरीके की आवश्यकता वाले वेब पेज के लिए कोई विचार है, तो हम आपको अपना स्वयं का वेब एप्लिकेशन, वेब सेवा या वेब पेज बनाने और ERDDAP आधार के रूप में उपयोग करने के लिए प्रोत्साहित करते हैं। आपका सिस्टम ERD के ERDDAP या अन्य ERDDAP इंस्टॉलेशन से डेटा, ग्राफ़ और अन्य जानकारी प्राप्त कर सकता है, या आप<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">अपना स्वयं का ERDDAP सर्वर स्थापित करें</a>, जो सार्वजनिक रूप से सुलभ या केवल निजी रूप से सुलभ हो सकता है।
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL अनुरोध</a></h3>
-ERDDAP से उपयोगकर्ता-इंटरफ़ेस जानकारी के लिए अनुरोध (उदाहरण के लिए, खोज परिणाम) अनुरोधों के लिए वेब के सार्वभौमिक मानक का उपयोग करते हैं:
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a>
-<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a> के माध्यम से भेजे जाते हैं। यह वही तंत्र है जिसका उपयोग आपका ब्राउज़र तब करता है जब आप किसी वेब पेज पर फ़ॉर्म भरते हैं और <kbd>Submit</kbd> पर क्लिक करते हैं HTTP GET का उपयोग करने के लिए, आप एक विशेष रूप से निर्मित URL (जिसमें एक क्वेरी शामिल हो सकती है) उत्पन्न करते हैं और इसे HTTP GET के साथ भेजते हैं। आप इन URL को हाथ से बना सकते हैं और उन्हें अपने ब्राउज़र के पता टेक्स्ट फ़ील्ड में दर्ज कर सकते हैं (उदाहरण के लिए,
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
-<br>या, आप एक कंप्यूटर प्रोग्राम या वेब पेज स्क्रिप्ट लिख सकते हैं जिससे एक URL बनाया जा सके, उसे भेजा जा सके और प्रतिक्रिया प्राप्त की जा सके। HTTP GET के माध्यम से URL इसलिए चुने गए क्योंकि
-<ul>
-<li>इनका प्रयोग सरल है।
-<li>वे अच्छी तरह काम करते हैं.
-<li>वे सार्वभौमिक रूप से समर्थित हैं (ब्राउज़रों, कंप्यूटर भाषाओं, ऑपरेटिंग सिस्टम टूल्स आदि में)।
-<li>वे
-<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">रिप्रेजेंटेटिव स्टेट ट्रांसफर (REST ) &externalLinkHtml;</a> और
-<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">रिसोर्स ओरिएंटेड आर्किटेक्चर (ROA ) &externalLinkHtml;</a> का आधार हैं
-<li>वे वर्ल्ड वाइड वेब को एक बड़े वितरित अनुप्रयोग के रूप में उपयोग करने की सुविधा प्रदान करते हैं, उदाहरण के लिए
-<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups &externalLinkHtml;</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX अनुप्रयोगों &externalLinkHtml;</a> माध्यम से
-<li>वे
-<a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">स्टेटलेस &externalLinkHtml;</a> हैं, जैसे ERDDAP, जो सिस्टम को सरल बनाता है।
-<li>एक यूआरएल किसी दिए गए अनुरोध को पूरी तरह से परिभाषित करता है, इसलिए आप इसे अपने ब्राउज़र में बुकमार्क कर सकते हैं, इसे अपने नोट्स में लिख सकते हैं, इसे किसी मित्र को ईमेल कर सकते हैं, आदि।
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">प्रतिशत एनकोडिंग</a></h3>
-URL में, कुछ वर्णों की अनुमति नहीं है (उदाहरण के लिए, रिक्त स्थान) और अन्य वर्णों के विशेष अर्थ होते हैं (उदाहरण के लिए, &#39;&amp;&#39; क्वेरी में कुंजी = मान जोड़े को अलग करता है)। जब आप किसी वेब पेज पर कोई फ़ॉर्म भरते हैं और सबमिट पर क्लिक करते हैं, तो आपका ब्राउज़र स्वचालित रूप से URL में विशेष वर्णों को
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; एनकोड करता है</a> (उदाहरण के लिए, रिक्त स्थान %20 बन जाता है), उदाहरण के लिए,
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>लेकिन अगर आपका कंप्यूटर प्रोग्राम या स्क्रिप्ट यूआरएल जेनरेट करता है, तो उसे शायद खुद ही प्रतिशत एनकोडिंग करने की ज़रूरत होगी। अगर ऐसा है, तो शायद क्वेरी के मानों में A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्ण (&#39;=&#39; चिह्नों के बाद के भाग) को %HH के रूप में एनकोड करने की ज़रूरत है, जहाँ HH वर्ण का 2 अंकों का हेक्साडेसिमल मान है, उदाहरण के लिए, स्पेस %20 हो जाता है। #127 से ऊपर के वर्णों को UTF-8 बाइट्स में बदलना होगा, फिर प्रत्येक UTF-8 बाइट को प्रतिशत एनकोड किया जाना चाहिए (मदद के लिए किसी प्रोग्रामर से पूछें)। प्रोग्रामिंग भाषाओं में ऐसा करने के लिए उपकरण होते हैं (उदाहरण के लिए, Java का
-<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a> और Java स्क्रिप्ट का
-<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml;</a> देखें) और ऐसी
-<a class="N" rel="help" href="https://www.url-encode-decode.com">वेबसाइटें हैं जो आपके लिए प्रतिशत एनकोड/डिकोड करती हैं &externalLinkHtml;</a>
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">प्रतिक्रिया फ़ाइल प्रकार</a></h3>
-हालाँकि ब्राउज़र का उपयोग करने वाले मनुष्य उपयोगकर्ता-इंटरफ़ेस परिणाम (उदाहरण के लिए, खोज परिणाम) को HTML दस्तावेज़ों के रूप में प्राप्त करना चाहते हैं, कंप्यूटर प्रोग्राम अक्सर सरल, आसानी से पार्स किए जाने वाले, कम वर्बोज़ दस्तावेज़ों में परिणाम प्राप्त करना पसंद करते हैं। ERDDAP उपयोगकर्ता-इंटरफ़ेस परिणामों को इन सामान्य, कंप्यूटर-प्रोग्राम अनुकूल, फ़ाइल प्रकारों में डेटा की तालिका के रूप में लौटा सकता है:
-<ul>
-<li>.csv - अल्पविराम से अलग किया गया ASCII पाठ तालिका.
-(<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.htmlTable - एक .html वेब पेज जिसमें डेटा एक तालिका में होता है। (<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.itx - डेटा के प्रत्येक कॉलम के लिए एक तरंग के साथ एक इगोर टेक्स्ट फ़ाइल। (<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.json - एक टेबल जैसी JSON फ़ाइल.
-(<a rel="help" href="https://www.json.org/">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a> या
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP विशिष्ट जानकारी</a>)
-<li>.jsonlCSV1 - एक &quot;CSV से बेहतर&quot; JSON लाइन्स फ़ाइल जिसमें प्रथम पंक्ति पर स्तंभ नाम हैं। (<a rel="help" href="https://jsonlines.org/">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.jsonlCSV - एक &quot;CSV से बेहतर&quot; JSON लाइन्स फ़ाइल जिसमें कोई कॉलम नाम नहीं है। (<a rel="help" href="https://jsonlines.org/">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.jsonlKVP - कुंजी:
-मान युग्मों वाली JSON लाइन्स फ़ाइल.
-(<a rel="help" href="https://jsonlines.org/">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.mat - एक MATLAB बाइनरी फ़ाइल.
-(<a rel="help" href="https://www.mathworks.com/">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.nc - एक सपाट, तालिका-जैसी, NetCDF -3 बाइनरी फ़ाइल.
-(<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.nccsv - एक सपाट, तालिका-जैसी, NetCDF जैसी, ASCII CSV फ़ाइल.
-(<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.tsv - टैब से अलग किया गया ASCII पाठ तालिका.
-(<a rel="help" href="https://jkorpela.fi/TSV.html">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-<li>.xhtml - एक XHTML (XML) फ़ाइल जिसमें डेटा एक तालिका में होता है। (<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">अधिक जानकारी&nbsp;जानकारी &externalLinkHtml;</a>)
-</ul>
-प्रत्येक परिणाम तालिका प्रारूप में (.jsonlKVP छोड़कर, जहां स्तंभ नाम प्रत्येक पंक्ति पर हैं):
-<ul>
-<li>प्रत्येक कॉलम का एक कॉलम नाम और एक प्रकार की जानकारी होती है।
-<li>तालिका की पहली पंक्ति में स्तंभ नाम हैं।
-<li>बाद की पंक्तियों में आपके द्वारा अनुरोधित जानकारी है।
-</ul>
-<p>इन सादे फ़ाइल प्रकारों की सामग्री भी .html प्रतिक्रिया से थोड़ी भिन्न होती है - इसे जानबूझकर सरल रखा जाता है, ताकि कंप्यूटर प्रोग्राम के लिए इसके साथ काम करना आसान हो जाए।
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">प्रतिक्रियाओं के लिए एक सुसंगत डेटा संरचना</a>
-<br>इस पृष्ठ पर वर्णित सभी उपयोगकर्ता-इंटरफ़ेस सेवाएँ ऊपर सूचीबद्ध किसी भी सामान्य फ़ाइल स्वरूप में डेटा की तालिका लौटा सकती हैं। उम्मीद है, आप किसी एक स्वरूप में डेटा की तालिका को पार्स करने के लिए सिर्फ़ एक प्रक्रिया लिख ​​सकते हैं। फिर आप इनमें से किसी भी सेवा से प्रतिक्रिया को पार्स करने के लिए उस प्रक्रिया का फिर से उपयोग कर सकते हैं। इससे ERDDAP से निपटना आसान हो जाना चाहिए।
-<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> और .tsv विवरण
-<ul>
-<li>यदि .csv फ़ाइल में किसी डेटा में आंतरिक दोहरे उद्धरण चिह्न या अल्पविराम हैं, ERDDAP .csv विनिर्देश का सख्ती से पालन करता है:
-यह डेटा के चारों ओर दोहरे उद्धरण चिह्न लगाता है और आंतरिक दोहरे उद्धरण चिह्नों को दोगुना कर देता है।
-<li>.csv या .tsv फ़ाइल में विशेष वर्ण
-<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> बैकस्लैश-एन्कोडेड वर्णों की तरह एनकोड किए जाते हैं:
-\n (न्यूलाइन), \\ (बैकस्लैश), \f (फॉर्मफीड), \t (टैब), \r (कैरिज रिटर्न) या \u <i>hhhh</i> सिंटैक्स के साथ।
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>.json फ़ाइलों के लिए अनुरोधों में अब क्वेरी के अंत में &quot;&amp; .json p= <i>functionName</i>&quot; जोड़कर एक वैकल्पिक
-<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp &externalLinkHtml;</a> अनुरोध शामिल हो सकता है। मूल रूप से, यह ERDDAP प्रतिक्रिया की शुरुआत में &quot;<i>functionName</i> (&quot; और प्रतिक्रिया के अंत में &quot;)&quot; जोड़ने के लिए कहता है। <i>functionName</i> का पहला अक्षर ISO 8859 अक्षर या &quot;_&quot; होना चाहिए। प्रत्येक वैकल्पिक बाद का अक्षर ISO 8859 अक्षर, &quot;_&quot;, एक अंक या &quot;.&quot; होना चाहिए। यदि मूल रूप से कोई क्वेरी नहीं थी, तो अपनी क्वेरी में &quot;&amp;&quot; को छोड़ दें।
-<p>ग्रिडैप और tabledap अलग-अलग फ़ाइल प्रकार प्रदान करते हैं
-<br>ऊपर सूचीबद्ध फ़ाइल प्रकार वे फ़ाइल प्रकार हैं जिनका उपयोग ERDDAP उपयोगकर्ता-इंटरफ़ेस प्रकार के अनुरोधों (उदाहरण के लिए, खोज अनुरोध) का जवाब देने के लिए कर सकता है। ERDDAP वैज्ञानिक डेटा (उदाहरण के लिए, उपग्रह और बोया डेटा) अनुरोधों के लिए फ़ाइल प्रकारों के एक अलग सेट का समर्थन करता है (<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">ग्रिडैप</a> और
-<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a> दस्तावेज़ देखें)। &acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">ERDDAP की सेवाओं के लिए URL तक पहुँचें</a></h3>
-ERDDAP कंप्यूटर प्रोग्रामों के लिए ये URL एक्सेस पॉइंट हैं:
-<ul>
-<li><strong>मुख्य संसाधन पहुँच URL</strong> की सूची प्राप्त करने के लिए, उपयोग करें
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li><strong>सभी डेटासेट</strong> की वर्तमान सूची प्राप्त करने के लिए, उपयोग करें
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>किसी विशिष्ट डेटा सेट (चरों और उनकी विशेषताओं की सूची) के लिए <strong>मेटाडेटा</strong> प्राप्त करने के लिए, उपयोग करें
-<br>&tErddapUrl; /info/ <i>datasetID</i> /index <i>.fileType</i>
-<br>उदाहरण के लिए,
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>डेटासेट के लिए <strong>पूर्ण पाठ खोज</strong> के परिणाम प्राप्त करने के लिए (उदाहरण के रूप में &quot;searchFor=wind%20speed&quot; उपयोग करके), उपयोग करें
-<br>&plainLinkExamples4;
-<br>(आपके प्रोग्राम या स्क्रिप्ट को क्वेरी में मान को
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">प्रतिशत- &externalLinkHtml; करने</a> की आवश्यकता हो सकती है।)
-<br>&nbsp;
-<br>या, डेटासेट के लिए पूर्ण पाठ खोज करने के लिए
-<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a> मानक का उपयोग करें।
-<br>&nbsp;
-<li>डेटासेट के लिए <strong>उन्नत खोजों</strong> के परिणाम प्राप्त करने के लिए (उदाहरण के रूप में &quot;searchFor=wind%20speed&quot; उपयोग करके), उपयोग करें
-<br>&plainLinkExamples5;
-<br>लेकिन सभी वैकल्पिक पैरामीटर्स को जानने के लिए ब्राउज़र में
-<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a> के साथ प्रयोग करें। (आपके प्रोग्राम या स्क्रिप्ट को क्वेरी में मान
-<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">&externalLinkHtml; को प्रतिशत-एनकोड करने</a> की आवश्यकता हो सकती है।)
-<br>&nbsp;
-<li><strong>categoryAttributes</strong> की सूची प्राप्त करने के लिए (उदाहरण के लिए, संस्था, long_name, standard_name), उपयोग करें
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li><strong>किसी विशिष्ट categoryAttribute के लिए श्रेणियों</strong> की सूची प्राप्त करने के लिए (उदाहरण के रूप में &quot;standard_name&quot; का उपयोग करके), उपयोग करें
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li><strong>किसी विशिष्ट श्रेणी में डेटासेट</strong> की सूची प्राप्त करने के लिए (उदाहरण के लिए &quot;standard_name=time&quot; का उपयोग करके), उपयोग करें
-<br>&plainLinkExamples8;
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> शीर्ष पर चीजों का निर्माण ERDDAP  </a>  </h3> में कई विशेषताएं हैं ERDDAP इसका उपयोग कंप्यूटर प्रोग्राम या स्क्रिप्ट द्वारा किया जा सकता है
+आप लिखते हैं। आप उन्हें अन्य वेब अनुप्रयोगों या वेब सेवाओं के निर्माण के लिए उपयोग कर सकते हैं
+शीर्ष ERDDAP बनाना ERDDAP अधिकांश कार्य करते हैं&#33;
+इसलिए यदि आपके पास डेटा के लिए बेहतर इंटरफेस के लिए एक विचार है कि ERDDAP कार्य करता है या एक वेब
+पृष्ठ जो डेटा तक पहुंचने के लिए एक आसान तरीका की जरूरत है, हम आपको अपने खुद के निर्माण के लिए प्रोत्साहित करते हैं
+वेब अनुप्रयोग, वेब सेवा, या वेब पेज और उपयोग ERDDAP नींव के रूप में।
+आपकी प्रणाली से डेटा, ग्राफ़ और अन्य जानकारी प्राप्त कर सकती है ERD ' ERDDAP या
+अन्य ERDDAP स्थापना, या आप कर सकते हैं
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> अपना खुद का सेट करें ERDDAP सर्वर </a> ,
+जो हो सकता है
+सार्वजनिक रूप से सुलभ या निजी रूप से सुलभ।
+
+
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful यूआरएल अनुरोध </a>  </h3> उपयोगकर्ता-इंटरफेस जानकारी के लिए अनुरोध ERDDAP  (उदाहरण के लिए, खोज परिणाम) अनुरोध के लिए वेब के सार्वभौमिक मानक का उपयोग करें:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> यूआरएल
+ &externalLinkHtml;  </a> द्वारा भेजा गया
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> ।
+यह वही तंत्र है जो आपके ब्राउज़र का उपयोग करता है जब आप फॉर्म भरते हैं
+वेब पेज पर क्लिक करें <kbd> जमा करना </kbd> उपयोग करने के लिए HTTP GET , आप एक विशेष रूप से गठित URL उत्पन्न करते हैं (जिसमें एक क्वेरी शामिल हो सकती है) इसे भेजें HTTP GET आप इन यूआरएल को हाथ से बना सकते हैं और उन्हें अंदर प्रवेश कर सकते हैं
+अपने ब्राउज़र के एड्रेस टेक्स्ट फ़ील्ड (उदाहरण के लिए,
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> या, आप यूआरएल बनाने के लिए कंप्यूटर प्रोग्राम या वेब पेज स्क्रिप्ट लिख सकते हैं, इसे भेज सकते हैं,
+और प्रतिक्रिया प्राप्त करें। यूआरएल HTTP GET चुना गया क्योंकि
+ <ul>  <li> वे सरल हैं।
+ <li> वे अच्छा काम करते हैं।
+ <li> वे सार्वभौमिक रूप से समर्थित हैं (ब्राउज़रों, कंप्यूटर भाषाओं, ऑपरेटिंग सिस्टम में
+उपकरण, आदि) ।
+ <li> वे एक नींव हैं
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> प्रतिनिधि स्टेट ट्रांसफर ( REST )  &externalLinkHtml;  </a> और
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> संसाधन ओरिएंटेड आर्किटेक्चर ( ROA )  &externalLinkHtml;  </a>  <li> वे एक बड़े वितरित आवेदन के रूप में वर्ल्ड वाइड वेब का उपयोग करने की सुविधा देते हैं,
+उदाहरण के लिए
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX अनुप्रयोग
+ &externalLinkHtml;  </a>  <li> वे हैं <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> राज्य रहित
+ &externalLinkHtml;  </a> जैसा ERDDAP जो सिस्टम को सरल बनाता है।
+ <li> यूआरएल पूरी तरह से एक दिए गए अनुरोध को परिभाषित करता है, इसलिए आप इसे अपने ब्राउज़र में बुकमार्क कर सकते हैं।
+इसे अपने नोट्स में लिखें, इसे एक दोस्त को ईमेल करें, आदि।
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> प्रतिशत एन्कोडिंग </a>  </h3> यूआरएल में कुछ अक्षरों की अनुमति नहीं है (उदाहरण के लिए, रिक्त स्थान) अन्य वर्ण
+विशेष अर्थ है (उदाहरण के लिए, '&amp;' क्वेरी में key=value जोड़े को अलग करता है) ।
+जब आप वेब पेज पर एक फॉर्म भरते हैं और सबमिट पर क्लिक करते हैं, तो आपका ब्राउज़र स्वचालित रूप से
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> प्रतिशत एन्कोड
+ &externalLinkHtml;  </a> यूआरएल में विशेष वर्ण (उदाहरण के लिए, अंतरिक्ष %20 हो जाता है) उदाहरण के लिए,
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> लेकिन अगर आपका कंप्यूटर प्रोग्राम या स्क्रिप्ट यूआरएल उत्पन्न करता है, तो शायद इसे प्रतिशत करने की आवश्यकता होती है।
+खुद को एन्कोड करना। यदि हां, तो शायद A-Za-z0-9 -&#33; () *
+क्वेरी के मूल्यों में (भागों के बाद '=' संकेत) कोकोड करने की आवश्यकता
+%HHH, जहां HH चरित्र का 2 अंकीय हेक्साडेसिमल मान है, उदाहरण के लिए, अंतरिक्ष %20 हो जाता है।
+#127 से ऊपर के अक्षरों को UTF-8 बाइट्स में परिवर्तित किया जाना चाहिए, फिर प्रत्येक UTF-8 बाइट को प्रतिशत एनकोड किया जाना चाहिए।
+ (मदद के लिए प्रोग्रामर से पूछें) प्रोग्रामिंग भाषाओं में ऐसा करने के लिए उपकरण हैं (उदाहरण के लिए, देखें Java '
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> और Java स्क्रिप्ट
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> encodeURIComponent ()  &externalLinkHtml;  </a> ) और वहाँ रहे हैं
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> उन वेबसाइटों के लिए जो आपके लिए प्रतिशत एनकोड / डीकोड करते हैं
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> प्रतिक्रिया फ़ाइल प्रकार </a>  </h3> हालांकि ब्राउज़र का उपयोग करने वाले मानव उपयोगकर्ता-इंटरफेस परिणाम प्राप्त करना चाहते हैं (उदाहरण के लिए,
+खोज परिणाम) HTML दस्तावेज़ों के रूप में, कंप्यूटर प्रोग्राम अक्सर परिणाम प्राप्त करना पसंद करते हैं
+सरल, आसानी से parsed, कम मौखिक दस्तावेजों। ERDDAP उपयोगकर्ता इंटरफ़ेस वापस कर सकते हैं
+इन आम में डेटा की एक तालिका के रूप में परिणाम, कंप्यूटर प्रोग्राम के अनुकूल, फ़ाइल प्रकार:
+ <ul>  <li> .csv - a comma-separated ASCII पाठ सारणी।
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .htmlTable - एक टेबल में डेटा के साथ एक HTML वेब पेज।
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .itx - डेटा के प्रत्येक स्तंभ के लिए एक लहर के साथ एक Igor पाठ फ़ाइल।
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .json - एक टेबल की तरह JSON फ़ाइल।
+ ( <a rel="help" href="https://www.json.org/"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> या
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP विशेष जानकारी </a> )  <li>  .jsonlCSV1 - पहली पंक्ति में कॉलम नामों के साथ एक \"CSV\" JSON लाइन्स फाइल।
+ ( <a rel="help" href="https://jsonlines.org/"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV - CSV की तुलना में एक \"बेटर\" JSON लाइन्स फ़ाइल में कोई कॉलम नाम नहीं है।
+ ( <a rel="help" href="https://jsonlines.org/"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP - एक JSON लाइन्स फ़ाइल के साथ कुंजी: Value जोड़े।
+ ( <a rel="help" href="https://jsonlines.org/"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .mat - एक MATLAB द्विआधारी फ़ाइल।
+ ( <a rel="help" href="https://www.mathworks.com/"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .nc - एक फ्लैट, टेबल जैसी, NetCDF -3 द्विआधारी फ़ाइल।
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .nccsv - एक फ्लैट, टेबल जैसी, NetCDF -जैसे, ASCII CSV फ़ाइल।
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .nc OJson - एक JSON फ़ाइल ( NCO शैली) केवल डेटासेट के मेटाडाटा के साथ (वैश्विक गुण
+आयाम और उनके गुणों, प्रकार और आकार के साथ चर) और कोई डेटा मान नहीं।
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> ) यह प्रारूप केवल एकल डेटासेट मेटाडाटा अनुरोधों पर लागू होता है।
+ <li>  .tsv ASCII पाठ सारणी
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  <li>  .xhtml XHTML (एक्सएमएल) एक तालिका में डेटा के साथ फ़ाइल करें।
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> अधिक &nbsp; सूचना
+ &externalLinkHtml;  </a> )  </ul> प्रत्येक परिणाम तालिका प्रारूप में (सिवाय .jsonlKVP जहां स्तंभ नाम हर पंक्ति में हैं) :
+ <ul>  <li> प्रत्येक स्तंभ में एक स्तंभ नाम और एक प्रकार की जानकारी होती है।
+ <li> तालिका की पहली पंक्ति में स्तंभ नाम हैं।
+ <li> बाद की पंक्तियों में आपके द्वारा अनुरोध की गई जानकारी है।
+ </ul>  <p> इन सादे फ़ाइल प्रकारों में सामग्री HTML से थोड़ा अलग है।
+प्रतिक्रिया और mdash; यह जानबूझकर नंगे-boned है ताकि कंप्यूटर के लिए यह आसान हो
+कार्यक्रम के साथ काम करने के लिए।
+
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> प्रतिक्रिया के लिए एक सुसंगत डेटा संरचना </a>  <br> इस पृष्ठ पर वर्णित सभी उपयोगकर्ता इंटरफ़ेस सेवाओं की एक तालिका वापस कर सकते हैं
+ऊपर सूचीबद्ध सामान्य फ़ाइल स्वरूपों में से किसी में डेटा। उम्मीद है, आप लिख सकते हैं
+प्रारूपों में से एक में डेटा की एक तालिका को पार करने के लिए सिर्फ एक प्रक्रिया। फिर आप कर सकते हैं
+इन सेवाओं में से किसी से प्रतिक्रिया को पार करने के लिए उस प्रक्रिया का पुन: उपयोग करें। यह
+इससे निपटने में आसान होना चाहिए ERDDAP ।
+
+
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> Csv </a> और .tsv विवरण <ul>  <li> यदि एक .csv फ़ाइल में एक datum आंतरिक डबल उद्धरण या अल्पविराम है, तो, ERDDAP निम्नानुसार
+.csv विनिर्देश सख्ती से: यह datum और डबल्स के आसपास डबल उद्धरण डालता है
+आंतरिक डबल उद्धरण।
+ <li> एक .csv में विशेष वर्ण या .tsv फ़ाइल की तरह एन्कोड किया गया है
+ <a rel="help" href="https://www.json.org/"> JSON
+ &externalLinkHtml;  </a> बैकस्लैश-एनकोडेड वर्ण:
+\n (नौटंकी) , \\ (बैकस्लैश) , \f (फार्मफ़ीड) , \t (टैब) , \r (गाड़ी वापसी) या \\u के साथ <i> hhhh </i> वाक्यविन्यास
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> jsonp </a>  <br> अनुरोध .json फ़ाइलों को अब एक वैकल्पिक शामिल हो सकता है
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> jsonp
+ &externalLinkHtml;  </a> अनुरोध
+जोड़ने \"&amp; .json p= <i> समारोहनाम </i> \" क्वेरी के अंत तक। मूल रूप से, यह बताता है
+ ERDDAP जोड़ने के लिए <i> समारोहनाम </i>  (\"\" प्रतिक्रिया की शुरुआत और \") \"
+प्रतिक्रिया का अंत। का पहला चरित्र <i> समारोहनाम </i> एक ISO 8859 अक्षर या \" \" होना चाहिए।
+प्रत्येक वैकल्पिक बाद के चरित्र एक ISO 8859 अक्षर, \" \", एक अंक, या \"\" होना चाहिए।
+यदि मूल रूप से कोई प्रश्न नहीं था, तो अपने क्वेरी में \"&amp\" को छोड़ दें।
+
+
+ <p> ग्रिडडाप और tabledap विभिन्न फ़ाइल प्रकार प्रदान करें
+ <br> ऊपर सूचीबद्ध फ़ाइल प्रकार फ़ाइल प्रकार हैं ERDDAP प्रतिक्रिया करने के लिए उपयोग कर सकते हैं
+अनुरोध के उपयोगकर्ता-इंटरफेस प्रकार (उदाहरण के लिए, खोज अनुरोध) । ERDDAP समर्थन
+वैज्ञानिक डेटा के लिए फ़ाइल प्रकारों का एक अलग सेट (उदाहरण के लिए, उपग्रह और बॉय
+डेटा) अनुरोध (देखें
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> ग्रिड </a> और
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> दस्तावेज़ीकरण) ।
+
+
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> के लिए पहुँच यूआरएल ERDDAP सेवा </a>  </h3>  ERDDAP कंप्यूटर प्रोग्राम के लिए इन URL एक्सेस पॉइंट हैं:
+ <ul>  <li> सूची प्राप्त करने के लिए <strong> मुख्य संसाधन एक्सेस यूआरएल </strong> उपयोग
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> वर्तमान सूची प्राप्त करने के लिए <strong> सभी डेटासेट </strong> उपयोग
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> पाने के लिए <strong> मेटाडाटा </strong> एक विशिष्ट डेटा सेट के लिए
+ (चर और उनकी विशेषताओं की सूची) उपयोग
+ <br>  &tErddapUrl; हिन्दी <i>  datasetID  </i> इंडेक्स <i>  .fileType  </i>  <br> या लघु यूआरएल फॉर्म
+ <br>  &tErddapUrl; हिन्दी <i>  datasetID  .fileType  </i>  <br> उदाहरण के लिए,
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> परिणाम प्राप्त करने के लिए <strong> पूर्ण पाठ खोज </strong> डेटासेट के लिए
+ (उपयोग "searchFor=wind%20speed" उदाहरण के रूप में) उपयोग
+ <br>  &plainLinkExamples4;  <br>  (आपके कार्यक्रम या स्क्रिप्ट की आवश्यकता हो सकती है
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> प्रतिशत
+ &externalLinkHtml;  </a> क्वेरी में मूल्य।)  <br>  &nbsp;  <br> या, उपयोग करें
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> डेटासेट के लिए एक पूर्ण टेक्स्ट खोज करने के लिए मानक।
+ <br>  &nbsp;  <li> परिणाम प्राप्त करने के लिए <strong> उन्नत खोज </strong> डेटासेट के लिए
+ (उपयोग "searchFor=wind%20speed" उदाहरण के रूप में) उपयोग
+ <br>  &plainLinkExamples5;  <br> लेकिन साथ प्रयोग
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> ब्राउज़र में सभी वैकल्पिक मापदंडों को समझने के लिए।
+ (आपके कार्यक्रम या स्क्रिप्ट की आवश्यकता हो सकती है
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> प्रतिशत
+ &externalLinkHtml;  </a> क्वेरी में मूल्य।)  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong>  categoryAttributes  </strong>  (उदाहरण के लिए, संस्था, long_name , Standard name) उपयोग
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong> एक विशिष्ट श्रेणी के लिए श्रेणियां </strong>  (उदाहरण के रूप में \"standard name\" का उपयोग करना) उपयोग
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> सूची प्राप्त करने के लिए <strong> एक विशिष्ट श्रेणी में डेटासेट </strong>  (उदाहरण के रूप में \"standard name=time\" का उपयोग करना) उपयोग
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> पाने के लिए <strong> चर मेटाडाटा विशेषता सुझाव </strong> JSON भेजें (सामग्री प्रकार: आवेदन / जॉनसन) POST अनुरोध
+युक्त <a href="https://nco.sourceforge.net/nco.html#json"> ncojson </a> विशेषताओं के साथ शैली चर, उदाहरण:
+ <br>  <code> &#123;\"variables\": &#123;\"air temp\": &#123;\"attributes\": &#123;\"name\": \"एयर टेम्प\", \"इकाई\": \"degC\"&#125;&#125; </code>  <br> to &tErddapUrl; /suggestVariableAttributes
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

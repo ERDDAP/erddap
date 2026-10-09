@@ -5,13 +5,16 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
@@ -53,7 +56,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -3521,66 +3523,111 @@ public abstract class EDDTable extends EDD {
       StringArray scriptTypes,
       Map<String, Set<String>> scriptNeedsColumns) {
 
-    if (scriptNames != null) {
-      // if (debugMode) String2.log(">> raw table:\n" + table.dataToString(5));
-      int nRows = table.nRows();
-      for (int sni = 0; sni < scriptNames.size(); sni++) {
-        PrimitiveArray pa =
-            PrimitiveArray.factory(
-                PAType.fromCohortString(scriptTypes.get(sni)), nRows, false); // active?
-        JexlScript jscript = Script2.jexlEngine().createScript(scriptNames.get(sni).substring(1));
+    if (scriptNames == null || scriptNames.size() == 0) return;
+
+    int nRows = table.nRows();
+
+    for (int sni = 0; sni < scriptNames.size(); sni++) {
+      String rawScript = scriptNames.get(sni);
+      String scriptExpr =
+          rawScript.startsWith("=") ? rawScript.substring(1).trim() : rawScript.trim();
+      PAType paType = PAType.fromCohortString(scriptTypes.get(sni));
+      PrimitiveArray pa = PrimitiveArray.factory(paType, nRows, false);
+      Set<String> neededCols = scriptNeedsColumns.get(rawScript);
+
+      // 1. FAST-PATH: Direct Column Copy/Rename (=row.colName)
+      if (scriptExpr.startsWith("row.") && isSimpleIdentifier(scriptExpr.substring(4))) {
+        String srcCol = scriptExpr.substring(4);
+        int srcColIndex = table.findColumnNumber(srcCol);
+        if (srcColIndex >= 0) {
+          PrimitiveArray srcPa = table.getColumn(srcColIndex);
+          pa.append(srcPa);
+          table.addColumn(rawScript, pa);
+          continue;
+        }
+      }
+
+      // 2. FAST-PATH: Constant Expressions (evaluated once for all rows)
+      if (neededCols == null || neededCols.isEmpty()) {
+        JexlScript jscript = Script2.jexlEngine().createScript(scriptExpr);
         MapContext jcontext = Script2.jexlMapContext();
         ScriptRow scriptRow = new ScriptRow(fullFileName, table);
         jcontext.set("row", scriptRow);
-        boolean firstError = true;
+        Object val = null;
+        try {
+          val = jscript.execute(jcontext);
+        } catch (Exception e) {
+          String2.log(
+              "Caught: first script error (for col="
+                  + String2.toJson(rawScript)
+                  + " row[0]):\n"
+                  + MustBe.throwableToString(e));
+        }
 
-        if (scriptNeedsColumns.get(scriptNames.get(sni)).size() == 0) {
-          // script doesn't refer to any columns (e.g., =10.0),
-          // so just parse once and duplicate that value.
-          // scriptRow.setRow(0); //already done
-          Object o = null;
-          try {
-            o = jscript.execute(jcontext);
-          } catch (Exception e2) {
-            if (firstError) {
-              String2.log(
-                  "Caught: first script error (for col="
-                      + String2.toJson(scriptNames.get(sni))
-                      + " row[0]):\n"
-                      + MustBe.throwableToString(e2));
-              firstError = false;
-            }
-            o = null;
-          }
-          for (int row = 0; row < nRows; row++) pa.addObject(o);
+        for (int row = 0; row < nRows; row++) pa.addObject(val);
+        table.addColumn(rawScript, pa);
+        continue;
+      }
 
-        } else {
-          for (int row = 0; row < nRows; row++) {
-            scriptRow.setRow(row);
-            Object o = null;
-            try {
-              o = jscript.execute(jcontext);
-            } catch (Exception e2) {
-              if (firstError) {
-                String2.log(
-                    "Caught: first script error (for col="
-                        + String2.toJson(scriptNames.get(sni))
-                        + " row["
-                        + row
-                        + "]):\n"
-                        + MustBe.throwableToString(e2));
-                firstError = false;
-              }
-              o = null;
-            }
-            pa.addObject(o);
-            // if (debugMode && row < 5) String2.log(">> row[" + row + "] o.class().getName()=" +
-            // o.getClass().getName() + " value=" + (o instanceof Number? ((Number)o).doubleValue()
-            // : o.toString()));
+      // 3. JEXL EVALUATION WITH UNBOXED PRIMITIVE APPENDS
+      JexlScript jscript = Script2.jexlEngine().createScript(scriptExpr);
+      MapContext jcontext = Script2.jexlMapContext();
+      ScriptRow scriptRow = new ScriptRow(fullFileName, table);
+      jcontext.set("row", scriptRow);
+      boolean firstError = true;
+
+      for (int row = 0; row < nRows; row++) {
+        scriptRow.setRow(row);
+        Object o = null;
+        try {
+          o = jscript.execute(jcontext);
+        } catch (Exception e2) {
+          if (firstError) {
+            String2.log(
+                "Caught: first script error (for col="
+                    + String2.toJson(rawScript)
+                    + " row["
+                    + row
+                    + "]):\n"
+                    + MustBe.throwableToString(e2));
+            firstError = false;
           }
         }
-        table.addColumn(scriptNames.get(sni), pa);
+
+        // Direct primitive append to bypass pa.addObject() reflection/boxing overhead
+        addTypedObject(pa, paType, o);
       }
+
+      table.addColumn(rawScript, pa);
+    }
+  }
+
+  private static boolean isSimpleIdentifier(String s) {
+    if (s.isEmpty()) return false;
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (!Character.isJavaIdentifierPart(c)) return false;
+    }
+    return true;
+  }
+
+  private static void addTypedObject(PrimitiveArray pa, PAType paType, Object o) {
+    if (o == null) {
+      pa.addString("");
+      return;
+    }
+    if (o instanceof Number num) {
+      switch (paType) {
+        case DOUBLE -> ((DoubleArray) pa).add(num.doubleValue());
+        case FLOAT -> ((FloatArray) pa).add(num.floatValue());
+        case INT -> ((IntArray) pa).add(num.intValue());
+        case LONG -> ((LongArray) pa).add(num.longValue());
+        case SHORT -> ((ShortArray) pa).add(num.shortValue());
+        case BYTE -> ((ByteArray) pa).add(num.byteValue());
+        default -> pa.addObject(o);
+      }
+    } else {
+      pa.addObject(o);
     }
   }
 
@@ -3707,21 +3754,21 @@ public abstract class EDDTable extends EDD {
         int ncOffset = 0;
         int bufferSize = EDStatic.config.partialRequestMaxCells;
         PrimitiveArray pa = null;
-        try (DataInputStream dis = twawm.dataInputStream(col)) {
+        try (java.nio.channels.FileChannel channel = twawm.openColumnChannel(col)) {
           PAType colType = twawm.columnType(col);
           Array array;
 
           while (nToGo > 0) {
-            bufferSize = Math.min(nToGo, bufferSize); // actual number to be transferred
+            int nToRead = Math.min(nToGo, bufferSize); // actual number to be transferred
             // use of != below (not <) lets toObjectArray below return internal array since
             // size=capacity
             if (pa == null || pa.elementType() != twawm.columnType(col)) {
               pa = twawm.columnEmptyPA(col);
-              pa.ensureCapacity(bufferSize);
+              pa.ensureCapacity(nToRead);
             }
             pa.clear();
             pa.setMaxIsMV(twawm.columnMaxIsMV(col)); // reset it after clear()
-            pa.readDis(dis, bufferSize);
+            TableWriterAll.readColumnChunk(col, channel, pa, ncOffset, nToRead);
             if (debugMode)
               String2.log(
                   ">> col="
@@ -3730,8 +3777,8 @@ public abstract class EDDTable extends EDD {
                       + nToGo
                       + " ncOffset="
                       + ncOffset
-                      + " bufferSize="
-                      + bufferSize
+                      + " nToRead="
+                      + nToRead
                       + " pa.capacity="
                       + pa.capacity()
                       + " pa.size="
@@ -3744,7 +3791,7 @@ public abstract class EDDTable extends EDD {
               array =
                   Array.factory(
                       NcHelper.getNc3DataType(colType),
-                      new int[] {bufferSize},
+                      new int[] {nToRead},
                       tsa.toIso88591().toObjectArray());
               ncWriter.writeStringDataToChar(newVar, new int[] {ncOffset}, array);
 
@@ -3762,19 +3809,17 @@ public abstract class EDDTable extends EDD {
                 // pa is temporary, so ok to change chars
                 array =
                     Array.factory(
-                        DataType.CHAR, new int[] {bufferSize}, ca.toIso88591().toObjectArray());
+                        DataType.CHAR, new int[] {nToRead}, ca.toIso88591().toObjectArray());
               } else {
                 array =
                     Array.factory(
-                        NcHelper.getNc3DataType(colType),
-                        new int[] {bufferSize},
-                        pa.toObjectArray());
+                        NcHelper.getNc3DataType(colType), new int[] {nToRead}, pa.toObjectArray());
               }
               ncWriter.write(newVar, new int[] {ncOffset}, array);
             }
 
-            nToGo -= bufferSize;
-            ncOffset += bufferSize;
+            nToGo -= nToRead;
+            ncOffset += nToRead;
             // String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType ==
             // PAType.STRING));
           }
@@ -4198,7 +4243,6 @@ public abstract class EDDTable extends EDD {
         } else if (nodcMode) {
           // write nodc obsVar[feature][obs]
           int origin[] = {0, 0};
-          PrimitiveArray subsetPa = null;
           for (int feature = 0; feature < nFeatures; feature++) {
             // write the data for this feature
             origin[0] = feature;
@@ -4206,7 +4250,7 @@ public abstract class EDDTable extends EDD {
             int firstRow = featureFirstRow.get(feature);
             int tNRows = featureNRows.get(feature);
             int stopRow = firstRow + tNRows - 1;
-            subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
+            PrimitiveArray subsetPa = pa.subset(firstRow, 1, stopRow);
             NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tNRows}, subsetPa);
 
             // and write missing values
@@ -4215,12 +4259,19 @@ public abstract class EDDTable extends EDD {
               // String2.log("  writeMVs: feature=" + feature + " origin[1]=" + origin[1] +
               //  " tNRows=" + tNRows + " maxFeatureNRows=" + maxFeatureNRows);
               tNRows = maxFeatureNRows - tNRows;
-              subsetPa.clear();
               // if (tEdv.destinationDataPAType() == PAType.LONG)
               //    subsetPa.addNStrings(tNRows, "" + tSafeMV);
               // else
-              if (subsetPa instanceof StringArray) subsetPa.addNStrings(tNRows, "");
-              else subsetPa.addNDoubles(tNRows, tSafeMV);
+              // subsetPa is a PrimitiveView, so add elements will materialize the view
+              // previously the subsetPa was cleared just above here, so rather than clear
+              // and then cause it to materialize, we just make a proper PrimitiveArray.
+
+              if (subsetPa.elementType() == PAType.STRING) {
+                subsetPa = new StringArray(tNRows, true); // true->fills with ""
+              } else {
+                subsetPa = PrimitiveArray.factory(subsetPa.elementType(), tNRows, false);
+                subsetPa.addNDoubles(tNRows, tSafeMV);
+              }
               NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tNRows}, subsetPa);
             }
           }
@@ -4670,7 +4721,6 @@ public abstract class EDDTable extends EDD {
             int origin[] = new int[2];
             int firstRow;
             int lastRow = -1;
-            PrimitiveArray tpa = null;
             for (int feature = 0; feature < nFeatures; feature++) {
               // write data
               origin[0] = feature;
@@ -4678,7 +4728,7 @@ public abstract class EDDTable extends EDD {
               int tnProfiles = nProfilesPerFeature.get(feature);
               firstRow = lastRow + 1;
               lastRow = firstRow + tnProfiles - 1;
-              tpa = pa.subset(tpa, firstRow, 1, lastRow);
+              PrimitiveArray tpa = pa.subset(firstRow, 1, lastRow);
               NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tnProfiles}, tpa);
 
               // write fill values
@@ -4726,7 +4776,7 @@ public abstract class EDDTable extends EDD {
             int firstRow = profileFirstObsRow.get(profile);
             int tNRows = nObsPerProfile.get(profile);
             int stopRow = firstRow + tNRows - 1;
-            subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
+            subsetPa = pa.subset(firstRow, 1, stopRow);
             shape[2] = tNRows;
             NcHelper.write(nc3Mode, ncWriter, newVar, origin, shape, subsetPa);
           }
@@ -20258,6 +20308,7 @@ public abstract class EDDTable extends EDD {
     int nCols = sourceTable.nColumns();
     Test.ensureEqual(nCols, destTable.nColumns(), "sourceTable.nColumns != destTable.nColumns");
     StringArray suggest = new StringArray();
+    BitSet keep = new BitSet();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = (PrimitiveArray) sourceTable.getColumn(col).clone();
       pa.sort();
@@ -20266,7 +20317,7 @@ public abstract class EDDTable extends EDD {
         PAOne tmv = pa.tryToFindNumericMissingValue();
         if (tmv != null) {
 
-          BitSet keep = new BitSet();
+          keep.clear();
           keep.set(0, nRows);
           pa.applyConstraint(
               false, // morePrecise,

@@ -669,7 +669,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     if (reallyVerbose) String2.log("sourceAxisNames=" + sourceAxisNames);
     if (axis0Type != AXIS0_REGULAR)
       sourceAxisNamesNoAxis0 =
-          (StringArray) sourceAxisNames.subset(1, 1, sourceAxisNames.size() - 1);
+          (StringArray) sourceAxisNames.subset(new StringArray(), 1, 1, sourceAxisNames.size() - 1);
 
     // note sourceDataNames, sourceDataTypes
     sourceDataNames = new StringArray();
@@ -2679,7 +2679,8 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
           decompFullName,
           tDataVariables, // start, stride, stop
           (IntArray)
-              tConstraints.subset(3, 1, tConstraints.size() - 1)); // remove the axis0 constraints
+              tConstraints.subset(
+                  new IntArray(), 3, 1, tConstraints.size() - 1)); // remove the axis0 constraints
     }
 
     throw new RuntimeException("Invalid axis0Type=" + axis0Type);
@@ -2738,7 +2739,10 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     int nav = axisVariables.length;
     int ndv = tDataVariables.length;
     PrimitiveArray results[] = new PrimitiveArray[nav + ndv];
-    for (int avi = 0; avi < nav; avi++)
+
+    // 1. Compute and store subsetted axis variables first
+    long expectedDataPoints = (nav > 0) ? 1 : 0;
+    for (int avi = 0; avi < nav; avi++) {
       results[avi] =
           axisVariables[avi]
               .sourceValues()
@@ -2746,11 +2750,19 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
                   tConstraints.get(avi * 3 + 0),
                   tConstraints.get(avi * 3 + 1),
                   tConstraints.get(avi * 3 + 2));
+
+      expectedDataPoints *= results[avi].size();
+    }
+
+    // 2. Clamp capacity to prevent integer overflow
+    int initialCapacity = (int) Math.min(expectedDataPoints, Integer.MAX_VALUE - 8);
+
+    // 3. Allocate data variable arrays with exact capacity
     for (int dvi = 0; dvi < ndv; dvi++) {
       // String2.log("!dvi#" + dvi + " " + tDataVariables[dvi].destinationName() + " " +
       // tDataVariables[dvi].sourceDataPAType().toString());
       results[nav + dvi] =
-          PrimitiveArray.factory(tDataVariables[dvi].sourceDataPAType(), 64, false);
+          PrimitiveArray.factory(tDataVariables[dvi].sourceDataPAType(), initialCapacity, false);
     }
     IntArray ttConstraints = (IntArray) tConstraints.clone();
     int nFiles = ftStartIndex.size();
@@ -2834,6 +2846,20 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
     workManager.finishedEnqueing();
     // Make sure all of the work has been processed.
     workManager.processResults();
+
+    if (debugMode) {
+      // Verify capacity estimation accuracy
+      for (int dvi = 0; dvi < ndv; dvi++) {
+        int actualSize = results[nav + dvi].size();
+        if (actualSize != initialCapacity) {
+          String2.log(
+              String.format(
+                  "WARNING: Initial capacity mismatch for variable '%s' (Index %d). "
+                      + "Estimated: %d, Actual: %d",
+                  tDataVariables[dvi].destinationName(), dvi, initialCapacity, actualSize));
+        }
+      }
+    }
 
     return results;
   }

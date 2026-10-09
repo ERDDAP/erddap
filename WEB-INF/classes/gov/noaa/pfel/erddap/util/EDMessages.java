@@ -556,6 +556,7 @@ public class EDMessages {
     FILE_HELP_NC_CFMA_HEADER,
     FILE_HELP_NCML,
     FILE_HELP_NCO_JSON,
+    FILE_HELP_NCO_JSON_HEADER,
     FILE_HELP_GRID_ODV_TXT,
     FILE_HELP_TABLE_ODV_TXT,
     FILE_HELP_PARQUET,
@@ -2352,6 +2353,9 @@ public class EDMessages {
     translatedMessages.put(
         Message.FILE_HELP_NCO_JSON,
         getNotNothingString(messagesAr, "fileHelp_ncoJson", errorInMethod));
+    translatedMessages.put(
+        Message.FILE_HELP_NCO_JSON_HEADER,
+        getNotNothingString(messagesAr, "fileHelp_ncoJsonHeader", errorInMethod));
     translatedMessages.put(
         Message.FILE_HELP_GRID_ODV_TXT,
         getNotNothingString(messagesAr, "fileHelpGrid_odvTxt", errorInMethod));

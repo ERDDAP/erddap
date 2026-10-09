@@ -1147,200 +1147,6 @@ public class String2 {
     if (s.length() > 0) throw new RuntimeException(s);
   }
 
-  private static final ImmutableList<String> acceptedProtocols =
-      ImmutableList.of(
-          "https://", // host, path, query, fragment
-          "http://",
-          "https:\\\\", // host, path, query, fragment
-          "http:\\\\",
-          "www.", // host, path, query, fragment
-          "gopher://", // host, path
-          "gopher:\\\\",
-          "file://", // path
-          "file:\\\\",
-          "telnet://", // user:password@host:port /optional
-          "telnet:\\\\",
-          "smtp://", // user:password@host:port
-          "smtp:\\\\",
-          "ftp://", // username:password@host:port /path/to/file
-          "ftp:\\\\",
-          "smb://", // optional- username:password@host:port path/to/file
-          "smb:\\\\");
-  private static Pattern userPassPattern = Pattern.compile("^.{1,50}(:.{1,30})?@");
-  // domain is (chars without a slash or colon).(chars without a slash or colon)
-  private static Pattern domainPattern =
-      Pattern.compile("^[^/\\\\:\\s,?!#)]+\\.[^/\\\\:\\s,?!#)]+(?<![.,?!#)])");
-  private static Pattern portPattern = Pattern.compile("^:\\d+");
-  // Starts with a slash (that wasn't matched in previous sections), then
-  // 0 or more directories, ending in either a directory or .extension, optional / or \.
-  private static Pattern pathPattern =
-      Pattern.compile(
-          "^[/\\\\]?([a-zA-Z0-9-_.~!$&'()*+,;=:@%\\-]+[/\\\\])*[^/\\\\:?#,\\s]*[/\\\\]?(?<![.,?!#])");
-  private static Pattern queryPattern =
-      Pattern.compile("^\\?(\".*\"|%22.*%22|[^\\s#])*(?<![.,?!#])");
-  private static Pattern fragmentPattern = Pattern.compile("^#[^.,!#)\\s]*(?<![.,?!#])");
-
-  public static int[] findUrl(String input) {
-    return findUrl(input, 0);
-  }
-
-  public static int[] findUrl(String input, int startIndex) {
-    int[] startStop = {-1, -1};
-    input = input.toLowerCase();
-
-    int curStart = startIndex;
-
-    while (curStart < input.length()) {
-      // should have one of protocol or www (could be both)
-      // (optional) protocol://|\\
-      int urlStart = Integer.MAX_VALUE;
-      int curIndex = curStart;
-      int protocolIndex = -1;
-      for (int i = 0; i < acceptedProtocols.size(); i++) {
-        int found = input.indexOf(acceptedProtocols.get(i), curStart);
-        if (found > -1 && found < urlStart) {
-          urlStart = found;
-          protocolIndex = i;
-          curIndex = urlStart + acceptedProtocols.get(i).length();
-        }
-      }
-      // No protocol, no url
-      if (protocolIndex == -1) {
-        return startStop;
-      }
-
-      // USER NAME:PASSWORD@ (some protocols)
-      // The list is structured so everything ftp and later
-      // will or might have username:password
-      if (protocolIndex >= 9) {
-        Matcher userPassMatcher = userPassPattern.matcher(input.substring(curIndex));
-        if (userPassMatcher.find()) {
-          int userPassStart = userPassMatcher.start(0);
-          int userPassEnd = userPassMatcher.end(0);
-          if (userPassStart == 0) {
-            curIndex += userPassEnd;
-          }
-        }
-      }
-
-      // This shouldn't be relevant in production but is for local testing.
-      if (input.substring(curIndex).startsWith("localhost")) {
-        curIndex += "localhost".length();
-      } else {
-        // HOST
-        // (optional) www. or (optional) subdomain.
-        // domain name.tld (top level domain)
-        Matcher domainMatcher = domainPattern.matcher(input.substring(curIndex));
-        if (domainMatcher.find()) {
-          int domainStart = domainMatcher.start(0);
-          int domainEnd = domainMatcher.end(0);
-          if (domainStart == 0) {
-            curIndex += domainEnd;
-          }
-        } else {
-          // file:\\|// do not need domain
-          if (protocolIndex != 7 && protocolIndex != 8) {
-            curStart = urlStart + acceptedProtocols.get(protocolIndex).length();
-            continue;
-          }
-        }
-      }
-
-      // (optional) :port
-      Matcher portMatcher = portPattern.matcher(input.substring(curIndex));
-      if (portMatcher.find()) {
-        int portStart = portMatcher.start(0);
-        int portEnd = portMatcher.end(0);
-        if (portStart == 0) {
-          curIndex += portEnd;
-        }
-      }
-
-      // (optional) /path/
-      Matcher pathMatcher = pathPattern.matcher(input.substring(curIndex));
-      if (pathMatcher.find()) {
-        int pathStart = pathMatcher.start(0);
-        int pathEnd = pathMatcher.end(0);
-        if (pathStart == 0) {
-          curIndex += pathEnd;
-        }
-      }
-
-      // WEB LIKE EXTENSIONS
-      // (optional) ?query
-      Matcher queryMatcher = queryPattern.matcher(input.substring(curIndex));
-      if (queryMatcher.find()) {
-        int queryStart = queryMatcher.start(0);
-        int queryEnd = queryMatcher.end(0);
-        if (queryStart == 0) {
-          curIndex += queryEnd;
-        }
-      }
-
-      // (optional) #fragment
-      Matcher fragmentMatcher = fragmentPattern.matcher(input.substring(curIndex));
-      if (fragmentMatcher.find()) {
-        int fragmentStart = fragmentMatcher.start(0);
-        int fragmentEnd = fragmentMatcher.end(0);
-        if (fragmentStart == 0) {
-          curIndex += fragmentEnd;
-        }
-      }
-      startStop[0] = urlStart;
-      startStop[1] = curIndex;
-      return startStop;
-    }
-
-    return startStop;
-  }
-
-  /**
-   * Detects a url within a string. The url does not have to be the entire string like with isUrl.
-   *
-   * @param input the text to check for urls
-   * @return if the string contains a url
-   */
-  public static boolean containsUrl(final String input) {
-    int[] results = findUrl(input);
-    return results[0] != -1 && results[1] != -1;
-  }
-
-  /**
-   * This is used when setting href attributs in anchor tags. Specifically this is to make sure
-   * browsers know this is an absolute url and not a relative url.
-   */
-  public static String addHttpsForWWW(final String input) {
-    if (input.startsWith("www.")) {
-      return "https://" + input;
-    }
-    return input;
-  }
-
-  /**
-   * Returns a list of strings, separating urls from text. This is intended to assist wrapping urls
-   * in anchor tags in several locations.
-   *
-   * @param input the text to separate
-   */
-  public static List<String> extractUrls(final String input) {
-    List<String> separatedString = new ArrayList<String>();
-    int curIndex = 0;
-    int[] results = findUrl(input);
-    while (results[1] != -1) {
-      if (results[0] > curIndex) {
-        separatedString.add(input.substring(curIndex, results[0]));
-      }
-      separatedString.add(input.substring(results[0], results[1]));
-      curIndex = results[1];
-      results = findUrl(input, curIndex);
-    }
-
-    if (curIndex < input.length()) {
-      separatedString.add(input.substring(curIndex, input.length()));
-    }
-    return separatedString;
-  }
-
   /**
    * This indicates if 'url' is probably a valid url. This is like isRemote, but returns true for
    * "file://...".
@@ -1958,9 +1764,29 @@ public class String2 {
    *     as a string.
    */
   public static String toJson(final float f) {
-    if (!Float.isFinite(f)) return "null";
-    String s = "" + f;
-    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+    StringBuilder sb = new StringBuilder();
+    toJson(f, sb);
+    return sb.toString();
+  }
+
+  /**
+   * Appends a JSON version of a float directly to sb.
+   *
+   * @param f
+   * @param sb
+   */
+  public static void toJson(final float f, final StringBuilder sb) {
+    if (!Float.isFinite(f)) {
+      sb.append("null");
+      return;
+    }
+    int len0 = sb.length();
+    Math2.floatToString(f, sb);
+    if (sb.length() >= len0 + 2
+        && sb.charAt(sb.length() - 2) == '.'
+        && sb.charAt(sb.length() - 1) == '0') {
+      sb.setLength(sb.length() - 2);
+    }
   }
 
   /**
@@ -1971,9 +1797,29 @@ public class String2 {
    *     as a string.
    */
   public static String toJson(final double d) {
-    if (!Double.isFinite(d)) return "null";
-    String s = "" + d;
-    return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
+    StringBuilder sb = new StringBuilder();
+    toJson(d, sb);
+    return sb.toString();
+  }
+
+  /**
+   * Appends a JSON version of a double directly to sb.
+   *
+   * @param d
+   * @param sb
+   */
+  public static void toJson(final double d, final StringBuilder sb) {
+    if (!Double.isFinite(d)) {
+      sb.append("null");
+      return;
+    }
+    int len0 = sb.length();
+    Math2.doubleToString(d, sb);
+    if (sb.length() >= len0 + 2
+        && sb.charAt(sb.length() - 2) == '.'
+        && sb.charAt(sb.length() - 1) == '0') {
+      sb.setLength(sb.length() - 2);
+    }
   }
 
   /**
@@ -1986,6 +1832,16 @@ public class String2 {
    */
   public static String toJson(final String s) {
     return toJson(s, 127, true);
+  }
+
+  /**
+   * Appends a JSON version of a string directly to targetSB.
+   *
+   * @param s
+   * @param targetSB
+   */
+  public static void toJson(final String s, final StringBuilder targetSB) {
+    toJson(s, 127, true, targetSB);
   }
 
   /**
@@ -2068,35 +1924,50 @@ public class String2 {
     if (s == null) return "null";
     final int sLength = s.length();
     final StringBuilder sb = new StringBuilder((sLength / 5 + 1) * 6);
-    sb.append('\"');
+    toJson(s, firstUEncodedChar, encodeNewline, sb);
+    return sb.toString();
+  }
+
+  /** Appends a JSON version of a string directly to targetSB. */
+  public static void toJson(
+      final String s,
+      final int firstUEncodedChar,
+      final boolean encodeNewline,
+      final StringBuilder targetSB) {
+    if (s == null) {
+      targetSB.append("null");
+      return;
+    }
+    final int sLength = s.length();
+    targetSB.append('\"');
     int start = 0;
     for (int i = 0; i < sLength; i++) {
       final char ch = s.charAt(i);
-      // using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
       if (ch < 32 || ch >= firstUEncodedChar) {
-        sb.append(s, start, i);
+        targetSB.append(s, start, i);
         start = i + 1;
-        if (ch == '\f') sb.append("\\f");
-        else if (ch == '\n') sb.append(encodeNewline ? "\\n" : "\n");
-        else if (ch == '\r') sb.append("\\r");
-        else if (ch == '\t') sb.append("\\t");
+        if (ch == '\f') targetSB.append("\\f");
+        else if (ch == '\n') targetSB.append(encodeNewline ? "\\n" : "\n");
+        else if (ch == '\r') targetSB.append("\\r");
+        else if (ch == '\t') targetSB.append("\\t");
         else if (ch == '\b') {
         } // remove it
-        //  / can be encoded as \/ but there is no need and it looks odd
-        else sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4));
+        else {
+          targetSB.append("\\u");
+          targetSB.append(zeroPad(Integer.toHexString(ch), 4));
+        }
       } else if (ch == '\\') {
-        sb.append(s, start, i);
+        targetSB.append(s, start, i);
         start = i + 1;
-        sb.append("\\\\");
+        targetSB.append("\\\\");
       } else if (ch == '\"') {
-        sb.append(s, start, i);
+        targetSB.append(s, start, i);
         start = i + 1;
-        sb.append("\\\"");
-      } // else normal character will be appended later via s.substring
+        targetSB.append("\\\"");
+      }
     }
-    sb.append(s.substring(start));
-    sb.append('\"');
-    return sb.toString();
+    targetSB.append(s, start, sLength);
+    targetSB.append('\"');
   }
 
   /** This encodes one char to the Json encoding. */
@@ -3648,26 +3519,50 @@ public class String2 {
    */
   public static List<String> splitToArrayList(
       String s, char separator, boolean trim, List<String> al) {
+    return splitToArrayList(s, separator, trim, al, null);
+  }
+
+  /**
+   * This splits the string at the specified character. A missing final string is treated as "" (not
+   * discarded as with String.split).
+   *
+   * @param s a string with 0 or more separator characters
+   * @param separator
+   * @param trim trim the substrings, or don't
+   * @param al an ArrayList<String> to receive the results. It is initially clear()'d.
+   * @param isColumnNeeded if not null, indicates which column indices should be extracted as
+   *     Strings. If isColumnNeeded[col] is false, null is added to al instead of creating a String
+   *     object.
+   * @return al for convenience.
+   */
+  public static List<String> splitToArrayList(
+      String s, char separator, boolean trim, List<String> al, boolean[] isColumnNeeded) {
 
     // go through the string looking for separators
     al.clear();
     if (s == null) return al;
     int sLength = s.length();
     int start = 0;
+    int col = 0;
     // log("split line=" + annotatedString(s));
     for (int index = 0; index < sLength; index++) {
       if (s.charAt(index) == separator) {
-        if (trim) {
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          al.add(null);
+        } else if (trim) {
           al.add(trimSubString(s, start, index));
         } else {
           al.add(s.substring(start, index));
         }
+        col++;
         start = index + 1;
       }
     }
 
     // add the final substring
-    if (trim) {
+    if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+      al.add(null);
+    } else if (trim) {
       al.add(trimSubString(s, start, sLength));
     } else {
       al.add(s.substring(start, sLength));
@@ -4036,18 +3931,42 @@ public class String2 {
     //  because Java is very slow at filling in the stack trace when an exception is thrown.
     if (s == null) return Double.NaN;
     s = s.trim();
-    if (s.length() == 0) return Double.NaN;
+    int len = s.length();
+    if (len == 0) return Double.NaN;
     char ch = s.charAt(0);
+    // Fast-path common ERDDAP missing value tokens before parsing
+    if (ch == 'N' || ch == 'n' || ch == 'M' || ch == 'm' || ch == '?') {
+      if (s.equalsIgnoreCase("NaN") || s.equals("NC") || s.equals("MV")) return Double.NaN;
+    }
+
+    if (len == 1 && ch >= '0' && ch <= '9') {
+      return ch - '0';
+    }
+
+    // Fast-path multi-digit integers (e.g., 2024, -999, 100) to avoid JDK FloatingDecimal buffer
+    if (len < 10) {
+      boolean isInt = true;
+      for (int i = (ch == '-' || ch == '+') ? 1 : 0; i < len; i++) {
+        char c = s.charAt(i);
+        if (c < '0' || c > '9') {
+          isInt = false;
+          break;
+        }
+      }
+      if (isInt) {
+        try {
+          return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+          // Fall through to Double.parseDouble on overflow
+        }
+      }
+    }
+
     if ((ch >= '0' && ch <= '9') || ch == '-' || ch == '+' || ch == '.') {
       // it's probably a number
       try {
         if (s.startsWith("0x") || s.startsWith("0X"))
           return Long.parseLong(s.substring(2), 16); // for >7fffffff, returns signed int
-
-        // 2011-02-09 Bob Simons added to avoid Java hang bug.
-        //  But now, latest version of Java is fixed.
-        // if (isDoubleTrouble(s)) return 0;
-
         double d = Double.parseDouble(s);
         return Double.isFinite(d) ? d : Double.NaN;
       } catch (Exception e) {
@@ -4712,37 +4631,54 @@ public class String2 {
    * @return the number converted to a string
    */
   public static String genEFormat6(double d) {
+    StringBuilder sb = new StringBuilder();
+    genEFormat6(d, sb);
+    return sb.toString();
+  }
 
+  /**
+   * Appends d formatted with up to 6 digits to the left and right of the decimal directly to sb.
+   *
+   * @param d a number
+   * @param sb the StringBuilder to append to
+   */
+  public static void genEFormat6(double d, StringBuilder sb) {
     // !finite
-    if (!Double.isFinite(d)) return "" + d;
+    if (!Double.isFinite(d)) {
+      sb.append(d);
+      return;
+    }
 
     // almost 0
-    if (Math2.almost0(d)) return "0";
+    if (Math2.almost0(d)) {
+      sb.append('0');
+      return;
+    }
 
     // close to 0
-    // String2.log("genEFormat test " + (d*1000) + " " + Math.rint(d*1000));
-    if (Math.abs(d) < 0.0999995
-        && !Math2.almostEqual(
-            6,
-            d * 10000,
-            Math.rint(d * 10000))) { // leave .0021 as .0021, but display .00023 as 2.3e-4
+    if (Math.abs(d) < 0.0999995 && !Math2.almostEqual(6, d * 10000, Math.rint(d * 10000))) {
       synchronized (genExpFormat6) {
-        return genExpFormat6.format(d);
+        sb.append(genExpFormat6.format(d));
       }
+      return;
     }
 
     // large int
-    if (Math.abs(d) < 1e13 && d == Math.rint(d)) return "" + Math2.roundToLong(d);
+    if (Math.abs(d) < 1e13 && d == Math.rint(d)) {
+      sb.append(Math2.roundToLong(d));
+      return;
+    }
 
     // >10e6
     if (Math.abs(d) >= 999999.9999995) {
       synchronized (genExpFormat6) {
-        return genExpFormat6.format(d);
+        sb.append(genExpFormat6.format(d));
       }
+      return;
     }
 
     synchronized (genStdFormat6) {
-      return genStdFormat6.format(d);
+      sb.append(genStdFormat6.format(d));
     }
   }
 
@@ -4757,38 +4693,54 @@ public class String2 {
    * @return the number converted to a string
    */
   public static String genEFormat10(double d) {
+    StringBuilder sb = new StringBuilder();
+    genEFormat10(d, sb);
+    return sb.toString();
+  }
 
+  /**
+   * Appends d formatted with up to 10 digits to the left and right of the decimal directly to sb.
+   *
+   * @param d a number
+   * @param sb the StringBuilder to append to
+   */
+  public static void genEFormat10(double d, StringBuilder sb) {
     // !finite
-    if (!Double.isFinite(d)) return "" + d;
+    if (!Double.isFinite(d)) {
+      sb.append(d);
+      return;
+    }
 
     // almost 0
-    if (Math2.almost0(d)) return "0";
+    if (Math2.almost0(d)) {
+      sb.append('0');
+      return;
+    }
 
     // close to 0 and many sig digits
-    // String2.log("genEFormat test " + (d*1000) + " " + Math.rint(d*1000));
-    if (Math.abs(d) < 0.09999999995
-        && !Math2.almostEqual(
-            9,
-            d * 1000000,
-            Math.rint(d * 1000000))) { // leave .0021 as .0021, but display .00023 as 2.3e-4
+    if (Math.abs(d) < 0.09999999995 && !Math2.almostEqual(9, d * 1000000, Math.rint(d * 1000000))) {
       synchronized (genExpFormat10) {
-        return genExpFormat10.format(d);
+        sb.append(genExpFormat10.format(d));
       }
+      return;
     }
 
     // large int
-    if (Math.abs(d) < 1e13 && d == Math.rint(d)) // rint only catches 9 digits(?)
-    return "" + Math2.roundToLong(d);
+    if (Math.abs(d) < 1e13 && d == Math.rint(d)) {
+      sb.append(Math2.roundToLong(d));
+      return;
+    }
 
     // >10e6
     if (Math.abs(d) >= 1000000.0) {
       synchronized (genExpFormat10) {
-        return genExpFormat10.format(d);
+        sb.append(genExpFormat10.format(d));
       }
+      return;
     }
 
     synchronized (genStdFormat10) {
-      return genStdFormat10.format(d);
+      sb.append(genStdFormat10.format(d));
     }
   }
 
@@ -6152,7 +6104,7 @@ public class String2 {
    * where the regionName is optional, <br>
    * where a prefix is usually in the form dir1/dir2/ but may be "", <br>
    * where a key (objectName) is usually in the form dir1/dir2/fileName.ext <br>
-   * https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+   * https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
    *
    * @param url
    * @return String [bucketName, region, objectName], or null if url isn't an s3 URL. region and
@@ -6288,5 +6240,40 @@ public class String2 {
         set.remove(val);
       }
     }
+  }
+
+  /**
+   * Automatically extracts the domain name/host from a URL string, converting it to lowercase and
+   * removing any ports.
+   */
+  public static String extractDomain(String urlString, boolean includePort) {
+    if (urlString == null
+        || urlString.trim().isEmpty()
+        || urlString.equalsIgnoreCase("(not specified)")) {
+      return null;
+    }
+    String s = urlString.trim();
+    if (!s.contains("://")) {
+      s = "http://" + s;
+    }
+    try {
+      java.net.URI uri = new java.net.URI(s);
+      String host = uri.getHost();
+      if (host != null) {
+        String h = host.trim().toLowerCase();
+        if (h.contains(":") && !h.startsWith("[")) {
+          // if the host contains a colon and doesn't start with '[', it's likely an IPv6 address
+          // without brackets, so we need to add brackets around it.
+          h = "[" + h + "]";
+        }
+        if (includePort && h != null && uri.getPort() != -1) {
+          h += ":" + uri.getPort();
+        }
+        return h;
+      }
+    } catch (Exception e) {
+      String2.log("Error parsing host from URL: " + urlString + " - " + e.toString());
+    }
+    return null;
   }
 } // End of String2 class.

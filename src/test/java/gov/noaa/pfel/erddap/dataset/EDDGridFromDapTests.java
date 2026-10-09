@@ -6795,7 +6795,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
               + "    longitude = 8640;\n"
               + "  variables:\n"
               + "    float chlorophyll\\(time=\\d{3}, altitude=1, latitude=4320, longitude=8640\\);\n"
-              + "      :_CoordinateAxes = \"time altitude latitude longitude \";\n"
+              + "      :_CoordinateAxes = \"time altitude latitude longitude\";\n"
               + "      :_FillValue = -9999999.0f; // float\n"
               + "      :colorBarMaximum = 30.0; // double\n"
               + "      :colorBarMinimum = 0.03; // double\n"

@@ -164,24 +164,28 @@ public class TableWriterJson extends TableWriter {
     Math2.ensureArraySizeOkay(totalNRows.get(), "json");
 
     // write the data
+    StringBuilder jsonSB = new StringBuilder();
     if (rowsWritten) writer.write(",\n"); // end previous row
     for (int row = 0; row < nRows; row++) {
-      writer.write("      ["); // beginRow
+      jsonSB.setLength(0);
+      jsonSB.append("      ["); // beginRow
       for (int col = 0; col < nColumns; col++) {
-        if (col > 0) writer.write(", ");
+        if (col > 0) jsonSB.append(", ");
         if (isTimeStamp[col]) {
           double d = pas[col].getDouble(row);
-          writer.write(
-              Double.isNaN(d)
-                  ? "null"
-                  : "\""
-                      + Calendar2.epochSecondsToLimitedIsoStringT(time_precision[col], d, "")
-                      + "\"");
+          if (Double.isNaN(d)) {
+            jsonSB.append("null");
+          } else {
+            jsonSB.append('"');
+            jsonSB.append(Calendar2.epochSecondsToLimitedIsoStringT(time_precision[col], d, ""));
+            jsonSB.append('"');
+          }
         } else {
-          writer.write(pas[col].getJsonString(row));
+          pas[col].getJsonString(row, jsonSB);
         }
       }
-      writer.write(row < nRows - 1 ? "],\n" : "]"); // endRow
+      jsonSB.append(row < nRows - 1 ? "],\n" : "]"); // endRow
+      writer.write(jsonSB.toString());
     }
     if (nRows > 0) rowsWritten = true;
 

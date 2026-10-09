@@ -16,7 +16,6 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
-import dods.dap.*;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -27,9 +26,10 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import opendap.dap.*;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
@@ -555,132 +555,132 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     // and a parallel table to hold the addAttributes
     Table dataSourceTable = new Table();
     Table dataAddTable = new Table();
-    DConnect dConnect = new DConnect(oneFileDapUrl, acceptDeflate, 1, 1);
-    DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    try (DConnect2 dConnect = new DConnect2(oneFileDapUrl, acceptDeflate)) {
+      DAS das = dConnect.getDAS();
+      DDS dds = dConnect.getDDS();
 
-    // get source global attributes
-    OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
+      // get source global attributes
+      OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
 
-    // variables
-    Iterator<BaseType> en = dds.getVariables();
-    double maxTimeES = Double.NaN;
-    Attributes gridMappingAtts = null;
-    while (en.hasNext()) {
-      BaseType baseType = en.next();
-      String varName = baseType.getName();
-      Attributes sourceAtts = new Attributes();
-      OpendapHelper.getAttributes(das, varName, sourceAtts);
+      // variables
+      Enumeration<BaseType> en = dds.getVariables();
+      double maxTimeES = Double.NaN;
+      Attributes gridMappingAtts = null;
+      while (en.hasMoreElements()) {
+        BaseType baseType = en.nextElement();
+        String varName = baseType.getClearName();
+        Attributes sourceAtts = new Attributes();
+        OpendapHelper.getAttributes(das, varName, sourceAtts);
 
-      // Is this the pseudo-data var with CF grid_mapping (projection) information?
-      if (gridMappingAtts == null) gridMappingAtts = NcHelper.getGridMappingAtts(sourceAtts);
+        // Is this the pseudo-data var with CF grid_mapping (projection) information?
+        if (gridMappingAtts == null) gridMappingAtts = NcHelper.getGridMappingAtts(sourceAtts);
 
-      PrimitiveVector pv = null; // for determining data type
-      if (baseType instanceof DGrid dGrid) { // for multidim vars
-        BaseType bt0 = dGrid.getVar(0); // holds the data
-        pv = bt0 instanceof DArray tbt0 ? tbt0.getPrimitiveVector() : bt0.newPrimitiveVector();
-      } else if (baseType instanceof DArray dArray) { // for the dimension vars
-        pv = dArray.getPrimitiveVector();
-      } else {
-        if (verbose) String2.log("  baseType=" + baseType + " isn't supported yet.\n");
-      }
-      if (pv != null) {
-        PrimitiveArray sourcePA =
-            PrimitiveArray.factory(OpendapHelper.getElementPAType(pv), 2, false);
-        dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
-        PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
-        dataAddTable.addColumn(
-            dataAddTable.nColumns(),
-            varName,
-            destPA,
-            makeReadyToUseAddVariableAttributesForDatasetsXml(
-                dataSourceTable.globalAttributes(),
-                sourceAtts,
-                null,
-                varName,
-                destPA.elementType() != PAType.STRING, // tryToAddStandardName
-                destPA.elementType() != PAType.STRING, // addColorBarMinMax
-                true)); // tryToFindLLAT
+        PrimitiveVector pv = null; // for determining data type
+        if (baseType instanceof DGrid dGrid) { // for multidim vars
+          BaseType bt0 = dGrid.getVar(0); // holds the data
+          pv = bt0 instanceof DArray tbt0 ? tbt0.getPrimitiveVector() : bt0.newPrimitiveVector();
+        } else if (baseType instanceof DArray dArray) { // for the dimension vars
+          pv = dArray.getPrimitiveVector();
+        } else {
+          if (verbose) String2.log("  baseType=" + baseType + " isn't supported yet.\n");
+        }
+        if (pv != null) {
+          PrimitiveArray sourcePA =
+              PrimitiveArray.factory(OpendapHelper.getElementPAType(pv), 2, false);
+          dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
+          PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+          dataAddTable.addColumn(
+              dataAddTable.nColumns(),
+              varName,
+              destPA,
+              makeReadyToUseAddVariableAttributesForDatasetsXml(
+                  dataSourceTable.globalAttributes(),
+                  sourceAtts,
+                  null,
+                  varName,
+                  destPA.elementType() != PAType.STRING, // tryToAddStandardName
+                  destPA.elementType() != PAType.STRING, // addColorBarMinMax
+                  true)); // tryToFindLLAT
 
-        // if a variable has timeUnits, files are likely sorted by time
-        // and no harm if files aren't sorted that way
-        String tUnits = sourceAtts.getString("units");
-        if (tSortedColumnSourceName.length() == 0 && Calendar2.isTimeUnits(tUnits))
-          tSortedColumnSourceName = varName;
+          // if a variable has timeUnits, files are likely sorted by time
+          // and no harm if files aren't sorted that way
+          String tUnits = sourceAtts.getString("units");
+          if (tSortedColumnSourceName.length() == 0 && Calendar2.isTimeUnits(tUnits))
+            tSortedColumnSourceName = varName;
 
-        if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
-          try {
-            if (Calendar2.isNumericTimeUnits(tUnits)) {
-              double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); // throws exception
-              maxTimeES =
-                  Calendar2.unitsSinceToEpochSeconds(
-                      tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
-            } else { // string time units
-              maxTimeES =
-                  Calendar2.tryToEpochSeconds(
-                      destPA.getString(destPA.size() - 1)); // NaN if trouble
+          if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+            try {
+              if (Calendar2.isNumericTimeUnits(tUnits)) {
+                double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); // throws exception
+                maxTimeES =
+                    Calendar2.unitsSinceToEpochSeconds(
+                        tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
+              } else { // string time units
+                maxTimeES =
+                    Calendar2.tryToEpochSeconds(
+                        destPA.getString(destPA.size() - 1)); // NaN if trouble
+              }
+            } catch (Throwable t) {
+              String2.log("caught while trying to get maxTimeES: " + MustBe.throwableToString(t));
             }
-          } catch (Throwable t) {
-            String2.log("caught while trying to get maxTimeES: " + MustBe.throwableToString(t));
           }
         }
       }
-    }
 
-    // add the columnNameForExtract variable
-    if (tColumnNameForExtract.length() > 0) {
-      Attributes atts = new Attributes();
-      atts.add("ioos_category", "Identifier");
-      atts.add("long_name", EDV.suggestLongName(null, tColumnNameForExtract, null));
-      // no units or standard_name
-      dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
-      dataAddTable.addColumn(0, tColumnNameForExtract, new StringArray(), atts);
-    }
+      // add the columnNameForExtract variable
+      if (tColumnNameForExtract.length() > 0) {
+        Attributes atts = new Attributes();
+        atts.add("ioos_category", "Identifier");
+        atts.add("long_name", EDV.suggestLongName(null, tColumnNameForExtract, null));
+        // no units or standard_name
+        dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
+        dataAddTable.addColumn(0, tColumnNameForExtract, new StringArray(), atts);
+      }
 
-    // add missing_value and/or _FillValue if needed
-    addMvFvAttsIfNeeded(dataSourceTable, dataAddTable);
+      // add missing_value and/or _FillValue if needed
+      addMvFvAttsIfNeeded(dataSourceTable, dataAddTable);
 
-    // global attributes
-    if (externalAddGlobalAttributes == null) externalAddGlobalAttributes = new Attributes();
-    externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
+      // global attributes
+      if (externalAddGlobalAttributes == null) externalAddGlobalAttributes = new Attributes();
+      externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
 
-    // tryToFindLLAT
-    tryToFindLLAT(dataSourceTable, dataAddTable);
+      // tryToFindLLAT
+      tryToFindLLAT(dataSourceTable, dataAddTable);
 
-    // externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
-    // after dataVariables known, add global attributes in the dataAddTable
-    dataAddTable
-        .globalAttributes()
-        .set(
-            makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                dataSourceTable.globalAttributes(),
-                // another cdm_data_type could be better; this is ok
-                hasLonLatTime(dataAddTable) ? "Point" : "Other",
-                tLocalDirUrl,
-                externalAddGlobalAttributes,
-                suggestKeywords(dataSourceTable, dataAddTable)));
-    if (gridMappingAtts != null) dataAddTable.globalAttributes().add(gridMappingAtts);
-
-    // subsetVariables
-    if (dataSourceTable.globalAttributes().getString("subsetVariables") == null
-        && dataAddTable.globalAttributes().getString("subsetVariables") == null)
+      // externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
+      // after dataVariables known, add global attributes in the dataAddTable
       dataAddTable
           .globalAttributes()
-          .add("subsetVariables", suggestSubsetVariables(dataSourceTable, dataAddTable, false));
+          .set(
+              makeReadyToUseAddGlobalAttributesForDatasetsXml(
+                  dataSourceTable.globalAttributes(),
+                  // another cdm_data_type could be better; this is ok
+                  hasLonLatTime(dataAddTable) ? "Point" : "Other",
+                  tLocalDirUrl,
+                  externalAddGlobalAttributes,
+                  suggestKeywords(dataSourceTable, dataAddTable)));
+      if (gridMappingAtts != null) dataAddTable.globalAttributes().add(gridMappingAtts);
 
-    // use maxTimeES
-    String tTestOutOfDate =
-        EDD.getAddOrSourceAtt(
-            dataSourceTable.globalAttributes(),
-            dataAddTable.globalAttributes(),
-            "testOutOfDate",
-            null);
-    if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
-      tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
-      if (String2.isSomething(tTestOutOfDate))
-        dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
+      // subsetVariables
+      if (dataSourceTable.globalAttributes().getString("subsetVariables") == null
+          && dataAddTable.globalAttributes().getString("subsetVariables") == null)
+        dataAddTable
+            .globalAttributes()
+            .add("subsetVariables", suggestSubsetVariables(dataSourceTable, dataAddTable, false));
+
+      // use maxTimeES
+      String tTestOutOfDate =
+          EDD.getAddOrSourceAtt(
+              dataSourceTable.globalAttributes(),
+              dataAddTable.globalAttributes(),
+              "testOutOfDate",
+              null);
+      if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+        tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+        if (String2.isSomething(tTestOutOfDate))
+          dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
+      }
     }
-
     // write the information
     StringBuilder sb = new StringBuilder();
     if (tSortFilesBySourceNames.length() == 0) {

@@ -914,15 +914,18 @@ public class Attributes {
   /**
    * This writes the attributes for a variable (or *GLOBAL*) to a String using NCO JSON lvl=2
    * pedantic style. See https://nco.sourceforge.net/nco.html#json This doesn't change any of the
-   * attributes. See issues in javadoc for EDDTable.saveAsNcoJson().
+   * attributes. See issues in javadoc for NcoJsonFiles.
    *
    * <p>String attributes are written as type="char". See comments in EDDTable.
    *
    * @param indent a String a spaces for the start of each line
+   * @param includeTrailingComma if true, a comma is included after the closing } of the attributes
+   * @param includeWrapper if true, the attributes are wrapped in "attributes": { ... }
    * @return a string with all of the attributes for a variable (or *GLOBAL*) formatted for NCO
    *     JSON, with a comma after the closing }.
    */
-  public String toNcoJsonString(String indent) {
+  public String toNcoJsonString(
+      String indent, boolean includeTrailingComma, boolean includeWrapper) {
     StringBuilder sb = new StringBuilder();
 
     // "attributes": {
@@ -937,7 +940,10 @@ public class Attributes {
     //  "double_att": { "type": "double", "data": [73.0, 72.0, 71.0, 70.010, 69.0010, 68.010,
     // 67.0100010]}
     // },
-    sb.append(indent + "\"attributes\": {\n");
+    if (includeWrapper) {
+      sb.append(indent + "\"attributes\": ");
+    }
+    sb.append("{\n");
 
     // each of the attributes
     String names[] = getNames();
@@ -959,7 +965,7 @@ public class Attributes {
       }
       sb.append(
           (somethingWritten ? ",\n" : "")
-              + indent
+              + (includeWrapper ? indent : "")
               + "  "
               + String2.toJson(tName)
               + ": {\"type\": \""
@@ -973,7 +979,7 @@ public class Attributes {
         // if (tName.equals("_FillValue")) String2.pressEnterToContinue(">> ncoJson _FillValue=" +
         // String2.annotatedString((new StringArray(pa)).toString()) + " maxIsMV=" +
         // pa.getMaxIsMV());
-        String s = new StringArray(pa).toNewlineString();
+        String s = (pa instanceof StringArray sa ? sa : new StringArray(pa)).toNewlineString();
         sb.append(String2.toJson(s.substring(0, s.length() - 1))); // remove trailing \n
       } else {
         String js = pa.toJsonCsvString();
@@ -985,8 +991,10 @@ public class Attributes {
     sb.append(
         (somethingWritten ? "\n" : "")
             + // end previous line
-            indent
-            + "},\n");
+            (includeWrapper ? indent : "")
+            + "}"
+            + (includeTrailingComma ? "," : "")
+            + "\n");
     return sb.toString();
   }
 

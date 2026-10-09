@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.util;
 
-import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
@@ -34,12 +33,8 @@ public class TaskThread extends Thread {
   /** If taskOA[0].equals(TASK_SET_FLAG), then make taskOA[1]=datasetID */
   public static final Integer TASK_SET_FLAG = 1;
 
-  /**
-   * If taskOA[0].equals(TASK_DAP_TO_NC), then make taskOA[1]=dapUrl, taskOA[2]=StringArray(vars),
-   * taskOA[3]=projection, taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
-   * taskOA[6]=lastModified (Long)
-   */
-  public static final Integer TASK_DAP_TO_NC = 2;
+  /** Formerly used for TASK_DAP_TO_NC, but now deprecated. */
+  public static final Integer TASK_DEPRECATED = 2;
 
   /**
    * If taskOA[0].equals(TASK_ALL_DAP_TO_NC), then make taskOA[1]=dapUrl, taskOA[2]=fullFileName,
@@ -156,31 +151,9 @@ public class TaskThread extends Thread {
           EDD.requestReloadASAP(datasetID);
 
           // TASK_DAP_TO_NC
-        } else if (taskType.equals(TASK_DAP_TO_NC)) {
-
-          String dapUrl = (String) taskOA[1];
-          StringArray vars = (StringArray) taskOA[2];
-          String projection = (String) taskOA[3];
-          String fullFileName = (String) taskOA[4];
-          Boolean jplMode = (Boolean) taskOA[5];
-          Long lastModified = (Long) taskOA[6];
-          taskSummary =
-              "  TASK_DAP_TO_NC \n"
-                  + "    dapUrl="
-                  + dapUrl
-                  + "    vars="
-                  + vars
-                  + " projection="
-                  + projection
-                  + "    file="
-                  + fullFileName
-                  + " lastMod="
-                  + Calendar2.safeEpochSecondsToIsoStringTZ(lastModified / 1000.0, "NaN");
-          String2.log(taskSummary);
-
-          OpendapHelper.dapToNc(dapUrl, vars.toArray(), projection, fullFileName, jplMode);
-          File2.setLastModified(fullFileName, lastModified);
-
+        } else if (taskType.equals(TASK_DEPRECATED)) {
+          throw new RuntimeException(
+              "TaskThread error: TASK_DAP_TO_NC is deprecated. Use TASK_ALL_DAP_TO_NC instead.");
           // TASK_ALL_DAP_TO_NC
         } else if (taskType.equals(TASK_ALL_DAP_TO_NC)) {
 
@@ -265,8 +238,19 @@ public class TaskThread extends Thread {
         long tElapsedTime = elapsedTime();
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistribution24);
         String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
-        Object taskOA[] = EDStatic.taskList.get(EDStatic.nextTask.get() - 1);
-        Integer taskType = (Integer) taskOA[0];
+        int taskIndex = EDStatic.nextTask.get() - 1;
+        Object taskOA[] = null;
+        try {
+          taskOA =
+              (taskIndex >= 0 && taskIndex < EDStatic.taskList.size())
+                  ? EDStatic.taskList.get(taskIndex)
+                  : null;
+        } catch (Throwable ignore) {
+        }
+        Integer taskType =
+            (taskOA != null && taskOA.length > 0 && taskOA[0] instanceof Integer)
+                ? (Integer) taskOA[0]
+                : -1;
         EDStatic.metrics
             .taskThreadDuration
             .labelValues(Metrics.ThreadStatus.fail.name(), "" + taskType)

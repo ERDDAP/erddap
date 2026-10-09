@@ -2506,6 +2506,8 @@ ERDDAP是一個資料伺服器，它為您提供了一種簡單、一致的方�
 <fileHelp_nc4Header>查看 NetCDF-4 .nc 檔案的 UTF-8 標頭（元資料）。</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>以 7 位元 ASCII NCCSV .csv 檔案的上半部形式檢視資料集的元資料。</fileHelp_nccsvMetadata>
 <fileHelp_ncoJson>下載包含 COARDS/CF/ACDD 元資料的 UTF-8 NCO lvl=2 JSON 檔案。</fileHelp_ncoJson>
+<fileHelp_ncoJsonHeader>檢視 UTF-8 信頭( 中繼資料) 。NCOlvl=2 JSON檔案.
+</fileHelp_ncoJsonHeader>
 <fileHelp_ncCF>下載 NetCDF-3 CF 離散採樣幾何檔案（連續不規則陣列）。</fileHelp_ncCF>
 <fileHelp_ncCFHeader>查看 .ncCF 檔案的 UTF-8 標頭（元資料）。</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>下載 NetCDF-3 CF 離散採樣幾何檔案（多維數組）。</fileHelp_ncCFMA>
@@ -3737,120 +3739,168 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid, EK80</palettes>
 <resourceNotFound>未找到資源：</resourceNotFound>
 <restfulWebServices>RESTful Web 服務</restfulWebServices>
 <restfulHTML><![CDATA[
+ ERDDAP 二是:
+ <ul>  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"> 網頁應用程式
+ &externalLinkHtml;  </a> (ndash;) 有瀏覽器的人類可以使用的形式的網頁 (在這個情況下, 要得到相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相關相相相相關相相相關相相相相相相相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相) 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+ <br>  &nbsp;  <li>  <a rel="help" href="https://en.wikipedia.org/wiki/Web_service"> A RESTful 網頁服務
+ &externalLinkHtml;  </a> (ndash;) 電腦程式可以使用的網址 (因此取取相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相) 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+ </ul> 就每份 ERDDAP 有你用瀏覽器可以使用的表格的網頁有:
+相對 ERDDAP 有網路服務被設計出可以方便電腦程式和文稿使用.
+例如, 人類可以用這個網址去做一個有趣的相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相相相相關相關相相相關相相相相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相
+ <br>  <a href="&htmlQueryUrl;">  &htmlQueryUrl;  </a>  <br> 在網址上由.html更換到. .json  (或.csv,或 .htmlTable ,或 .jsonlCSV1 ,或 .xhtml 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活) :
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a>  <br> 有網址可以提供電腦程序或 Java 文稿可以被取回同樣的文稿
+有更方便電腦程序格式的信息
+ <a rel="help" href="https://www.json.org/"> 杰森
+ &externalLinkHtml;  </a> 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
 
-ERDDAP既是：
-<ul>
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">網路應用程式&externalLinkHtml;</a> – 具有瀏覽器的人類可以使用的表單的網頁（在本例中，用於獲取資料、圖表或有關資料集的資訊）。
-<br>&nbsp;
-<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">RESTful Web 服務&externalLinkHtml;</a> – 電腦程式可以使用的 URL（在本例中，用於取得資料、圖表和有關資料集的資訊）。
-</ul>
-對於每個具有瀏覽器可以使用的表單的ERDDAP網頁，都有一個相應的ERDDAP Web 服務，該服務旨在易於電腦程式和腳本使用。例如，人們可以使用此 URL 對感興趣的資料集進行全文搜尋：
-<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
-<br>透過將 URL 中的檔案副檔名從 .html 變更為.json （或 .csv、或.htmlTable 、或.jsonlCSV1 、或.xhtml ，...）：
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
-<br>我們得到一個 URL，電腦程式或Java腳本可以使用該 URL 以更電腦程式友善的格式（如<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a>取得相同的資訊。
-。
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">在ERDDAP之上建構事物</a></h3>ERDDAP中有許多功能可供您編寫的電腦程式或腳本使用。您可以使用它們在ERDDAP之上建立其他 Web 應用程式或 Web 服務，讓ERDDAP完成大部分工作！因此，如果您有更好的ERDDAP服務資料介面的想法，或者需要一個簡單的方法來存取資料的網頁，我們鼓勵您建立自己的 Web 應用程式、Web 服務或網頁，並使用ERDDAP作為基礎。您的系統可以從ERD的ERDDAP或其他ERDDAP安裝取得資料、圖表和其他信息，或者您也可以<!-- setup always from coastwatch's erddap --><a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install">設定您自己的ERDDAP伺服器</a>，該伺服器可以公開存取或僅私有存取。
-<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL 請求</a></h3>來自ERDDAP的使用者介面資訊請求（例如搜尋結果）使用網路的通用請求標準：
-<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a>透過<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a>發送。這與您在網頁上HTTP GET表單並點擊HTTP GET <kbd>Submit</kbd>時瀏覽器使用的機制相同。您可以手動形成這些 URL 並將其輸入到瀏覽器的地址文字欄位中（例如，
-<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a> ）
-<br>或者，您可以編寫電腦程式或網頁腳本來建立 URL、發送它並獲取回應。選擇通過HTTP GET URL 是因為
-<ul>
-<li>它們使用起來很簡單。
-<li>他們工作得很好。
-<li>它們受到普遍支援（瀏覽器、電腦語言、作業系統工具等）。
-<li>它們是<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">表述性狀態傳輸 (REST ) 的基礎&externalLinkHtml;</a>和<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">資源導向的架構 (ROA ) &externalLinkHtml;</a>
-<li>它們有助於將萬維網用作大型分散式應用程序，例如透過<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups &externalLinkHtml;</a>
-<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX應用程式&externalLinkHtml;</a>
-<li>它們是<a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">無狀態的&externalLinkHtml;</a> ERDDAP也是如此，這使得系統更簡單。
-<li>URL 完全定義了給定的請求，因此您可以在瀏覽器中為其添加書籤、將其寫在筆記中、透過電子郵件發送給朋友等。
-</ul>
-<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">百分比編碼</a></h3>在 URL 中，某些字元是不允許的（例如空格），而其他字元則具有特殊意義（例如，「&amp;」分隔查詢中的鍵=值對）。當您在網頁上填寫表單並點擊「提交」時，您的瀏覽器會自動<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">對&externalLinkHtml;</a> URL 中的特殊字元（例如空格變為 %20），例如
-<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
-<br>但如果您的電腦程式或腳本產生 URL，它可能需要自行進行百分比編碼。如果是這樣，那麼查詢值中除 A-Za-z0-9_-!.~&#39;()* 之外的所有字元（ &#39;=&#39;符號後面的部分）可能需要編碼為 %HH，其中 HH 是字元的2位十六進位值，例如空格變成%20。
-#127 以上的字元必須轉換為 UTF-8 字節，然後每個 UTF-8 位元組必須進行百分比編碼（向程式設計師尋求協助）。程式語言具有執行此操作的工具（例如，請參閱Java的<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder &externalLinkHtml;</a>和Java Script 的<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent() &externalLinkHtml;</a> ），並且有一些<a class="N" rel="help" href="https://www.url-encode-decode.com">網站可以為您進行百分比編碼/解碼&externalLinkHtml;</a>
-<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">回應文件類型</a></h3>儘管使用瀏覽器的人們希望接收 HTML 文件形式的使用者介面結果（例如搜尋結果），但電腦程式通常更喜歡以簡單、易於解析、不太冗長的文檔形式獲取結果。
-ERDDAP可以以資料表的形式傳回使用者介面結果，這些結果適用於電腦程式友善的常見檔案類型：
-<ul>
-<li>.csv - 以逗號分隔的 ASCII 文字表。
-（<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.htmlTable - 包含表中資料的 .html 網頁。
-（<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.itx - 一個 Igor 文字文件，每列資料都有一個波形。
-（<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.json - 類似表格的 JSON 檔案。
-（<a rel="help" href="https://www.json.org/">更多的&nbsp;資訊&externalLinkHtml;</a>或<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP特定資訊</a>）
-<li>.jsonlCSV1 -“比 CSV 更好”的 JSON 行文件，第一行包含列名稱。
-（<a rel="help" href="https://jsonlines.org/">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.jsonlCSV - 一個「比 CSV 更好」的 JSON 行文件，沒有列名。
-（<a rel="help" href="https://jsonlines.org/">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.jsonlKVP - 帶有鍵:值對的 JSON Lines 檔案。
-（<a rel="help" href="https://jsonlines.org/">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.mat - MATLAB 二進位。
-（<a rel="help" href="https://www.mathworks.com/">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.nc - 平面、類似表格的NetCDF -3 二進位。
-（<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.nccsv - 扁平、類似表格、類似NetCDF的 ASCII CSV 檔案。
-（<a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.tsv - 製表符分隔的 ASCII 文字表。
-（<a rel="help" href="https://jkorpela.fi/TSV.html">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-<li>.xhtml - 包含表格中資料的 XHTML (XML) 檔案。
-（<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">更多的&nbsp;資訊&externalLinkHtml;</a> ）
-</ul>
-在每個結果表格式中（除了.jsonlKVP ，其中列名位於每一行）：
-<ul>
-<li>每列都有一個列名和一種資訊類型。
-<li>表的第一行包含列名稱。
-<li>後續行包含您要求的資訊。
-</ul>
-<p>這些純文件類型中的內容也與 .html 回應略有不同 - 它是有意簡化的，以便電腦程式更容易使用。
-<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">響應的一致資料結構</a>
-<br>本頁所述的所有使用者介面服務都可以傳回上面列出的任何常見文件格式的資料表。希望您可以只編寫一個過程來解析其中一種格式的資料表。然後，您可以重新使用該程序來解析來自任何這些服務的回應。這應該會讓處理ERDDAP變得更容易。
-<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a>和.tsv詳細信息
-<ul>
-<li>如果 .csv 檔案中的資料具有內部雙引號或逗號，則ERDDAP嚴格遵循 .csv 規範：它將雙引號放在資料兩側，並將內部雙引號加倍。
-<li>.csv 或.tsv檔案中的特殊字元的編碼方式類似於<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a>反斜線編碼字元：\n（換行符）、\\（反斜線）、\f（換頁）、\t（製表符）、\r（回車符）或使用 \u <i>hhhh</i>語法。
-</ul>
-<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
-<br>對.json檔案的請求現在可能包含可選的<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp &externalLinkHtml;</a>透過在查詢末尾加上「&amp; .json p= <i>functionName</i> 」來請求。基本上，這告訴ERDDAP將“ <i>functionName</i> (”添加到回應的開頭，將“)”添加到回應的末尾。
-<i>functionName</i>的第一個字元必須是 ISO 8859 字母或「_」。每個可選的後續字元必須是 ISO 8859 字母、“_”、數字或“.”。如果最初沒有查詢，請省略查詢中的「&amp;」。
-<p>griddap 和tabledap提供不同的檔案類型
-<br>上面列出的文件類型是ERDDAP可用於回應使用者介面類型的請求（例如，搜尋請求）的文件類型。
-ERDDAP支援一組不同的科學資料（例如衛星和浮標資料）要求的文件類型（請參閱<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a>和<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a>文件）。
-&acceptEncodingHtmlh3tErddapUrl;
-<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">ERDDAP服務的存取 URL</a></h3>
-ERDDAP為電腦程式提供以下 URL 存取點：
-<ul>
-<li>若要取得<strong>主要資源存取 URL</strong>的列表，請使用
-<br>&plainLinkExamples1;
-<br>&nbsp;
-<li>若要取得<strong>所有資料集</strong>的目前列表，請使用
-<br>&plainLinkExamples2;
-<br>&nbsp;
-<li>若要取得特定資料集的<strong>元資料</strong>（變數及其屬性的清單），請使用
-<br>&tErddapUrl; /info/ <i>datasetID</i> /index <i>.fileType</i>
-<br>例如，
-<br>&plainLinkExamples3;
-<br>&nbsp;
-<li>若要取得資料集的<strong>全文搜尋</strong>結果（以&quot;searchFor=wind%20speed&quot;為例），請使用
-<br>&plainLinkExamples4;
-<br>（您的程式或腳本可能需要對查詢中的值<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">進行百分比編碼&externalLinkHtml;</a> 。）
-<br>&nbsp;
-<br>或者，使用<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a>標準對資料集進行全文搜尋。
-<br>&nbsp;
-<li>若要取得資料集<strong>進階搜尋</strong>的結果（以&quot;searchFor=wind%20speed&quot;為例），請使用
-<br>&plainLinkExamples5;
-<br>但可以試試<a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a>在瀏覽器中找出所有可選參數。
-（您的程式或腳本可能需要對查詢中的值<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">進行百分比編碼&externalLinkHtml;</a> 。）
-<br>&nbsp;
-<li>若要取得<strong>categoryAttributes</strong>清單（例如，機構、 long_name 、standard_name），請使用
-<br>&plainLinkExamples6;
-<br>&nbsp;
-<li>若要取得<strong>特定類別屬性的類別</strong>清單（以「standard_name」為例），請使用
-<br>&plainLinkExamples7;
-<br>&nbsp;
-<li>若要取得<strong>特定類別中的資料集</strong>清單（以「standard_name=time」為例），請使用
-<br>&plainLinkExamples8;
+ <h3>  <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark"> 在上方建置 ERDDAP  </a>  </h3> 有相當多的特點 有相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相 ERDDAP 被電腦程式或文稿所使用
+有你所寫作. 您可以用以建立其他網絡應用程式或網頁服務
+上方 ERDDAP ,制作 ERDDAP 有活可干&#33;
+因此,如果你有更好的相接點去取用相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相關相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相 ERDDAP 服務或網路
+第1行:
+網頁應用程式、網頁服務或網頁及使用 ERDDAP 就當是地基
+您的系統可以得到相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相 ERD 有 ERDDAP 或取自
+其他 ERDDAP 設備,或您可以
+ <!-- setup always from coastwatch's erddap -->  <a rel="help" href="https://erddap.github.io/docs/server-admin/deploy-install"> 有自已相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相去相相去相去相去相去相相去相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相 ERDDAP 伺服器 </a> ,
+它可以是
+就可被公之于眾地取用或只可被私人取用。
+
+
+ <h3>  <a class="selfLink" id="requests" href="#requests" rel="bookmark">  RESTful 網址要求 </a>  </h3> 要求提供使用者介面相關信息 ERDDAP  (例如,搜索結果) 在要求上使用網絡通用標準:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator"> 網址
+ &externalLinkHtml;  </a> 已送出
+ <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">  HTTP GET  &externalLinkHtml;  </a> 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+這是您瀏覽器在填表時所使用同樣的機制
+在網頁上并點擊 <kbd> 提交 </kbd> 要用 HTTP GET ,您會產生特制的網址 (它可能包括查詢) 有相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相相相接相接相相相相接相接相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相 HTTP GET 您可以用手建立這些網址并輸入其中。
+您瀏覽器的地址文字字段 (例如:
+ <br>  <a href="&jsonQueryUrl;">  &jsonQueryUrl;  </a> )  <br> 或者可以寫出電腦程序或網頁文稿去建立網址并發出
+就得到回應了. 網址通訊 HTTP GET 第 二 章
+ <ul>  <li> 它很簡單能被使用.
+ <li> 有活干活活干活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+ <li> 有相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相相通相通相通相通相通相相通相通相相通相通相通相通相相相通相相相通相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相 (在瀏覽器、電腦語言、操作系統中
+工具等) 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+ <li> 有相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相相相相相接相接相相接相相接相相相相相接相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相
+ <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"> 代表州 ( REST )  &externalLinkHtml;  </a> 和
+ <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services"> 有資源取向的建筑 ( ROA )  &externalLinkHtml;  </a>  <li> 有相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相當相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相
+例如:
+ <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">  mashups  &externalLinkHtml;  </a>  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">  AJAX 應用程式
+ &externalLinkHtml;  </a>  <li> 有被活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活 <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol"> 无国籍者
+ &externalLinkHtml;  </a> 就這樣 ERDDAP 就更簡單了
+ <li> 有網址可以完全定義所要要求, 因此您可以用瀏覽器做書签,
+在你的筆記上寫出去取取回去给朋友等.
+ </ul>  <h3>  <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark"> 百分比編碼 </a>  </h3> 在 URL 中, 有些字元被禁止 (如空格等) 其他字符
+有特殊的意思 (例如, “ &amp;” 在查詢中分出金鑰相對值) 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+當您在網頁上填表并點擊\"提交\"后,您的瀏覽器就自動被取出
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> 編碼%
+ &externalLinkHtml;  </a> 在 URL 中的特殊字符 (例如, 空間變成了% 20) 例如:
+ <br>  <a href="&htmlQueryUrlWithSpaces;">  &htmlQueryUrlWithSpaces;  </a>  <br> 但是如果你的電腦程式或文稿產生了網址 它可能需要做百分比
+在自編碼. 如果有 就可能出自A-Za-z0-9 &#33; () *
+在查詢值中 (后部分 '=' 符號) 需要被編碼
+以% HH 为例, HH 是字元的 二位十六進位值, 例如, 空間會變成% 20 。
+在 # 127 上方的字元必須被轉換成 UTF-8 位元組, 然后每個 UTF-8 位元組都必須被% 編碼
+ (向程序員求助) 。程式語言有做此工作的工具 (如: Java 有
+ <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">  java.net.URLEncoder  &externalLinkHtml;  </a> 和 Java 文稿
+ <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"> 編碼UR 元件 ()  &externalLinkHtml;  </a> ) 有
+ <a class="N" rel="help" href="https://www.url-encode-decode.com"> 为您提供編碼/解碼百分比的网站
+ &externalLinkHtml;  </a>  <h3>  <a class="selfLink" id="responses" href="#responses" rel="bookmark"> 回應檔案類型 </a>  </h3> 雖然用瀏覽器的人類想得到使用者介面結果 (例如:
+搜尋結果) 在 HTML 文件中, 電腦程序通常更想得到結果
+有相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相相相相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相 ERDDAP 可以回傳使用者介面
+有相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相關相相關相關相關相相相相相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相
+ <ul>  <li> .csv -- -- 有逗號相隔的 ASCII 文字表。
+ ( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .htmlTable 有相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相相關相相關相相關相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .itx 一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一
+ ( <a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .json 有同桌相關的JSON相關文件.
+ ( <a rel="help" href="https://www.json.org/"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> 或
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">  ERDDAP 具体信息 </a> )  <li>  .jsonlCSV1 有一行的列名
+ ( <a rel="help" href="https://jsonlines.org/"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .jsonlCSV 有\"比CSV好\"的JSON行檔 有列名
+ ( <a rel="help" href="https://jsonlines.org/"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .jsonlKVP 有相關相關相關相關相關相關相關相關相關相關相關相關相關相
+ ( <a rel="help" href="https://jsonlines.org/"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .mat 有一款MATLAB 二進制檔案
+ ( <a rel="help" href="https://www.mathworks.com/"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .nc 有平地 有桌子相 NetCDF 三 二進位檔案
+ ( <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .nccsv 有平地 有桌子相 NetCDF - 就跟ASCII CSV相關文件一樣.
+ ( <a rel="help" href="https://erddap.github.io/docs/user/nccsv-1.20"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .nc oJson -- -- 有 JSON 文件 ( NCO - 有型) 只使用數據集的中繼資料 (全球屬性,
+相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相) 而沒有數據值 。
+ ( <a rel="help" href="https://nco.sourceforge.net/nco.html#json"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> ) 。此格式仅适用于單一數據集中繼資料要求 。
+ <li>  .tsv 有分頁的 ASCII 文字表。
+ ( <a rel="help" href="https://jkorpela.fi/TSV.html"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  <li>  .xhtml -一輛XHTML (XML :) 有表格中的相關相關相關資料的檔案。
+ ( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp"> 更多 &nbsp; 信息
+ &externalLinkHtml;  </a> )  </ul> 在每种成果表格格式中 (但 .jsonlKVP 在每行的欄名中) :
+ <ul>  <li> 每一欄有一欄名和一類相關資訊.
+ <li> 表格第一行有列名.
+ <li> 后行有您所要的信息 。
+ </ul>  <p> 這些平原檔案類型中的内容也和.html有一點相差.
+回應 & mdash; 它被故意赤出骨頭使電腦更方便
+有相關相關相關相關程式
+
+ <p>  <a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark"> 相通的相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相通相相通相相通相相相通相通相通相通相相相通相相通相通相通相通相相相通相通相通相相相通相通相相相相通相相通相相通相通相相相通相通相相相相通相通相相相相相相相相相相相通相 </a>  <br> 此頁面上描述的所有用戶介面服務可以回傳一表:
+有上列任何共同檔案格式的資料。 有希望能寫出
+就用一款格式分解出相關相關相關相關相關相關相關相關相關相關相關相關相關相 那你可以了
+重新使用此程序以解析任何服務的回應 。 這個
+就更能處理了 ERDDAP 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+
+
+ <p>  <a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark"> .csv (相克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克克. </a> 和 .tsv 細節 <ul>  <li> 如果.csv相關相關文件 有內部雙倍引號或逗號 ERDDAP 接下
+. csv 有嚴格的規定: 它能放出雙倍引數和雙倍引數
+有出自\"出自\"出自\"
+ <li> 在.csv中的特殊字符或 .tsv 檔案被編碼为
+ <a rel="help" href="https://www.json.org/"> 杰森
+ &externalLinkHtml;  </a> 反斜向編碼字元:
+\\ n (新行) 第 二 章 (倒斜) ,\f (有窗体喂食) ,\t (分頁) ,\r (三. 马车返回) 有相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相接相相接相相接相接相接相接相相接相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相 <i> 哦 </i> 語法.
+ </ul>  <p>  <a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark"> 二相通 </a>  <br> 要求 .json 第 二 章
+ <a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/"> 二相通
+ &externalLinkHtml;  </a> 由
+新增\"( P); .json p= <i> 函數Name </i> \"取出后取出. 基本上 這能說明:
+ ERDDAP 以添加 \" <i> 函數Name </i>  (\" 在回覆起先并 \") \" 致:
+第 二 章 第一個字元 <i> 函數Name </i> 必須是 ISO 8859 個字母或 \" \" 。
+每個可選的接續字元必須是 ISO 8859 個字母 \" \" 、 數字或 \".\" 。
+如果起先沒有查詢, 在您的查詢中不要使用\" & amp;\" 。
+
+
+ <p> 网格和 tabledap 提供不同的檔案類型
+ <br> 上列檔案型態是檔案型態 ERDDAP 有權回應到
+要求的使用者介面型態 (例如,搜索要求) 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活 ERDDAP 支援
+科學相關相關相關相關相關相關相關相關相關相關相關相關相 (例如:衛星和浮標;
+資料) 要求 (有相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相想相相想相想相想相想相想相想相相相想相相想相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相相
+ <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType"> 网格 </a> 和
+ <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">  tabledap  </a> 文件) 有活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活活
+
+
+ &acceptEncodingHtmlh3tErddapUrl;  <h3>  <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark"> 为您存取 URL ERDDAP 服務 </a>  </h3>  ERDDAP 有電腦程序的網址存取點:
+ <ul>  <li> 以得到 <strong> 主要資源存取網址 </strong> 使用
+ <br>  &plainLinkExamples1;  <br>  &nbsp;  <li> 要得到目前的列表 <strong> 所有數據集 </strong> 使用
+ <br>  &plainLinkExamples2;  <br>  &nbsp;  <li> 就想得到 <strong> 中繼資料 </strong> 有相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相關相
+ (變數清單及其屬性) 使用
+ <br>  &tErddapUrl; (信息) <i>  datasetID  </i> /索引 <i>  .fileType  </i>  <br> 或短網址表單
+ <br>  &tErddapUrl; (信息) <i>  datasetID  .fileType  </i>  <br> 例如:
+ <br>  &plainLinkExamples3;  <br>  &nbsp;  <li> 就想取出相關結果 <strong> 全文搜索 </strong> 二. 数据集
+ (使用 "searchFor=wind%20speed" 如:) 使用
+ <br>  &plainLinkExamples4;  <br>  (您的程式或文稿可能需要
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> 百分比編碼
+ &externalLinkHtml;  </a> 在查詢中的值。)  <br>  &nbsp;  <br> 或者去取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取取.
+ <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">  OpenSearch 1.1 </a> 以做完整文字搜尋数据集的標準。
+ <br>  &nbsp;  <li> 就想取出相關結果 <strong> 高级搜尋 </strong> 二. 数据集
+ (使用 "searchFor=wind%20speed" 如:) 使用
+ <br>  &plainLinkExamples5;  <br> 但是想做實驗
+ <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">  &advancedSearch;  </a> 在瀏覽器中想出所有可選參數。
+ (您的程式或文稿可能需要
+ <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"> 百分比編碼
+ &externalLinkHtml;  </a> 在查詢中的值。)  <br>  &nbsp;  <li> 就想取出 <strong>  categoryAttributes  </strong>  (例如,机构, long_name ,标准名) 使用
+ <br>  &plainLinkExamples6;  <br>  &nbsp;  <li> 就想取出 <strong> 特定分類的分類 </strong>  (以\"標準名\"作示例) 使用
+ <br>  &plainLinkExamples7;  <br>  &nbsp;  <li> 就想取出 <strong> 相關相關相關資料 </strong>  (以\"標準取名=時間\"作示例) 使用
+ <br>  &plainLinkExamples8;  <br>  &nbsp;  <li> 就想得到 <strong> 有變數的中繼資料屬性建議 </strong> 就叫一叫JSON (內容- Type: 應用程式/ Json) 后端要求
+包含 <a href="https://nco.sourceforge.net/nco.html#json"> ncoJson (可口可樂) </a> 有屬性的樣式變數, 例如:
+ <br>  <code> &#123;\"可變\":&#123;\"air temp\":&#123;\"屬性\":&#123;\"名\":\"空臨時\",\"單位\":\"degC\"&#125;&#123; </code>  <br> 至 &tErddapUrl; 有可變屬性
 
 ]]></restfulHTML>
 <restfulHTMLContinued><![CDATA[

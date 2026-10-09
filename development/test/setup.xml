@@ -399,5 +399,18 @@ If an attribute is a global attribute, identify it by prefixing it with "global:
 <!-- set AWS credentials to anonymous -->
 <useAwsAnonymous>true</useAwsAnonymous>
 
+<!--
+AWS S3 CRT (Common Runtime) Client Configuration:
+s3TargetThroughputInGbps: Target throughput in Gbps for AWS CRT S3 client. Default is 20.0.
+  Lowering this (e.g. 2.0 or 5.0) reduces native CRT thread pool scaling and resource usage
+  under high multi-file concurrency.
+s3MaxConcurrency: Optional maximum concurrent connections for the CRT S3 client. Default is unconfigured (null).
+  Setting this (e.g. 50 or 100) bounds native thread usage to prevent resource exhaustion.
+-->
+<!--
+<s3TargetThroughputInGbps>20.0</s3TargetThroughputInGbps>
+<s3MaxConcurrency>50</s3MaxConcurrency>
+-->
+
 </erddapSetup>
 

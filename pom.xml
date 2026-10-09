@@ -32,28 +32,35 @@
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.31.0-alpha</version>
+    <version>2.32.0-alpha</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
     <url>https://coastwatch.pfeg.noaa.gov/erddap/index.html</url>
 
     <properties>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <jdkVersion>25</jdkVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <compiler.args></compiler.args>
         <erddapcontent.download.version>content1.0.1</erddapcontent.download.version>
         <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
-        <netcdfJavaVersion>5.9.1</netcdfJavaVersion>
+        <netcdfJavaVersion>5.11.0</netcdfJavaVersion>
         <test.resources.version>test1.06</test.resources.version>
-        <jettyVersion>12.1.8</jettyVersion>
-        <error-prone.version>2.41.0</error-prone.version>
-        <prometheusVersion>1.5.1</prometheusVersion>
-        <parquetVersion>1.17.0</parquetVersion>
-        <awssdkVersion>2.42.30</awssdkVersion>
-        <luceneVersion>10.4.0</luceneVersion>
-        <nettyVersion>4.2.12.Final</nettyVersion>
-        <mavenTestPluginVersion>3.5.5</mavenTestPluginVersion>
-        <jacocoMavenVersion>0.8.14</jacocoMavenVersion>
+        <jettyVersion>12.1.13</jettyVersion>
+        <error-prone.version>2.50.0</error-prone.version>
+        <prometheusVersion>1.9.0</prometheusVersion>
+        <parquetVersion>1.18.1</parquetVersion>
+        <awssdkVersion>2.55.9</awssdkVersion>
+        <luceneVersion>10.5.1</luceneVersion>
+        <nettyVersion>4.2.18.Final</nettyVersion>
+        <mavenTestPluginVersion>3.6.0</mavenTestPluginVersion>
+        <jacocoMavenVersion>0.8.15</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
+        <argLine.extra></argLine.extra>
     </properties>
 
     <repositories>
@@ -61,7 +68,7 @@
              Published advice: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html
              Repository https://artifacts.unidata.ucar.edu/repository/unidata-all/      (on web page)
                 or      https://artifacts.unidata.ucar.edu/repository/unidata-releases/ (privately)
-              Browse either https://artifacts.unidata.ucar.edu/#browse/browse
+             Browse either https://artifacts.unidata.ucar.edu/#browse/browse
              -->
         <repository>
             <id>unidata-releases</id>
@@ -96,7 +103,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.21.0</version>
+                <version>2.22.0</version>
                 <configuration>
                     <!-- some location that makes sense for your company/project -->
                     <rulesUri>file:///${project.basedir}/versionrules.xml</rulesUri>
@@ -118,16 +125,19 @@
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
+                <version>3.16.0</version>
                 <configuration>
                     <failOnError>true</failOnError>
-                    <source>25</source>   <!-- java version -->
-                    <target>25</target>
+                    <source>${maven.compiler.source}</source>   <!-- java version -->
+                    <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
                     <compilerArgs>
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>--should-stop=ifError=FLOW</arg>
+                        <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
                         <arg>-Xplugin:ErrorProne -Xep:StatementSwitchToExpressionSwitch:OFF -Xep:StringCaseLocaleUsage:OFF -Xep:EmptyCatch:OFF -Xep:StringSplitter:OFF -Xep:JavaLangClash:OFF -Xep:CatchAndPrintStackTrace:OFF -Xep:NotJavadoc:OFF -Xep:InvalidBlockTag:OFF -Xep:MissingSummary:OFF -Xep:EmptyBlockTag:OFF -Xep:InvalidParam:OFF -Xep:InvalidThrows:OFF -Xep:ReturnFromVoid:OFF -Xep:MisleadingEscapedSpace:OFF</arg>
+                        <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+                        <arg>${compiler.args}</arg>
                     </compilerArgs>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
@@ -171,7 +181,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.6.2</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
@@ -181,7 +191,7 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>3.6.3</version>
+                                    <version>3.9.0</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
@@ -216,7 +226,7 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/FileVisitorDNLS.sh, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**</warSourceExcludes>
+                    <warSourceExcludes>**/*.java, **/*.javaINACTIVE, **/*.javaInactive, **/*.java_NOT_YET, **/*.javaNOT_FINISHED, **/*.javaOLD, content/**, data/**, development/**, test-data/**, /src/test/**, target/**, src/**, WEB-INF/classes/gov/noaa/pfel/coastwatch/log.*, WEB-INF/lib/**, WEB-INF/NetCheck.*, WEB-INF/*.web.xml, WEB-INF/FileVisitorDNLS.sh, WEB-INF/incompleteMainCatalog.xml, WEB-INF/iobis.m, WEB-INF/obis.m, WEB-INF/QN2005193*, WEB-INF/ValidateDataSetProperties*, WEB-INF/fonts/**, WEB-INF/temp/**, WEB-INF/ref/*.zip, *.*, translation/**, .mvn/**, .settings/**, .github/**, .vscode/**, docker/**, dokka/**, Dockerfile</warSourceExcludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -255,17 +265,18 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.2.0</version>
                 <executions>
-                    <!-- create data directory for testing -->
+                    <!-- create required build/test directories -->
                     <execution>
                         <?m2e execute onConfiguration?>
-                        <id>make-data-dir</id>
-                        <phase>initialize</phase>
+                        <id>make-dirs</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
                                 <mkdir dir="${project.basedir}/target/data"/>
+                                <mkdir dir="${project.basedir}/target/temp"/>
                             </target>
                         </configuration>
                     </execution>
@@ -373,7 +384,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.9.8.3</version>
+                <version>4.10.4.1</version>
                 <configuration>
                     <effort>max</effort>
                     <maxHeap>2048</maxHeap>
@@ -484,7 +495,7 @@
             <plugin>
                 <groupId>com.cosium.code</groupId>
                 <artifactId>git-code-format-maven-plugin</artifactId>
-                <version>6.0</version>
+                <version>6.2</version>
                 <executions>
                     <!-- On commit, format the modified files -->
                     <execution>
@@ -508,7 +519,7 @@
                     <dependency>
                     <groupId>com.cosium.code</groupId>
                     <artifactId>google-java-format</artifactId>
-                    <version>6.0</version>
+                    <version>6.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -564,7 +575,7 @@
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/Units2.java</file>
                         <file>${project.basedir}/WEB-INF/classes/com/cohort/util/XML.java</file>
                     </suppressedFiles>
-                    <jdkVersion>25</jdkVersion>
+                    <jdkVersion>${jdkVersion}</jdkVersion>
                     <noStdlibLink>true</noStdlibLink> <!-- This is the Kotlin stdlib -->
                     <dokkaPlugins>
                         <plugin>
@@ -609,7 +620,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.10.0</version>
+                    <version>3.11.0</version>
                     <executions>
                         <execution>
                             <goals>
@@ -622,11 +633,11 @@
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>4.0.3</version>
+                    <version>4.1.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.15.0</version>
+                    <version>3.16.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -643,7 +654,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
                 <configuration>
-                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar} ${argLine.extra}</argLine>
                     <environmentVariables>
                         <temp>${project.basedir}/target/temp/</temp>
                         <tmp>${project.basedir}/target/temp/</tmp>
@@ -666,7 +677,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <argLine>${failsafe.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                            <argLine>${failsafe.jacoco.args} -javaagent:${org.mockito:mockito-core:jar} ${argLine.extra}</argLine>
                             <environmentVariables>
                                 <temp>${project.basedir}/target/temp/</temp>
                                 <tmp>${project.basedir}/target/temp/</tmp>
@@ -698,7 +709,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
                 <configuration>
-                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar} ${argLine.extra}</argLine>
                     <environmentVariables>
                         <temp>${project.basedir}/target/temp/</temp>
                         <tmp>${project.basedir}/target/temp/</tmp>
@@ -722,7 +733,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavenTestPluginVersion}</version>
                 <configuration>
-                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <argLine>${surefire.jacoco.args} -javaagent:${org.mockito:mockito-core:jar} ${argLine.extra}</argLine>
                     <environmentVariables>
                         <temp>${project.basedir}/target/temp/</temp>
                         <tmp>${project.basedir}/target/temp/</tmp>
@@ -756,7 +767,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>6.0.3</version>
+                <version>6.1.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -766,7 +777,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
-                <version>4.34.1</version>
+                <version>4.36.2</version>
             </dependency>
 
             <!-- updating indirect dependencies from hivemq -->
@@ -774,19 +785,19 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>2.3.20</version>
+                <version>2.4.20</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk18on</artifactId>
-                <version>1.83</version>
+                <version>1.86</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>1.5.32</version>
+                <version>1.6.5</version>
             </dependency>
 
             <!--
@@ -798,31 +809,31 @@
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.12.1</version>
+                <version>1.12.2</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/dnsjava/dnsjava -->
             <dependency>
                 <groupId>dnsjava</groupId>
                 <artifactId>dnsjava</artifactId>
-                <version>3.6.4</version>
+                <version>3.6.5</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.83</version>
+                <version>1.86</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-configuration2</artifactId>
-                <version>2.13.0</version>
+                <version>2.15.1</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>10.9</version>
+                <version>10.10</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
             <dependency>
@@ -867,6 +878,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.5.252</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
             <version>${jettyVersion}</version>
@@ -891,7 +909,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.23.0</version>
+            <version>5.24.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -907,7 +925,7 @@
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
-            <version>3.0.3</version>
+            <version>3.0.5</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core 
@@ -931,7 +949,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20251224</version>
+            <version>20260814</version>
         </dependency>
 
         <!-- I have private copy of source code in with my code.
@@ -982,7 +1000,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.17</version>
+            <version>2.0.20</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -1031,7 +1049,7 @@
             <groupId>edu.ucar</groupId>
             <artifactId>opendap</artifactId>
             <version>${netcdfJavaVersion}</version>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -1084,7 +1102,7 @@
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>4.0.7</version>
+            <version>4.0.9</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -1114,7 +1132,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.6.2</version>
+            <version>3.7.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -1122,7 +1140,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.10</version>
+            <version>42.7.13</version>
         </dependency>
 
         <!-- CASSANDRA 
@@ -1140,7 +1158,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.5.0-jre</version>
+            <version>33.7.2-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -1148,7 +1166,7 @@
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.10.4</version>
+            <version>1.12.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
@@ -1156,7 +1174,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.38</version>
+            <version>4.2.40</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -1178,7 +1196,7 @@
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.10.8</version>
+            <version>1.1.10.10</version>
         </dependency>
 
         <!-- AWS
@@ -1212,14 +1230,14 @@
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.44.0</version>
+            <version>0.48.5</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.43.0</version>
+            <version>1.54.0</version>
         </dependency>
 
         <dependency>
@@ -1245,7 +1263,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.184</version>
+            <version>4.8.196</version>
         </dependency>
          <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -1290,13 +1308,20 @@
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-community-edition-embedded</artifactId>
-            <version>2025.5</version>
+            <version>2026.5</version>
         </dependency>
 
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-mqtt-client</artifactId>
-            <version>1.3.13</version>
+            <version>1.4.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.nibor.autolink/autolink -->
+        <dependency>
+            <groupId>org.nibor.autolink</groupId>
+            <artifactId>autolink</artifactId>
+            <version>0.12.0</version>
         </dependency>
     </dependencies>
 

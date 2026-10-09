@@ -229,7 +229,7 @@ class EDDTableFromFileNamesTests {
     int language = EDMessages.DEFAULT_LANGUAGE;
 
     String tDir =
-        "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS";
+        "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS";
     // tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc
     String tRegex = ".*_CESM1-CAM5_.*\\.nc";
     boolean tRecursive = true;
@@ -949,7 +949,7 @@ class EDDTableFromFileNamesTests {
             + "completeness, or usefulness, of this information.\";\n"
             + "    String sourceUrl \"(remote files)\";\n"
             + "    String subsetVariables \"fileType\";\n"
-            + "    String summary \"File Names from https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n"
+            + "    String summary \"File Names from https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n"
             + "    String title \"File Names from Amazon AWS S3 NASA NEX tasmin Files\";\n"
             + "  }\n"
             + "}\n";
@@ -963,9 +963,9 @@ class EDDTableFromFileNamesTests {
     expected =
         "five,url,name,startMonth,endMonth,lastModified,size,fileType\n"
             + "m,,,UTC,UTC,UTC,bytes,\n"
-            + "5.0,http://localhost:8080/erddap/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,2006-01-01T00:00:00Z,2010-12-01T00:00:00Z,2013-10-25T20:46:53Z,1.372730447E9,.nc\n"
-            + "5.0,http://localhost:8080/erddap/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,2011-01-01T00:00:00Z,2015-12-01T00:00:00Z,2013-10-25T20:47:18Z,1.373728987E9,.nc\n"
-            + "5.0,http://localhost:8080/erddap/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,2016-01-01T00:00:00Z,2020-12-01T00:00:00Z,2013-10-25T20:51:23Z,1.373747344E9,.nc\n";
+            + "5.0,http://localhost:8080/erddap/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,2006-01-01T00:00:00Z,2010-12-01T00:00:00Z,2026-05-06T21:31:37Z,1.372730447E9,.nc\n"
+            + "5.0,http://localhost:8080/erddap/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,2011-01-01T00:00:00Z,2015-12-01T00:00:00Z,2026-05-06T21:31:37Z,1.373728987E9,.nc\n"
+            + "5.0,http://localhost:8080/erddap/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,2016-01-01T00:00:00Z,2020-12-01T00:00:00Z,2026-05-06T21:31:38Z,1.373747344E9,.nc\n";
     Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     // test that min and max are being set by the constructor
@@ -978,8 +978,8 @@ class EDDTableFromFileNamesTests {
     Test.ensureEqual(edv.destinationMaxString(), "2099-12-01T00:00:00Z", "max");
 
     edv = tedd.findVariableByDestinationName("lastModified");
-    Test.ensureEqual(edv.destinationMinString(), "2013-10-25T20:45:24Z", "min");
-    Test.ensureEqual(edv.destinationMaxString(), "2013-10-25T20:54:20Z", "max");
+    Test.ensureEqual(edv.destinationMinString(), "2026-05-06T21:31:37Z", "min");
+    Test.ensureEqual(edv.destinationMaxString(), "2026-05-06T21:31:47Z", "max");
 
     edv = tedd.findVariableByDestinationName("size");
     Test.ensureEqual("" + edv.destinationMinDouble(), "1.098815646E9", "min"); // exact test

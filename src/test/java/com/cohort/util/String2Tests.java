@@ -1,170 +1,181 @@
 package com.cohort.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class String2Tests {
-  @Test
-  void testFindUrl() {
-    int[] results = String2.findUrl("No url here. But there are multiple sentences!");
-    assertEquals(-1, results[0]);
-    assertEquals(-1, results[1]);
 
-    results = String2.findUrl("https://this is definitely not valid URL! \"{><}\"");
-    assertEquals(-1, results[0]);
-    assertEquals(-1, results[1]);
+  private static class LinkResult {
+    String text;
+    boolean isUrl;
 
-    // check a basic whole string url
-    results = String2.findUrl("http://www.example.com");
-    assertEquals(0, results[0]);
-    assertEquals(22, results[1]);
-    results = String2.findUrl("http:\\\\www.example.com");
-    assertEquals(0, results[0]);
-    assertEquals(22, results[1]);
-    results = String2.findUrl("https://www.example.com");
-    assertEquals(0, results[0]);
-    assertEquals(23, results[1]);
-    results = String2.findUrl("https:\\\\www.example.com");
-    assertEquals(0, results[0]);
-    assertEquals(23, results[1]);
+    LinkResult(String text, boolean isUrl) {
+      this.text = text;
+      this.isUrl = isUrl;
+    }
+  }
 
-    // check for ip address instead of domain
-    results = String2.findUrl("http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day");
-    assertEquals(0, results[0]);
-    assertEquals(57, results[1]);
+  private List<LinkResult> linkify(String input) {
+    List<LinkResult> results = new ArrayList<>();
+    LinkHelper.linkify(input, (text, isUrl) -> results.add(new LinkResult(text, isUrl)));
+    return results;
+  }
 
-    // check for no protocol (but a www)
-    results = String2.findUrl("www.something.com");
-    assertEquals(0, results[0]);
-    assertEquals(17, results[1]);
+  private void assertNoUrl(String input) {
+    List<LinkResult> results = linkify(input);
+    for (LinkResult res : results) {
+      assertFalse(res.isUrl, "Found unexpected URL: " + res.text);
+    }
+  }
 
-    // check for . within a path
-    results = String2.findUrl("https://tds.hycom.org/thredds/dodsC/GLBu0.08/expt_90.9.html");
-    assertEquals(0, results[0]);
-    assertEquals(59, results[1]);
-    results = String2.findUrl("https://doi.org/10.25921/RE9P-PT57");
-    assertEquals(0, results[0]);
-    assertEquals(34, results[1]);
-
-    // check for ? within a fragment
-    results = String2.findUrl("https://data.cencoos.org/#search?type_group=all&query=hab&page=1");
-    assertEquals(0, results[0]);
-    assertEquals(64, results[1]);
-
-    // check a complex url (including spaces inside quotes of query)
-    results =
-        String2.findUrl(
-            "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Casey Skiway%22&integrator_id=%22aad%22&distinct()");
-    assertEquals(0, results[0]);
-    assertEquals(154, results[1]);
-    results =
-        String2.findUrl(
-            "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=\"Casey Skiway\"&integrator_id=%22aad%22&distinct()");
-    assertEquals(0, results[0]);
-    assertEquals(150, results[1]);
-
-    results =
-        String2.findUrl(
-            "https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=%22text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0%22");
-    assertEquals(0, results[0]);
-    assertEquals(223, results[1]);
-
-    // gopher
-    results = String2.findUrl("gopher://sdf.org/1/users/YOUR-USERNAME/cgi-bin/ls.cgi");
-    assertEquals(0, results[0]);
-    assertEquals(53, results[1]);
-    results = String2.findUrl("gopher:\\\\sdfeu.org/1/users/YOUR-USERNAME/ls.cgi?date");
-    assertEquals(0, results[0]);
-    assertEquals(52, results[1]);
-
-    // File
-    results = String2.findUrl("file://some/example/file/path.ext");
-    assertEquals(0, results[0]);
-    assertEquals(33, results[1]);
-    results = String2.findUrl("file:\\\\other\\file\\path\\with.jpg");
-    assertEquals(0, results[0]);
-    assertEquals(31, results[1]);
-
-    // telnet
-    results = String2.findUrl("telnet://host.edu/");
-    assertEquals(0, results[0]);
-    assertEquals(18, results[1]);
-    results = String2.findUrl("telnet:\\\\user:pass@sub.host.edu:8080");
-    assertEquals(0, results[0]);
-    assertEquals(36, results[1]);
-    results = String2.findUrl("telnet://user@host.edu:8080");
-    assertEquals(0, results[0]);
-    assertEquals(27, results[1]);
-    results = String2.findUrl("telnet://user@host.edu:8080/");
-    assertEquals(0, results[0]);
-    assertEquals(28, results[1]);
-
-    // smtp
-    results = String2.findUrl("smtp:\\\\user:pass@sub.host.edu:8080");
-    assertEquals(0, results[0]);
-    assertEquals(34, results[1]);
-    results = String2.findUrl("smtp://user@host.edu");
-    assertEquals(0, results[0]);
-    assertEquals(20, results[1]);
-
-    // ftp
-    results = String2.findUrl("ftp:\\\\user:pass@sub.host.edu:8080\\some\\file\\path");
-    assertEquals(0, results[0]);
-    assertEquals(48, results[1]);
-    results = String2.findUrl("ftp://user@host.edu/some/other/file.ext");
-    assertEquals(0, results[0]);
-    assertEquals(39, results[1]);
-
-    // smb
-    results = String2.findUrl("smb:\\\\user:pass@sub.host.edu:8080\\some\\file\\path");
-    assertEquals(0, results[0]);
-    assertEquals(48, results[1]);
-    results = String2.findUrl("smb://user@host.edu/some/other/file.ext");
-    assertEquals(0, results[0]);
-    assertEquals(39, results[1]);
+  private void assertUrl(String input, String expectedUrl) {
+    List<LinkResult> results = linkify(input);
+    boolean found = false;
+    for (LinkResult res : results) {
+      if (res.isUrl) {
+        assertEquals(expectedUrl, res.text);
+        found = true;
+      }
+    }
+    assertTrue(found, "Expected URL not found: " + expectedUrl);
   }
 
   @Test
-  void testFindUrl_complex() {
-    // two urls, find the first
-    int[] results = String2.findUrl("http://cencoos.org/, https://www.axiomdatascience.com");
-    assertEquals(0, results[0]);
-    assertEquals(19, results[1]);
+  void testLinkify() {
+    assertNoUrl("No url here. But there are multiple sentences!");
+    assertNoUrl("https://this is definitely not valid URL! \"{><}\"");
 
-    results =
-        String2.findUrl("https://marinescience.ucdavis.edu/ and https://cordellbank.noaa.gov/");
-    assertEquals(0, results[0]);
-    assertEquals(34, results[1]);
+    // check a basic whole string url
+    assertUrl("http://www.example.com", "http://www.example.com");
+    assertUrl("http:\\\\www.example.com", "http:\\\\www.example.com");
+    assertUrl("https://www.example.com", "https://www.example.com");
+    assertUrl("https:\\\\www.example.com", "https:\\\\www.example.com");
 
-    results =
-        String2.findUrl(
-            "https://marinescience.ucdavis.edu/ , https://cordellfoundation.org/hypoxia-studies-in-cordell-bank-national-marine-sanctuary-funded-by-cmsf/");
-    assertEquals(0, results[0]);
-    assertEquals(34, results[1]);
+    // check for ip address instead of domain
+    assertUrl(
+        "http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day",
+        "http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day");
+
+    // check for no protocol (but a www)
+    assertUrl("www.something.com", "www.something.com");
+
+    // check for . within a path
+    assertUrl(
+        "https://tds.hycom.org/thredds/dodsC/GLBu0.08/expt_90.9.html",
+        "https://tds.hycom.org/thredds/dodsC/GLBu0.08/expt_90.9.html");
+    assertUrl("https://doi.org/10.25921/RE9P-PT57", "https://doi.org/10.25921/RE9P-PT57");
+
+    // check for ? within a fragment
+    assertUrl(
+        "https://data.cencoos.org/#search?type_group=all&query=hab&page=1",
+        "https://data.cencoos.org/#search?type_group=all&query=hab&page=1");
+
+    // check a complex url (including spaces inside quotes of query)
+    assertUrl(
+        "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Casey Skiway%22&integrator_id=%22aad%22&distinct()",
+        "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=%22Casey Skiway%22&integrator_id=%22aad%22&distinct()");
+
+    assertUrl(
+        "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=\"Casey Skiway\"&integrator_id=%22aad%22&distinct()",
+        "https://data-erddap.emodnet-physics.eu/erddap/tabledap/EP_PLATFORMS_METADATA.htmlTable?&PLATFORMCODE=\"Casey Skiway\"&integrator_id=%22aad%22&distinct()");
+
+    assertUrl(
+        "https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=%22text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0%22",
+        "https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=%22text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0%22");
+
+    // gopher
+    assertUrl(
+        "gopher://sdf.org/1/users/YOUR-USERNAME/cgi-bin/ls.cgi",
+        "gopher://sdf.org/1/users/YOUR-USERNAME/cgi-bin/ls.cgi");
+    assertUrl(
+        "gopher:\\\\sdfeu.org/1/users/YOUR-USERNAME/ls.cgi?date",
+        "gopher:\\\\sdfeu.org/1/users/YOUR-USERNAME/ls.cgi?date");
+
+    // File
+    assertUrl("file://some/example/file/path.ext", "file://some/example/file/path.ext");
+    assertUrl("file:\\\\other\\file\\path\\with.jpg", "file:\\\\other\\file\\path\\with.jpg");
+
+    // telnet
+    assertUrl("telnet://host.edu/", "telnet://host.edu/");
+    assertUrl("telnet:\\\\user:pass@sub.host.edu:8080", "telnet:\\\\user:pass@sub.host.edu:8080");
+    assertUrl("telnet://user@host.edu:8080", "telnet://user@host.edu:8080");
+    assertUrl("telnet://user@host.edu:8080/", "telnet://user@host.edu:8080/");
+
+    // smtp
+    assertUrl("smtp:\\\\user:pass@sub.host.edu:8080", "smtp:\\\\user:pass@sub.host.edu:8080");
+    assertUrl("smtp://user@host.edu", "smtp://user@host.edu");
+
+    // ftp
+    assertUrl(
+        "ftp:\\\\user:pass@sub.host.edu:8080\\some\\file\\path",
+        "ftp:\\\\user:pass@sub.host.edu:8080\\some\\file\\path");
+    assertUrl("ftp://user@host.edu/some/other/file.ext", "ftp://user@host.edu/some/other/file.ext");
+
+    // smb
+    assertUrl(
+        "smb:\\\\user:pass@sub.host.edu:8080\\some\\file\\path",
+        "smb:\\\\user:pass@sub.host.edu:8080\\some\\file\\path");
+    assertUrl("smb://user@host.edu/some/other/file.ext", "smb://user@host.edu/some/other/file.ext");
+  }
+
+  @Test
+  void testLinkify_complex() {
+    // two urls
+    List<LinkResult> results = linkify("http://cencoos.org/, https://www.axiomdatascience.com");
+    assertEquals(3, results.size());
+    assertEquals("http://cencoos.org/", results.get(0).text);
+    assertTrue(results.get(0).isUrl);
+    assertEquals(", ", results.get(1).text);
+    assertFalse(results.get(1).isUrl);
+    assertEquals("https://www.axiomdatascience.com", results.get(2).text);
+    assertTrue(results.get(2).isUrl);
+
+    results = linkify("https://marinescience.ucdavis.edu/ and https://cordellbank.noaa.gov/");
+    assertEquals(3, results.size());
+    assertEquals("https://marinescience.ucdavis.edu/", results.get(0).text);
+    assertTrue(results.get(0).isUrl);
+    assertEquals(" and ", results.get(1).text);
+    assertFalse(results.get(1).isUrl);
+    assertEquals("https://cordellbank.noaa.gov/", results.get(2).text);
+    assertTrue(results.get(2).isUrl);
 
     // url embedded in a sentence
-    results = String2.findUrl("Find the url that is www.somewhere.com in this sentence.");
-    assertEquals(21, results[0]);
-    assertEquals(38, results[1]);
+    results = linkify("Find the url that is www.somewhere.com in this sentence.");
+    assertEquals(3, results.size());
+    assertEquals("Find the url that is ", results.get(0).text);
+    assertFalse(results.get(0).isUrl);
+    assertEquals("www.somewhere.com", results.get(1).text);
+    assertTrue(results.get(1).isUrl);
+    assertEquals(" in this sentence.", results.get(2).text);
+    assertFalse(results.get(2).isUrl);
+
+    results = linkify("Find the url that is (inside a www.parenthetical.com) in this sentence.");
+    assertEquals(3, results.size());
+    assertEquals("Find the url that is (inside a ", results.get(0).text);
+    assertFalse(results.get(0).isUrl);
+    assertEquals("www.parenthetical.com", results.get(1).text);
+    assertTrue(results.get(1).isUrl);
+    assertEquals(") in this sentence.", results.get(2).text);
+    assertFalse(results.get(2).isUrl);
 
     results =
-        String2.findUrl("Find the url that is (inside a www.parenthetical.com) in this sentence.");
-    assertEquals(31, results[0]);
-    assertEquals(
-        53, results[1]); // This should ideally be 52, but it's valid for urls to end with ')'
-
-    results =
-        String2.findUrl(
+        linkify(
             "Here a http:\\\\www.sentence.com with multiple ftp://user:pass@links.inside, can we find the right one?");
-    assertEquals(7, results[0]);
-    assertEquals(30, results[1]);
-
-    results =
-        String2.findUrl(
-            "Here a http:\\\\www.sentence.com with multiple ftp://user:pass@links.inside, can we find the right one?",
-            30);
-    assertEquals(45, results[0]);
-    assertEquals(73, results[1]);
+    assertEquals(5, results.size());
+    assertEquals("Here a ", results.get(0).text);
+    assertFalse(results.get(0).isUrl);
+    assertEquals("http:\\\\www.sentence.com", results.get(1).text);
+    assertTrue(results.get(1).isUrl);
+    assertEquals(" with multiple ", results.get(2).text);
+    assertFalse(results.get(2).isUrl);
+    assertEquals("ftp://user:pass@links.inside", results.get(3).text);
+    assertTrue(results.get(3).isUrl);
+    assertEquals(", can we find the right one?", results.get(4).text);
+    assertFalse(results.get(4).isUrl);
   }
 }

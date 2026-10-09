@@ -20,6 +20,9 @@ import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.sun.management.UnixOperatingSystemMXBean;
@@ -75,8 +78,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -86,7 +91,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -100,6 +107,14 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.semver4j.Semver;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3CrtAsyncClientBuilder;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.utils.builder.SdkBuilder;
 
 /**
  * This class holds a lot of static information set from the setup.xml and messages.xml files and
@@ -206,7 +221,7 @@ public class EDStatic {
    * anything following it. A request to http.../erddap/version will return just the number (as
    * text). A request to http.../erddap/version_string will return the full string.
    */
-  public static final Semver erddapVersion = new Semver("2.31.0-alpha");
+  public static final Semver erddapVersion = new Semver("2.32.0-alpha");
 
   /** This identifies the dods server/version that this mimics. */
   public static final String dapVersion = "DAP/2.0";
@@ -596,6 +611,20 @@ public class EDStatic {
   // during testing. This should only be set to tru during testing.
   public static boolean testingDontDestroy = false;
 
+  // cache S3TransferManager by region for 1 hour each, and close on removal
+  private static final Cache<String, S3TransferManager> s3TransferManagerCache =
+      CacheBuilder.newBuilder()
+          .expireAfterWrite(Duration.of(1, ChronoUnit.HOURS))
+          .removalListener(
+              (RemovalListener<String, S3TransferManager>)
+                  notification -> {
+                    final S3TransferManager s3TransferManager = notification.getValue();
+                    if (s3TransferManager != null) {
+                      s3TransferManager.close();
+                    }
+                  })
+          .build();
+
   /**
    * This static block reads this class's static String values from contentDirectory, which must
    * contain setup.xml and datasets.xml (and may contain messages.xml). It may be a defined
@@ -674,10 +703,11 @@ public class EDStatic {
             File2.makeDirectory(fullNdName);
             String oldFileList[] = new File(oldBaseDir + odName).list();
             int oldFileListSize = oldFileList == null ? 0 : oldFileList.length;
+            Pattern tempFilesNamePattern = Pattern.compile(".*[0-9]{7}");
             for (int of = 0; of < oldFileListSize; of++) {
               String ofName = oldFileList[of];
               String fullOfName = oldBaseDir + odName + "/" + ofName;
-              if (!ofName.matches(".*[0-9]{7}")) // skip temp files
+              if (!tempFilesNamePattern.matcher(ofName).matches()) // skip temp files
               File2.copy(fullOfName, fullNdName + ofName); // dir will be created
               File2.delete(fullOfName);
             }
@@ -933,17 +963,213 @@ public class EDStatic {
   }
 
   /**
-   * Return host and path prefix (if applicable) url fragment, determined by request headers.
-   *
-   * @param request the request
-   * @return ERDDAP url fragment with host and path prefix (if set)
+   * Cleans a URL/host string by allowing only safe alphanumeric and standard special characters.
+   * Alphanumeric: A-Z, a-z, 0-9 Special characters: - (hyphen), _ (underscore), . (period), ~
+   * (tilde), and optionally : (colon) and / (slash).
    */
-  private static String getHostAndPathFromRequest(HttpServletRequest request) {
-    String url = request.getHeader("Host");
-    if (request.getHeader("X-Forwarded-Prefix") != null) {
-      url += request.getHeader("X-Forwarded-Prefix");
+  public static String cleanUrlChars(String input, boolean allowColonAndSlash) {
+    if (input == null) {
+      return "";
     }
-    return url;
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < input.length(); i++) {
+      char c = input.charAt(i);
+      if ((c >= 'a' && c <= 'z')
+          || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9')
+          || c == '-'
+          || c == '_'
+          || c == '.'
+          || c == '~'
+          || c == '['
+          || c == ']'
+          || (allowColonAndSlash && (c == ':' || c == '/'))) {
+        sb.append(c);
+      }
+    }
+    return sb.toString();
+  }
+
+  private static final Pattern ALLOWED_CHARACTERS_PATTERN =
+      Pattern.compile("^[A-Za-z0-9._~:/\\[\\]-]+$");
+  private static final Pattern HEX_AND_COLON_PATTERN = Pattern.compile("^[0-9a-f:]+$");
+  private static final Pattern HOST_CHARACTERS_PATTERN = Pattern.compile("^[a-z0-9._-]+$");
+  private static final Pattern PORT_PATTERN = Pattern.compile("^[0-9]+$");
+  private static final Pattern PATH_SEGMENT_PATTERN = Pattern.compile("^/[a-zA-Z0-9/_-]*$");
+
+  /**
+   * Keep the overload simple: only reject dangerous characters; otherwise preserve host and port.
+   */
+  public static String normalizeAndValidateHost(String hostAndPath) {
+    if (hostAndPath == null) {
+      return "";
+    }
+    String value = hostAndPath.trim();
+    if (value.isEmpty()) {
+      return "";
+    }
+    if (value.contains("\\") || value.indexOf('%') >= 0 || value.contains("..")) {
+      return "";
+    }
+    if (!ALLOWED_CHARACTERS_PATTERN.matcher(value).matches()) {
+      return "";
+    }
+
+    String path = "";
+    int slash = value.indexOf('/');
+    if (slash >= 0) {
+      path = value.substring(slash);
+      value = value.substring(0, slash);
+    }
+
+    String host = value;
+    String port = "";
+    if (host.startsWith("[") && host.indexOf(']') >= 0) {
+      int end = host.indexOf(']');
+      host = host.substring(0, end + 1);
+      if (end + 1 < value.length() && value.charAt(end + 1) == ':') {
+        port = value.substring(end + 1);
+      }
+    } else if (host.indexOf(':') > 0 && host.indexOf(':', host.indexOf(':') + 1) < 0) {
+      int colon = host.indexOf(':');
+      host = host.substring(0, colon);
+      port = value.substring(colon);
+    }
+
+    host = host.toLowerCase();
+    // IPv6 addresses are enclosed in brackets, e.g., [2001:db8::1]:8080. The inner part is
+    // validated to contain only hex digits and colons. Otherwise, the host is validated to
+    // contain only lowercase letters, digits, dots, underscores, and hyphens.
+    if (host.startsWith("[") && host.endsWith("]")) {
+      String inner = host.substring(1, host.length() - 1);
+      if (!HEX_AND_COLON_PATTERN.matcher(inner).matches()) {
+        return "";
+      }
+    } else if (!HOST_CHARACTERS_PATTERN.matcher(host).matches()) {
+      return "";
+    }
+
+    if (!port.isEmpty()) {
+      String portNumber = port.substring(1);
+      if (!PORT_PATTERN.matcher(portNumber).matches()) {
+        return "";
+      }
+    }
+
+    return host + port + path;
+  }
+
+  private static String stripHostPort(String value) {
+    if (value == null) {
+      return "";
+    }
+    String host = value.trim().toLowerCase();
+    if (host.startsWith("[") && host.indexOf(']') >= 0) {
+      return host.substring(0, host.indexOf(']') + 1);
+    }
+    int colon = host.indexOf(':');
+    if (colon > 0 && host.indexOf(':', colon + 1) < 0) {
+      return host.substring(0, colon);
+    }
+    return host;
+  }
+
+  private static String getApprovedHost(HttpServletRequest request) {
+    if (request == null || EDStatic.config == null || EDStatic.config.allowedHosts == null) {
+      return null;
+    }
+    String candidate = request.getHeader("X-Forwarded-Host");
+    if (candidate == null || candidate.trim().isEmpty()) {
+      candidate = request.getHeader("Host");
+    }
+    if (candidate == null || candidate.trim().isEmpty()) {
+      candidate = request.getServerName();
+    }
+    candidate = candidate.split(",")[0].trim();
+    String normalized = normalizeAndValidateHost(candidate);
+    if (normalized.isEmpty()) {
+      return null;
+    }
+
+    String bareHost = stripHostPort(normalized);
+    for (String allowed : EDStatic.config.allowedHosts) {
+      String allowedHost = allowed.trim().toLowerCase();
+      if (allowedHost.startsWith("*.")) {
+        String suffix = allowedHost.substring(1);
+        if (bareHost.endsWith(suffix) && bareHost.length() > suffix.length()) {
+          return normalized;
+        }
+      } else if (allowedHost.startsWith(".")) {
+        if (bareHost.endsWith(allowedHost) && bareHost.length() > allowedHost.length()) {
+          return normalized;
+        }
+      } else if (bareHost.equals(stripHostPort(allowedHost))) {
+        return normalized;
+      }
+    }
+    return null;
+  }
+
+  private static String getHostAndPathFromRequest(HttpServletRequest request) {
+    if (request == null) {
+      return "";
+    }
+
+    String prefix = request.getHeader("X-Forwarded-Prefix");
+    if (prefix != null && PATH_SEGMENT_PATTERN.matcher(prefix).matches()) {
+      prefix = cleanUrlChars(prefix, true);
+    } else {
+      prefix = "";
+    }
+
+    if (EDStatic.config.verifyHostNameErddapUrl) {
+      String approvedHost = getApprovedHost(request);
+      if (approvedHost != null) {
+        return approvedHost
+            + (prefix != null && PATH_SEGMENT_PATTERN.matcher(prefix).matches()
+                ? cleanUrlChars(prefix, true)
+                : "");
+      }
+    }
+
+    String hostValue = request.getHeader("Host");
+    if (hostValue == null || hostValue.trim().isEmpty()) {
+      hostValue = request.getServerName();
+    }
+
+    if (!EDStatic.config.verifyHostNameErddapUrl) {
+      String url = normalizeAndValidateHost(hostValue);
+      url += prefix;
+      return url;
+    }
+
+    String scheme = "http";
+    if ("https".equalsIgnoreCase(request.getScheme())) {
+      scheme = "https";
+    }
+    String fallbackUrl = EDStatic.config.baseUrl;
+    if ("https".equalsIgnoreCase(scheme)
+        && EDStatic.config.baseHttpsUrl != null
+        && !EDStatic.config.baseHttpsUrl.trim().isEmpty()
+        && !EDStatic.config.baseHttpsUrl.equalsIgnoreCase("(not specified)")) {
+      fallbackUrl = EDStatic.config.baseHttpsUrl;
+    }
+
+    String fallbackHost = String2.extractDomain(fallbackUrl, true);
+    if (fallbackHost == null || fallbackHost.isEmpty()) {
+      String safe = fallbackUrl.trim();
+      int schemeEnd = safe.indexOf("://");
+      int slash = safe.indexOf('/', schemeEnd + 3);
+      if (slash >= 0) {
+        safe = safe.substring(0, slash);
+      }
+      fallbackHost = safe;
+    }
+    if (fallbackHost == null || fallbackHost.isEmpty()) {
+      fallbackHost = request.getServerName();
+    }
+    String2.log("WARNING: Unapproved host header attempt: " + hostValue);
+    return normalizeAndValidateHost(fallbackHost) + prefix;
   }
 
   /**
@@ -960,7 +1186,11 @@ public class EDStatic {
    */
   public static String baseUrl(HttpServletRequest request, String loggedInAs) {
     if (EDStatic.config.useHeadersForUrl && request != null && request.getHeader("Host") != null) {
-      return request.getScheme() + "://" + getHostAndPathFromRequest(request);
+      String scheme = "http";
+      if ("https".equalsIgnoreCase(request.getScheme())) {
+        scheme = "https";
+      }
+      return scheme + "://" + getHostAndPathFromRequest(request);
     }
     return loggedInAs == null ? config.baseUrl : config.baseHttpsUrl;
   }
@@ -1004,10 +1234,11 @@ public class EDStatic {
    */
   public static String erddapHttpsUrl(HttpServletRequest request, int language) {
     String httpsUrl = erddapHttpsUrl;
+    boolean isHttps = request != null && "https".equalsIgnoreCase(request.getScheme());
     if (EDStatic.config.useHeadersForUrl
         && request != null
         && request.getHeader("Host") != null
-        && ("https".equals(request.getScheme()) || !request.getHeader("Host").contains(":"))) {
+        && (isHttps || !request.getHeader("Host").contains(":"))) {
       httpsUrl = "https://" + getHostAndPathFromRequest(request) + "/" + config.warName;
     }
     return httpsUrl + (language == 0 ? "" : "/" + TranslateMessages.languageCodeList.get(language));
@@ -2557,6 +2788,10 @@ public class EDStatic {
         emailThread = null;
       }
 
+      // invalidate and cleanup all remaining S3TransferManagers
+      s3TransferManagerCache.invalidateAll();
+      s3TransferManagerCache.cleanUp();
+
     } catch (Throwable t) {
       String2.log(MustBe.throwableToString(t));
     } finally {
@@ -3969,9 +4204,19 @@ public class EDStatic {
       if (tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) >= 0
           || tError.indexOf(MustBe.THERE_IS_NO_DATA)
               >= 0) { // check this first, since may also be Query error
-        errorNo = HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
+        // A missing resource is always 404. A real dataset that matched no data is
+        // indistinguishable from that for a client, so use422ForNoDataStatusCode lets an
+        // admin answer 422 for it instead. Staying in the 4xx range keeps
+        // raise_for_status() and similar client checks firing. The flag is off by
+        // default, which keeps the long-standing 404.
         // I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for
         // these codes
+        errorNo =
+            config.use422ForNoDataStatusCode
+                    && tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0
+                    && tError.indexOf(messages.get(Message.RESOURCE_NOT_FOUND, 0)) < 0
+                ? 422 // Unprocessable Content, not defined in HttpServletResponse
+                : HttpServletResponse.SC_NOT_FOUND; // http error 404  (might succeed later)
 
       } else if (tError.indexOf(messages.get(Message.QUERY_ERROR, 0)) >= 0) {
         errorNo = HttpServletResponse.SC_BAD_REQUEST; // http error 400 (won't succeed later)
@@ -4113,6 +4358,8 @@ public class EDStatic {
       msg = "Payload Too Large: " + msg;
       else if (errorNo == HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE) // http error 416
       msg = "Requested Range Not Satisfiable: " + msg;
+      else if (errorNo == 422) // http error 422  isn't defined in HttpServletResponse.
+      msg = "Unprocessable Content: " + msg;
       else if (errorNo == 429) // http error 429  isn't defined in HttpServletResponse.
       msg = "Too Many Requests: " + msg;
       else if (errorNo == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) // http error 500
@@ -4442,5 +4689,40 @@ public class EDStatic {
       // ignore if directory doesn't exist or can't be accessed
     }
     return nDeleted;
+  }
+
+  /**
+   * This builds an S3TransferManager
+   *
+   * @param region The S3 region from bro[1].
+   */
+  public static S3TransferManager buildS3TransferManager(String region) throws ExecutionException {
+    return s3TransferManagerCache.get(
+        region,
+        () -> {
+          final SdkBuilder<?, S3AsyncClient> builder;
+          AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.builder().build();
+          if (EDStatic.config.useAwsAnonymous) {
+            credentialsProvider = AnonymousCredentialsProvider.create();
+          }
+          if (EDStatic.config.useAwsCrt) {
+            S3CrtAsyncClientBuilder crtBuilder =
+                S3AsyncClient.crtBuilder()
+                    .credentialsProvider(credentialsProvider)
+                    .region(Region.of(region))
+                    .targetThroughputInGbps(EDStatic.config.s3TargetThroughputInGbps)
+                    .minimumPartSizeInBytes((long) (8 * Math2.BytesPerMB));
+            if (EDStatic.config.s3MaxConcurrency != null && EDStatic.config.s3MaxConcurrency > 0) {
+              crtBuilder.maxConcurrency(EDStatic.config.s3MaxConcurrency);
+            }
+            builder = crtBuilder;
+          } else {
+            builder =
+                S3AsyncClient.builder()
+                    .credentialsProvider(credentialsProvider)
+                    .region(Region.of(region));
+          }
+          return S3TransferManager.builder().s3Client(builder.build()).build();
+        });
   }
 }

@@ -11802,6 +11802,18 @@ public class EDDTestDataset {
         + "</dataset>\n";
   }
 
+  public static String getResourcePath(String resource) {
+    try {
+      java.net.URL url = EDDTestDataset.class.getResource(resource);
+      if (url == null) {
+        return "test-data" + resource;
+      }
+      return Path.of(url.toURI()).toString();
+    } catch (Exception e) {
+      return "test-data" + resource;
+    }
+  }
+
   public static EDD gettestSuperPreciseTimeUnits() throws Throwable {
     return EDD.oneFromXmlFragment(null, xmlFragment_testSuperPreciseTimeUnits());
   }
@@ -11811,7 +11823,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/nc/").toURI()).toString()
+        + getResourcePath("/largeFiles/nc/")
         + "</fileDir>\n"
         + "    <fileNameRegex>superPreciseTimeUnits.nc</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -12381,7 +12393,7 @@ public class EDDTestDataset {
         + "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGriddedNcFiles_COPY\">\n"
         + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/erdQSwind1day/").toURI()).toString()
+        + getResourcePath("/largeFiles/erdQSwind1day/")
         + "</fileDir>\n"
         + "    <!--fileTableInMemory>true</fileTableInMemory-->\n"
         + "    <recursive>true</recursive>\n"
@@ -18608,7 +18620,7 @@ public class EDDTestDataset {
 
   private static String xmlFragment_testFileNamesAwsS3() {
     return "<dataset type=\"EDDTableFromFileNames\" datasetID=\"testFileNamesAwsS3\" active=\"true\">\n"
-        + "    <fileDir>https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</fileDir>\n"
+        + "    <fileDir>https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</fileDir>\n"
         + "    <fileNameRegex>.*_CESM1-CAM5_.*\\.nc</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
         + "    <reloadEveryNMinutes>120</reloadEveryNMinutes>\n"
@@ -18623,7 +18635,7 @@ public class EDDTestDataset {
         + "        <att name=\"keywords\">data, earth, exchange, file, great, identifier, lastModified, modified, name, nasa, size, time, title</att>\n"
         + "        <att name=\"sourceUrl\">(remote files)</att>\n"
         + "        <att name=\"subsetVariables\">fileType</att>\n"
-        + "        <att name=\"summary\">File Names from https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</att>\n"
+        + "        <att name=\"summary\">File Names from https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</att>\n"
         + "        <att name=\"title\">File Names from Amazon AWS S3 NASA NEX tasmin Files</att>\n"
         + "    </addAttributes>\n"
         + "    <dataVariable>\n"
@@ -19141,7 +19153,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>1</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/erdQSwind1day/").toURI()).toString()
+        + getResourcePath("/largeFiles/erdQSwind1day/")
         + "</fileDir>\n"
         + "    <!--fileTableInMemory>true</fileTableInMemory-->\n"
         + "    <recursive>true</recursive>\n"
@@ -19272,7 +19284,7 @@ public class EDDTestDataset {
     return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGrib2_42\">\n"
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/geosgrib/").toURI()).toString()
+        + getResourcePath("/largeFiles/geosgrib/")
         + "</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>.*\\.grb2</fileNameRegex>\n"
@@ -19290,7 +19302,7 @@ public class EDDTestDataset {
         + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
         + "        <att name=\"license\">[standard]</att>\n"
         + "        <att name=\"location\">"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/geosgrib/").toURI()).toString()
+        + getResourcePath("/largeFiles/geosgrib/")
         + "/multi_1.glo_30m.all.grb2</att>\n"
         + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
         + "        <att name=\"summary\">???</att>\n"
@@ -19546,7 +19558,7 @@ public class EDDTestDataset {
     return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testGrib2_43\">\n"
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/geosgrib/").toURI()).toString()
+        + getResourcePath("/largeFiles/geosgrib/")
         + "</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>.*\\.grb2</fileNameRegex>\n"
@@ -19570,7 +19582,7 @@ public class EDDTestDataset {
         + "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n"
         + "        <att name=\"license\">[standard]</att>\n"
         + "        <att name=\"location\">"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/geosgrib/").toURI()).toString()
+        + getResourcePath("/largeFiles/geosgrib/")
         + "/multi_1.glo_30m.all.grb2</att>\n"
         + "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n"
         + "        <att name=\"summary\">???</att>\n"
@@ -19969,7 +19981,7 @@ public class EDDTestDataset {
         + "    <fileNameRegex>tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_20.*\\.nc</fileNameRegex>\n"
         + "    <metadataFrom>last</metadataFrom>\n"
         + "    <fileTableInMemory>false</fileTableInMemory>\n"
-        + "    <cacheFromUrl>https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</cacheFromUrl>\n"
+        + "    <cacheFromUrl>https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</cacheFromUrl>\n"
         + "    <cacheSizeGB>5</cacheSizeGB>\n"
         + "    <!-- sourceAttributes>\n"
         + "        <att name=\"CMIPtable\">Amon</att>\n"
@@ -20018,7 +20030,7 @@ public class EDDTestDataset {
         + "        <att name=\"creator_email\">rama.nemani@nasa.gov</att>\n"
         + "        <att name=\"creator_name\">Rama Nemani</att>\n"
         + "        <att name=\"creator_url\">https://www.nasa.gov/</att>\n"
-        + "        <att name=\"infoUrl\">https://registry.opendata.aws/nasanex/</att>\n"
+        + "        <att name=\"infoUrl\">https://registry.opendata.aws/nasa-nex/</att>\n"
         + "        <att name=\"keywords\">800m, air, air_temperature, ames, atmosphere,\n"
         + "Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n"
         + "Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n"
@@ -20126,7 +20138,7 @@ public class EDDTestDataset {
     return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testCwHdf\">\n"
         + "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/cwhdf/").toURI()).toString()
+        + getResourcePath("/largeFiles/cwhdf/")
         + "</fileDir>\n"
         + "    <recursive>false</recursive>\n"
         + "    <fileNameRegex>.*\\.hdf</fileNameRegex>\n"
@@ -20529,7 +20541,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/hdf/").toURI()).toString()
+        + getResourcePath("/largeFiles/hdf/")
         + "/</fileDir>\n"
         + "    <fileNameRegex>Q2011237000100.L2_SCI_V4\\.0</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -20689,7 +20701,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/hdf/").toURI()).toString()
+        + getResourcePath("/largeFiles/hdf/")
         + "/</fileDir>\n"
         + "    <fileNameRegex>Q2011237000100.L2_SCI_V4\\.0</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -21587,7 +21599,7 @@ public class EDDTestDataset {
         + "    <defaultGraphQuery>elapsedTime,channel_1&amp;time=min(time)&amp;elapsedTime&gt;=0&amp;elapsedTime&lt;=1&amp;.draw=lines</defaultGraphQuery>\n"
         + "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/audio/wav/").toURI()).toString()
+        + getResourcePath("/largeFiles/audio/wav/")
         + "</fileDir> <!-- also /erddapTest/audio/wav/ -->\n"
         + "    <fileNameRegex>.*\\.wav</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -24921,7 +24933,7 @@ public class EDDTestDataset {
     return "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testUnsignedGrid\" active=\"true\">\n"
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/nc/").toURI()).toString()
+        + getResourcePath("/largeFiles/nc/")
         + "</fileDir>\n"
         + "    <fileNameRegex>V20172742017304\\.L3m_MO_SNPP_CHL_chlor_a_4km\\.nc</fileNameRegex>\n"
         + "    <recursive>false</recursive>\n"
@@ -25406,7 +25418,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/justin/").toURI()).toString()
+        + getResourcePath("/largeFiles/justin/")
         + "</fileDir>\n"
         + "    <fileNameRegex>test\\.h5</fileNameRegex> <!-- private file. do not share -->\n"
         + "    <recursive>true</recursive>\n"
@@ -26708,7 +26720,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/hdf/").toURI()).toString()
+        + getResourcePath("/largeFiles/hdf/")
         + "/</fileDir>\n"
         + "    <fileNameRegex>Q2011237000100.L2_SCI_V4\\.0</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -34989,7 +35001,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/nccf/wod/").toURI()).toString()
+        + getResourcePath("/largeFiles/nccf/wod/")
         + "</fileDir>\n"
         + "    <fileNameRegex>wod_drb_.*\\.nc</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -35762,7 +35774,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/mergeIR/").toURI()).toString()
+        + getResourcePath("/largeFiles/mergeIR/")
         + "</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>merg_[0-9]{10}_4km-pixel</fileNameRegex>\n"
@@ -35836,7 +35848,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/mergeIR/").toURI()).toString()
+        + getResourcePath("/largeFiles/mergeIR/")
         + "</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.Z</fileNameRegex>\n"
@@ -35927,7 +35939,7 @@ public class EDDTestDataset {
         + "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n"
         + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/mergeIR/").toURI()).toString()
+        + getResourcePath("/largeFiles/mergeIR/")
         + "</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.gz</fileNameRegex>\n"
@@ -36227,7 +36239,7 @@ public class EDDTestDataset {
     return "<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"testKevin20130109\" active=\"true\">\n"
         + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/kevin/").toURI()).toString()
+        + getResourcePath("/largeFiles/kevin/")
         + "</fileDir>\n"
         + "    <recursive>true</recursive>\n"
         + "    <fileNameRegex>interpolated_gld\\.20120620_045152_and_meta\\.nc</fileNameRegex>\n"
@@ -42820,7 +42832,7 @@ public class EDDTestDataset {
         + "    <defaultGraphQuery>channel_1[0][(0):(1)]&amp;.draw=lines&amp;.vars=elapsedTime|time</defaultGraphQuery>\n"
         + "    <defaultDataQuery>&amp;time=min(time)</defaultDataQuery>\n"
         + "    <fileDir>"
-        + Path.of(EDDTestDataset.class.getResource("/largeFiles/audio/wav/").toURI()).toString()
+        + getResourcePath("/largeFiles/audio/wav/")
         + "</fileDir> <!-- also /erddapTest/audio/wav/ -->\n"
         + "    <fileNameRegex>aco_acoustic\\.[0-9]{8}_[0-9]{6}\\.wav</fileNameRegex>\n"
         + "    <recursive>true</recursive>\n"
@@ -45006,5 +45018,295 @@ public class EDDTestDataset {
     </dataVariable>
 </dataset>
         """;
+  }
+
+  public static EDD gettestMyDatabaseNo() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testMyDatabaseNo());
+  }
+
+  private static String xmlFragment_testMyDatabaseNo() {
+    return
+"""
+    <dataset type="EDDTableFromDatabase" datasetID="testMyDatabaseNo" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <catalogName></catalogName>
+    <schemaName></schemaName>
+    <tableName>LEGACY_TABLE</tableName>
+    <sourceCanOrderBy>yes</sourceCanOrderBy>
+    <sourceCanDoDistinct>yes</sourceCanDoDistinct>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="license">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.</att>
+        <att name="sourceUrl">(source database)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">This is Bob's test for reading from a database table.</att>
+        <att name="title">mydatabase myschema mytable</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>CATEGORY</sourceName>
+        <destinationName>category</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Category</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>FIRST</sourceName>
+        <destinationName>first</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">First Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAST</sourceName>
+        <destinationName>last</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Last Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>HEIGHT</sourceName>
+        <destinationName>height</destinationName>
+        <dataType>int</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="actual_range">161, 191</att><att name="ioos_category">Biology</att><att name="long_name">Height</att><att name="units">cm</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_KG</sourceName>
+        <destinationName>weight_kg</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">kg</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_LB</sourceName>
+        <destinationName>weight_lb</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">lb</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BIRTHDATE</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_CoordinateAxisType">Time</att><att name="axis">T</att><att name="ioos_category">Time</att><att name="long_name">Birthdate</att><att name="standard_name">time</att><att name="time_origin">01-JAN-1970 00:00:00</att><att name="units">seconds since 1970-01-01T00:00:00Z</att></addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestMyDatabasePartial() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testMyDatabasePartial());
+  }
+
+  private static String xmlFragment_testMyDatabasePartial() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testMyDatabasePartial" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>LEGACY_TABLE</tableName>
+    <sourceCanOrderBy>partial</sourceCanOrderBy>
+    <sourceCanDoDistinct>partial</sourceCanDoDistinct>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="license">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.</att>
+        <att name="sourceUrl">(source database)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">This is Bob's test for reading from a database table.</att>
+        <att name="title">mydatabase myschema mytable</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>CATEGORY</sourceName>
+        <destinationName>category</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Category</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>FIRST</sourceName>
+        <destinationName>first</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">First Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAST</sourceName>
+        <destinationName>last</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Last Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>HEIGHT</sourceName>
+        <destinationName>height</destinationName>
+        <dataType>int</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="actual_range">161, 191</att><att name="ioos_category">Biology</att><att name="long_name">Height</att><att name="units">cm</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_KG</sourceName>
+        <destinationName>weight_kg</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">kg</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_LB</sourceName>
+        <destinationName>weight_lb</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">lb</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BIRTHDATE</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="_CoordinateAxisType">Time</att>
+            <att name="axis">T</att>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Birthdate</att>
+            <att name="standard_name">time</att>
+            <att name="time_origin">01-JAN-1970 00:00:00</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestMyDatabaseYes() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testMyDatabaseYes());
+  }
+
+  private static String xmlFragment_testMyDatabaseYes() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testMyDatabaseYes" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>LEGACY_TABLE</tableName>
+    <sourceCanOrderBy>yes</sourceCanOrderBy>
+    <sourceCanDoDistinct>yes</sourceCanDoDistinct>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="license">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies.</att>
+        <att name="sourceUrl">(source database)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="summary">This is Bob's test for reading from a database table.</att>
+        <att name="title">mydatabase myschema mytable</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>CATEGORY</sourceName>
+        <destinationName>category</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Category</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>FIRST</sourceName>
+        <destinationName>first</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">First Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>LAST</sourceName>
+        <destinationName>last</destinationName>
+        <dataType>String</dataType>
+        <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">Last Name</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>HEIGHT</sourceName>
+        <destinationName>height</destinationName>
+        <dataType>int</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="actual_range">161, 191</att><att name="ioos_category">Biology</att><att name="long_name">Height</att><att name="units">cm</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_KG</sourceName>
+        <destinationName>weight_kg</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">kg</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>WEIGHT_LB</sourceName>
+        <destinationName>weight_lb</destinationName>
+        <dataType>double</dataType>
+        <addAttributes><att name="_FillValue" type="int">2147483647</att><att name="ioos_category">Biology</att><att name="long_name">Weight</att><att name="units">lb</att></addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>BIRTHDATE</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>double</dataType>
+        <addAttributes>
+            <att name="_CoordinateAxisType">Time</att>
+            <att name="axis">T</att>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Birthdate</att>
+            <att name="standard_name">time</att>
+            <att name="time_origin">01-JAN-1970 00:00:00</att>
+            <att name="units">seconds since 1970-01-01T00:00:00Z</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestNonExistentVariable() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testNonExistentVariable());
+  }
+
+  private static String xmlFragment_testNonExistentVariable() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testNonExistentVariable" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>LEGACY_TABLE</tableName>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="title">testNonExistentVariable</att>
+        <att name="summary">testNonExistentVariable summary</att>
+    </addAttributes>
+    <dataVariable>
+      <sourceName>zztop</sourceName><destinationName>zztop</destinationName><dataType>String</dataType>
+      <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">ID</att></addAttributes>
+    </dataVariable>
+</dataset>
+""";
+  }
+
+  public static EDD gettestNonExistentTable() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_testNonExistentTable());
+  }
+
+  private static String xmlFragment_testNonExistentTable() {
+    return
+"""
+<dataset type="EDDTableFromDatabase" datasetID="testNonExistentTable" active="true">
+    <sourceUrl>jdbc:h2:mem:legacy_db;DB_CLOSE_DELAY=-1</sourceUrl>
+    <driverName>org.h2.Driver</driverName>
+    <connectionProperty name="user">sa</connectionProperty>
+    <connectionProperty name="password"></connectionProperty>
+    <tableName>missing_table</tableName>
+    <addAttributes>
+        <att name="cdm_data_type">Other</att>
+        <att name="institution">NOAA NMFS SWFSC ERD</att>
+        <att name="infoUrl">https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center</att>
+        <att name="title">testNonExistentTable</att>
+        <att name="summary">testNonExistentTable summary</att>
+    </addAttributes>
+    <dataVariable>
+      <sourceName>id</sourceName><destinationName>id</destinationName><dataType>int</dataType>
+      <addAttributes><att name="ioos_category">Identifier</att><att name="long_name">ID</att></addAttributes>
+    </dataVariable>
+</dataset>
+""";
   }
 }

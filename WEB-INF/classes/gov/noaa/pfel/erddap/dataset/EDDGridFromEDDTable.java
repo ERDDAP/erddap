@@ -29,7 +29,7 @@ import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.DataInputStream;
+import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -723,13 +723,13 @@ public class EDDGridFromEDDTable extends EDDGrid {
 
     // go through the tabular results in TableWriterAll
     PrimitiveArray twaPA[] = new PrimitiveArray[nCols];
-    DataInputStream twaDIS[] = new DataInputStream[nCols];
+    FileChannel twaChannels[] = new FileChannel[nCols];
     int nMatches = 0;
     long nRows = twa.nRows();
     try {
       for (int col = 0; col < nCols; col++) {
         twaPA[col] = twa.columnEmptyPA(col);
-        twaDIS[col] = twa.dataInputStream(col);
+        twaChannels[col] = twa.openColumnChannel(col);
       }
 
       int oAxisIndex[] = new int[nav]; // all 0's
@@ -740,7 +740,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         // read all of the twa values for this row
         for (int col = 0; col < nCols; col++) {
           twaPA[col].clear();
-          twaPA[col].readDis(twaDIS[col], 1); // read 1 value
+          TableWriterAll.readColumnChunk(col, twaChannels[col], twaPA[col], row, 1);
         }
 
         // see if this row matches a desired combo of axis values
@@ -790,7 +790,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
       // release twa resources
       for (int col = 0; col < nCols; col++)
         try {
-          twaDIS[col].close();
+          if (twaChannels[col] != null) twaChannels[col].close();
         } catch (Exception e) {
         }
       try {

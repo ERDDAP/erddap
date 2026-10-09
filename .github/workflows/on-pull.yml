@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         persist-credentials: false
     - name: Free Disk Space Before Build
@@ -29,16 +29,21 @@ jobs:
         echo "Disk space after cleanup:"
         df -h
     - name: Set up JDK 25
-      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00  # v4.7.1
+      uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6  # v6.0.1
       with:
         java-version: '25'
         distribution: 'temurin'
         cache: maven
     - name: Build and test with Maven
+      env:
+        JAVA_TOOL_OPTIONS: "-Xmx4g -XX:+UseG1GC"
       run: >
         mvn --batch-mode
         -Dgcf.skipInstallHooks=true
         -Dmaven.test.redirectTestOutputToFile=true
         -Ddownload.unpack=true
         -Ddownload.unpackWhenChanged=false
+        -DforkCount=1
+        -DreuseForks=false
+        -DargLine.extra="-Xmx4g -XX:+UseG1GC"
         clean verify

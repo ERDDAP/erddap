@@ -3,8 +3,15 @@ package gov.noaa.pfel.coastwatch.sgt;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.awt.geom.GeneralPath;
+import org.junit.jupiter.api.BeforeAll;
+import testDataset.Initialization;
 
 class GSHHSTests {
+
+  @BeforeAll
+  static void init() {
+    Initialization.edStatic();
+  }
 
   /** This runs a unit test. */
   @org.junit.jupiter.api.Test

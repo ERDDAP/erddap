@@ -533,9 +533,9 @@ public abstract class EDD {
         .filter(
             fileTypeInfo ->
                 switch (category) {
-                  case FileCategory.IMAGE -> fileTypeInfo.getIsImage();
-                  case FileCategory.DATA -> !fileTypeInfo.getIsImage();
-                  case FileCategory.BOTH -> true;
+                  case IMAGE -> fileTypeInfo.getIsImage();
+                  case DATA -> !fileTypeInfo.getIsImage();
+                  case BOTH -> true;
                 })
         .toList();
   }

@@ -23,6 +23,7 @@ import com.cohort.array.ULongArray;
 import com.cohort.array.UShortArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.LinkHelper;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -30,26 +31,12 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
-import dods.dap.AttributeTable;
-import dods.dap.BaseType;
-import dods.dap.DAS;
-import dods.dap.DBoolean;
-import dods.dap.DByte;
-import dods.dap.DConnect;
-import dods.dap.DFloat32;
-import dods.dap.DFloat64;
-import dods.dap.DInt16;
-import dods.dap.DInt32;
-import dods.dap.DSequence;
-import dods.dap.DString;
-import dods.dap.DUInt16;
-import dods.dap.DUInt32;
-import dods.dap.DataDDS;
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
+import gov.noaa.pfel.coastwatch.pointdata.parquet.CustomWriteSupport.RowRef;
 import gov.noaa.pfel.coastwatch.pointdata.parquet.ParquetWriterBuilder;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -90,6 +77,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -123,12 +111,21 @@ import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import ucar.ma2.Array;
+import thredds.client.catalog.ServiceType;
+import ucar.ma2.ArraySequence;
+import ucar.ma2.ArrayStructure;
 import ucar.ma2.DataType;
+import ucar.ma2.Section;
+import ucar.ma2.StructureData;
+import ucar.ma2.StructureDataIterator;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -690,6 +687,37 @@ public class Table {
   }
 
   /**
+   * Helper method to extract literal prefix from skipLinesRegex (e.g., "^#.*" -> "#", "^//" ->
+   * "//", "#.*" -> "#"). Returns null if skipLinesRegex is null or doesn't have a simple literal
+   * anchor/prefix.
+   */
+  private static String extractLiteralPrefix(String regex) {
+    if (regex == null || regex.isEmpty()) {
+      return null;
+    }
+    String r = regex.startsWith("^") ? regex.substring(1) : regex;
+    // Check for simple comment patterns like #.*, //.*, %.*, ;.*, #, //, %, ;
+    if (r.startsWith("#")) return "#";
+    if (r.startsWith("//")) return "//";
+    if (r.startsWith("%")) return "%";
+    if (r.startsWith(";")) return ";";
+    return null;
+  }
+
+  /**
+   * Helper method to determine if a line should be skipped based on fast-path checks or
+   * skipLinesMatcher.
+   */
+  private static boolean shouldSkipLine(String line, Matcher skipMatcher, String literalPrefix) {
+    if (line == null) return false;
+    if (line.isEmpty()) return false;
+    if (literalPrefix != null) {
+      return line.startsWith(literalPrefix);
+    }
+    return skipMatcher != null && skipMatcher.reset(line).matches();
+  }
+
+  /**
    * This reads and ignores lines until it finds a line that matches skipHeaderToRegex.
    *
    * @param skipHeaderToRegex the regex to be matched (or null or "" if nothing to be done)
@@ -721,37 +749,33 @@ public class Table {
   }
 
   /**
-   * This makes a deep clone of the current table (data and attributes).
-   *
-   * @param startRow
-   * @param stride
-   * @param endRow (inclusive) e.g., nRows()-1
-   * @return a new Table.
-   */
-  public Table subset(int startRow, int stride, int endRow) {
-    Table tTable = new Table();
-
-    int n = columns.size();
-    for (int i = 0; i < n; i++) tTable.columns.add(columns.get(i).subset(startRow, stride, endRow));
-
-    tTable.columnNames = (StringArray) columnNames.clone();
-
-    tTable.globalAttributes = (Attributes) globalAttributes.clone();
-
-    for (int col = 0; col < columnAttributes.size(); col++)
-      tTable.columnAttributes.add((Attributes) columnAttributes.get(col).clone());
-
-    return tTable;
-  }
-
-  /**
    * This makes a deep clone of the entire current table (data and attributes).
    *
    * @return a new Table.
    */
   @Override
-  public Object clone() {
-    return subset(0, 1, nRows() - 1);
+  public Table clone() {
+    Table t2 = new Table();
+
+    // 1. Deep copy global attributes
+    if (this.globalAttributes != null) {
+      t2.globalAttributes = (Attributes) this.globalAttributes.clone();
+    }
+
+    // 2. Deep copy column names, attributes, and primitive arrays
+    int nCols = this.nColumns();
+    for (int c = 0; c < nCols; c++) {
+      String colName = this.getColumnName(c);
+      PrimitiveArray paClone = (PrimitiveArray) this.getColumn(c).clone();
+
+      t2.addColumn(colName, paClone);
+    }
+
+    for (int col = 0; col < columnAttributes.size(); col++) {
+      t2.columnAttributes.add((Attributes) columnAttributes.get(col).clone());
+    }
+
+    return t2;
   }
 
   /**
@@ -1303,9 +1327,25 @@ public class Table {
    * @return a BitSet with bit=true for each row that has data (not all missing-values).
    */
   public BitSet rowsWithData() {
+    return rowsWithData(null);
+  }
+
+  /**
+   * Returns a BitSet with bit=true for each row that has data (not all missing-values), using a
+   * reusable BitSet if provided.
+   *
+   * @param reusableKeep optional BitSet instance to clear and reuse
+   * @return keep BitSet
+   */
+  public BitSet rowsWithData(BitSet reusableKeep) {
     int tnRows = nRows();
     int tnCols = nColumns();
-    BitSet keep = new BitSet(tnRows); // all false
+    BitSet keep = reusableKeep;
+    if (keep == null) {
+      keep = new BitSet(tnRows);
+    } else {
+      keep.clear();
+    }
     int keepN = 0;
     for (int col = 0; col < tnCols; col++) {
       // this is very similar to lastRowWithData
@@ -1394,7 +1434,17 @@ public class Table {
    * @return the number of rows remaining
    */
   public int removeRowsWithoutData() {
-    justKeep(rowsWithData());
+    return removeRowsWithoutData(null);
+  }
+
+  /**
+   * This removes rows that don't have data in any column, using a reusable BitSet.
+   *
+   * @param reusableKeep optional BitSet instance to clear and reuse
+   * @return the number of rows remaining
+   */
+  public int removeRowsWithoutData(BitSet reusableKeep) {
+    justKeep(rowsWithData(reusableKeep));
     return nRows();
   }
 
@@ -2578,6 +2628,8 @@ public class Table {
           skipLinesRegex != null && !skipLinesRegex.isEmpty()
               ? Pattern.compile(skipLinesRegex)
               : null;
+      Matcher skipLinesMatcher = skipLinesPattern != null ? skipLinesPattern.matcher("") : null;
+      String literalPrefix = extractLiteralPrefix(skipLinesRegex);
 
       // skipHeaderToRegex
       int row =
@@ -2592,7 +2644,7 @@ public class Table {
         String s = linesReader.readLine(); // null if end. exception if trouble
         if (s == null) break;
         linesCache.add(s);
-        if (skipLinesPattern == null || skipLinesPattern.matcher(s).matches()) nonSkipLines++;
+        if (!shouldSkipLine(s, skipLinesMatcher, literalPrefix)) nonSkipLines++;
         if (nonSkipLines == dataStartLine + 2) // both 0-based
         break;
       }
@@ -2611,7 +2663,7 @@ public class Table {
         int tRow = 0;
         for (String s : linesCache) {
           oneLine = s;
-          if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
+          if (shouldSkipLine(oneLine, skipLinesMatcher, literalPrefix)) continue;
           if (tRow++ < dataStartLine) // both are 0..
           continue;
           nTab *=
@@ -2657,7 +2709,7 @@ public class Table {
         while (true) {
           oneLine = linesCache.get(nextLinesCache++);
           row++;
-          if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
+          if (shouldSkipLine(oneLine, skipLinesMatcher, literalPrefix)) continue;
           if (++logicalLine == columnNamesLine) // both are 0-based
           break;
         }
@@ -2686,6 +2738,7 @@ public class Table {
       StringBuilder warnings = new StringBuilder();
       ArrayList<String> items = new ArrayList<>(16);
       StringBuilder separatedWord = new StringBuilder();
+      boolean[] isColumnNeeded = null;
       while (true) {
         oneLine = null;
         if (nextLinesCache < linesCacheSize) {
@@ -2699,7 +2752,7 @@ public class Table {
         // actual row number
         row++;
         // then check skipLines
-        if (skipLinesPattern != null && skipLinesPattern.matcher(oneLine).matches()) continue;
+        if (shouldSkipLine(oneLine, skipLinesMatcher, literalPrefix)) continue;
         // then check dataStartLine
         if (++logicalLine < dataStartLine) continue;
 
@@ -2717,14 +2770,21 @@ public class Table {
                 ',',
                 true,
                 true,
-                items); // trim=true keep=true   //does handle "'d phrases, but leaves them quoted
+                items,
+                isColumnNeeded); // trim=true keep=true   //does handle "'d phrases, but leaves them
+            // quoted
           } else if (colSeparator == ' ') {
-            StringArray.wordsAndQuotedPhrases(oneLine, items); // items are trim'd
+            StringArray.wordsAndQuotedPhrases(oneLine, items, isColumnNeeded); // items are trim'd
           } else if (colSeparator == '\u0000') {
             items.clear();
-            items.add(oneLine.trim());
+            if (isColumnNeeded != null && isColumnNeeded.length > 0 && !isColumnNeeded[0]) {
+              items.add(null);
+            } else {
+              items.add(oneLine.trim());
+            }
           } else {
-            String2.splitToArrayList(oneLine, colSeparator, true, items); // trim=true
+            String2.splitToArrayList(
+                oneLine, colSeparator, true, items, isColumnNeeded); // trim=true
           }
           // if (debugMode && logicalLine-dataStartLine<5) String2.log(">> row=" + row + " nItems="
           // + items.length + "\nitems=" + String2.toCSSVString(items));
@@ -2752,15 +2812,28 @@ public class Table {
             testColumnNumbers[col] = po;
           }
 
-          // loadColumnNumbers[sourceColumn#] -> outputColumn#
-          //  (-1 if a var not in this file)
+          // Estimate file rows to pre-allocate exact StringArray capacity
+          int sampleLineIndex = 0;
+          String sampleLine = linesCache.size() > 0 ? linesCache.get(0) : null;
+          while (sampleLine == null && sampleLineIndex < linesCache.size() - 1) {
+            sampleLine = linesCache.get(++sampleLineIndex);
+          }
+          int sampleLineLength = sampleLine != null ? sampleLine.length() + 1 : 80;
+          long fileBytes =
+              (fileName != null && fileName.length() > 0) ? new java.io.File(fileName).length() : 0;
+
+          int estimatedRows =
+              (fileBytes > 0 && sampleLineLength > 0)
+                  ? Math.max(128, (int) (fileBytes / sampleLineLength))
+                  : 128;
+
           if (loadColumns == null) {
             // load all
             loadColumnNumbers = new int[fileColumnNames.size()];
             loadColumnSA = new StringArray[fileColumnNames.size()];
             for (int col = 0; col < fileColumnNames.size(); col++) {
               loadColumnNumbers[col] = col;
-              loadColumnSA[col] = new StringArray();
+              loadColumnSA[col] = new StringArray(estimatedRows, false);
               addColumn(fileColumnNames.get(col), loadColumnSA[col]);
             }
           } else {
@@ -2768,8 +2841,21 @@ public class Table {
             loadColumnSA = new StringArray[loadColumns.length];
             for (int col = 0; col < loadColumns.length; col++) {
               loadColumnNumbers[col] = fileColumnNames.indexOf(loadColumns[col], 0);
-              loadColumnSA[col] = new StringArray();
+              loadColumnSA[col] = new StringArray(estimatedRows, false);
               addColumn(loadColumns[col], loadColumnSA[col]);
+            }
+          }
+
+          // construct isColumnNeeded array for subsequent iterations
+          isColumnNeeded = new boolean[expectedNItems];
+          for (int tc : testColumnNumbers) {
+            if (tc >= 0 && tc < expectedNItems) {
+              isColumnNeeded[tc] = true;
+            }
+          }
+          for (int lc : loadColumnNumbers) {
+            if (lc >= 0 && lc < expectedNItems) {
+              isColumnNeeded[lc] = true;
             }
           }
           // if (reallyVerbose) String2.log("loadColumnNumbers=" +
@@ -3196,6 +3282,8 @@ public class Table {
               ? Pattern.compile(skipLinesRegex)
               : null;
 
+      Matcher skipLinesMatcher = skipLinesPattern != null ? skipLinesPattern.matcher("") : null;
+      String literalPrefix = extractLiteralPrefix(skipLinesRegex);
       // create the columns
       PrimitiveArray pa[] = new PrimitiveArray[nCols];
       ByteArray arBool[] = new ByteArray[nCols]; // ByteArray (from boolean) if boolean, else null
@@ -3219,7 +3307,7 @@ public class Table {
         row++;
         if (tLine == null) // end of file
         break;
-        if (skipLinesPattern != null && skipLinesPattern.matcher(tLine).matches()) continue;
+        if (shouldSkipLine(tLine, skipLinesMatcher, literalPrefix)) continue;
         logicalLine++;
         if (logicalLine < dataStartLine) continue;
 
@@ -3900,18 +3988,21 @@ public class Table {
     for (int col = 0; col < nCols; col++) {
       String s = tTable.getColumnName(col);
       if (String2.indexOf(doubleColumns, s) >= 0)
-        tTable.setColumn(col, new DoubleArray(tTable.getColumn(col)));
+        tTable.setColumn(col, PrimitiveArray.factory(PAType.DOUBLE, tTable.getColumn(col)));
       if (String2.indexOf(intColumns, s) >= 0)
-        tTable.setColumn(col, new IntArray(tTable.getColumn(col)));
+        tTable.setColumn(col, PrimitiveArray.factory(PAType.INT, tTable.getColumn(col)));
     }
 
     // create and add x,y,z,t,id columns    (numeric cols forced to be doubles)
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(0), new DoubleArray(tTable.findColumn("Longitude")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(0),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Longitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(1), new DoubleArray(tTable.findColumn("Latitude")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(1),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Latitude")));
     addColumn(
-        DataHelper.TABLE_VARIABLE_NAMES.get(2), new DoubleArray(tTable.findColumn("Minimumdepth")));
+        DataHelper.TABLE_VARIABLE_NAMES.get(2),
+        PrimitiveArray.factory(PAType.DOUBLE, tTable.findColumn("Minimumdepth")));
     DoubleArray tPA = new DoubleArray(nRows, false);
     addColumn(DataHelper.TABLE_VARIABLE_NAMES.get(3), tPA);
     StringArray idPA = new StringArray(nRows, false);
@@ -4618,9 +4709,10 @@ public class Table {
     int nColumns = nColumns();
     int nRows = nRows();
     DataOutputStream dos = new DataOutputStream(outputStream);
+    byte[] buffer = new byte[1024];
     for (int row = 0; row < nRows; row++) {
       dos.writeInt(0x5A << 24); // start of instance
-      for (int col = 0; col < nColumns; col++) getColumn(col).externalizeForDODS(dos, row);
+      for (int col = 0; col < nColumns; col++) getColumn(col).externalizeForDODS(dos, row, buffer);
     }
     dos.writeInt(0xA5 << 24); // end of sequence; so if nRows=0, this is all that is sent
 
@@ -4920,45 +5012,48 @@ public class Table {
                       + (needEncodingAsHtml ? XML.encodeAsHTML(s) : s)
                       + // just the fileName
                       "</a>";
-            } else if (needEncodingAsHtml && String2.containsUrl(s)) {
-              List<String> separatedText = String2.extractUrls(s);
+            } else if (needEncodingAsHtml) {
               StringBuilder output = new StringBuilder();
-              for (String text : separatedText) {
-                if (String2.containsUrl(text)) {
-                  output.append(
-                      "<a href=\""
-                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
-                          + "\">"
-                          + XML.encodeAsHTML(text)
-                          + "</a>");
-                } else {
-                  output.append(XML.encodeAsHTML(text));
-                }
+              if (LinkHelper.linkify(
+                  s,
+                  (text, isUrl) -> {
+                    if (isUrl) {
+                      output.append(
+                          "<a href=\""
+                              + XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(text))
+                              + "\">"
+                              + XML.encodeAsHTML(text)
+                              + "</a>");
+                    } else {
+                      output.append(XML.encodeAsHTML(text));
+                    }
+                  })) {
+                s = output.toString();
+              } else {
+                s = XML.encodeAsHTML(s);
               }
-              s = output.toString();
 
               // Check for href and mouseover to see if there's something like an anchor tag which
               // the url extraction will mangle.
-            } else if (!needEncodingAsHtml
-                && !s.contains("href=")
-                && !s.contains("onmouseover")
-                && String2.containsUrl(XML.decodeEntities(s))) {
-              s = XML.decodeEntities(s);
-              List<String> separatedText = String2.extractUrls(s);
+            } else if (!needEncodingAsHtml && !s.contains("href=") && !s.contains("onmouseover")) {
+              String decodedS = XML.decodeEntities(s);
               StringBuilder output = new StringBuilder();
-              for (String text : separatedText) {
-                if (String2.containsUrl(text)) {
-                  output.append(
-                      "<a href=\""
-                          + XML.encodeAsHTMLAttribute(String2.addHttpsForWWW(text))
-                          + "\">"
-                          + XML.encodeAsHTML(text)
-                          + "</a>");
-                } else {
-                  output.append(XML.encodeAsHTML(text));
-                }
+              if (LinkHelper.linkify(
+                  decodedS,
+                  (text, isUrl) -> {
+                    if (isUrl) {
+                      output.append(
+                          "<a href=\""
+                              + XML.encodeAsHTMLAttribute(LinkHelper.addHttpsForWWW(text))
+                              + "\">"
+                              + XML.encodeAsHTML(text)
+                              + "</a>");
+                    } else {
+                      output.append(XML.encodeAsHTML(text));
+                    }
+                  })) {
+                s = output.toString();
               }
-              s = output.toString();
             } else if (!needEncodingAsHtml && String2.isUrl(XML.decodeEntities(s))) {
               s = XML.decodeEntities(s);
               s =
@@ -5172,15 +5267,15 @@ public class Table {
 
       } else if (pa instanceof UByteArray ua) {
         atts.remove(name);
-        atts.set("_encodedUByteArray_" + name, new ByteArray(ua.toArray()));
+        atts.set("_encodedUByteArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof UShortArray ua) {
         atts.remove(name);
-        atts.set("_encodedUShortArray_" + name, new ShortArray(ua.toArray()));
+        atts.set("_encodedUShortArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof UIntArray ua) {
         atts.remove(name);
-        atts.set("_encodedUIntArray_" + name, new IntArray(ua.toArray()));
+        atts.set("_encodedUIntArray_" + name, ua.makeSignedPA());
 
       } else if (pa instanceof LongArray) {
         atts.remove(name);
@@ -5212,15 +5307,15 @@ public class Table {
 
         } else if (paType == PAType.BYTE && name.startsWith("_encodedUByteArray_")) {
           atts.remove(name);
-          atts.set(name.substring(19), new UByteArray(((ByteArray) pa).toArray()));
+          atts.set(name.substring(19), pa.makeUnsignedPA());
 
         } else if (paType == PAType.SHORT && name.startsWith("_encodedUShortArray_")) {
           atts.remove(name);
-          atts.set(name.substring(20), new UShortArray(((ShortArray) pa).toArray()));
+          atts.set(name.substring(20), pa.makeUnsignedPA());
 
         } else if (paType == PAType.INT && name.startsWith("_encodedUIntArray_")) {
           atts.remove(name);
-          atts.set(name.substring(18), new UIntArray(((IntArray) pa).toArray()));
+          atts.set(name.substring(18), pa.makeUnsignedPA());
 
         } else if (paType == PAType.STRING && name.startsWith("_encodedLongArray_")) {
           atts.remove(name);
@@ -5937,8 +6032,8 @@ public class Table {
           tReadOrigin[nAxes] = 0;
           tReadShape[nAxes] = variable.getDimension(nAxes).getLength();
         }
-        Array array = variable.read(tReadOrigin, tReadShape);
-        PrimitiveArray pa = NcHelper.getPrimitiveArray(array);
+        Section section = new Section(tReadOrigin, tReadShape);
+        PrimitiveArray pa = NcHelper.getPrimitiveArray(variable, section);
         Test.ensureEqual(
             pa.size(),
             nRows(),
@@ -8700,11 +8795,10 @@ public class Table {
                 rowSizesPA, "No row_size info for dim=" + dimName + " for var=" + vNames[v]);
             PrimitiveArray varPA = NcHelper.getPrimitiveArray(var);
             StringArray newPA = new StringArray(outerDimSize, false);
-            PrimitiveArray tSubset = null;
             int thisPo = 0;
             for (int outer = 0; outer < outerDimSize; outer++) {
               int thisChunkSize = rowSizesPA.getInt(outer);
-              tSubset = varPA.subset(tSubset, thisPo, 1, thisPo + thisChunkSize - 1);
+              PrimitiveArray tSubset = varPA.subset(thisPo, 1, thisPo + thisChunkSize - 1);
               // usually just 0 or 1 pi's, gld has more
               String tts = String2.toSVString(tSubset.toStringArray(), "/", false);
               newPA.add(tts);
@@ -8891,7 +8985,6 @@ public class Table {
         PrimitiveArray newPA = PrimitiveArray.factory(varPATypes[v], nActiveInnerRows, false);
 
         int thisPo = 0;
-        PrimitiveArray tSubset = null;
         for (int outer = 0; outer < outerDimSize; outer++) {
           int largestChunkSize = largestRowSizes.getInt(outer);
           int thisChunkSize = rowSizesPA.getInt(outer);
@@ -8909,12 +9002,12 @@ public class Table {
 
           } else if (thisChunkSize == largestChunkSize) {
             // copy values into newPA
-            tSubset = varPA.subset(tSubset, thisPo, 1, thisPo + thisChunkSize - 1);
+            // This used to use a single subset object for the loop, but with the new PrimitiveView
+            // implementation I think it's better to use views and not a full PrimitiveArray.
+            // If we truly want to optimize this we could add support for appendSubset() to
+            // PrimitiveArray.
+            PrimitiveArray tSubset = varPA.subset(thisPo, 1, thisPo + thisChunkSize - 1);
             newPA.append(tSubset);
-
-            // only need to do once, but not extant till here
-            tSubset.clear(); // speeds up ensureCapacity
-            tSubset.ensureCapacity(largestLargestChunkSize);
 
           } else {
             throw new RuntimeException(
@@ -9909,8 +10002,7 @@ public class Table {
               + ", so lookUpTable has no related information.");
     if (mvKey == null) mvKey = "";
     long time = System.currentTimeMillis();
-    Tally notMatchedTally = null;
-    if (debugMode) notMatchedTally = new Tally();
+    Tally notMatchedTally = debugMode ? new Tally() : null;
 
     // gather keyPA's
     PrimitiveArray keyPA[] = new PrimitiveArray[nKeys];
@@ -9923,11 +10015,22 @@ public class Table {
     // make hashtable of keys->Integer.valueOf(row#) in lookUpTable
     // so join is fast with any number of rows in lookUpTable
     int lutNRows = lutKeyPA[0].size();
-    HashMap<String, Integer> hashMap = new HashMap<>(Math2.roundToInt(1.4 * lutNRows));
+    HashMap<String, Integer> hashMap = new HashMap<>((int) Math.ceil(lutNRows / 0.75f));
+    StringBuilder sb = nKeys > 1 ? new StringBuilder(32 * nKeys) : null;
+
     for (int row = 0; row < lutNRows; row++) {
-      StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
-      for (int key = 1; key < nKeys; key++) sb.append("\t" + lutKeyPA[key].getString(row));
-      hashMap.put(sb.toString(), row);
+      String keyStr;
+      if (nKeys == 1) {
+        keyStr = lutKeyPA[0].getString(row);
+      } else {
+        sb.setLength(0);
+        sb.append(lutKeyPA[0].getString(row));
+        for (int key = 1; key < nKeys; key++) {
+          sb.append('\t').append(lutKeyPA[key].getString(row));
+        }
+        keyStr = sb.toString();
+      }
+      hashMap.put(keyStr, row);
     }
 
     // insert columns to be filled
@@ -9958,11 +10061,24 @@ public class Table {
     BitSet matched = new BitSet();
     matched.set(0, nRows); // all true
     for (int row = 0; row < nRows; row++) {
-      StringBuilder sb = new StringBuilder(keyPA[0].getString(row));
-      for (int key = 1; key < nKeys; key++) sb.append("\t" + keyPA[key].getString(row));
-      String s = sb.toString();
-      if (s.length() == nKeys - 1) // just tabs separating ""
-      s = mvKey;
+      String s;
+      if (nKeys == 1) {
+        s = keyPA[0].getString(row);
+        if (s == null || s.isEmpty()) {
+          s = mvKey;
+        }
+      } else {
+        sb.setLength(0);
+        sb.append(keyPA[0].getString(row));
+        for (int key = 1; key < nKeys; key++) {
+          sb.append('\t').append(keyPA[key].getString(row));
+        }
+        s = sb.toString();
+        if (s.length() == nKeys - 1) {
+          s = mvKey;
+        }
+      }
+
       Integer obj = hashMap.get(s);
       if (obj == null) {
         // don't change the missing values already in the pa
@@ -9972,10 +10088,12 @@ public class Table {
         // copy values from lutPA's to newPA's
         nMatched++;
         int fRow = obj;
-        for (int lutCol = nKeys; lutCol < lutNCols; lutCol++)
+        for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) {
           newPA[lutCol].setFromPA(row, lutPA[lutCol], fRow);
+        }
       }
     }
+
     if (reallyVerbose)
       String2.log(
           "  Table.join(nKeys="
@@ -10076,271 +10194,135 @@ public class Table {
     String errorInMethod = String2.ERROR + " in Table.readOpendapSequence(" + url + "):\n";
     long time = System.currentTimeMillis();
     clear();
-    DConnect dConnect = new DConnect(url, opendapAcceptDeflate, 1, 1);
-    DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    OpendapHelper.getAttributes(das, "GLOBAL", globalAttributes());
 
-    // get the outerSequence information
-    DataDDS dataDds = dConnect.getData(null); // null = no statusUI
-    if (reallyVerbose)
-      String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
-    BaseType firstVariable = dataDds.getVariables().next();
-    if (!(firstVariable instanceof DSequence outerSequence))
-      throw new Exception(
-          errorInMethod
-              + "firstVariable not a DSequence: name="
-              + firstVariable.getName()
-              + " type="
-              + firstVariable.getTypeName());
-    int nOuterRows = outerSequence.getRowCount();
-    int nOuterColumns = outerSequence.elementCount();
-    AttributeTable outerAttributeTable =
-        das.getAttributeTable(outerSequence.getLongName()); // I think getLongName == getName() here
-    // String2.log("outerAttributeTable=" + outerAttributeTable);
-
-    // create the columns
-    int innerSequenceColumn = -1; // the outerCol with the inner sequence (or -1 if none)
-    int nInnerColumns = 0; // 0 important if no innerSequenceColumn
-    for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
-      // create the columns
-      BaseType obt =
-          outerSequence.getVar(outerCol); // this doesn't have data, just description of obt
-      if (obt instanceof DByte) addColumn(obt.getName(), new ByteArray());
-      else if (obt instanceof DFloat32) addColumn(obt.getName(), new FloatArray());
-      else if (obt instanceof DFloat64) addColumn(obt.getName(), new DoubleArray());
-      else if (obt instanceof DInt16) addColumn(obt.getName(), new ShortArray());
-      else if (obt instanceof DUInt16) addColumn(obt.getName(), new ShortArray());
-      else if (obt instanceof DInt32) addColumn(obt.getName(), new IntArray());
-      else if (obt instanceof DUInt32) addColumn(obt.getName(), new IntArray());
-      else if (obt instanceof DBoolean)
-        addColumn(
-            obt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
-      else if (obt instanceof DString) addColumn(obt.getName(), new StringArray());
-      else if (obt instanceof DSequence innerSequence) {
-        // *** Start Dealing With InnerSequence
-        // Ensure this is the first innerSequence.
-        // If there are two, the response can't be represented as a simple table.
-        if (innerSequenceColumn != -1) {
-          throw new Exception(
-              errorInMethod
-                  + "The response has more than one inner sequence: "
-                  + getColumnName(innerSequenceColumn)
-                  + " and "
-                  + obt.getName()
-                  + ".");
+    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, url);
+    try (NetcdfDataset ncd =
+        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+      Attributes rawGlobalAtts = new Attributes();
+      NcHelper.getGroupAttributes(ncd.getRootGroup(), rawGlobalAtts);
+      for (String name : rawGlobalAtts.getNames()) {
+        if (!name.contains(".")) {
+          globalAttributes().set(name, rawGlobalAtts.get(name));
         }
-        innerSequenceColumn = outerCol;
-        if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
+      }
 
-        // deal with the inner sequence
-        nInnerColumns = innerSequence.elementCount();
-        AttributeTable innerAttributeTable = das.getAttributeTable(innerSequence.getName());
-        // String2.log("innerAttributeTable=" + innerAttributeTable);
-        for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
+      ucar.nc2.Structure outerSequence = null;
+      for (Variable var : ncd.getVariables()) {
+        if (var instanceof ucar.nc2.Structure) {
+          outerSequence = (ucar.nc2.Structure) var;
+          break;
+        }
+      }
+      if (outerSequence == null) {
+        throw new Exception(errorInMethod + "No Sequence/Structure variable found in the dataset.");
+      }
 
-          // create the columns
-          BaseType ibt =
-              innerSequence.getVar(innerCol); // this doesn't have data, just description of ibt
-          if (ibt instanceof DByte) addColumn(ibt.getName(), new ByteArray());
-          else if (ibt instanceof DFloat32) addColumn(ibt.getName(), new FloatArray());
-          else if (ibt instanceof DFloat64) addColumn(ibt.getName(), new DoubleArray());
-          else if (ibt instanceof DUInt16) addColumn(ibt.getName(), new ShortArray());
-          else if (ibt instanceof DInt16) addColumn(ibt.getName(), new ShortArray());
-          else if (ibt instanceof DUInt32) addColumn(ibt.getName(), new IntArray());
-          else if (ibt instanceof DInt32) addColumn(ibt.getName(), new IntArray());
-          else if (ibt instanceof DBoolean)
-            addColumn(
-                ibt.getName(), new ByteArray()); // .nc doesn't support booleans, so store byte=0|1
-          else if (ibt instanceof DString) addColumn(ibt.getName(), new StringArray());
-          else {
+      List<Variable> outerVars = outerSequence.getVariables();
+      int nOuterColumns = outerVars.size();
+
+      // create the columns
+      int innerSequenceColumn = -1; // the outerCol with the inner sequence (or -1 if none)
+      int nInnerColumns = 0; // 0 important if no innerSequenceColumn
+      ucar.nc2.Structure innerSequence = null;
+      for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
+        Variable obt = outerVars.get(outerCol);
+        if (obt instanceof ucar.nc2.Structure) {
+          // *** Start Dealing With InnerSequence
+          // Ensure this is the first innerSequence.
+          // If there are two, the response can't be represented as a simple table.
+          if (innerSequenceColumn != -1) {
             throw new Exception(
                 errorInMethod
-                    + "Unexpected inner variable type="
-                    + ibt.getTypeName()
-                    + " for name="
-                    + ibt.getName());
+                    + "The response has more than one inner sequence: "
+                    + getColumnName(innerSequenceColumn)
+                    + " and "
+                    + obt.getShortName()
+                    + ".");
           }
+          innerSequenceColumn = outerCol;
+          if (reallyVerbose) String2.log("  innerSequenceColumn=" + innerSequenceColumn);
 
-          // get the ibt attributes
-          // (some servers return innerAttributeTable, some don't -- see test cases)
-          if (innerAttributeTable == null) {
-            // Dapper needs this approach
-            // note use of getLongName here
-            Attributes tAtt = columnAttributes(nColumns() - 1);
-            OpendapHelper.getAttributes(das, ibt.getLongName(), tAtt);
-            if (tAtt.size() == 0) OpendapHelper.getAttributes(das, ibt.getName(), tAtt);
-          } else {
-            // note use of getName in this section
-            int tCol = nColumns() - 1; // the table column just created
-            // String2.log("try getting attributes for inner " + getColumnName(col));
-            dods.dap.Attribute attribute = innerAttributeTable.getAttribute(ibt.getName());
-            // it should be a container with the attributes for this column
-            if (attribute == null) {
-              String2.log(
-                  errorInMethod + "Unexpected: no attribute for innerVar=" + ibt.getName() + ".");
-            } else if (attribute.isContainer()) {
-              OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
-            } else {
-              String2.log(
-                  errorInMethod
-                      + "Unexpected: attribute for innerVar="
-                      + ibt.getName()
-                      + " not a container: "
-                      + attribute.getName()
-                      + "="
-                      + attribute.getValueAt(0));
-            }
-          }
-        }
-        // *** End Dealing With InnerSequence
-
-      } else {
-        throw new Exception(
-            errorInMethod
-                + "Unexpected outer variable type="
-                + obt.getTypeName()
-                + " for name="
-                + obt.getName());
-      }
-      // get the obt attributes
-      // (some servers return outerAttributeTable, some don't -- see test cases)
-      if (obt instanceof DSequence) {
-        // it is the innerSequence, so attributes already read
-      } else if (outerAttributeTable == null) {
-        // Dapper needs this approach
-        // note use of getLongName here
-        Attributes tAtt = columnAttributes(nColumns() - 1);
-        OpendapHelper.getAttributes(das, obt.getLongName(), tAtt);
-        // drds needs this approach
-        if (tAtt.size() == 0) OpendapHelper.getAttributes(das, obt.getName(), tAtt);
-      } else {
-        // note use of getName in this section
-        int tCol = nColumns() - 1; // the table column just created
-        // String2.log("try getting attributes for outer " + getColumnName(col));
-        dods.dap.Attribute attribute = outerAttributeTable.getAttribute(obt.getName());
-        // it should be a container with the attributes for this column
-        if (attribute == null) {
-          String2.log(
-              errorInMethod + "Unexpected: no attribute for outerVar=" + obt.getName() + ".");
-        } else if (attribute.isContainer()) {
-          OpendapHelper.getAttributes(attribute.getContainer(), columnAttributes(tCol));
-        } else {
-          String2.log(
-              errorInMethod
-                  + "Unexpected: attribute for outerVar="
-                  + obt.getName()
-                  + " not a container: "
-                  + attribute.getName()
-                  + "="
-                  + attribute.getValueAt(0));
-        }
-      }
-    }
-    // if (reallyVerbose) String2.log("  columns were created.");
-
-    // Don't ensure that an innerSequence was found
-    // so that this method can be used for 1 or 2 level sequences.
-    // String2.log("nOuterRows=" + nOuterRows);
-    // String2.log(toString());
-
-    // *** read the data (row-by-row, as it wants)
-    for (int outerRow = 0; outerRow < nOuterRows; outerRow++) {
-      List<BaseType> outerVector = outerSequence.getRow(outerRow);
-      int col;
-
-      // get data from innerSequence first (so nInnerRows is known)
-      int nInnerRows = 1; // 1 is important if no innerSequence
-      if (innerSequenceColumn >= 0) {
-        DSequence innerSequence = (DSequence) outerVector.get(innerSequenceColumn);
-        nInnerRows = innerSequence.getRowCount();
-        if (skipDapperSpacerRows && outerRow < nOuterRows - 1) nInnerRows--;
-        // if (reallyVerbose) String2.log("  nInnerRows=" + nInnerRows + " nInnerCols=" +
-        // nInnerColumns);
-        Test.ensureEqual(
-            nInnerColumns,
-            innerSequence.elementCount(),
-            errorInMethod + "Unexpected nInnerColumns for outer row #" + outerRow);
-        col = innerSequenceColumn;
-        for (int innerRow = 0; innerRow < nInnerRows; innerRow++) {
-          List<BaseType> innerVector = innerSequence.getRow(innerRow);
+          innerSequence = (ucar.nc2.Structure) obt;
+          List<Variable> innerVars = innerSequence.getVariables();
+          nInnerColumns = innerVars.size();
           for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
-            // if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" + innerRow
-            // + " IC=" + innerCol);
-            BaseType ibt = innerVector.get(innerCol);
-            if (ibt instanceof DByte t) ((ByteArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DFloat32 t)
-              ((FloatArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DFloat64 t)
-              ((DoubleArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DUInt16 t)
-              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DInt16 t)
-              ((ShortArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DUInt32 t)
-              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DInt32 t)
-              ((IntArray) columns.get(col + innerCol)).add(t.getValue());
-            else if (ibt instanceof DBoolean t)
-              ((ByteArray) columns.get(col + innerCol))
-                  .add(
-                      (byte)
-                          (t.getValue()
-                              ? 1
-                              : 0)); // .nc doesn't support booleans, so store byte=0|1
-            else if (ibt instanceof DString t)
-              ((StringArray) columns.get(col + innerCol)).add(t.getValue());
-            else {
-              throw new Exception(
-                  errorInMethod
-                      + "Unexpected inner variable type="
-                      + ibt.getTypeName()
-                      + " for name="
-                      + ibt.getName());
-            }
+            Variable ibt = innerVars.get(innerCol);
+            PAType paType = NcHelper.getElementPAType(ibt);
+            addColumn(ibt.getShortName(), PrimitiveArray.factory(paType, 8, false));
+
+            Attributes tAtt = columnAttributes(nColumns() - 1);
+            NcHelper.getVariableAttributes(ibt, tAtt);
           }
+        } else {
+          PAType paType = NcHelper.getElementPAType(obt);
+          addColumn(obt.getShortName(), PrimitiveArray.factory(paType, 8, false));
+
+          Attributes tAtt = columnAttributes(nColumns() - 1);
+          NcHelper.getVariableAttributes(obt, tAtt);
         }
       }
 
-      // process the other outerCol
-      // if (reallyVerbose) String2.log("  process the other outer col");
-      col = 0; // restart at 0
-      for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
-        // innerSequenceColumn already processed above
-        if (outerCol == innerSequenceColumn) {
-          col += nInnerColumns;
-          continue;
-        }
+      // *** read the data (row-by-row, as it wants)
+      String ce = "";
+      int qIndex = url.indexOf('?');
+      if (qIndex >= 0) {
+        ce = url.substring(qIndex + 1);
+      }
+      ArrayStructure outerSequenceArray = null;
+      if (ncd.getReferencedFile() instanceof ucar.nc2.dods.DODSNetcdfFile) {
+        ucar.nc2.dods.DODSNetcdfFile dodsFile =
+            (ucar.nc2.dods.DODSNetcdfFile) ncd.getReferencedFile();
+        outerSequenceArray = (ArrayStructure) dodsFile.readWithCE(outerSequence, ce);
+      } else {
+        outerSequenceArray = (ArrayStructure) outerSequence.read();
+      }
 
-        // note addN (not add)
-        // I tried storing type of column to avoid instanceof, but no faster.
-        BaseType obt = outerVector.get(outerCol);
-        if (obt instanceof DByte t) ((ByteArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DFloat32 t)
-          ((FloatArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DFloat64 t)
-          ((DoubleArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DUInt16 t)
-          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DInt16 t)
-          ((ShortArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DUInt32 t)
-          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DInt32 t)
-          ((IntArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else if (obt instanceof DBoolean t)
-          ((ByteArray) columns.get(col++))
-              .addN(
-                  nInnerRows,
-                  (byte) (t.getValue() ? 1 : 0)); // .nc doesn't support booleans, so store byte=0|1
-        else if (obt instanceof DString t)
-          ((StringArray) columns.get(col++)).addN(nInnerRows, t.getValue());
-        else {
-          throw new Exception(
-              errorInMethod
-                  + "Unexpected outer variable type="
-                  + obt.getTypeName()
-                  + " for name="
-                  + obt.getName());
+      try (StructureDataIterator seqIter = outerSequenceArray.getStructureDataIterator()) {
+        while (seqIter.hasNext()) {
+          StructureData outerRowData = seqIter.next();
+
+          // get data from innerSequence first (so nInnerRows is known)
+          int nInnerRows = 1; // 1 is important if no innerSequence
+          ArraySequence innerSequenceArray = null;
+          if (innerSequenceColumn >= 0) {
+            Variable innerSeqVar = outerVars.get(innerSequenceColumn);
+            innerSequenceArray = outerRowData.getArraySequence(innerSeqVar.getShortName());
+            nInnerRows = innerSequenceArray.getStructureDataCount();
+            if (skipDapperSpacerRows && seqIter.hasNext()) {
+              nInnerRows--;
+            }
+
+            int col = innerSequenceColumn;
+            try (StructureDataIterator innerIter = innerSequenceArray.getStructureDataIterator()) {
+              int innerRow = -1;
+              while (innerIter.hasNext()) {
+                StructureData innerRowData = innerIter.next();
+                innerRow++;
+                if (innerRow >= nInnerRows) {
+                  break;
+                }
+                for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
+                  Variable ibt = innerSequence.getVariables().get(innerCol);
+                  PrimitiveArray pa = columns.get(col + innerCol);
+                  pa.add(innerRowData, ibt.getShortName());
+                }
+              }
+            }
+          }
+
+          // process the other outerCol
+          int col = 0; // restart at 0
+          for (int outerCol = 0; outerCol < nOuterColumns; outerCol++) {
+            // innerSequenceColumn already processed above
+            if (outerCol == innerSequenceColumn) {
+              col += nInnerColumns;
+              continue;
+            }
+
+            Variable obt = outerVars.get(outerCol);
+            PrimitiveArray pa = columns.get(col++);
+            pa.addN(outerRowData, obt.getShortName(), nInnerRows);
+          }
         }
       }
     }
@@ -10460,13 +10442,38 @@ public class Table {
    */
   public int tryToApplyConstraintsAndKeep(
       int idCol, StringArray conNames, StringArray conOps, StringArray conVals) {
+    return tryToApplyConstraintsAndKeep(idCol, conNames, conOps, conVals, null);
+  }
+
+  /**
+   * This is like tryToApplyConstraintsAndKeep, but accepts a reusable BitSet.
+   *
+   * @param idCol For reallyVerbose only: rejected rows will log the value in this column.
+   * @param conNames constraint variable names
+   * @param conOps constraint operators
+   * @param conVals constraint values
+   * @param reusableKeep optional reusable BitSet; if null, a new BitSet will be created
+   * @return the number of rows remaining in the table
+   */
+  public int tryToApplyConstraintsAndKeep(
+      int idCol,
+      StringArray conNames,
+      StringArray conOps,
+      StringArray conVals,
+      BitSet reusableKeep) {
 
     // no constraints
     if (conNames == null || conNames.size() == 0) return nRows();
 
     // try to apply constraints
-    BitSet keep = new BitSet();
-    keep.set(0, nRows());
+    int n = nRows();
+    BitSet keep = reusableKeep;
+    if (keep == null) {
+      keep = new BitSet(n);
+    } else {
+      keep.clear();
+    }
+    keep.set(0, n);
     int cardinality = tryToApplyConstraints(idCol, conNames, conOps, conVals, keep);
     if (cardinality == 0) removeAllRows();
     else justKeep(keep);
@@ -11472,20 +11479,22 @@ public class Table {
     boolean someConverted = temporarilyConvertToStandardMissingValues(keyColumns);
 
     String lastKCMV = getColumn(lastKeyColumn).elementType() == PAType.STRING ? "" : "NaN";
+    BitSet keep = new BitSet(nRows);
     // remove rows with mv for last keyColumn
     nRows =
         tryToApplyConstraintsAndKeep(
             lastKeyColumn,
             new StringArray(new String[] {getColumnName(lastKeyColumn)}),
             new StringArray(new String[] {"!="}),
-            new StringArray(new String[] {lastKCMV}));
+            new StringArray(new String[] {lastKCMV}),
+            keep);
     if (nRows == 0) return;
 
     // sort based on keys
     ascendingSort(keyColumns);
 
     // walk through the table, often marking previous row to be kept
-    BitSet keep = new BitSet(nRows); // all false
+    keep.clear();
     keep.set(nRows - 1); // always
     if (nKeyColumns > 1) {
       PrimitiveArray keyCols[] = new PrimitiveArray[nKeyColumns - 1];
@@ -11844,7 +11853,7 @@ public class Table {
                   + " because it is not a numeric data type.");
         }
 
-        DoubleArray roundedArray = new DoubleArray(srcColumn);
+        PrimitiveArray roundedArray = PrimitiveArray.factory(PAType.DOUBLE, srcColumn);
         if (targetColNumber < 0) {
           targetColNumber = this.addColumn(keyColumnName, roundedArray);
           tempOrderByCols.addFirst(targetColNumber);
@@ -12666,6 +12675,7 @@ public class Table {
     boolean getString[] = new boolean[nCol];
     boolean getInt[] = new boolean[nCol];
     boolean getLong[] = new boolean[nCol];
+    boolean getFloat[] = new boolean[nCol];
     boolean getDouble[] = new boolean[nCol];
     boolean getDate[] = new boolean[nCol]; // read as String, then convert to seconds since epoch
     for (int col = 0; col < nCol; col++) {
@@ -12676,6 +12686,7 @@ public class Table {
       if (tPAType == PAType.STRING) getString[col] = true;
       else if (colType == Types.DATE || colType == Types.TIMESTAMP) getDate[col] = true;
       else if (tPAType == PAType.DOUBLE) getDouble[col] = true;
+      else if (tPAType == PAType.FLOAT) getFloat[col] = true;
       else if (tPAType == PAType.LONG) getLong[col] = true;
       else getInt[col] = true;
 
@@ -12692,10 +12703,23 @@ public class Table {
         if (getString[col]) {
           String ts = rs.getString(1 + col);
           paArray[col].addString(ts == null ? "" : ts);
-        } else if (getInt[col]) paArray[col].addInt(rs.getInt(1 + col));
-        else if (getLong[col]) ((LongArray) paArray[col]).add(rs.getLong(1 + col));
-        else if (getDouble[col]) paArray[col].addDouble(rs.getDouble(1 + col));
-        // date string is always in form yyyy-mm-dd
+        } else if (getInt[col]) {
+          int i = rs.getInt(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else paArray[col].addInt(i);
+        } else if (getLong[col]) {
+          long l = rs.getLong(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else ((LongArray) paArray[col]).add(l);
+        } else if (getFloat[col]) {
+          float f = rs.getFloat(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else paArray[col].addFloat(f);
+        } else if (getDouble[col]) {
+          double d = rs.getDouble(1 + col);
+          if (rs.wasNull()) paArray[col].addString("");
+          else paArray[col].addDouble(d);
+        } // date string is always in form yyyy-mm-dd
         // timestamp string is always in form yyyy-mm-dd hh:mm:ss.fffffffff
         else if (getDate[col]) {
           // convert timestamp and date to epochSeconds
@@ -13099,8 +13123,10 @@ public class Table {
     // If a search pattern argument is set to null, that argument's criterion will be dropped from
     // the search.
     DatabaseMetaData dm = con.getMetaData();
+    if (dm.storesUpperCaseIdentifiers()) schema = schema.toUpperCase();
+    else if (dm.storesLowerCaseIdentifiers()) schema = schema.toLowerCase();
     Table tables = new Table(); // works with "posttest", "public", "names", null
-    tables.readSqlResultSet(dm.getTables(null, schema.toLowerCase(), null, types));
+    tables.readSqlResultSet(dm.getTables(null, schema, null, types));
     return (StringArray) tables.getColumn(2); // table name is always col (0..) 2
   }
 
@@ -13127,9 +13153,15 @@ public class Table {
     // If a search pattern argument is set to null, that argument's criterion will be dropped from
     // the search.
     DatabaseMetaData dm = con.getMetaData();
+    if (dm.storesUpperCaseIdentifiers()) {
+      schema = schema.toUpperCase();
+      tableName = tableName.toUpperCase();
+    } else if (dm.storesLowerCaseIdentifiers()) {
+      schema = schema.toLowerCase();
+      tableName = tableName.toLowerCase();
+    }
     Table tables = new Table(); // works with "posttest", "public", "names", null
-    tables.readSqlResultSet(
-        dm.getTables(null, schema.toLowerCase(), tableName.toLowerCase(), null));
+    tables.readSqlResultSet(dm.getTables(null, schema, tableName, null));
     if (tables.nRows() == 0) return null;
     return tables.getStringData(3, 0); // table type is always col (0..) 3
   }
@@ -13989,22 +14021,28 @@ public class Table {
 
       // write the col names
       int nc = nColumns();
+      StringBuilder jsonSB = new StringBuilder();
       if (writeColumnNames) {
         for (int c = 0; c < nc; c++) {
-          bw.write(c == 0 ? '[' : ',');
-          bw.write(String2.toJson(columnNames.get(c)));
+          jsonSB.append(c == 0 ? '[' : ',');
+          String2.toJson(columnNames.get(c), jsonSB);
         }
-        bw.write("]\n");
+        jsonSB.append("]\n");
+        bw.write(jsonSB.toString());
       }
 
       // write the data
       int nr = nRows();
       for (int r = 0; r < nr; r++) {
+        boolean somethingWritten = false;
+        jsonSB.setLength(0);
         for (int c = 0; c < nc; c++) {
-          bw.write(c == 0 ? '[' : ',');
-          bw.write(columns.get(c).getJsonString(r));
+          jsonSB.append(c != 0 ? ',' : '[');
+          columns.get(c).getJsonString(r, jsonSB);
+          somethingWritten = true;
         }
-        bw.write("]\n");
+        jsonSB.append("]\n");
+        bw.write(jsonSB.toString());
       }
 
       bw.close();
@@ -14208,7 +14246,7 @@ public class Table {
     }
   }
 
-  private boolean isTimeColumn(int col) {
+  public boolean isTimeColumn(int col) {
     return "time".equalsIgnoreCase(getColumnName(col))
         && Calendar2.SECONDS_SINCE_1970.equals(columnAttributes.get(col).getString("units"));
   }
@@ -14312,8 +14350,10 @@ public class Table {
     }
     metadata.put("column_names", columnNames.toString());
     metadata.put("column_units", columnUnits.toString());
-    try (ParquetWriter<List<PAOne>> writer =
+
+    try (ParquetWriter<RowRef> writer =
         new ParquetWriterBuilder(
+                this,
                 schema,
                 new LocalOutputFile(java.nio.file.Path.of(fullFileName + randomInt)),
                 metadata)
@@ -14325,22 +14365,15 @@ public class Table {
             .withDictionaryEncoding(false)
             .build()) {
 
+      // Single object allocated once, reused across all rows
+      RowRef rowRef = new RowRef();
       for (int row = 0; row < nRows(); row++) {
-        ArrayList<PAOne> record = new ArrayList<>();
-        for (int j = 0; j < nColumns(); j++) {
-          if (isTimeColumn(j)) {
-            // Convert from seconds since epoch to millis since epoch.
-            record.add(getPAOneData(j, row).multiply(PAOne.fromInt(1000)));
-          } else {
-            record.add(getPAOneData(j, row));
-          }
-        }
-        writer.write(record);
+        rowRef.row = row;
+        writer.write(rowRef);
       }
       writer.close();
 
-      File2.rename(fullFileName + randomInt, fullFileName); // throws Exception if trouble
-
+      File2.rename(fullFileName + randomInt, fullFileName);
       if (reallyVerbose)
         String2.log(
             msg

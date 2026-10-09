@@ -212,10 +212,24 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
       return FileVisitResult.CONTINUE;
     }
 
-    // skip because it doesn't match pathRegex?
-    if (pathPattern != null && !pathPattern.matcher(ttDir).matches()) {
-      if (debugMode) String2.log(">> doesn't match pathRegex: " + ttDir + " regex=" + pathRegex);
-      return FileVisitResult.SKIP_SUBTREE;
+    // Validate if directory might match pathRegex
+    if (pathPattern != null) {
+      Matcher matcher = pathPattern.matcher(ttDir);
+      if (!matcher.matches()) {
+        if (recursive && matcher.hitEnd()) {
+          if (debugMode)
+            String2.log(
+                ">> directory path might match pathRegex but doesn't: "
+                    + ttDir
+                    + " regex="
+                    + pathRegex);
+          return FileVisitResult.CONTINUE; // keep looking in subdirs
+        }
+        if (debugMode)
+          String2.log(
+              ">> directory path doesn't match pathRegex: " + ttDir + " regex=" + pathRegex);
+        return FileVisitResult.SKIP_SUBTREE;
+      }
     }
 
     if (directoriesToo) {
@@ -244,6 +258,23 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
       // getParent returns \\ or /, without trailing /
       String ttDir = String2.replaceAll(file.getParent().toString(), fromSlash, toSlash) + toSlash;
+
+      // Validate the full file path against pathRegex (matching S3 behavior)
+      // Using matches() here because we now have the complete file path
+      String fullFilePath = ttDir + name;
+      // Don't apply pathRegex to the initial dir itself, but do apply it to all subdirs and files.
+      if (!(ttDir.equals(dir) && attrs.isRegularFile())
+          && pathPattern != null
+          && !pathPattern.matcher(fullFilePath).matches()) {
+        if (debugMode)
+          String2.log(
+              ">> file's full path doesn't match pathRegex: "
+                  + fullFilePath
+                  + " regex="
+                  + pathRegex);
+        return FileVisitResult.CONTINUE;
+      }
+
       if (debugMode) String2.log(">> add fileName: " + ttDir + name);
       directoryPA.add(ttDir);
       namePA.add(name);
@@ -380,7 +411,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
           // If files have file-system-like names, e.g.,
           //  url=http://bucketname.s3.region.amazonaws.com/  key=dir1/dir2/fileName.ext
           //  e.g.,
-          // http://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+          // http://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
           //  They are just object keys with internal slashes.
           // So specify prefix in request.
           Pattern fileNameRegexPattern = Pattern.compile(tFileNameRegex);

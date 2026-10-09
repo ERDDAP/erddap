@@ -5,27 +5,25 @@ import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.TestUtil;
-import dods.dap.BaseType;
-import dods.dap.DAS;
-import dods.dap.DBoolean;
-import dods.dap.DByte;
-import dods.dap.DConnect;
-import dods.dap.DDS;
-import dods.dap.DFloat32;
-import dods.dap.DFloat64;
-import dods.dap.DInt16;
-import dods.dap.DInt32;
-import dods.dap.DSequence;
-import dods.dap.DString;
-import dods.dap.DUInt16;
-import dods.dap.DUInt32;
-import dods.dap.DataDDS;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.List;
+import opendap.dap.BaseType;
+import opendap.dap.DAS;
+import opendap.dap.DByte;
+import opendap.dap.DConnect2;
+import opendap.dap.DDS;
+import opendap.dap.DFloat32;
+import opendap.dap.DFloat64;
+import opendap.dap.DInt16;
+import opendap.dap.DInt32;
+import opendap.dap.DSequence;
+import opendap.dap.DString;
+import opendap.dap.DUInt16;
+import opendap.dap.DUInt32;
+import opendap.dap.DataDDS;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagDisabledExternalERDDAP;
 import tags.TagDisabledLocalERDDAP;
@@ -609,12 +607,12 @@ class EDDTableFromDapSequenceTests {
     int language = 0;
     String sourceUrl = "http://dapper.pmel.noaa.gov/dapper/argo/argo_all.cdp"; // no longer running
     String2.log("\n*** EDDTableFromDapSequence.testArgo " + sourceUrl);
-    DConnect dConnect = new DConnect(sourceUrl, EDDTableFromDapSequence.acceptDeflate, 1, 1);
-    String2.log("getDAS");
-    DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    String2.log("getDDS");
-    DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-
+    try (DConnect2 dConnect = new DConnect2(sourceUrl, EDDTableFromDapSequence.acceptDeflate)) {
+      String2.log("getDAS");
+      DAS das = dConnect.getDAS();
+      String2.log("getDDS");
+      DDS dds = dConnect.getDDS();
+    }
     EDDTable tedd = (EDDTable) EDDTableFromDapSequence.oneFromDatasetsXml(null, "pmelArgoAll");
     String tq =
         "longitude,latitude,id&id<=1000000&.draw=markers&.marker=4|5&.color=0x000000&.colorBar=|C|Linear|||";
@@ -835,34 +833,34 @@ class EDDTableFromDapSequenceTests {
               ? "https://oceanwatch.pfeg.noaa.gov:8080/dods/GLOBEC/GLOBEC_birds?birds.year,birds.species,birds.head_c,birds.month_local,birds.day_local&birds.year=2000&birds.month_local=8&birds.day_local=7"
               : "http://las.pfeg.noaa.gov/cgi-bin/ERDserver/northwest.sql?northwest.temperature,northwest.ctd_station_code,northwest.datetime,northwest.station,northwest.longitude,northwest.latitude&northwest.datetime%3E13821";
       System.out.println("\ntesting url=" + url);
-      DConnect dConnect = new DConnect(url, true);
-      DataDDS dataDds = dConnect.getData(null); // null = no statusUI
+      try (DConnect2 dConnect = new DConnect2(url, true)) {
+        DataDDS dataDds = dConnect.getData((opendap.dap.StatusUI) null); // null = no statusUI
 
-      // *** read the data (row-by-row, as it wants)
-      DSequence outerSequence = (DSequence) dataDds.getVariables().next();
-      int nOuterRows = outerSequence.getRowCount();
-      System.out.println("nRows=" + nOuterRows);
-      for (int outerRow = 0; outerRow < Math.min(5, nOuterRows); outerRow++) {
-        List<BaseType> outerVector = outerSequence.getRow(outerRow);
-        StringBuilder sb = new StringBuilder();
+        // *** read the data (row-by-row, as it wants)
+        DSequence outerSequence = (DSequence) dataDds.getVariables().nextElement();
+        int nOuterRows = outerSequence.getRowCount();
+        System.out.println("nRows=" + nOuterRows);
+        for (int outerRow = 0; outerRow < Math.min(5, nOuterRows); outerRow++) {
+          List<BaseType> outerVector = outerSequence.getRow(outerRow);
+          StringBuilder sb = new StringBuilder();
 
-        // process the other outerCol
-        for (int outerCol = 0; outerCol < outerVector.size(); outerCol++) {
-          if (outerCol > 0) sb.append(", ");
-          BaseType obt = (BaseType) outerVector.get(outerCol);
-          if (obt instanceof DByte t) sb.append(t.getValue());
-          else if (obt instanceof DFloat32 t) sb.append(t.getValue());
-          else if (obt instanceof DFloat64 t) sb.append(t.getValue());
-          else if (obt instanceof DInt16 t) sb.append(t.getValue());
-          else if (obt instanceof DUInt16 t) sb.append(t.getValue());
-          else if (obt instanceof DInt32 t) sb.append(t.getValue());
-          else if (obt instanceof DUInt32 t) sb.append(t.getValue());
-          else if (obt instanceof DBoolean t) sb.append(t.getValue());
-          else if (obt instanceof DString t) sb.append(t.getValue());
-          else if (obt instanceof DSequence t) sb.append("DSequence)");
-          else sb.append(obt.getTypeName());
+          // process the other outerCol
+          for (int outerCol = 0; outerCol < outerVector.size(); outerCol++) {
+            if (outerCol > 0) sb.append(", ");
+            BaseType obt = (BaseType) outerVector.get(outerCol);
+            if (obt instanceof DByte t) sb.append(t.getValue());
+            else if (obt instanceof DFloat32 t) sb.append(t.getValue());
+            else if (obt instanceof DFloat64 t) sb.append(t.getValue());
+            else if (obt instanceof DInt16 t) sb.append(t.getValue());
+            else if (obt instanceof DUInt16 t) sb.append(t.getValue());
+            else if (obt instanceof DInt32 t) sb.append(t.getValue());
+            else if (obt instanceof DUInt32 t) sb.append(t.getValue());
+            else if (obt instanceof DString t) sb.append(t.getValue());
+            else if (obt instanceof DSequence t) sb.append("DSequence)");
+            else sb.append(obt.getTypeName());
+          }
+          System.out.println(sb.toString());
         }
-        System.out.println(sb.toString());
       }
     }
   }
@@ -1033,9 +1031,10 @@ class EDDTableFromDapSequenceTests {
   void testReadDas() throws Exception {
     String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
     String url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";
-    DConnect dConnect = new DConnect(url, true, 1, 1);
-    DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-    DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+    try (DConnect2 dConnect = new DConnect2(url, true)) {
+      DAS das = dConnect.getDAS();
+      DDS dds = dConnect.getDDS();
+    }
   }
 
   /** Test graph made from subsetVariables data */
