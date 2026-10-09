@@ -686,15 +686,11 @@ public abstract class EDDTable extends EDD {
     // This isn't required (ERDDAP was/could be lazy), but doing it makes initial access fast
     //  and makes it thread-safe (always done in constructor's thread).
     if (accessibleViaSubset().length() == 0 && accessibleTo == null) {
-      if (EDStatic.config.backgroundCreateSubsetTables) {
-        Object taskOA[] = new Object[2];
-        taskOA[0] = TaskThread.TASK_CREATE_SUBSET_TABLE;
-        taskOA[1] = this;
-        EDStatic.addTask(taskOA);
-        EDStatic.ensureTaskThreadIsRunningIfNeeded();
-      } else {
-        createSubsetVariablesTable();
-      }
+      Object taskOA[] = new Object[2];
+      taskOA[0] = TaskThread.TASK_CREATE_SUBSET_TABLE;
+      taskOA[1] = this;
+      EDStatic.addTask(taskOA);
+      EDStatic.ensureTaskThreadIsRunningIfNeeded();
     }
 
     // add standard metadata to combinedGlobalAttributes

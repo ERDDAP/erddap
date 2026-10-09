@@ -55,7 +55,7 @@
         <prometheusVersion>1.9.0</prometheusVersion>
         <parquetVersion>1.18.1</parquetVersion>
         <awssdkVersion>2.55.9</awssdkVersion>
-        <luceneVersion>10.5.1</luceneVersion>
+        <luceneVersion>10.5.2</luceneVersion>
         <nettyVersion>4.2.18.Final</nettyVersion>
         <mavenTestPluginVersion>3.6.0</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.15</jacocoMavenVersion>
