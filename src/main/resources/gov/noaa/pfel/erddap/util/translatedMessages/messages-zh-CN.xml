@@ -2261,6 +2261,10 @@ set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 
 ]]></EDDTableDownloadDataTooltip>
 <EDDTableFromEDDGridSummary>注意：此数据集是网格数据集的表格版本，也可用于此 ERDDAP（请参阅 datasetID={0}）。大多数人在大多数时候都倾向于使用此数据集的原始网格版本。此数据集将网格数据集中的所有 axisVariables 和 dataVariables 呈现为类似数据库的大型数据表中的列。您可以像查询 ERDDAP 中的任何其他表格数据集一样查询此数据集；但是，如果您查询任何原始 dataVariables，则必须限制 axisVariable[0]（通常是“时间”）的内容，以便搜索不超过 {1} axisVariable[0] 值的数据。 ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 选修的
 <br>约束 #1
