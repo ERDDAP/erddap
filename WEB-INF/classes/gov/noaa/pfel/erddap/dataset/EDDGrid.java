@@ -6447,6 +6447,15 @@ public abstract class EDDGrid extends EDD {
     String strideTooltip = sss + EDStatic.messages.get(Message.EDD_GRID_STRIDE_TOOLTIP, language);
     String downloadTooltip = EDStatic.messages.get(Message.EDD_GRID_DOWNLOAD_TOOLTIP, language);
     String gap = "&nbsp;&nbsp;&nbsp;";
+    // a row for each axisVariable
+    int nAv = axisVariables.length;
+    StringBuilder checkAllConstraints = new StringBuilder();
+    StringBuilder uncheckAllConstraints = new StringBuilder();
+    for (int av = 0; av < nAv; av++) {
+      checkAllConstraints.append(formName + ".aconch" + av + ".checked=true;");
+      uncheckAllConstraints.append(formName + ".aconch" + av + ".checked=false;");
+    }
+
     writer.write(
         "<tr>\n"
             + "  <th class=\"L\">"
@@ -6458,6 +6467,30 @@ public abstract class EDDGrid extends EDD {
                 loggedInAs,
                 dimHelp + EDStatic.messages.get(Message.EDD_GRID_VAR_HAS_DIM_TOOLTIP, language))
             + " </th>\n"
+            + "  <th class=\"L\">"
+            + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_HTML, language)
+            + " "
+            + EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"narrow_max_width\">"
+                    + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language)
+                    + "</div>")
+            + "<br>"
+            + widgets.button(
+                "button",
+                "CheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL, language),
+                "onclick=\"" + checkAllConstraints + "\"")
+            + widgets.button(
+                "button",
+                "UncheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
+                "onclick=\"" + uncheckAllConstraints + "\"")
+            + "  &nbsp;</th>\n"
             + "  <th class=\"L\">"
             + EDStatic.messages.get(Message.EDD_GRID_START, language)
             + " "
@@ -6504,8 +6537,6 @@ public abstract class EDDGrid extends EDD {
             // EDStatic.messages.EDDGridDimensionLastTooltipAr[language]) + "</th>\n" +
             "</tr>\n");
 
-    // a row for each axisVariable
-    int nAv = axisVariables.length;
     String sliderFromNames[] = new String[nAv];
     String sliderToNames[] = new String[nAv];
     int sliderNThumbs[] = new int[nAv];
@@ -6543,6 +6574,22 @@ public abstract class EDDGrid extends EDD {
       writer.write(EDStatic.htmlTooltipImageEDVGA(request, language, loggedInAs, edvga));
       writer.write("&nbsp;</td>\n");
 
+      // apply constraint checkbox
+      boolean hasUserConstraint =
+          userDapQuery.length() > 0
+              && (!isAxisDapQuery || destinationNames.indexOf(edvga.destinationName()) >= 0);
+      boolean aconchChecked = userDapQuery.length() > 0 ? hasUserConstraint : true;
+      writer.write("  <td>");
+      writer.write(
+          widgets.checkbox(
+              "aconch" + av,
+              EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language),
+              aconchChecked,
+              "1",
+              "",
+              ""));
+      writer.write("  &nbsp;</td>\n");
+
       // set default start, stride, stop
       int tStarti = av == timeIndex ? sourceSize - 1 : 0;
       int tStopi = sourceSize - 1;
@@ -6572,12 +6619,26 @@ public abstract class EDDGrid extends EDD {
       String edvgaTooltip = edvga.htmlRangeTooltip(language);
       writer.write("  <td>");
       // new style: textField
-      writer.write(widgets.textField("start" + av, edvgaTooltip, 22, 40, tStart, ""));
+      writer.write(
+          widgets.textField(
+              "start" + av,
+              edvgaTooltip,
+              22,
+              40,
+              tStart,
+              "oninput=\"" + formName + ".aconch" + av + ".checked=true;\""));
       writer.write("  </td>\n");
 
       // stride
       writer.write("  <td>"); // + gap);
-      writer.write(widgets.textField("stride" + av, edvgaTooltip, 7, 20, tStride, ""));
+      writer.write(
+          widgets.textField(
+              "stride" + av,
+              edvgaTooltip,
+              7,
+              20,
+              tStride,
+              "oninput=\"" + formName + ".aconch" + av + ".checked=true;\""));
       writer.write(
           "  " + // gap +
               "</td>\n");
@@ -6585,7 +6646,14 @@ public abstract class EDDGrid extends EDD {
       // stop
       writer.write("  <td>");
       // new style: textField
-      writer.write(widgets.textField("stop" + av, edvgaTooltip, 22, 40, tStop, ""));
+      writer.write(
+          widgets.textField(
+              "stop" + av,
+              edvgaTooltip,
+              22,
+              40,
+              tStop,
+              "oninput=\"" + formName + ".aconch" + av + ".checked=true;\""));
       writer.write("  </td>\n");
 
       // n Values
@@ -6617,7 +6685,7 @@ public abstract class EDDGrid extends EDD {
               : Math2.roundToInt((tStopi * (EDV.SLIDER_PIXELS - 1.0)) / safeSourceSize1);
       writer.write(
           "<tr>\n"
-              + "  <td colspan=\"6\">\n"
+              + "  <td colspan=\"7\">\n"
               + widgets.spacer(10, 1, "")
               + // was "style=\"text-align:left\"") +
               widgets.dualSlider(av, EDV.SLIDER_PIXELS - 1, "")
@@ -6783,7 +6851,8 @@ public abstract class EDDGrid extends EDD {
             + "; av++) {\n"
             + "      if (eval(\"form1.avar\" + av + \".checked\")) { \n"
             + "        if (result.length > start.length) result += \",\";\n"
-            + "        result += (eval(\"form1.avar\" + av + \".value\")) + sss[av];\n"
+            + "        var tAconch = eval(\"form1.aconch\" + av);\n"
+            + "        result += (eval(\"form1.avar\" + av + \".value\")) + (tAconch && tAconch.checked ? sss[av] : \"\");\n"
             + "      }\n"
             + "    }\n"
             + "    if (result.length == start.length) { result = \"\";\n"
