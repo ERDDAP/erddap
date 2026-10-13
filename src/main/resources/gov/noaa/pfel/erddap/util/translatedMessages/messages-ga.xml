@@ -2739,6 +2739,10 @@ cad a bhí san aisAthraithe[0] (go hiondúil &quot;am&quot;) ionas nach mbeidh s
 Cuardaítear luachanna aisathraitheach[0].
 
 ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Roghnach
 <br>Srian #1

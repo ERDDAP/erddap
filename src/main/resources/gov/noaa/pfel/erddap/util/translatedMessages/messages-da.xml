@@ -2626,6 +2626,10 @@ hvad var axisVariable[0] (normalt &quot;tid&quot;), så data ikke var mere end {
 axisVariable[0]-værdier søges.
 
 ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Valgfri
 <br>Begrænsning #1

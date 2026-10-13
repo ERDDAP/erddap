@@ -2428,6 +2428,10 @@ set(gca, &#39;YDir&#39;, &#39;normal&#39;)</EDDGridMatlabPlotExample>
 <EDDTableFromEDDGridSummary>注: このデータセットは、この ERDDAP でも利用可能なグリッド データセットの表形式バージョンです (datasetID={0} を参照)。ほとんどの人は、ほとんどの場合、このデータセットの元のグリッド バージョンを使用することを好みます。このデータセットは、グリッド データセットのすべての axisVariables と dataVariables を、巨大なデータベースのようなデータ テーブル内の列として表示します。このデータセットは、ERDDAP の他の表形式データセットと同様にクエリできます。ただし、元の dataVariables のいずれかをクエリする場合は、axisVariable[0] (通常は「時間」) を制限して、{1} 個以下の axisVariable[0] 値のデータを検索する必要があります。
 
 ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 オプション
 <br>制約 #1

@@ -2802,6 +2802,10 @@ axisVariable[0] neydi (genellikle &quot;zaman&quot;) yani veriler {1}&#39;den fa
 axisVariable[0] değerleri aranır.
 
 ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 İsteğe bağlı
 <br>Kısıt #1

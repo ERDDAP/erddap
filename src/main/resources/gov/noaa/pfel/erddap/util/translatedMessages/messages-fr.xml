@@ -2762,6 +2762,10 @@ qu&#39;est-ce que axisVariable[0] (généralement &quot;time&quot;) pour que les
 Les valeurs axisVariable[0] sont recherchées.
 
 ---</EDDTableFromEDDGridSummary>
+<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Facultatif
 <br>Contrainte n°1
