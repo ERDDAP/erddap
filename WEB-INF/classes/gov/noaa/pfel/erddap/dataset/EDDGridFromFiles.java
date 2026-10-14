@@ -925,9 +925,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
 
     // doQuickRestart?
     boolean doQuickRestart =
-        haveValidSourceInfo
-            && (testQuickRestart
-                || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()));
+        haveValidSourceInfo && (testQuickRestart || EDStatic.initialLoadDatasets());
     if (verbose) String2.log("doQuickRestart=" + doQuickRestart);
 
     if (doQuickRestart) {
@@ -2063,9 +2061,7 @@ public abstract class EDDGridFromFiles extends EDDGrid implements WatchUpdateHan
       }
 
       // after changes all in place
-      if (EDStatic.config.updateSubsRssOnFileChanges) {
-        Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
-      }
+      Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
     }
 
     if (verbose)

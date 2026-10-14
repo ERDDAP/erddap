@@ -6644,7 +6644,7 @@ class JettyTests extends WireMockLifecycle {
             + "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", "
             + (EDStatic.config.sosActive ? "\"sos\", " : "")
             + (EDStatic.config.wcsActive ? "\"wcs\", " : "")
-            + (EDStatic.config.wmsActive ? "\"wms\", " : "")
+            + "\"wms\", "
             + (EDStatic.config.filesActive ? "\"files\", " : "")
             + (EDStatic.config.authentication.length() > 0 ? "\"Accessible\", " : "")
             + "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", "
@@ -6653,7 +6653,7 @@ class JettyTests extends WireMockLifecycle {
             + "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", "
             + (EDStatic.config.sosActive ? "\"String\", " : "")
             + (EDStatic.config.wcsActive ? "\"String\", " : "")
-            + (EDStatic.config.wmsActive ? "\"String\", " : "")
+            + "\"String\", "
             + (EDStatic.config.filesActive ? "\"String\", " : "")
             + (EDStatic.config.authentication.length() > 0 ? "\"String\", " : "")
             + "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", "
@@ -6675,7 +6675,7 @@ class JettyTests extends WireMockLifecycle {
             + (EDStatic.config.sosActive ? "\"\", " : "")
             + // currently, it isn't made available via sos
             (EDStatic.config.wcsActive ? "\"\", " : "")
-            + (EDStatic.config.wmsActive ? "\"\", " : "")
+            + "\"\", "
             + (EDStatic.config.filesActive
                 ? "\"http://localhost:" + PORT + "/erddap/files/erdGlobecBottle/\", "
                 : "")
@@ -6979,69 +6979,55 @@ class JettyTests extends WireMockLifecycle {
     }
 
     // wms
-    if (EDStatic.config.wmsActive) {
-      results =
-          SSR.getUrlResponseStringUnchanged(
-              EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
-      Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-      Test.ensureTrue(
-          results.indexOf(
-                  ">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
-              >= 0,
-          "results=\n" + results);
-      Test.ensureTrue(results.indexOf(">erdMH1chla1day\n") >= 0, "results=\n" + results);
+    results =
+        SSR.getUrlResponseStringUnchanged(
+            EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
+    Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+    Test.ensureTrue(
+        results.indexOf(
+                ">Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
+            >= 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf(">erdMH1chla1day\n") >= 0, "results=\n" + results);
 
-      results =
-          SSR.getUrlResponseStringUnchanged(
-              EDStatic.erddapUrl + "/wms/index.json?" + EDStatic.defaultPIppQuery);
-      Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
-      Test.ensureTrue(
-          results.indexOf(
-                  "\"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
-              >= 0,
-          "results=\n" + results);
-      Test.ensureTrue(results.indexOf("\"erdMH1chla1day\"") >= 0, "results=\n" + results);
+    results =
+        SSR.getUrlResponseStringUnchanged(
+            EDStatic.erddapUrl + "/wms/index.json?" + EDStatic.defaultPIppQuery);
+    Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+    Test.ensureTrue(
+        results.indexOf(
+                "\"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present")
+            >= 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf("\"erdMH1chla1day\"") >= 0, "results=\n" + results);
 
-      results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/documentation.html");
-      Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-      Test.ensureTrue(
-          results.indexOf("display of registered and superimposed map-like views") >= 0,
-          "results=\n" + results);
-      Test.ensureTrue(
-          results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
+    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/documentation.html");
+    Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+    Test.ensureTrue(
+        results.indexOf("display of registered and superimposed map-like views") >= 0,
+        "results=\n" + results);
+    Test.ensureTrue(
+        results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
 
-      results =
-          SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/erdMH1chla1day/index.html");
-      Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-      Test.ensureTrue(
-          results.indexOf(
-                  "ERDDAP - Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite) - WMS")
-              >= 0,
-          "results=\n" + results);
-      Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("on-the-fly by ERDDAP's") >= 0, "results=\n" + results);
-      Test.ensureTrue(results.indexOf("longitude") >= 0, "results=\n" + results);
-      Test.ensureTrue(
-          results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
-    } else {
-      results = "Shouldn't get here.";
-      try {
-        results =
-            SSR.getUrlResponseStringUnchanged(
-                EDStatic.erddapUrl + "/wms/index.html?" + EDStatic.defaultPIppQuery);
-      } catch (Throwable t) {
-        results = MustBe.throwableToString(t);
-      }
-      Test.ensureTrue(
-          results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0,
-          "results=\n" + results);
-    }
+    results =
+        SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/wms/erdMH1chla1day/index.html");
+    Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+    Test.ensureTrue(
+        results.indexOf(
+                "ERDDAP - Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (1 Day Composite) - WMS")
+            >= 0,
+        "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("on-the-fly by ERDDAP's") >= 0, "results=\n" + results);
+    Test.ensureTrue(results.indexOf("longitude") >= 0, "results=\n" + results);
+    Test.ensureTrue(
+        results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
 
     // results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl +
     // "/categorize/standard_name/index.html");
@@ -7111,24 +7097,11 @@ class JettyTests extends WireMockLifecycle {
     }
 
     // slideSorter
-    if (EDStatic.config.slideSorterActive) {
-      results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/slidesorter.html");
-      Test.ensureTrue(
-          results.indexOf(
-                  "Your slides will be lost when you close this browser window, unless you:")
-              >= 0,
-          "results=\n" + results);
-    } else {
-      results = "Shouldn't get here.";
-      try {
-        results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/slidesorter.html");
-      } catch (Throwable t) {
-        results = MustBe.throwableToString(t);
-      }
-      Test.ensureTrue(
-          results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0,
-          "results=\n" + results);
-    }
+    results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/slidesorter.html");
+    Test.ensureTrue(
+        results.indexOf("Your slides will be lost when you close this browser window, unless you:")
+            >= 0,
+        "results=\n" + results);
 
     // embed a graph (always at coastwatch)
     results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/images/embed.html");
@@ -7183,13 +7156,11 @@ class JettyTests extends WireMockLifecycle {
                     + EDStatic.defaultPIppQuery
                     + "\n"
                 : "")
-            + (EDStatic.config.wmsActive
-                ? "wms,http://localhost:"
-                    + PORT
-                    + "/erddap/wms/index.csv?"
-                    + EDStatic.defaultPIppQuery
-                    + "\n"
-                : "");
+            + "wms,http://localhost:"
+            + PORT
+            + "/erddap/wms/index.csv?"
+            + EDStatic.defaultPIppQuery
+            + "\n";
     // subscriptions?
     // converters?
     Test.ensureEqual(results, expected, "results=\n" + results);
@@ -7288,30 +7259,20 @@ class JettyTests extends WireMockLifecycle {
             + "/erddap/griddap/index.json?page=1&itemsPerPage=1000\"],\n"
             + "      [\"tabledap\", \"http://localhost:"
             + PORT
-            + "/erddap/tabledap/index.json?page=1&itemsPerPage=1000\"]"
-            + (EDStatic.config.sosActive || EDStatic.config.wcsActive || EDStatic.config.wmsActive
-                ? ","
-                : "")
-            + "\n"
+            + "/erddap/tabledap/index.json?page=1&itemsPerPage=1000\"],\n"
             + (EDStatic.config.sosActive
                 ? "      [\"sos\", \"http://localhost:"
                     + PORT
-                    + "/erddap/sos/index.json?page=1&itemsPerPage=1000\"]"
-                    + (EDStatic.config.wcsActive || EDStatic.config.wmsActive ? "," : "")
-                    + "\n"
+                    + "/erddap/sos/index.json?page=1&itemsPerPage=1000\"],\n"
                 : "")
             + (EDStatic.config.wcsActive
                 ? "      [\"wcs\", \"http://localhost:"
                     + PORT
-                    + "/erddap/wcs/index.json?page=1&itemsPerPage=1000\"]"
-                    + (EDStatic.config.wmsActive ? "," : "")
-                    + "\n"
+                    + "/erddap/wcs/index.json?page=1&itemsPerPage=1000\"],\n"
                 : "")
-            + (EDStatic.config.wmsActive
-                ? "      [\"wms\", \"http://localhost:"
-                    + PORT
-                    + "/erddap/wms/index.json?page=1&itemsPerPage=1000\"]\n"
-                : "")
+            + "      [\"wms\", \"http://localhost:"
+            + PORT
+            + "/erddap/wms/index.json?page=1&itemsPerPage=1000\"]\n"
             +
             // subscriptions?
             "    ]\n"
@@ -7349,11 +7310,9 @@ class JettyTests extends WireMockLifecycle {
                     + PORT
                     + "/erddap/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n"
                 : "")
-            + (EDStatic.config.wmsActive
-                ? "wms[9]http://localhost:"
-                    + PORT
-                    + "/erddap/wms/index.tsv?page=1&itemsPerPage=1000[10]\n"
-                : "")
+            + "wms[9]http://localhost:"
+            + PORT
+            + "/erddap/wms/index.tsv?page=1&itemsPerPage=1000[10]\n"
             + "[end]";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -7424,14 +7383,12 @@ class JettyTests extends WireMockLifecycle {
                     + "/erddap/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
                     + "</tr>\n"
                 : "")
-            + (EDStatic.config.wmsActive
-                ? "<tr>\n"
-                    + "<td>wms</td>\n"
-                    + "<td>http://localhost:"
-                    + PORT
-                    + "/erddap/wms/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
-                    + "</tr>\n"
-                : "")
+            + "<tr>\n"
+            + "<td>wms</td>\n"
+            + "<td>http://localhost:"
+            + PORT
+            + "/erddap/wms/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n"
+            + "</tr>\n"
             + "</table>\n"
             + "</body>\n"
             + "</html>\n";

@@ -346,9 +346,7 @@ public class EDDTableFromDapSequence extends EDDTable {
 
     // quickRestart
     Attributes quickRestartAttributes = null;
-    if (EDStatic.config.quickRestart
-        && EDStatic.initialLoadDatasets()
-        && File2.isFile(quickRestartFullFileName())) {
+    if (EDStatic.initialLoadDatasets() && File2.isFile(quickRestartFullFileName())) {
       // try to do quick initialLoadDatasets()
       // If this fails anytime during construction, the dataset will be loaded
       //  during the next major loadDatasets,

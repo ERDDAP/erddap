@@ -610,9 +610,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
         String qrName = quickRestartFullFileName(datasetID);
         long tCreationTime = System.currentTimeMillis();
 
-        if (EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
-            && File2.isFile(qrName)) {
+        if (EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
           tCreationTime = File2.getLastModified(qrName);
         } else {
           EDDTableFromHyraxFiles.makeDownloadFileTasks(
@@ -677,9 +675,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
         String qrName = quickRestartFullFileName(datasetID);
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
-            && File2.isFile(qrName)) {
+        if (EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
           tCreationTime = File2.getLastModified(qrName);
         } else {
           EDDTableFromThreddsFiles.makeDownloadFileTasks(
@@ -745,9 +741,7 @@ public class EDDTableFromFilesHandler extends BaseTableHandler {
         String fileDir = EDStatic.config.fullCopyDirectory + datasetID + "/";
         String fileName = "data.tsv";
         long tCreationTime = System.currentTimeMillis();
-        if (EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
-            && File2.isFile(fileDir + fileName)) {
+        if (EDStatic.initialLoadDatasets() && File2.isFile(fileDir + fileName)) {
           tCreationTime = File2.getLastModified(fileDir + fileName);
 
         } else {

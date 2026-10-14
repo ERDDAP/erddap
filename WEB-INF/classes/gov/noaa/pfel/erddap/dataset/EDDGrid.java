@@ -556,15 +556,7 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null) {
 
-      if (!EDStatic.config.wmsActive)
-        accessibleViaWMS =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
-                    "WMS",
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WMS")));
-      else if (lonIndex < 0 || latIndex < 0)
+      if (lonIndex < 0 || latIndex < 0)
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
@@ -7936,18 +7928,16 @@ public abstract class EDDGrid extends EDD {
             + "</a>\n"
             + "     (e.g., 2002-08-03T12:30:00Z, but some variables include milliseconds, e.g.,\n"
             + "     2002-08-03T12:30:00.123Z).\n"
-            + (EDStatic.config.convertersActive
-                ? "     <br>ERDDAP has a utility to\n"
-                    + "       <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "       a Numeric Time to/from a String Time</a>.\n"
-                    + "     See also:\n"
-                    + "       <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "       ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "     <br>ERDDAP has a utility to\n"
+            + "       <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "       a Numeric Time to/from a String Time</a>.\n"
+            + "     See also:\n"
+            + "       <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "       ERDDAP Deals with Time</a>.\n"
             + "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n"
             + "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string"
             + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
@@ -7982,18 +7972,16 @@ public abstract class EDDGrid extends EDD {
             + "     And this is consistent with some other places in ERDDAP that try to repair\n"
             + "     invalid input when the intention is clear, instead of just returning an error\n"
             + "     message.)\n"
-            + (EDStatic.config.convertersActive
-                ? "     ERDDAP has a utility to\n"
-                    + "       <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "       a Numeric Time to/from a String Time</a>.\n"
-                    + "     See also:\n"
-                    + "       <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "       ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "     ERDDAP has a utility to\n"
+            + "       <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "       a Numeric Time to/from a String Time</a>.\n"
+            + "     See also:\n"
+            + "       <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "       ERDDAP Deals with Time</a>.\n"
             + "   <li><a class=\"selfLink\" id=\"lastInParentheses\" href=\"#lastInParentheses\" rel=\"bookmark\"><kbd>(last)</kbd></a> - ERDDAP interprets \n"
             + "       a <kbd>start</kbd> or <kbd>stop</kbd> value of <kbd>(last)</kbd> as the last\n"
             + "     available index.\n"
@@ -10045,18 +10033,16 @@ public abstract class EDDGrid extends EDD {
             + "      <br>In ERDDAP, this parameter is optional and the default is always the last time available.\n"
             + "      <br>The WCS standard allows <i>time=beginTime,endTime,timeRes</i>.  ERDDAP doesn't allow this.\n"
             + "      <br>The WCS standard allows <i>time=time1,time2,...</i>  ERDDAP doesn't allow this.</td>\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>ERDDAP has a utility to\n"
-                    + "        <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "        a Numeric Time to/from a String Time</a>.\n"
-                    + "      <br>See also:\n"
-                    + "        <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "        ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "      <br>ERDDAP has a utility to\n"
+            + "        <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "        a Numeric Time to/from a String Time</a>.\n"
+            + "      <br>See also:\n"
+            + "        <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "        ERDDAP Deals with Time</a>.\n"
             + "  </tr>\n"
             + "  <tr>\n"
             + "    <td><i>parameter=value</i>\n"

@@ -2317,70 +2317,59 @@ public abstract class EDD {
 
     if (accessibleViaISO19115 == null) {
 
-      if (EDStatic.config.iso19115Active) {
+      // create the ISO19115 file
+      // (The constructor calls this, so no need to be careful about concurrency.)
+      accessibleViaISO19115 = String2.canonical("");
+      String tmp = ".tmp";
+      File2.makeDirectory(datasetDir());
+      String tName = datasetDir() + datasetID + iso19115Suffix + ".xml";
+      File2.delete(tName); // delete any existing file
+      try {
+        // is a pre-made, external file available?
+        if (iso19115File == null) {
+          // No.  Write iso19115 to temp file
+          StringWriter writer = new StringWriter(65536); // most are ~40KB
+          writeISO19115(0, writer);
+          accessibleViaISO19115 =
+              String2.canonical(File2.writeToFileUtf8(tName + tmp, writer.toString()));
 
-        // create the ISO19115 file
-        // (The constructor calls this, so no need to be careful about concurrency.)
-        accessibleViaISO19115 = String2.canonical("");
-        String tmp = ".tmp";
-        File2.makeDirectory(datasetDir());
-        String tName = datasetDir() + datasetID + iso19115Suffix + ".xml";
-        File2.delete(tName); // delete any existing file
-        try {
-          // is a pre-made, external file available?
-          if (iso19115File == null) {
-            // No.  Write iso19115 to temp file
-            StringWriter writer = new StringWriter(65536); // most are ~40KB
-            writeISO19115(0, writer);
-            accessibleViaISO19115 =
-                String2.canonical(File2.writeToFileUtf8(tName + tmp, writer.toString()));
+          // then swap into place to replace old version quickly
+          if (accessibleViaISO19115.length() == 0) File2.rename(tName + tmp, tName);
+          else File2.delete(tName + tmp);
 
-            // then swap into place to replace old version quickly
-            if (accessibleViaISO19115.length() == 0) File2.rename(tName + tmp, tName);
-            else File2.delete(tName + tmp);
-
-          } else if (iso19115File.length() > 0) {
-            if (String2.isUrl(iso19115File)) {
-              // download the file
-              // It is unfortunate that it is re-downloaded each time dataset is reloaded.
-              SSR.downloadFile(iso19115File, tName, false); // throws Exception
-              iso19115File = tName;
-            } else if (File2.isFile(iso19115File)) {
-              // copy the file to datasetDir
-              File2.copy(iso19115File, tName);
-            } else {
-              // file doesn't exist
-              throw new SimpleException(
-                  EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0)
-                      + "the <iso19115File> specified in datasets.xml.");
-            }
-
+        } else if (iso19115File.length() > 0) {
+          if (String2.isUrl(iso19115File)) {
+            // download the file
+            // It is unfortunate that it is re-downloaded each time dataset is reloaded.
+            SSR.downloadFile(iso19115File, tName, false); // throws Exception
+            iso19115File = tName;
+          } else if (File2.isFile(iso19115File)) {
+            // copy the file to datasetDir
+            File2.copy(iso19115File, tName);
           } else {
-            accessibleViaISO19115 =
-                MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "ISO 19115-2/19139");
+            // file doesn't exist
+            throw new SimpleException(
+                EDStatic.messages.get(Message.RESOURCE_NOT_FOUND, 0)
+                    + "the <iso19115File> specified in datasets.xml.");
           }
 
-        } catch (Throwable t) {
-          String2.log(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
-                  "ISO 19115-2/19139",
-                  (t instanceof SimpleException
-                      ? MustBe.getShortErrorMessage(t)
-                      : MustBe.throwableToString(t))));
-          if (accessibleViaISO19115.length() == 0)
-            accessibleViaISO19115 = String2.canonical(MustBe.getShortErrorMessage(t));
-          File2.delete(tName + tmp);
-          File2.delete(tName);
+        } else {
+          accessibleViaISO19115 =
+              MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, 0), "ISO 19115-2/19139");
         }
-      } else {
-        accessibleViaISO19115 =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
-                    "ISO 19115-2/19139",
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "ISO 19115-2/19139")));
+
+      } catch (Throwable t) {
+        String2.log(
+            MessageFormat.format(
+                EDStatic.messages.get(Message.NO_XXX_BECAUSE_2, 0),
+                "ISO 19115-2/19139",
+                (t instanceof SimpleException
+                    ? MustBe.getShortErrorMessage(t)
+                    : MustBe.throwableToString(t))));
+        if (accessibleViaISO19115.length() == 0)
+          accessibleViaISO19115 = String2.canonical(MustBe.getShortErrorMessage(t));
+        File2.delete(tName + tmp);
+        File2.delete(tName);
       }
     }
     return accessibleViaISO19115;
