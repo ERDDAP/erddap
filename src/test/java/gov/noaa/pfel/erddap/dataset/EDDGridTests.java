@@ -1170,10 +1170,10 @@ class EDDGridTests {
     Test.ensureTrue(html.contains("colspan=\"7\""), "Missing colspan=7 for sliders");
 
     // Verify JavaScript URL builder checks aconch
-    Test.ensureTrue(html.contains(".aconch\" + av);"), "Missing tAconch logic in JS");
     Test.ensureTrue(
-        html.contains("tAconch && tAconch.checked ? sss[av] : \"\""),
-        "Missing aconch checked guard in JS");
+        html.contains("var tAconch = form1[\"aconch\" + av];"), "Missing tAconch logic in JS");
+    Test.ensureTrue(
+        html.contains("if (tAconch && !tAconch.checked) {"), "Missing aconch checked guard in JS");
 
     // 2. Test constrained form: userDapQuery specifies axis query for latitude (av=0)
     java.io.StringWriter swConstrained = new java.io.StringWriter();
