@@ -6811,56 +6811,53 @@ public abstract class EDDGrid extends EDD {
             + datasetID
             + "\" + ft.substring(0, ft.indexOf(\" - \")) + \"?\";\n"
             + "  var sss = new Array(); var cum = \"\"; var done = false;\n"
-            +
 
-            // gather startStrideStop and cumulative sss.   %5B=[ %5D=] %7C=|
-            "  for (var av = 0; av < "
+            // gather startStrideStop and cumulative sss
+            + "  for (var av = 0; av < "
             + nAv
             + "; av++) {\n"
-            + "    sss[av] = \"%5B(\" + "
-            + "eval(\"form1.start\"  + av + \".value\") + \"):\" + "
-            +
-            // "eval(\"form1.start\"  + av + \".options[form1.start\"  + av +
-            // \".selectedIndex].text\") + \"):\" + " +
-            "eval(\"form1.stride\" + av + \".value\") + \":(\" + "
-            + "eval(\"form1.stop\"   + av + \".value\") + \")%5D\";\n"
-            +
-            // "eval(\"form1.stop\"   + av + \".options[form1.stop\"   + av +
-            // \".selectedIndex].text\") + \")]\";\n" +
-            "    cum += sss[av];\n"
+            + "    var tAconch = form1[\"aconch\" + av];\n"
+            + "    if (tAconch && !tAconch.checked) {\n"
+            + "      sss[av] = \"%5B%5D\";\n"
+            + "    } else {\n"
+            + "      sss[av] = \"%5B(\" + "
+            + "form1[\"start\" + av].value + \"):\" + "
+            + "form1[\"stride\" + av].value + \":(\" + "
+            + "form1[\"stop\" + av].value + \")%5D\";\n"
+            + "    }\n"
+            + "    cum += sss[av];\n"
             + "  }\n"
-            +
 
             // see if any dataVars were selected
-            "  for (var dv = 0; dv < "
+            + "  for (var dv = 0; dv < "
             + dataVariables.length
             + "; dv++) {\n"
-            + "    if (eval(\"form1.dvar\" + dv + \".checked\")) {\n"
+            + "    if (form1[\"dvar\" + dv].checked) {\n"
             + "      if (result.length > 0) result += \",\";\n"
-            + "      result += (eval(\"form1.dvar\" + dv + \".value\")) + cum; }\n"
+            + "      result += form1[\"dvar\" + dv].value + cum;\n"
+            + "    }\n"
             + "  }\n"
-            +
 
             // else find selected axes
-            "  if (result.length > 0) {\n"
+            + "  if (result.length > 0) {\n"
             + "    result = start + result;\n"
             + "  } else {\n"
             + "    result = start;\n"
             + "    for (var av = 0; av < "
             + nAv
             + "; av++) {\n"
-            + "      if (eval(\"form1.avar\" + av + \".checked\")) { \n"
+            + "      if (form1[\"avar\" + av].checked) {\n"
             + "        if (result.length > start.length) result += \",\";\n"
-            + "        var tAconch = eval(\"form1.aconch\" + av);\n"
-            + "        result += (eval(\"form1.avar\" + av + \".value\")) + (tAconch && tAconch.checked ? sss[av] : \"\");\n"
+            + "        result += form1[\"avar\" + av].value + sss[av];\n"
             + "      }\n"
             + "    }\n"
-            + "    if (result.length == start.length) { result = \"\";\n"
-            + "      throw new Error(\"Please select (check) one of the variables.\"); }\n"
+            + "    if (result.length == start.length) {\n"
+            + "      result = \"\";\n"
+            + "      throw new Error(\"Please select (check) one of the variables.\");\n"
+            + "    }\n"
             + "  }\n"
-            + "} catch (e) {alert(e);}\n"
-            + // result is in 'result'  (or "" if error or nothing selected)
-            "form1.tUrl.value = result;\n";
+            + "} catch (e) { alert(e); }\n"
+            + "form1.tUrl.value = result;\n";
 
     // just generate URL
     writer.write("<br>");
