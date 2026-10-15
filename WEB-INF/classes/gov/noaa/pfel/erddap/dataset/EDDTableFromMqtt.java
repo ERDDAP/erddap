@@ -450,28 +450,32 @@ public class EDDTableFromMqtt extends EDDTableFromFiles {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (Writer writer = File2.getBufferedWriterUtf8(baos)) {
+          StringBuilder jsonSB = new StringBuilder();
           if (!fileExists) {
             boolean somethingWritten = false;
-            writer.write('[');
+            jsonSB.append('[');
             for (int col = 0; col < table.nColumns(); col++) {
-              if (somethingWritten) writer.write(',');
-              writer.write(String2.toJson(table.getColumnName(col)));
+              if (somethingWritten) jsonSB.append(',');
+              String2.toJson(table.getColumnName(col), jsonSB);
               somethingWritten = true;
             }
-            writer.write("]\n");
+            jsonSB.append("]\n");
+            writer.write(jsonSB.toString());
           }
 
           int nRows = table.nRows();
           int nCols = table.nColumns();
           for (int row = 0; row < nRows; row++) {
             boolean somethingWritten = false;
-            writer.write('[');
+            jsonSB.setLength(0);
+            jsonSB.append('[');
             for (int col = 0; col < nCols; col++) {
-              if (somethingWritten) writer.write(',');
-              writer.write(table.getColumn(col).getJsonString(row));
+              if (somethingWritten) jsonSB.append(',');
+              table.getColumn(col).getJsonString(row, jsonSB);
               somethingWritten = true;
             }
-            writer.write("]\n");
+            jsonSB.append("]\n");
+            writer.write(jsonSB.toString());
           }
         }
 

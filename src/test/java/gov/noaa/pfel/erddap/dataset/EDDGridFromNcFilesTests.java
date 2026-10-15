@@ -2381,12 +2381,7 @@ class EDDGridFromNcFilesTests {
             + "            <att name=\"Grib2_Parameter_Category\">Waves</att>\n"
             + "            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n"
             + "            <att name=\"Grib2_Parameter_Name\">Direction of swell waves</att>\n"
-            + "            <att name=\"Grib2_Statistical_Process_Type\">UnknownStatType- - 1</att>\n"
-            + // new
-            // in
-            // netcdf-java
-            // 5.2
-            "            <att name=\"Grib_Variable_Id\">VAR_10-0-7_L241</att>\n"
+            + "            <att name=\"Grib_Variable_Id\">VAR_10-0-7_L241</att>\n"
             + "            <att name=\"grid_mapping\">LatLon_Projection</att>\n"
             + // new in netcdf-java 4.6.4
             "            <att name=\"long_name\">Direction of swell waves @ Ordered Sequence of Data</att>\n"
@@ -2426,12 +2421,7 @@ class EDDGridFromNcFilesTests {
             + "            <att name=\"Grib2_Parameter_Category\">Waves</att>\n"
             + "            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n"
             + "            <att name=\"Grib2_Parameter_Name\">Mean period of swell waves</att>\n"
-            + "            <att name=\"Grib2_Statistical_Process_Type\">UnknownStatType- - 1</att>\n"
-            + // new
-            // in
-            // netcdf-java
-            // 5.2
-            "            <att name=\"Grib_Variable_Id\">VAR_10-0-9_L241</att>\n"
+            + "            <att name=\"Grib_Variable_Id\">VAR_10-0-9_L241</att>\n"
             + "            <att name=\"grid_mapping\">LatLon_Projection</att>\n"
             + // new in netcdf-java 4.6.4
             "            <att name=\"long_name\">Mean period of swell waves @ Ordered Sequence of Data</att>\n"
@@ -2471,12 +2461,7 @@ class EDDGridFromNcFilesTests {
             + "            <att name=\"Grib2_Parameter_Category\">Waves</att>\n"
             + "            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n"
             + "            <att name=\"Grib2_Parameter_Name\">Significant height of swell waves</att>\n"
-            + "            <att name=\"Grib2_Statistical_Process_Type\">UnknownStatType- - 1</att>\n"
-            + // new
-            // in
-            // netcdf-java
-            // 5.2
-            "            <att name=\"Grib_Variable_Id\">VAR_10-0-8_L241</att>\n"
+            + "            <att name=\"Grib_Variable_Id\">VAR_10-0-8_L241</att>\n"
             + "            <att name=\"grid_mapping\">LatLon_Projection</att>\n"
             + // new in netcdf-java 4.6.4
             "            <att name=\"long_name\">Significant height of swell waves @ Ordered Sequence of Data</att>\n"
@@ -7891,9 +7876,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Waves\";\n"
             + "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n"
             + "    String Grib2_Parameter_Name \"Mean period of swell waves\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_10-0-9_L241\";\n"
+            + "    String Grib_Variable_Id \"VAR_10-0-9_L241\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Surface Waves\";\n"
@@ -7916,9 +7899,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Waves\";\n"
             + "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n"
             + "    String Grib2_Parameter_Name \"Mean period of wind waves\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_10-0-6_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_10-0-6_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Surface Waves\";\n"
@@ -7947,9 +7928,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Waves\";\n"
             + "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n"
             + "    String Grib2_Parameter_Name \"Primary wave mean period\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_10-0-11_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_10-0-11_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Surface Waves\";\n"
@@ -7972,9 +7951,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Waves\";\n"
             + "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n"
             + "    String Grib2_Parameter_Name \"Significant height of combined wind waves and swell\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_10-0-3_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_10-0-3_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Surface Waves\";\n"
@@ -7998,9 +7975,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Waves\";\n"
             + "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n"
             + "    String Grib2_Parameter_Name \"Significant height of swell waves\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_10-0-8_L241\";\n"
+            + "    String Grib_Variable_Id \"VAR_10-0-8_L241\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Surface Waves\";\n"
@@ -8023,9 +7998,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Waves\";\n"
             + "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n"
             + "    String Grib2_Parameter_Name \"Significant height of wind waves\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_10-0-5_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_10-0-5_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Surface Waves\";\n"
@@ -8048,9 +8021,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Momentum\";\n"
             + "    String Grib2_Parameter_Discipline \"Meteorological products\";\n"
             + "    String Grib2_Parameter_Name \"u-component of wind\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_0-2-2_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_0-2-2_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Wind\";\n"
@@ -8073,9 +8044,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Momentum\";\n"
             + "    String Grib2_Parameter_Discipline \"Meteorological products\";\n"
             + "    String Grib2_Parameter_Name \"v-component of wind\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_0-2-3_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_0-2-3_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Wind\";\n"
@@ -8104,9 +8073,7 @@ class EDDGridFromNcFilesTests {
             + "    String Grib2_Parameter_Category \"Momentum\";\n"
             + "    String Grib2_Parameter_Discipline \"Meteorological products\";\n"
             + "    String Grib2_Parameter_Name \"Wind speed\";\n"
-            + "    String Grib2_Statistical_Process_Type \"UnknownStatType--1\";\n"
-            + // new in netcdf-java 5.2
-            "    String Grib_Variable_Id \"VAR_0-2-1_L1\";\n"
+            + "    String Grib_Variable_Id \"VAR_0-2-1_L1\";\n"
             + "    String grid_mapping \"LatLon_Projection\";\n"
             + // new in netcdf-java 4.6.4
             "    String ioos_category \"Wind\";\n"

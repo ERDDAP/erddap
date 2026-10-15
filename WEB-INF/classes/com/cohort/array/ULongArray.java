@@ -1085,8 +1085,13 @@ public class ULongArray extends PrimitiveArray {
    * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
    */
   @Override
-  public String getJsonString(final int index) {
-    return "" + get(index);
+  public void getJsonString(final int index, final StringBuilder sb) {
+    final BigInteger bi = get(index);
+    if (bi == null) {
+      sb.append("null");
+    } else {
+      sb.append(String.valueOf(bi));
+    }
   }
 
   /**

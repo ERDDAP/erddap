@@ -1350,30 +1350,34 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         }
         Writer writer = File2.getBufferedWriterUtf8(baos);
 
+        StringBuilder jsonSB = new StringBuilder();
         if (fileIsNew) {
           // write the column names to the writer
           boolean somethingWritten = false;
           for (int col = 0; col < nColumns; col++) {
             if (!columnIsFixed[col]) {
-              writer.write(somethingWritten ? ',' : '[');
-              writer.write(String2.toJson(columnNames[col]));
+              jsonSB.append(somethingWritten ? ',' : '[');
+              String2.toJson(columnNames[col], jsonSB);
               somethingWritten = true;
             }
           }
-          writer.write("]\n");
+          jsonSB.append("]\n");
+          writer.write(jsonSB.toString());
         }
 
         // write the data to the writer
         for (int tRow = startRow; tRow < stopRow; tRow++) {
           boolean somethingWritten = false;
+          jsonSB.setLength(0);
           for (int col = 0; col < nColumns; col++) {
             if (!columnIsFixed[col]) {
-              writer.write(somethingWritten ? ',' : '[');
-              writer.write(columnValues[col].getJsonString(tRow));
+              jsonSB.append(somethingWritten ? ',' : '[');
+              columnValues[col].getJsonString(tRow, jsonSB);
               somethingWritten = true;
             }
           }
-          writer.write("]\n");
+          jsonSB.append("]\n");
+          writer.write(jsonSB.toString());
         }
 
         // prepare to write everything to the file

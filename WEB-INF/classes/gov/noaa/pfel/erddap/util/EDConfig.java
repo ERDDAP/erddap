@@ -275,21 +275,24 @@ public class EDConfig {
   @FeatureFlag public boolean publishMqttNotif;
   @FeatureFlag public boolean enableEnvParsing;
   @FeatureFlag public boolean updateSubsRssOnFileChanges;
-  @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
-  @FeatureFlag public boolean includeNcCFSubsetVariables;
-  @FeatureFlag public boolean ncHeaderMakeFile = false;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
+
+  /**
+   * When true, a request that names a real dataset but matches no data answers 422 Unprocessable
+   * Content instead of 404, so a client can tell it apart from a dataset that is not there while
+   * raise_for_status() and similar checks still fire. Off by default, which keeps the long-standing
+   * 404. See https://github.com/ERDDAP/erddap/issues/410
+   */
+  @FeatureFlag public boolean use422ForNoDataStatusCode = false;
+
   @FeatureFlag public boolean useHeadersForUrl = true;
   @FeatureFlag public boolean verifyHostNameErddapUrl = true;
   public java.util.Set<String> allowedHosts =
       java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
-  @FeatureFlag public boolean generateCroissantSchema = true;
-  @FeatureFlag public boolean touchThreadOnlyWhenItems = true;
   @FeatureFlag public boolean taskCacheClear = true;
   @FeatureFlag public boolean useNcMetadataForFileTable = true;
-  @FeatureFlag public boolean backgroundCreateSubsetTables = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -640,11 +643,8 @@ public class EDConfig {
         getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
     requestCacheMillis =
         getSetupEVInt(setup, ev, "requestCacheMinutes", DEFAULT_cacheMinutes / 15) * 60000L;
-    touchThreadOnlyWhenItems = getSetupEVBoolean(setup, ev, "touchThreadOnlyWhenItems", true);
     taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
     useNcMetadataForFileTable = getSetupEVBoolean(setup, ev, "useNcMetadataForFileTable", true);
-    backgroundCreateSubsetTables =
-        getSetupEVBoolean(setup, ev, "backgroundCreateSubsetTables", true);
     lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
     loadDatasetsMinMillis =
         Math.max(
@@ -677,7 +677,6 @@ public class EDConfig {
     publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
     enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
     updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", true);
     enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
     corsAllowHeaders =
         getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
@@ -685,6 +684,7 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
+    use422ForNoDataStatusCode = getSetupEVBoolean(setup, ev, "use422ForNoDataStatusCode", false);
     useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
 
     verifyHostNameErddapUrl = getSetupEVBoolean(setup, ev, "verifyHostNameErddapUrl", true);
@@ -728,11 +728,8 @@ public class EDConfig {
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
-    includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
-    ncHeaderMakeFile = getSetupEVBoolean(setup, ev, "ncHeaderMakeFile", false);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     useSisISO19139 = getSetupEVBoolean(setup, ev, "useSisISO19139", false);
-    generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
     // Mqtt flags initialization
     mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);

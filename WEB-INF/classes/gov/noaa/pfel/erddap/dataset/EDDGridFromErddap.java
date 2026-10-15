@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
 import opendap.dap.NoSuchVariableException;
@@ -54,6 +55,7 @@ import org.semver4j.Semver;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
@@ -210,7 +212,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
    */
   public static NetcdfDataset openDataset(String url) throws Exception {
     DatasetUrl durl = DatasetUrl.create(thredds.client.catalog.ServiceType.OPENDAP, url);
-    return NetcdfDatasets.openDataset(durl, null, -1, null, null);
+    return NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null);
   }
 
   public EDDGridFromErddap(

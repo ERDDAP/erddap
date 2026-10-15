@@ -14,6 +14,7 @@ import gov.noaa.pfel.erddap.util.BufferedFileChannel;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.DataInputStream;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
@@ -29,6 +30,7 @@ public class GridDataAllAccessor implements AutoCloseable {
   public static boolean verbose = false;
 
   protected final GridDataAccessor gridDataAccessor;
+  protected final Path basePath;
 
   protected String baseFileName; // to which the dv number is added
   protected PAType dataPAType[]; // 1 per data variable e.g., float.class
@@ -53,6 +55,7 @@ public class GridDataAllAccessor implements AutoCloseable {
       nDv = dataVars.length;
       String tQuery = gridDataAccessor.userDapQuery();
       String baseDir = gridDataAccessor.eddGrid().cacheDirectory();
+      basePath = Paths.get(baseDir).toAbsolutePath().normalize();
       baseFileName =
           String2.md5Hex12(tQuery == null ? "" : tQuery)
               + "_"
@@ -64,7 +67,7 @@ public class GridDataAllAccessor implements AutoCloseable {
       for (int dv = 0; dv < nDv; dv++) {
         dataPAType[dv] = dataVars[dv].destinationDataPAType();
         String rawPath = baseFileName + dv;
-        String sanitizedPath = TableWriterAll.sanitizePath(rawPath, baseDir);
+        String sanitizedPath = sanitizePath(rawPath);
         FileChannel fc =
             FileChannel.open(
                 Paths.get(sanitizedPath),
@@ -93,6 +96,20 @@ public class GridDataAllAccessor implements AutoCloseable {
         }
       }
       gridDataAccessor.close();
+    }
+  }
+
+  private String sanitizePath(String relativeOrFullPath) {
+    try {
+      Path targetPath = basePath.resolve(relativeOrFullPath).toAbsolutePath().normalize();
+      if (!targetPath.startsWith(basePath)) {
+        throw new SecurityException(
+            String2.ERROR + " in sanitizePath: Path traversal outside base directory");
+      }
+      return targetPath.toString();
+    } catch (Exception e) {
+      throw new SecurityException(
+          String2.ERROR + " in sanitizePath: Invalid path " + relativeOrFullPath, e);
     }
   }
 
@@ -144,9 +161,8 @@ public class GridDataAllAccessor implements AutoCloseable {
    * @return a FileChannel
    */
   public FileChannel openDataChannel(int dv) throws Exception {
-    String baseDir = gridDataAccessor.eddGrid().cacheDirectory();
     String rawPath = baseFileName + dv;
-    String sanitizedPath = TableWriterAll.sanitizePath(rawPath, baseDir);
+    String sanitizedPath = sanitizePath(rawPath);
     return FileChannel.open(Paths.get(sanitizedPath), StandardOpenOption.READ);
   }
 
@@ -161,9 +177,8 @@ public class GridDataAllAccessor implements AutoCloseable {
     long n = gridDataAccessor.totalIndex.size();
     Math2.ensureArraySizeOkay(n, "GridDataAllAccessor");
     PrimitiveArray pa = PrimitiveArray.factory(dataPAType[dv], (int) n, false);
-    String baseDir = gridDataAccessor.eddGrid().cacheDirectory();
     String rawPath = baseFileName + dv;
-    String sanitizedPath = TableWriterAll.sanitizePath(rawPath, baseDir);
+    String sanitizedPath = sanitizePath(rawPath);
     try (FileChannel channel =
         FileChannel.open(Paths.get(sanitizedPath), StandardOpenOption.READ)) {
       readDataChunk(dv, channel, pa, 0, (int) n);
@@ -189,20 +204,12 @@ public class GridDataAllAccessor implements AutoCloseable {
             // Prefer deleting the sanitized full path (baseDir + filename). If that fails,
             // fall back to deleting whatever baseFileName+dv resolves to.
             try {
-              String baseDir = null;
-              try {
-                if (gridDataAccessor != null) baseDir = gridDataAccessor.eddGrid().cacheDirectory();
-              } catch (Throwable t3) {
-                baseDir = null;
-              }
-              if (baseDir != null) {
-                String sanitized = TableWriterAll.sanitizePath(baseFileName + dv, baseDir);
-                File2.delete(sanitized);
-                continue;
-              }
-            } catch (Throwable t4) {
+              String sanitized = sanitizePath(baseFileName + dv);
+              File2.delete(sanitized);
+              continue;
+            } catch (Throwable t1) {
+              File2.delete(baseFileName + dv);
             }
-            File2.delete(baseFileName + dv);
           } catch (Throwable t2) {
             String2.log(
                 "ERROR in GridDataAllAccessor.deleteFiles: " + MustBe.throwableToString(t2));

@@ -1091,9 +1091,13 @@ public class UShortArray extends PrimitiveArray {
    * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
    */
   @Override
-  public String getJsonString(final int index) {
+  public void getJsonString(final int index, final StringBuilder sb) {
     final short b = getPacked(index);
-    return maxIsMV && b == PACKED_MAX_VALUE ? "null" : String.valueOf(unpack(b));
+    if (maxIsMV && b == PACKED_MAX_VALUE) {
+      sb.append("null");
+    } else {
+      sb.append(String.valueOf(unpack(b)));
+    }
   }
 
   /**
@@ -1541,7 +1545,8 @@ public class UShortArray extends PrimitiveArray {
    * @throws Exception if trouble
    */
   @Override
-  public void externalizeForDODS(final DataOutputStream dos, final int i) throws Exception {
+  public void externalizeForDODS(final DataOutputStream dos, final int i, byte[] workbuffer)
+      throws Exception {
     dos.writeInt(array[i]); // as if int
   }
 

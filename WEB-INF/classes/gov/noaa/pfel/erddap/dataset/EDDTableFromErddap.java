@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
 import org.semver4j.Semver;
@@ -46,6 +47,7 @@ import thredds.client.catalog.ServiceType;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
@@ -55,6 +57,8 @@ import ucar.nc2.dataset.NetcdfDatasets;
  */
 @SaxHandlerClass(EDDTableFromErddapHandler.class)
 public class EDDTableFromErddap extends EDDTable implements FromErddap {
+
+  private static final String NCCSV_CONVENTION_SUFFIX = "(?i),\\s*NCCSV-\\d+\\.\\d+\\s*,?\\s*$";
 
   // default = last version before /version service was added
   protected Semver sourceErddapVersion = EDStatic.getSemver("1.22");
@@ -302,7 +306,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         if (verbose) String2.log("  using info from remote dataset's NetcdfDatasets services");
 
         DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, localSourceUrl);
-        try (NetcdfDataset dataset = NetcdfDatasets.openDataset(durl, null, -1, null, null)) {
+        try (NetcdfDataset dataset =
+            NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
           NcHelper.getGroupAttributes(dataset.getRootGroup(), sourceGlobalAttributes);
 
           Variable outerVariable = dataset.findVariable(SEQUENCE_NAME);
@@ -328,6 +333,12 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         }
       }
     }
+
+    // .nccsvMetadata adds NCCSV-x.x to Conventions for transport. It isn't a convention of the
+    // source dataset, so don't expose it or persist it in the quick restart metadata.
+    sourceGlobalAttributes.set(
+        "Conventions",
+        removeNccsvConventionSuffix(sourceGlobalAttributes.getString("Conventions")));
 
     combinedGlobalAttributes =
         new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes); // order is important
@@ -510,6 +521,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
               + "ms"
               + (cTime >= 600000 ? "  (>10m!)" : cTime >= 10000 ? "  (>10s!)" : "")
               + "\n");
+  }
+
+  static String removeNccsvConventionSuffix(String conventions) {
+    if (!String2.isSomething(conventions)) return conventions;
+
+    String cleaned = conventions.replaceFirst(NCCSV_CONVENTION_SUFFIX, "").trim();
+    return cleaned.replaceFirst("^,\\s*", "").replaceFirst(",\\s*$", "").trim();
   }
 
   /** This returns the source ERDDAP's version number, e.g., 1.22 */

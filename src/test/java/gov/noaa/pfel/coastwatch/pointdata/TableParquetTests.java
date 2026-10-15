@@ -5,15 +5,13 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
-import com.cohort.array.PAOne;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.pointdata.parquet.CustomWriteSupport.RowRef;
 import gov.noaa.pfel.coastwatch.pointdata.parquet.ParquetWriterBuilder;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.example.data.Group;
@@ -99,20 +97,22 @@ class TableParquetTests {
     metadata.put("column_names", "id,bool_col,bool_opt");
     metadata.put("column_units", ",,");
 
-    try (ParquetWriter<List<PAOne>> writer =
+    try (ParquetWriter<RowRef> writer =
         new ParquetWriterBuilder(
-                schema, new LocalOutputFile(java.nio.file.Path.of(roundTripFileName)), metadata)
+                table,
+                schema,
+                new LocalOutputFile(java.nio.file.Path.of(roundTripFileName)),
+                metadata)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .withConf(new Configuration())
             .build()) {
 
+      RowRef rowRef = new RowRef();
       for (int row = 0; row < table.nRows(); row++) {
-        ArrayList<PAOne> record = new ArrayList<>();
-        for (int col = 0; col < table.nColumns(); col++) {
-          record.add(table.getPAOneData(col, row));
-        }
-        writer.write(record);
+        rowRef.row = row;
+        writer.write(rowRef);
       }
+      writer.close();
     }
 
     // VERIFY THE PARQUET FILE SCHEMA DIRECTLY
@@ -247,20 +247,22 @@ class TableParquetTests {
     metadata.put("column_names", "id,int_col,long_col,float_col,double_col,bool_col,bin_col");
     metadata.put("column_units", ",,,,,,");
 
-    try (ParquetWriter<List<PAOne>> writer =
+    try (ParquetWriter<RowRef> writer =
         new ParquetWriterBuilder(
-                schema, new LocalOutputFile(java.nio.file.Path.of(roundTripFileName)), metadata)
+                table,
+                schema,
+                new LocalOutputFile(java.nio.file.Path.of(roundTripFileName)),
+                metadata)
             .withCompressionCodec(CompressionCodecName.SNAPPY)
             .withConf(new Configuration())
             .build()) {
 
+      RowRef rowRef = new RowRef();
       for (int row = 0; row < table.nRows(); row++) {
-        ArrayList<PAOne> record = new ArrayList<>();
-        for (int col = 0; col < table.nColumns(); col++) {
-          record.add(table.getPAOneData(col, row));
-        }
-        writer.write(record);
+        rowRef.row = row;
+        writer.write(rowRef);
       }
+      writer.close();
     }
 
     try (ParquetFileReader reader =

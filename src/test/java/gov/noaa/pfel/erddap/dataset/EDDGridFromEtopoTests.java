@@ -6,26 +6,16 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagImageComparison;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 
 class EDDGridFromEtopoTests {
-  static boolean initialCroissantSetting = false;
 
   @BeforeAll
   static void init() {
     Initialization.edStatic();
-    initialCroissantSetting = EDStatic.config.generateCroissantSchema;
-  }
-
-  @AfterEach
-  void cleanup() {
-    EDStatic.config.generateCroissantSchema = initialCroissantSetting;
   }
 
   /**
@@ -346,10 +336,8 @@ class EDDGridFromEtopoTests {
   /**
    * @throws Throwable if trouble
    */
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  void testSchema(boolean generateCroissantSchema) throws Throwable {
-    EDStatic.config.generateCroissantSchema = generateCroissantSchema;
+  @org.junit.jupiter.api.Test
+  void testSchema() throws Throwable {
     int language = 0;
     String tName, results, tResults, expected;
 

@@ -12,7 +12,6 @@ import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.nio.file.Path;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -23,17 +22,9 @@ import testDataset.Initialization;
 
 class EDDTableFromFileNamesTests {
 
-  static boolean initialCroissantSetting = false;
-
   @BeforeAll
   static void init() {
     Initialization.edStatic();
-    initialCroissantSetting = EDStatic.config.generateCroissantSchema;
-  }
-
-  @AfterEach
-  void cleanup() {
-    EDStatic.config.generateCroissantSchema = initialCroissantSetting;
   }
 
   /** testGenerateDatasetsXml */
@@ -1611,10 +1602,8 @@ http://localhost:8080/erddap/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,
   /**
    * @throws Throwable if trouble
    */
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  void testSchema(boolean generateCroissantSchema) throws Throwable {
-    EDStatic.config.generateCroissantSchema = generateCroissantSchema;
+  @org.junit.jupiter.api.Test
+  void testSchema() throws Throwable {
     int language = 0;
     String tName, results, tResults, expected;
 

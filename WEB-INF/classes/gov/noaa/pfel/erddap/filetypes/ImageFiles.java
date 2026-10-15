@@ -49,6 +49,30 @@ import java.util.List;
 
 public abstract class ImageFiles extends ImageTypes {
 
+  /**
+   * The bounds for .yRange's optional 5th part, the graph's height/width ratio. Values outside this
+   * are ignored, so a bad value leaves the default shape. See
+   * https://github.com/ERDDAP/erddap/issues/163
+   */
+  public static final double MIN_ASPECT = 0.01;
+
+  public static final double MAX_ASPECT = 100;
+
+  /**
+   * Returns the image height for .yRange's aspect, the graph's height/width ratio.
+   *
+   * @param imageWidth the width the rest of the query settled on
+   * @param imageHeight the height to keep when aspect is not in play
+   * @param yAspect the requested ratio, or NaN when the request did not ask for one
+   * @return imageHeight unchanged for NaN, else imageWidth * yAspect, kept within 1 and
+   *     WMS_MAX_HEIGHT so an extreme ratio cannot ask for an unusable image
+   */
+  public static int heightForAspect(int imageWidth, int imageHeight, double yAspect) {
+    if (Double.isNaN(yAspect)) return imageHeight;
+    int aspectHeight = Math2.roundToInt(imageWidth * yAspect);
+    return Math.max(1, Math.min(aspectHeight, EDD.WMS_MAX_HEIGHT));
+  }
+
   @Override
   protected boolean tableToImage(DapRequestInfo requestInfo, OutputStreamSourceSimple osss)
       throws Throwable {
@@ -254,6 +278,7 @@ public abstract class ImageFiles extends ImageTypes {
       double xMin = Double.NaN, xMax = Double.NaN, yMin = Double.NaN, yMax = Double.NaN;
       boolean xAscending = true, yAscending = true; // this is what controls flipping of the axes
       String xScale = "", yScale = ""; // (default) or Linear or Log
+      double yAspect = Double.NaN; // .yRange's 5th part: graph height / width
       double fontScale = 1, vectorStandard = Double.NaN;
       String currentDrawLandMask = null; // not yet set
       StringBuilder title2 = new StringBuilder();
@@ -437,6 +462,14 @@ public abstract class ImageFiles extends ImageTypes {
             if (!yScale.equals("Log") && !yScale.equals("Linear"))
               yScale = ""; // "" -> (the default)
           }
+          if (pParts.length > 4) {
+            // if the param slot is there, the param determines the graph's
+            // height/width ratio. Out-of-range values are ignored, like the
+            // other parts, so a bad value leaves the default shape.
+            yAspect = String2.parseDouble(pParts[4]);
+            if (!(yAspect >= MIN_ASPECT && yAspect <= MAX_ASPECT)) // NaN-safe
+            yAspect = Double.NaN;
+          }
           if (EDDTable.reallyVerbose)
             String2.log(
                 ".yRange min="
@@ -446,7 +479,9 @@ public abstract class ImageFiles extends ImageTypes {
                     + " ascending="
                     + yAscending
                     + " scale="
-                    + yScale);
+                    + yScale
+                    + " aspect="
+                    + yAspect);
 
           // ignore any unrecognized .something
         } else if (ampPart.startsWith(".")) {
@@ -466,6 +501,20 @@ public abstract class ImageFiles extends ImageTypes {
           if (title2.length() > 0) title2.append(", ");
           title2.append(ampPart);
         }
+      }
+
+      // .yRange's aspect is applied after the whole query is parsed, so it holds
+      // whatever .size= asked for and does not depend on parameter order.
+      if (!Double.isNaN(yAspect)) {
+        imageHeight = heightForAspect(imageWidth, imageHeight, yAspect);
+        if (EDDTable.reallyVerbose)
+          String2.log(
+              ".yRange aspect="
+                  + yAspect
+                  + " -> imageWidth="
+                  + imageWidth
+                  + " imageHeight="
+                  + imageHeight);
       }
       if (title2.length() > 0) {
         title2.insert(0, "(");
@@ -1224,6 +1273,7 @@ public abstract class ImageFiles extends ImageTypes {
       double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
       boolean xAscending = true, yAscending = true; // this is what controls flipping of the axes
       String xScale = "", yScale = ""; // (default) or Linear or Log
+      double yAspect = Double.NaN; // .yRange's 5th part: graph height / width
       int nVars = 4;
       EDV vars[] = null; // set by .vars or lower
       int axisVarI[] = null, dataVarI[] = null; // set by .vars or lower
@@ -1434,6 +1484,14 @@ public abstract class ImageFiles extends ImageTypes {
             if (!yScale.equals("Log") && !yScale.equals("Linear"))
               yScale = ""; // "" -> (the default)
           }
+          if (pParts.length > 4) {
+            // if the param slot is there, the param determines the graph's
+            // height/width ratio. Out-of-range values are ignored, like the
+            // other parts, so a bad value leaves the default shape.
+            yAspect = String2.parseDouble(pParts[4]);
+            if (!(yAspect >= MIN_ASPECT && yAspect <= MAX_ASPECT)) // NaN-safe
+            yAspect = Double.NaN;
+          }
           if (EDDGrid.reallyVerbose)
             String2.log(
                 ".yRange min="
@@ -1443,10 +1501,26 @@ public abstract class ImageFiles extends ImageTypes {
                     + " ascending="
                     + yAscending
                     + " scale="
-                    + yScale);
+                    + yScale
+                    + " aspect="
+                    + yAspect);
 
           // just to be clear: ignore any unrecognized .something
         }
+      }
+
+      // .yRange's aspect is applied after the whole query is parsed, so it holds
+      // whatever .size= asked for and does not depend on parameter order.
+      if (!Double.isNaN(yAspect)) {
+        imageHeight = heightForAspect(imageWidth, imageHeight, yAspect);
+        if (EDDGrid.reallyVerbose)
+          String2.log(
+              ".yRange aspect="
+                  + yAspect
+                  + " -> imageWidth="
+                  + imageWidth
+                  + " imageHeight="
+                  + imageHeight);
       }
       boolean reallySmall = imageWidth < 260; // .smallPng is 240
 
