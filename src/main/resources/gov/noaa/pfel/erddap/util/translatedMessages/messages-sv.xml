@@ -2606,10 +2606,22 @@ vad var axisVariable[0] (vanligtvis &quot;tid&quot;) så att data för högst {1
 axisVariable[0] värden söks.
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+Applicera <br> Begränsning
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+Kontrollera att tillämpa de valfria begränsningarna för denna variabel eller okontrollera att hoppa över dem.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+Kontrollera alla Apply Constraint checkboxar.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+Avmarkera alla Apply Constraint checkboxar.
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Frivillig
 <br>Begränsning #1

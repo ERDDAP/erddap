@@ -2730,10 +2730,22 @@ ano ang axisVariable[0] (karaniwang &quot;oras&quot;) upang ang data ay hindi hi
 Hinahanap ang mga value ng axisVariable[0].
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+Pagkakapit <br> Pagpipigil
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+Tingnan kung maglalagay ng opsyonal na mga limitasyon para sa pagbabagong ito, o di - sinasadyang lagpasan ang mga ito.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+Tingnan ang lahat ng Apple Constraint checkboxs.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+Hindi pa tapos ang lahat ng Appli Constraint checkboxs.
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Opsyonal
 <br>Limitasyon #1
