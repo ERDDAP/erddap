@@ -106,8 +106,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
 import org.apache.http.HttpStatus;
 import org.apache.lucene.document.Document;
@@ -227,6 +225,15 @@ public class Erddap extends HttpServlet {
           String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
       categoryInfo = new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
+
+  // Bounded lock stripes prevent cache stampedes without String.intern() memory leaks
+  private static final Object[] CACHE_DOWNLOAD_LOCKS = new Object[256];
+
+  static {
+    for (int i = 0; i < CACHE_DOWNLOAD_LOCKS.length; i++) {
+      CACHE_DOWNLOAD_LOCKS[i] = new Object();
+    }
+  }
 
   /**
    * The constructor.
@@ -7432,32 +7439,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String webDir = File2.getDirectory(fullRequestUrl); // what user sees as apparent location
     String ext = File2.getExtension(nameAndExt);
 
-    // String2.log(">> isRemote=" + String2.isRemote(localDir) + " filesInPrivateS3Bucket=" +
-    // edd.filesInPrivateS3Bucket());
     if (String2.isRemote(localDir) && !edd.filesInPrivateS3Bucket()) {
-      // remote, including public AWS S3
+      // Remote, including public AWS S3
       sendRedirect(response, localDir + nameAndExt);
 
     } else if (EDStatic.config.awsS3OutputBucketUrl != null) {
-      // need lock to ensure other thread isn't working with local file?
       if (edd.filesInPrivateS3Bucket()) {
-        String cacheDir =
-            edd.cacheDirectory()
-                + (nextPath == null ? "" : nextPath); // nextPath keeps fileNames unique
-        if (File2.isFile(cacheDir + nameAndExt)) {
-          // touch it
-          File2.touch(cacheDir + nameAndExt);
-        } else {
-          // copy to local cache
-          SSR.downloadFile(
-              localDir + nameAndExt,
-              cacheDir + nameAndExt,
-              true); // tryToUseCompression is irrelevant
+        String cacheDir = edd.cacheDirectory() + (nextPath == null ? "" : nextPath);
+        String targetCacheFile = cacheDir + nameAndExt;
+
+        // Use striped lock on path hash to avoid String.intern() string pool pollution
+        int lockIndex = (targetCacheFile.hashCode() & 0x7fffffff) % CACHE_DOWNLOAD_LOCKS.length;
+        synchronized (CACHE_DOWNLOAD_LOCKS[lockIndex]) {
+          if (File2.isFile(targetCacheFile)) {
+            File2.touch(targetCacheFile);
+          } else {
+            SSR.downloadFile(
+                localDir + nameAndExt, targetCacheFile, true); // tryToUseCompression is irrelevant
+          }
         }
         localDir = cacheDir;
       }
-
-      // copy to awsS3OutputBucket and redirect
+      // Copy to awsS3OutputBucket and redirect
       String contentType = OutputStreamFromHttpResponse.getFileContentType(ext, ext);
       String fullAwsUrl =
           EDStatic.config.awsS3OutputBucketUrl
@@ -7465,16 +7468,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "/"
               + (nextPath == null ? "" : nextPath)
               + nameAndExt;
+
       SSR.uploadFileToAwsS3(
           EDStatic.config.getS3TransferManager(), localDir + nameAndExt, fullAwsUrl, contentType);
       response.sendRedirect(fullAwsUrl);
 
     } else {
-      // local and AWS S3
+      // Local and AWS S3 streaming
       OutputStreamSource outSource =
           new OutputStreamFromHttpResponse(
               request, response, File2.getNameNoExtension(nameAndExt), ext, ext);
       OutputStream outputStream = outSource.outputStream("", File2.length(localFullName));
+
       doTransfer(
           language,
           requestNumber,
@@ -13799,17 +13804,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String usingCompression)
       throws Throwable {
 
-    String msg = "doTransfer " + localDir + fileNameAndExt + "\n  compression=" + usingCompression;
-
+    String fullSource = localDir + fileNameAndExt;
     long fileSize = -1;
     long first = 0;
     long last = -1;
 
-    if (!String2.isTrulyRemote(localDir + fileNameAndExt)) {
-      // it's a local file or S3 (public or private)
-      fileSize = File2.length(localDir + fileNameAndExt); // it checks isFile
+    if (!String2.isTrulyRemote(fullSource)) {
+      // Local file or S3 (public or private)
+      fileSize = File2.length(fullSource);
       if (fileSize < 0) {
-        String2.log(msg);
+        if (verbose) String2.log("doTransfer file doesn't exist: " + fullSource);
         sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
         return;
       } else {
@@ -13817,24 +13821,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
     }
 
-    // Is this a byte range request?    "Range: bytes=0-1023"
-    // https://en.wikipedia.org/wiki/Byte_serving
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
     String range = request.getHeader("Range");
-    msg +=
-        ", fileSize="
-            + fileSize
-            + (range == null ? "" : ", Range request=" + String2.annotatedString(range));
     String extLC = File2.getExtension(fileNameAndExt).toLowerCase();
     boolean rangeRequestAllowed =
         String2.indexOf(EDStatic.messages.extensionsNoRangeRequests, extLC) < 0;
+
     if (range != null) {
       if (!rangeRequestAllowed) {
-        String2.log(msg);
+        if (verbose) String2.log("doTransfer Range request not allowed for " + fullSource);
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "Don't try to connect to .nc or .hdf files on ERDDAP's /files/ system as if they were local files. "
+                + "Don't try to connect to .nc or .hdf files on ERDDAP's /files/ system as if they were local files. "
                 + "It is horribly inefficient and often causes other problems. Instead: "
                 + "a) Use (OPeN)DAP client software to connect to ERDDAP's DAP services for this dataset "
                 + "(which have /griddap/ or /tabledap/ in the URL). That's what DAP is for. "
@@ -13844,101 +13841,124 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "then access the data from your local copy of the file.");
       }
       if (!"identity".equals(usingCompression)) {
-        String2.log(msg);
+        if (verbose) {
+          String2.log("doTransfer Range request with non-identity compression for " + fullSource);
+        }
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "ERDDAP set Content-Encoding="
+                + "ERDDAP set Content-Encoding="
                 + usingCompression
                 + " when it should have used \"identity\".");
       }
-      Pattern p = Pattern.compile("bytes=([0-9]+)-(|[0-9]+)");
-      Matcher m = p.matcher(range);
-      if (m.matches()) {
-        first = String2.parseLong(m.group(1));
-        if (m.group(2).isEmpty()) // <audio> makes requests like this
-        last = fileSize >= 0 ? fileSize - 1 : -1;
-        else last = String2.parseLong(m.group(2));
-      } else {
-        String2.log(msg);
+
+      String s = range.trim();
+      int dash = s.indexOf('-', 6); // Look for '-' after "bytes="
+      if (!s.startsWith("bytes=") || dash == -1 || s.equals("bytes=-")) {
+        if (verbose) String2.log("doTransfer invalid range format: " + range);
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "The Range header must use the format: \"bytes=first-[last]\". (last is optional)");
+                + "The Range header must use the format: \"bytes=[first]-[last]\". (one bound is optional)");
       }
+
+      if (dash == 6) {
+        // Suffix range: "bytes=-500" (client wants the last 500 bytes)
+        if (fileSize < 0) {
+          if (verbose)
+            String2.log("doTransfer suffix range requested but fileSize unknown for " + fullSource);
+          throw new SimpleException(
+              EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
+                  + "Suffix range requested, but file size is unknown for remote files.");
+        }
+        long suffixLen = String2.parseLong(s.substring(dash + 1));
+        if (suffixLen <= 0 || suffixLen == Long.MAX_VALUE) {
+          if (verbose) String2.log("doTransfer invalid suffix length: " + s);
+          throw new SimpleException(
+              EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Invalid suffix length in Range header.");
+        }
+        first = Math.max(0, fileSize - suffixLen);
+        last = fileSize - 1;
+      } else {
+        // Standard range: "bytes=0-1023" or open-ended "bytes=1024-"
+        first = String2.parseLong(s.substring(6, dash));
+        String lastStr = s.substring(dash + 1);
+        last = lastStr.isEmpty() ? (fileSize >= 0 ? fileSize - 1 : -1) : String2.parseLong(lastStr);
+      }
+
       if (first < 0
           || first == Long.MAX_VALUE
           || last == Long.MAX_VALUE
           || (last >= 0 && first > last)
           || (fileSize >= 0 && last >= fileSize)) {
-        String2.log(msg);
+        if (verbose) {
+          String2.log(
+              "doTransfer Range out of bounds: first="
+                  + first
+                  + ", last="
+                  + last
+                  + ", fileSize="
+                  + fileSize);
+        }
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "Invalid Range requested: first="
+                + "Invalid Range requested: first="
                 + first
                 + ", last="
                 + last);
       }
+
       if (last < -1) {
-        if (fileSize == -1)
+        if (fileSize == -1) {
           throw new SimpleException(
               EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                  + // sendErrorCode looks for this
-                  "Invalid Range requested: last byte not specified, but file size isn't known for remote files.");
-        else last = fileSize - 1;
+                  + "Invalid Range requested: last byte not specified, but file size isn't known for remote files.");
+        } else {
+          last = fileSize - 1;
+        }
       }
 
-      // status must be set before content is sent. Assume transfer will be successful.
-      response.setStatus(206); // 206=SC_PARTIAL_CONTENT successfully sent
-      String value =
-          "bytes "
-              + // yes, space after 'bytes'
-              first
-              + "-"
-              + last
-              + "/"
-              + (fileSize >= 0 ? "" + fileSize : "*"); // but fileSize should be known
+      response.setStatus(206); // 206 = Partial Content
+      String value = "bytes " + first + "-" + last + "/" + (fileSize >= 0 ? "" + fileSize : "*");
       response.setHeader("Content-Range", value);
-      // see
-      // https://stackoverflow.com/questions/5052635/what-is-relation-between-content-length-and-byte-ranges-in-http-1-1
       response.setContentLengthLong(1 + last - first);
-      // response.setHeader("Content-Length", "" + (1 + last - first));
-      msg += ", set Content-Range=" + value;
+
     } else {
-      // not a range request
-
-      // offer to Accept-ranges if fileType is okay (not .nc, ...) and fileSize is known
-      if (rangeRequestAllowed && fileSize >= 0) response.setHeader("Accept-ranges", "bytes");
-
-      // Only set Content-Length if usingCompression = identity
-      //  Was: DON'T SET Content-Length!
-      // See comments re: hasRangeRequest in OutputStreamFromHttpResponse.
+      // Not a range request
+      if (rangeRequestAllowed && fileSize >= 0) {
+        response.setHeader("Accept-ranges", "bytes");
+      }
       if (fileSize >= 0 && "identity".equals(usingCompression)) {
-        // response.setHeader("Content-Length", "" + fileSize);
         response.setContentLengthLong(fileSize);
-        msg += ", set Content-Length=" + fileSize;
       }
     }
-    if (verbose) String2.log(msg);
 
-    // it's good that result is boolean: for security, don't return localDir name in error message
+    if (verbose) {
+      String2.log(
+          "doTransfer "
+              + fullSource
+              + "\n  compression="
+              + usingCompression
+              + ", fileSize="
+              + fileSize
+              + (range == null ? "" : ", Range request=" + String2.annotatedString(range))
+              + ", serving bytes "
+              + first
+              + "-"
+              + last);
+    }
+
     try (outputStream) {
-      // SSR.copy handles file or public or private AWS source (by routing data through ERDDAP), and
-      // file or URL destination
-      boolean ok =
-          SSR.copy(
-              localDir + fileNameAndExt, outputStream, first, last, true); // handleS3ViaSDK=true
+      boolean ok = SSR.copy(fullSource, outputStream, first, last, true);
       if (!ok) {
-        if (!verbose) String2.log(msg); // if wasn't logged above
+        if (!verbose) {
+          String2.log(
+              "doTransfer failed for " + fullSource + " (bytes " + first + "-" + last + ")");
+        }
         throw new SimpleException(
             (range == null ? "" : EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE)
-                + // sendErrorCode looks for this
-                String2.ERROR
+                + String2.ERROR
                 + " during transfer.");
       }
     }
-    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
   }
 
   /**
