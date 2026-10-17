@@ -2641,10 +2641,22 @@ was war axisVariable[0] (normalerweise &quot;time&quot;), damit Daten für nicht
 Die Werte von axisVariable[0] werden gesucht.
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+Anwendung <br> Einschränkung
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+Überprüfen Sie die optionalen Einschränkungen für diese Variablen anzuwenden oder deaktivieren Sie sie.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+Überprüfen Sie alle Kontrollkästchen Bewerben.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+Alle Apply Constraint Checkboxen deaktivieren.
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Optional
 <br>Einschränkung Nr.

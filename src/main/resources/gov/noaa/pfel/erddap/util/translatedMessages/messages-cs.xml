@@ -2631,10 +2631,22 @@ co bylo axisVariable[0] (obvykle „čas“), takže data pro ne více než {1}
 jsou prohledány hodnoty axisVariable[0].
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+Použít <br> Konstraint
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+Zaškrtněte použít volitelná omezení pro tuto proměnnou nebo je odškrtněte, abyste je přeskočili.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+Zkontrolujte všechny zaškrtávací políčka Apply Constraint.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+Odškrtněte všechny Zaškrtávací políčka Apply Constraint.
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Volitelný
 <br>Omezení #1

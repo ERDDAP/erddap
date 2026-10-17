@@ -2772,10 +2772,22 @@ hva var axisVariable[0] (vanligvis &quot;tid&quot;) slik at data for ikke mer en
 akseVariable[0]-verdier søkes.
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+Bruk <br> Begrenset
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+Kontroller å bruke de valgfrie begrensningene for denne variabelen, eller fjern merket for å hoppe over dem.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+Sjekk alle Bruk avgrensede kryssboksene.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+Avsjekk alle Bruk Begrensede avsjekkingsbokser.
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Valgfri
 <br>Begrensning #1

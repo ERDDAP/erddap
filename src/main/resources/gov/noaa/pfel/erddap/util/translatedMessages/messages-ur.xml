@@ -2268,10 +2268,22 @@ axisVariable[0] (عام طور پر &quot;وقت&quot;) کیا تھا تاکہ �
 axisVariable[0] قدریں تلاش کی جاتی ہیں۔
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+اطلاق <br> چین
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+اس تبدیلی کے لئے غیر آئینی تنازعات کا اطلاق کرنے کے لئے چیک کریں یا ان کو نافذ کرنے کے لئے غیر منصفانہ اقدام.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+تمام درخواست کنسٹرنٹ چیک بکس چیک کریں.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+تمام کا جائزہ نہ لیں
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 اختیاری
 <br>پابندی نمبر 1

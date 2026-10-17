@@ -2355,10 +2355,22 @@ axisVariable[0] কি ছিল (সাধারণত &quot;সময়&quot;
 axisVariable[0] মান অনুসন্ধান করা হয়।
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+প্রয়োগ করুন <br> সীমা
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+এই ভেরিয়েবল- এর জন্য ঐচ্ছিক সীমারেখা প্রয়োগ করতে হলে, আবশ্যক না হলে তাদের উপেক্ষা করার জন্য পরীক্ষা করুন ।
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+সব কনস্ট্রেট চেক চেক করো।
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+সব কনস্ট্রেট চেক চেক চেক করো না।
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 ঐচ্ছিক
 <br>সীমাবদ্ধতা # 1

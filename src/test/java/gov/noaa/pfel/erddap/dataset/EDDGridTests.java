@@ -1132,4 +1132,63 @@ class EDDGridTests {
             "2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745 2745\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
+
+  @org.junit.jupiter.api.Test
+  void testDataAccessFormApplyConstraint() throws Throwable {
+    int language = 0;
+    EDDGrid eddGrid = (EDDGrid) EDDTestDataset.getetopo180();
+
+    // 1. Test unconstrained form (default query: userDapQuery = "")
+    java.io.StringWriter sw = new java.io.StringWriter();
+    eddGrid.writeDapHtmlForm(null, language, null, "", sw);
+    String html = sw.toString();
+
+    // Verify the Apply Constraint header and bulk buttons
+    Test.ensureTrue(html.contains("Apply<br>Constraint"), "Missing Apply Constraint header");
+    Test.ensureTrue(html.contains("name=\"CheckAllCon\""), "Missing CheckAllCon button");
+    Test.ensureTrue(html.contains("name=\"UncheckAllCon\""), "Missing UncheckAllCon button");
+    Test.ensureTrue(html.contains(".aconch0.checked=true;"), "Missing check all onclick logic");
+    Test.ensureTrue(html.contains(".aconch0.checked=false;"), "Missing uncheck all onclick logic");
+
+    // Verify aconch checkbox per axis row defaults to checked
+    Test.ensureTrue(html.contains("name=\"aconch0\""), "Missing aconch0 checkbox");
+    Test.ensureTrue(
+        html.contains("name=\"previous&#x5f;aconch0\" value=\"true\""),
+        "aconch0 should default to checked for unconstrained form");
+    Test.ensureTrue(
+        html.contains("name=\"previous&#x5f;aconch1\" value=\"true\""),
+        "aconch1 should default to checked for unconstrained form");
+    Test.ensureTrue(
+        html.contains("Check to apply the optional constraints for this variable"),
+        "Missing aconch tooltip");
+
+    // Verify the oninput auto-check handlers on start, stride, and stop inputs
+    Test.ensureTrue(
+        html.contains(".aconch0.checked=true;"), "Missing auto-check aconch handler on input");
+
+    // Verify slider colspan is 7
+    Test.ensureTrue(html.contains("colspan=\"7\""), "Missing colspan=7 for sliders");
+
+    // Verify JavaScript URL builder checks aconch
+    Test.ensureTrue(
+        html.contains("var tAconch = form1[\"aconch\" + av];"), "Missing tAconch logic in JS");
+    Test.ensureTrue(
+        html.contains("if (tAconch && !tAconch.checked) {"), "Missing aconch checked guard in JS");
+
+    // 2. Test constrained form: userDapQuery specifies axis query for latitude (av=0)
+    java.io.StringWriter swConstrained = new java.io.StringWriter();
+    eddGrid.writeDapHtmlForm(null, language, null, "latitude%5B(-10.0):(10.0)%5D", swConstrained);
+    String htmlConstrained = swConstrained.toString();
+
+    // Constrained axis variable (latitude) must have aconch checked
+    Test.ensureTrue(
+        htmlConstrained.contains("name=\"previous&#x5f;aconch0\" value=\"true\""),
+        "aconch0 (latitude) should be checked when constrained in userDapQuery");
+
+    // Unconstrained axis variable (longitude) must NOT be checked when userDapQuery is an axis
+    // query
+    Test.ensureTrue(
+        htmlConstrained.contains("name=\"previous&#x5f;aconch1\" value=\"false\""),
+        "aconch1 (longitude) should not be checked when unconstrained in axis userDapQuery");
+  }
 }

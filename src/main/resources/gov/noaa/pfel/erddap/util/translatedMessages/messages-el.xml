@@ -2754,10 +2754,22 @@ what was axisVariable[0] (συνήθως &quot;time&quot;) έτσι ώστε τ�
 Γίνεται αναζήτηση των τιμών axisVariable[0].
 
 ---</EDDTableFromEDDGridSummary>
-<EDDTableApplyConstraintHtml><![CDATA[Apply<br>Constraint]]></EDDTableApplyConstraintHtml>
-<EDDTableApplyConstraintTooltip><![CDATA[Check to apply the optional constraints for this variable, or uncheck to skip them.]]></EDDTableApplyConstraintTooltip>
-<EDDTableCheckAllConstraintsTooltip><![CDATA[Check all Apply Constraint checkboxes.]]></EDDTableCheckAllConstraintsTooltip>
-<EDDTableUncheckAllConstraintsTooltip><![CDATA[Uncheck all Apply Constraint checkboxes.]]></EDDTableUncheckAllConstraintsTooltip>
+<EDDTableApplyConstraintHtml><![CDATA[
+Εφαρμογή <br> Περιορισμός
+
+]]></EDDTableApplyConstraintHtml>
+<EDDTableApplyConstraintTooltip><![CDATA[
+Ελέγξτε για να εφαρμόσετε τους προαιρετικούς περιορισμούς για αυτή τη μεταβλητή, ή απενεργοποιήστε για να τους παραλείψετε.
+
+]]></EDDTableApplyConstraintTooltip>
+<EDDTableCheckAllConstraintsTooltip><![CDATA[
+Ελέγξτε όλα τα πλαίσια ελέγχου περιορισμού εφαρμογής.
+
+]]></EDDTableCheckAllConstraintsTooltip>
+<EDDTableUncheckAllConstraintsTooltip><![CDATA[
+Απενεργοποιήστε όλα τα πλαίσια ελέγχου περιορισμού εφαρμογής.
+
+]]></EDDTableUncheckAllConstraintsTooltip>
 <EDDTableOptConstraint1Html><![CDATA[
 Προαιρετικός
 <br>Περιορισμός #1
