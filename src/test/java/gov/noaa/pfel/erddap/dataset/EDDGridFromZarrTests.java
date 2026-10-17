@@ -1346,8 +1346,7 @@ class EDDGridFromZarrTests {
       assertEquals(2, dataset.axisVariables()[0].sourceValues().size());
 
       // 1. Assert lowUpdate returns false when store is unchanged
-      boolean noChangeUpdate =
-          dataset.lowUpdate(0, "testUnchanged", System.currentTimeMillis());
+      boolean noChangeUpdate = dataset.lowUpdate(0, "testUnchanged", System.currentTimeMillis());
       assertFalse(noChangeUpdate);
 
       // 2. Append K = 2 new time steps (T + K = 4) to store
@@ -1382,16 +1381,14 @@ class EDDGridFromZarrTests {
               }));
 
       // 3. Call lowUpdate
-      boolean hasUpdate =
-          dataset.lowUpdate(0, "testAppendedSlices", System.currentTimeMillis());
+      boolean hasUpdate = dataset.lowUpdate(0, "testAppendedSlices", System.currentTimeMillis());
       assertTrue(hasUpdate, "lowUpdate should return true when Zarr store has expanded.");
 
       // 4. Verify axis length T + K = 4
       assertEquals(4, dataset.axisVariables()[0].sourceValues().size());
 
       // 5. Verify updated time_coverage_end reflects exact new maximum time value
-      String timeEnd =
-          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end");
+      String timeEnd = dataset.combinedGlobalAttributes().getString(0, "time_coverage_end");
       assertNotNull(timeEnd);
       assertEquals("1970-01-01T01:06:40Z", timeEnd);
 

@@ -960,14 +960,16 @@ public class EDDGridFromZarr extends EDDGrid {
         return false;
       }
 
-      // Verify that all dependent data variables sharing the outer dimension have reached newAxisLength
+      // Verify that all dependent data variables sharing the outer dimension have reached
+      // newAxisLength
       if (dataVariables != null) {
         for (EDV dv : dataVariables) {
           if (dv == null || !String2.isSomething(dv.sourceName())) continue;
           ZarrArrayInfo dvInfo = getOrOpenZarrArrayInfo(freshGroup, dv.sourceName(), freshArrayMap);
           if (dvInfo != null && dvInfo.shape != null && dvInfo.shape.length > 0) {
             int outerDimIdx = 0;
-            if (dvInfo.dimensionNames != null && dvInfo.dimensionNames.length == dvInfo.shape.length) {
+            if (dvInfo.dimensionNames != null
+                && dvInfo.dimensionNames.length == dvInfo.shape.length) {
               for (int d = 0; d < dvInfo.dimensionNames.length; d++) {
                 if (outerAxisSourceName.equals(dvInfo.dimensionNames[d])) {
                   outerDimIdx = d;
