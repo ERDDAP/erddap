@@ -1243,4 +1243,333 @@ class EDDGridFromZarrTests {
     assertNotNull(pa);
     assertEquals(2, pa.size());
   }
+
+  @Test
+  void testLowUpdateNoChange() throws Throwable {
+    Initialization.edStatic();
+    EDDGridFromZarr dataset =
+        (EDDGridFromZarr) EDDTestDataset.getTestZarr_gridCompressedData_ZarrJava();
+    assertNotNull(dataset);
+    boolean updated = dataset.lowUpdate(0, "testLowUpdateNoChange", System.currentTimeMillis());
+    assertFalse(updated, "lowUpdate should return false when dataset has not changed.");
+  }
+
+  @Test
+  void testLowUpdateWithAppendedTimeSlices() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_low_update_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      // Initial T = 2 time steps
+      dev.zarr.zarrjava.v3.Array timeArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes timeAtts = new dev.zarr.zarrjava.core.Attributes();
+      timeAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeArray.setAttributes(timeAtts);
+      timeArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      dev.zarr.zarrjava.v3.Array latArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("latitude"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("latitude"),
+              true);
+      latArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {0.0, 10.0}));
+
+      dev.zarr.zarrjava.v3.Array lonArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("longitude"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("longitude"),
+              true);
+      lonArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {100.0, 110.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(2, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true);
+      dev.zarr.zarrjava.core.Attributes tempAtts = new dev.zarr.zarrjava.core.Attributes();
+      tempAtts.set("ioos_category", "Temperature");
+      tempArray.setAttributes(tempAtts);
+      tempArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {2, 2, 2},
+              new double[] {15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Growing Grid Store");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_growing_grid_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              new ArrayList<>(),
+              new ArrayList<>(),
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      assertNotNull(dataset);
+      assertEquals(2, dataset.axisVariables()[0].sourceValues().size());
+
+      // 1. Assert lowUpdate returns false when store is unchanged
+      boolean noChangeUpdate =
+          dataset.lowUpdate(0, "testUnchanged", System.currentTimeMillis());
+      assertFalse(noChangeUpdate);
+
+      // 2. Append K = 2 new time steps (T + K = 4) to store
+      dev.zarr.zarrjava.v3.Array timeArrayUpdated =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(4).withDataType(float64).withDimensionNames("time"),
+              true);
+      timeArrayUpdated.setAttributes(timeAtts);
+      timeArrayUpdated.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {4},
+              new double[] {1000.0, 2000.0, 3000.0, 4000.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArrayUpdated =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(4, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true);
+      tempArrayUpdated.setAttributes(tempAtts);
+      tempArrayUpdated.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {4, 2, 2},
+              new double[] {
+                15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0,
+                23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0
+              }));
+
+      // 3. Call lowUpdate
+      boolean hasUpdate =
+          dataset.lowUpdate(0, "testAppendedSlices", System.currentTimeMillis());
+      assertTrue(hasUpdate, "lowUpdate should return true when Zarr store has expanded.");
+
+      // 4. Verify axis length T + K = 4
+      assertEquals(4, dataset.axisVariables()[0].sourceValues().size());
+
+      // 5. Verify updated time_coverage_end reflects exact new maximum time value
+      String timeEnd =
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end");
+      assertNotNull(timeEnd);
+      assertEquals("1970-01-01T01:06:40Z", timeEnd);
+
+      // 6. Query data at the newest time index T + K - 1 = 3
+      com.cohort.array.PrimitiveArray res =
+          dataset.getSourceDataFromFile(
+              dataset.dataVariables()[0],
+              new int[] {3, 0, 0},
+              new int[] {1, 1, 1},
+              new int[] {3, 1, 1});
+
+      assertNotNull(res);
+      assertEquals(4, res.size());
+      assertEquals(27.0, res.getDouble(0), 1e-6);
+      assertEquals(28.0, res.getDouble(1), 1e-6);
+      assertEquals(29.0, res.getDouble(2), 1e-6);
+      assertEquals(30.0, res.getDouble(3), 1e-6);
+
+      // 7. Verify subsequent lowUpdate returns false when no further changes exist
+      boolean secondCallNoChange =
+          dataset.lowUpdate(0, "testSecondUnchanged", System.currentTimeMillis());
+      assertFalse(secondCallNoChange);
+
+      // 8. Append another 2 time steps (T = 6) and verify second successful update
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(6).withDataType(float64).withDimensionNames("time"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {6},
+                  new double[] {1000.0, 2000.0, 3000.0, 4000.0, 36000.0, 86400.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(6, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {6, 2, 2},
+                  new double[] {
+                    15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0,
+                    23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0,
+                    31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0
+                  }));
+
+      boolean thirdCallHasUpdate =
+          dataset.lowUpdate(0, "testThirdCallAppended", System.currentTimeMillis());
+      assertTrue(thirdCallHasUpdate);
+      assertEquals(6, dataset.axisVariables()[0].sourceValues().size());
+      assertEquals(
+          "1970-01-02T00:00:00Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testLowUpdateDeferredWhenDataVariableLags() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_deferred_update_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      // Initial T = 2 time steps
+      dev.zarr.zarrjava.v3.Array timeArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes timeAtts = new dev.zarr.zarrjava.core.Attributes();
+      timeAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeArray.setAttributes(timeAtts);
+      timeArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      dev.zarr.zarrjava.v3.Array latArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("latitude"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("latitude"),
+              true);
+      latArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {0.0, 10.0}));
+
+      dev.zarr.zarrjava.v3.Array lonArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("longitude"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("longitude"),
+              true);
+      lonArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {100.0, 110.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(2, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true);
+      dev.zarr.zarrjava.core.Attributes tempAtts = new dev.zarr.zarrjava.core.Attributes();
+      tempAtts.set("ioos_category", "Temperature");
+      tempArray.setAttributes(tempAtts);
+      tempArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {2, 2, 2},
+              new double[] {15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Lagging Data Variable Store");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_lagging_grid_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              new ArrayList<>(),
+              new ArrayList<>(),
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      assertNotNull(dataset);
+      assertEquals(2, dataset.axisVariables()[0].sourceValues().size());
+
+      // Expand time array to T = 4, but leave temperature array shape at T = 2
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(4).withDataType(float64).withDimensionNames("time"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {4},
+                  new double[] {1000.0, 2000.0, 3000.0, 4000.0}));
+
+      // Call lowUpdate: should detect temperature outer shape (2) < time outer shape (4) and defer
+      boolean updated = dataset.lowUpdate(0, "testLaggingUpdate", System.currentTimeMillis());
+      assertFalse(
+          updated,
+          "lowUpdate should return false when dependent data variable shape lags behind axis length.");
+      assertEquals(
+          2,
+          dataset.axisVariables()[0].sourceValues().size(),
+          "Axis length should remain unchanged when update is deferred.");
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
 }
