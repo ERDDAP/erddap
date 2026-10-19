@@ -63,6 +63,7 @@ import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.jte.Convert;
 import gov.noaa.pfel.erddap.jte.Index;
 import gov.noaa.pfel.erddap.jte.Status;
 import gov.noaa.pfel.erddap.jte.TableOptions;
@@ -1707,54 +1708,7 @@ public class Erddap extends HttpServlet {
 
         // Converters
         if (EDStatic.config.convertersActive) {
-          data.converterLinks = new ArrayList<>();
-
-          // Helper to add links cleanly
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html",
-                  EDStatic.messages.get(Message.ACRONYMS, language),
-                  EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/fipscounty.html",
-                  EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language),
-                  EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/interpolate.html",
-                  EDStatic.messages.get(Message.INTERPOLATE, language),
-                  EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/keywords.html",
-                  EDStatic.messages.get(Message.KEYWORDS, language),
-                  EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/time.html",
-                  EDStatic.messages.get(Message.TIME, language),
-                  EDStatic.messages.get(Message.CONVERT_TIME, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/units.html",
-                  EDStatic.messages.get(Message.UNITS, language),
-                  EDStatic.messages.get(Message.CONVERT_UNITS, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/color.html",
-                  EDStatic.messages.get(Message.CONVERT_COLORS, language),
-                  EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/urls.html",
-                  "URLs",
-                  EDStatic.messages.get(Message.CONVERT_URLS, language)));
-          data.converterLinks.add(
-              new Index.ConverterLink(
-                  tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
-                  EDStatic.messages.get(Message.VARIABLE_NAMES, language),
-                  EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)));
+          data.converterLinks = Convert.getConverterLinks(tErddapUrl, language);
         }
 
         // Metadata Logic (WAF)
@@ -21055,82 +21009,101 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">"
-              + EDStatic.youAreHere(
-                  request, language, loggedInAs, EDStatic.messages.get(Message.CONVERT, language))
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert") +
-              EDStatic.messages.get(Message.CONVERT_HTML, language)
-              + "\n"
-              +
-              // "<p>Options:\n" +
-              "<ul>\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/oceanicAtmosphericAcronyms.html\"><strong>"
-              + EDStatic.messages.get(Message.ACRONYMS, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/fipscounty.html\"><strong>"
-              + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/interpolate.html\"><strong>"
-              + EDStatic.messages.get(Message.INTERPOLATE, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/keywords.html\"><strong>"
-              + EDStatic.messages.get(Message.KEYWORDS, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/time.html\"><strong>"
-              + EDStatic.messages.get(Message.TIME, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_TIME, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/units.html\"><strong>"
-              + EDStatic.messages.get(Message.UNITS, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_UNITS, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/urls.html\"><strong>URLs</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_URLS, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/oceanicAtmosphericVariableNames.html\"><strong>"
-              + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
-              + "\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/color.html\"><strong>"
-              + EDStatic.messages.get(Message.CONVERT_COLORS, language)
-              + "</strong></a> - "
-              + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
-              // languages
-              + "\n"
-              + "</ul>\n");
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request, language, loggedInAs, EDStatic.messages.get(Message.CONVERT, language));
+        TemplateEngine engine = getTemplateEngine();
+        engine.render(
+            "convert.jte",
+            Map.of(
+                "endOfRequest", "convert/index.html",
+                "tErddapUrl", tErddapUrl,
+                "language", language,
+                "youAreHere", youAreHere,
+                "loggedInAs", Objects.requireNonNullElse(loggedInAs, ""),
+                "request", request,
+                "converterLinks", Convert.getConverterLinks(tErddapUrl, language)),
+            new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
+        writer.write(
+            "<div class=\"standard_width\">"
+                + EDStatic.youAreHere(
+                    request, language, loggedInAs, EDStatic.messages.get(Message.CONVERT, language))
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert") +
+                EDStatic.messages.get(Message.CONVERT_HTML, language)
+                + "\n"
+                +
+                // "<p>Options:\n" +
+                "<ul>\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/oceanicAtmosphericAcronyms.html\"><strong>"
+                + EDStatic.messages.get(Message.ACRONYMS, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/fipscounty.html\"><strong>"
+                + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/interpolate.html\"><strong>"
+                + EDStatic.messages.get(Message.INTERPOLATE, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/keywords.html\"><strong>"
+                + EDStatic.messages.get(Message.KEYWORDS, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/time.html\"><strong>"
+                + EDStatic.messages.get(Message.TIME, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_TIME, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/units.html\"><strong>"
+                + EDStatic.messages.get(Message.UNITS, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_UNITS, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/urls.html\"><strong>URLs</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_URLS, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/oceanicAtmosphericVariableNames.html\"><strong>"
+                + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
+                + "\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/color.html\"><strong>"
+                + EDStatic.messages.get(Message.CONVERT_COLORS, language)
+                + "</strong></a> - "
+                + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
+                // languages
+                + "\n"
+                + "</ul>\n");
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
@@ -24686,7 +24659,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "status.html",
                 "subscriptions/index.html",
                 "search/index.html",
-                "search/advanced.html")
+                "search/advanced.html",
+                "convert/index.html")
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
