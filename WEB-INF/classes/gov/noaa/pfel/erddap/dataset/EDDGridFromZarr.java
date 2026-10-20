@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -58,15 +59,37 @@ import software.amazon.awssdk.services.s3.S3Client;
  * @author ERDDAP Development Team
  */
 @SaxHandlerClass(EDDGridFromZarrHandler.class)
-public class EDDGridFromZarr extends EDDGrid {
+public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
+
+  // Container to pair a Zarr Store with an optional S3Client instance for lifecycle tracking
+  protected static record ZarrStoreHolder(Store store, S3Client s3Client) implements AutoCloseable {
+    @Override
+    public void close() {
+      if (store instanceof AutoCloseable ac) {
+        try {
+          ac.close();
+        } catch (Throwable t) {
+          String2.log("Warning: Exception closing Zarr store: " + t.getMessage());
+        }
+      }
+      if (s3Client != null) {
+        try {
+          s3Client.close();
+        } catch (Throwable t) {
+          String2.log("Warning: Exception closing S3Client: " + t.getMessage());
+        }
+      }
+    }
+  }
 
   // Private instance variables for Zarr configuration and zarr-java handles
   private String zarrStorePath;
   private String zarrGroupName;
   private long chunkCacheSize;
   private Store zarrStore;
+  private S3Client s3Client;
   private Group zarrGroup;
-  private final Object zarrLock = new Object();
+  private final ReentrantReadWriteLock zarrReadWriteLock = new ReentrantReadWriteLock();
 
   /**
    * Static factory method to construct an EDDGridFromZarr dataset from an XML configuration.
@@ -259,73 +282,65 @@ public class EDDGridFromZarr extends EDDGrid {
 
     // Initialize zarr-java Store reader
     try {
-      this.zarrStore = createZarrStore(this.zarrStorePath);
-    } catch (Exception e) {
-      throw new RuntimeException(
-          errorInMethod + "Failed to initialize Zarr store at path: " + this.zarrStorePath, e);
-    }
+      ZarrStoreHolder holder = createZarrStore(this.zarrStorePath);
+      this.zarrStore = holder.store();
+      this.s3Client = holder.s3Client();
 
-    // Open specified Zarr root or subgroup
-    try {
+      // Open specified Zarr root or subgroup
       this.zarrGroup = openZarrGroup(this.zarrStore, this.zarrGroupName);
-    } catch (Exception e) {
-      throw new RuntimeException(
-          errorInMethod
-              + "Failed to open Zarr group '"
-              + this.zarrGroupName
-              + "' in store: "
-              + this.zarrStorePath,
-          e);
-    }
 
-    // Extract .zattrs and populate ERDDAP combinedGlobalAttributes
-    sourceGlobalAttributes = new Attributes();
-    try {
-      dev.zarr.zarrjava.core.Attributes zattrs = this.zarrGroup.metadata().attributes();
-      if (zattrs != null) {
-        populateAttributesFromZarr(zattrs, sourceGlobalAttributes);
+      // Extract .zattrs and populate ERDDAP combinedGlobalAttributes
+      sourceGlobalAttributes = new Attributes();
+      try {
+        dev.zarr.zarrjava.core.Attributes zattrs = this.zarrGroup.metadata().attributes();
+        if (zattrs != null) {
+          populateAttributesFromZarr(zattrs, sourceGlobalAttributes);
+        }
+      } catch (ZarrException ze) {
+        String2.log(errorInMethod + "Warning: Could not read .zattrs metadata: " + ze.getMessage());
       }
-    } catch (ZarrException ze) {
-      String2.log(errorInMethod + "Warning: Could not read .zattrs metadata: " + ze.getMessage());
-    }
 
-    combinedGlobalAttributes = new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes);
-    String tLicense = combinedGlobalAttributes.getString(language, "license");
-    if (tLicense != null)
-      combinedGlobalAttributes.set(
-          language,
-          "license",
-          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
-    combinedGlobalAttributes.removeValue("\"null\"");
-    if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
-      combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
+      combinedGlobalAttributes = new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes);
+      String tLicense = combinedGlobalAttributes.getString(language, "license");
+      if (tLicense != null)
+        combinedGlobalAttributes.set(
+            language,
+            "license",
+            String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+      combinedGlobalAttributes.removeValue("\"null\"");
+      if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
+        combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
 
-    // Discover Zarr metadata
-    Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata();
+      // Discover Zarr metadata
+      Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata();
 
-    if (tDataVariables != null) {
-      for (DataVariableInfo dvi : tDataVariables) {
-        if (dvi != null && String2.isSomething(dvi.sourceName())) {
-          getOrOpenZarrArrayInfo(dvi.sourceName(), arrayMap);
+      if (tDataVariables != null) {
+        for (DataVariableInfo dvi : tDataVariables) {
+          if (dvi != null && String2.isSomething(dvi.sourceName())) {
+            getOrOpenZarrArrayInfo(dvi.sourceName(), arrayMap);
+          }
         }
       }
-    }
 
-    // Build grid axes
-    this.axisVariables = buildGridAxes(tAxisVariables, arrayMap);
+      // Build grid axes
+      this.axisVariables = buildGridAxes(tAxisVariables, arrayMap);
 
-    // Collect axis source names
-    Set<String> axisSourceNames = new HashSet<>();
-    for (EDVGridAxis axis : this.axisVariables) {
-      if (axis != null && axis.sourceName() != null) {
-        axisSourceNames.add(axis.sourceName());
+      // Collect axis source names
+      Set<String> axisSourceNames = new HashSet<>();
+      for (EDVGridAxis axis : this.axisVariables) {
+        if (axis != null && axis.sourceName() != null) {
+          axisSourceNames.add(axis.sourceName());
+        }
       }
+
+      // Build data variables
+      this.dataVariables = buildDataVariables(tDataVariables, arrayMap, axisSourceNames);
+
+      ensureValid();
+    } catch (Throwable e) {
+      close();
+      throw e;
     }
-
-    // Build data variables
-    this.dataVariables = buildDataVariables(tDataVariables, arrayMap, axisSourceNames);
-
-    ensureValid();
 
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
@@ -340,22 +355,53 @@ public class EDDGridFromZarr extends EDDGrid {
     if (!dimensionValuesInMemory) saveDimensionValuesInFile();
   }
 
+  /**
+   * Explicit dataset release/close hook to ensure background threads, store handles,
+   * and HTTP/S3 client resources are released on dataset destruction or reload.
+   */
+  @Override
+  public void close() {
+    zarrReadWriteLock.writeLock().lock();
+    try {
+      if (zarrStore instanceof AutoCloseable ac) {
+        try {
+          ac.close();
+        } catch (Throwable t) {
+          String2.log("Warning: Exception closing zarrStore in EDDGridFromZarr.close(): " + t.getMessage());
+        }
+      }
+      zarrStore = null;
+
+      if (s3Client != null) {
+        try {
+          s3Client.close();
+        } catch (Throwable t) {
+          String2.log("Warning: Exception closing s3Client in EDDGridFromZarr.close(): " + t.getMessage());
+        }
+        s3Client = null;
+      }
+      zarrGroup = null;
+    } finally {
+      zarrReadWriteLock.writeLock().unlock();
+    }
+  }
+
   /** Helper method to instantiate the appropriate zarr-java Store for local, HTTP, or S3 URIs. */
-  private static Store createZarrStore(String path) throws IOException {
+  private static ZarrStoreHolder createZarrStore(String path) throws IOException {
     if (path == null) throw new IllegalArgumentException("Zarr store path cannot be null.");
     if (path.startsWith("http://") || path.startsWith("https://")) {
-      return new HttpStore(path);
+      return new ZarrStoreHolder(new HttpStore(path), null);
     } else if (path.startsWith("s3://") || path.startsWith("s3a://")) {
       String s3Path = path.substring(path.indexOf("://") + 3);
       int firstSlash = s3Path.indexOf('/');
       String bucket = firstSlash > 0 ? s3Path.substring(0, firstSlash) : s3Path;
       String keyPrefix = firstSlash > 0 ? s3Path.substring(firstSlash + 1) : "";
       S3Client s3Client = S3Client.create();
-      return new S3Store(s3Client, bucket, keyPrefix);
+      return new ZarrStoreHolder(new S3Store(s3Client, bucket, keyPrefix), s3Client);
     } else if (path.toLowerCase().endsWith(".zip")) {
-      return new dev.zarr.zarrjava.store.ReadOnlyZipStore(Paths.get(path));
+      return new ZarrStoreHolder(new dev.zarr.zarrjava.store.ReadOnlyZipStore(Paths.get(path)), null);
     } else {
-      return new FilesystemStore(Paths.get(path));
+      return new ZarrStoreHolder(new FilesystemStore(Paths.get(path)), null);
     }
   }
 
@@ -576,36 +622,38 @@ public class EDDGridFromZarr extends EDDGrid {
   public PrimitiveArray getSourceDataFromFile(EDV edv, int[] start, int[] stride, int[] stop)
       throws Throwable {
 
-    if (edv == null) {
-      throw new IllegalArgumentException("EDV data variable cannot be null.");
-    }
-    String sourceName = edv.sourceName();
-    if (!String2.isSomething(sourceName)) {
-      throw new IllegalArgumentException("EDV sourceName is empty.");
-    }
+    zarrReadWriteLock.readLock().lock();
+    try {
+      if (edv == null) {
+        throw new IllegalArgumentException("EDV data variable cannot be null.");
+      }
+      String sourceName = edv.sourceName();
+      if (!String2.isSomething(sourceName)) {
+        throw new IllegalArgumentException("EDV sourceName is empty.");
+      }
 
-    // Retrieve Zarr array handle
-    ZarrArrayInfo info = getOrOpenZarrArrayInfo(sourceName, new LinkedHashMap<>());
-    Array zarray = info != null ? info.array : null;
-    if (zarray == null) {
-      try {
-        Node node = zarrGroup.get(sourceName);
-        if (node instanceof Array za) {
-          zarray = za;
-        }
-      } catch (Throwable t) {
+      // Retrieve Zarr array handle
+      ZarrArrayInfo info = getOrOpenZarrArrayInfo(sourceName, new LinkedHashMap<>());
+      Array zarray = info != null ? info.array : null;
+      if (zarray == null && zarrGroup != null) {
         try {
-          StoreHandle childHandle = zarrGroup.storeHandle.resolve(sourceName);
-          zarray = Array.open(childHandle);
-        } catch (Throwable t2) {
-          throw new SimpleException(
-              "Data variable '" + sourceName + "' not found in Zarr store.", t2);
+          Node node = zarrGroup.get(sourceName);
+          if (node instanceof Array za) {
+            zarray = za;
+          }
+        } catch (Throwable t) {
+          try {
+            StoreHandle childHandle = zarrGroup.storeHandle.resolve(sourceName);
+            zarray = Array.open(childHandle);
+          } catch (Throwable t2) {
+            throw new SimpleException(
+                "Data variable '" + sourceName + "' not found in Zarr store.", t2);
+          }
         }
       }
-    }
-    if (zarray == null) {
-      throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.");
-    }
+      if (zarray == null) {
+        throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.");
+      }
 
     ArrayMetadata metadata = zarray.metadata();
     long[] shape = metadata.shape;
@@ -819,7 +867,10 @@ public class EDDGridFromZarr extends EDDGrid {
       }
     }
 
-    return destPA;
+      return destPA;
+    } finally {
+      zarrReadWriteLock.readLock().unlock();
+    }
   }
 
   private static void setMissingInDest(
@@ -914,9 +965,10 @@ public class EDDGridFromZarr extends EDDGrid {
     String outerAxisSourceName = outerAxis.sourceName();
     int currentAxisLength = outerAxis.sourceValues().size();
 
-    Store freshStore = null;
+    ZarrStoreHolder freshHolder = null;
     try {
-      freshStore = createZarrStore(this.zarrStorePath);
+      freshHolder = createZarrStore(this.zarrStorePath);
+      Store freshStore = freshHolder.store();
       Group freshGroup = openZarrGroup(freshStore, this.zarrGroupName);
 
       Map<String, ZarrArrayInfo> freshArrayMap = parseZarrMetadata(freshGroup);
@@ -1026,11 +1078,16 @@ public class EDDGridFromZarr extends EDDGrid {
               outerAxis.addAttributes(),
               newSourceValues);
 
-      // Atomically swap store handles, axisVariables[0], and combinedGlobalAttributes under lock
+      // Atomically swap store handles, axisVariables[0], and combinedGlobalAttributes under write lock
       Store oldStore = null;
-      synchronized (zarrLock) {
+      S3Client oldS3Client = null;
+      zarrReadWriteLock.writeLock().lock();
+      try {
         oldStore = this.zarrStore;
+        oldS3Client = this.s3Client;
+
         this.zarrStore = freshStore;
+        this.s3Client = freshHolder.s3Client();
         this.zarrGroup = freshGroup;
         this.axisVariables[0] = newAxisVar;
 
@@ -1061,15 +1118,25 @@ public class EDDGridFromZarr extends EDDGrid {
             // ignore duration calc errors
           }
         }
+      } finally {
+        zarrReadWriteLock.writeLock().unlock();
       }
 
-      // Close previous store if open
+      // Cleanly close superseded store and s3Client
       if (oldStore != null && oldStore != freshStore) {
         if (oldStore instanceof AutoCloseable ac) {
           try {
             ac.close();
-          } catch (Throwable ignore) {
+          } catch (Throwable tClose) {
+            String2.log("Warning: Exception closing oldStore in lowUpdate: " + tClose.getMessage());
           }
+        }
+      }
+      if (oldS3Client != null && oldS3Client != freshHolder.s3Client()) {
+        try {
+          oldS3Client.close();
+        } catch (Throwable tClose) {
+          String2.log("Warning: Exception closing oldS3Client in lowUpdate: " + tClose.getMessage());
         }
       }
 
@@ -1091,13 +1158,8 @@ public class EDDGridFromZarr extends EDDGrid {
       String2.log(msg + " Error during lowUpdate: " + com.cohort.util.MustBe.throwableToString(t));
       return false;
     } finally {
-      if (freshStore != null && freshStore != this.zarrStore) {
-        if (freshStore instanceof AutoCloseable ac) {
-          try {
-            ac.close();
-          } catch (Throwable ignore) {
-          }
-        }
+      if (freshHolder != null && freshHolder.store() != this.zarrStore) {
+        freshHolder.close();
       }
     }
   }
@@ -1183,7 +1245,8 @@ public class EDDGridFromZarr extends EDDGrid {
       reloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES; // 1440
     }
 
-    Store zarrStore = createZarrStore(zarrStorePath);
+    ZarrStoreHolder holder = createZarrStore(zarrStorePath);
+    Store zarrStore = holder.store();
     Group zarrGroup = openZarrGroup(zarrStore, zarrGroupName);
 
     Table axisSourceTable = new Table();
@@ -1192,7 +1255,8 @@ public class EDDGridFromZarr extends EDDGrid {
     Table dataAddTable = new Table();
 
     try {
-      dev.zarr.zarrjava.core.Attributes zattrs = zarrGroup.metadata().attributes();
+      try {
+        dev.zarr.zarrjava.core.Attributes zattrs = zarrGroup.metadata().attributes();
       if (zattrs != null) {
         populateAttributesFromZarr(zattrs, axisSourceTable.globalAttributes());
       }
@@ -1332,6 +1396,9 @@ public class EDDGridFromZarr extends EDDGrid {
     sb.append("</dataset>\n\n");
 
     return sb.toString();
+    } finally {
+      holder.close();
+    }
   }
 
   /**

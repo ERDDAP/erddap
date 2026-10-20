@@ -101,6 +101,211 @@ class EDDGridFromZarrTests {
   }
 
   @Test
+  void testConcurrentReadsDuringLowUpdateStoreSwap() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_concurrent_swap_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      // Initial T = 2 time steps
+      dev.zarr.zarrjava.v3.Array timeArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes timeAtts = new dev.zarr.zarrjava.core.Attributes();
+      timeAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeArray.setAttributes(timeAtts);
+      timeArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      dev.zarr.zarrjava.v3.Array latArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("latitude"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("latitude"),
+              true);
+      latArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {0.0, 10.0}));
+
+      dev.zarr.zarrjava.v3.Array lonArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("longitude"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("longitude"),
+              true);
+      lonArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {100.0, 110.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(2, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true);
+      dev.zarr.zarrjava.core.Attributes tempAtts = new dev.zarr.zarrjava.core.Attributes();
+      tempAtts.set("ioos_category", "Temperature");
+      tempArray.setAttributes(tempAtts);
+      tempArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {2, 2, 2},
+              new double[] {15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Concurrent Store Swap Test");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_concurrent_grid_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              new ArrayList<>(),
+              new ArrayList<>(),
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      int numThreads = 8;
+      java.util.concurrent.ExecutorService executor =
+          java.util.concurrent.Executors.newFixedThreadPool(numThreads + 1);
+      java.util.concurrent.CountDownLatch startLatch = new java.util.concurrent.CountDownLatch(1);
+      java.util.concurrent.atomic.AtomicBoolean stopFlag =
+          new java.util.concurrent.atomic.AtomicBoolean(false);
+      List<java.util.concurrent.Future<Void>> futures = new ArrayList<>();
+
+      // Append 2 time steps (T = 4) to store on disk
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(4).withDataType(float64).withDimensionNames("time"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {4},
+                  new double[] {1000.0, 2000.0, 3000.0, 4000.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(4, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {4, 2, 2},
+                  new double[] {
+                    15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0,
+                    23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0, 30.0
+                  }));
+
+      // 1. Submit reader tasks that perform getSourceDataFromFile repeatedly
+      for (int i = 0; i < numThreads; i++) {
+        futures.add(
+            executor.submit(
+                () -> {
+                  startLatch.await();
+                  EDV edv = dataset.dataVariables()[0];
+                  while (!stopFlag.get()) {
+                    // Query time index 0 (overlapping index present in both old and new store)
+                    try {
+                      com.cohort.array.PrimitiveArray pa =
+                          dataset.getSourceDataFromFile(
+                              edv, new int[] {0, 0, 0}, new int[] {1, 1, 1}, new int[] {0, 1, 1});
+                      assertNotNull(pa);
+                      assertEquals(4, pa.size());
+                      // Assert data consistency on overlapping time index 0
+                      assertEquals(15.0, pa.getDouble(0), 1e-6);
+                      assertEquals(16.0, pa.getDouble(1), 1e-6);
+                      assertEquals(17.0, pa.getDouble(2), 1e-6);
+                      assertEquals(18.0, pa.getDouble(3), 1e-6);
+                    } catch (Throwable t) {
+                      throw new RuntimeException(t);
+                    }
+                  }
+                  return null;
+                }));
+      }
+
+      // 2. Submit lowUpdate background task that swaps store concurrently with reader threads
+      java.util.concurrent.Future<Boolean> updateFuture =
+          executor.submit(
+              () -> {
+                startLatch.await();
+                try {
+                  return dataset.lowUpdate(0, "concurrentSwap", System.currentTimeMillis());
+                } catch (Throwable t) {
+                  throw new RuntimeException(t);
+                }
+              });
+
+      // Release all threads to run concurrently
+      startLatch.countDown();
+
+      Boolean updated = updateFuture.get(10, java.util.concurrent.TimeUnit.SECONDS);
+      assertTrue(updated, "lowUpdate should succeed during concurrent reads.");
+
+      // Allow reader threads to continue briefly after swap, then signal stop
+      Thread.sleep(100);
+      stopFlag.set(true);
+
+      // Verify zero uncaught exceptions in all reader futures
+      for (java.util.concurrent.Future<Void> future : futures) {
+        future.get(5, java.util.concurrent.TimeUnit.SECONDS);
+      }
+
+      // 3. Immediate visibility of appended outer coordinate slice (T_new - 1 = 3)
+      assertEquals(4, dataset.axisVariables()[0].sourceValues().size());
+      com.cohort.array.PrimitiveArray newSlice =
+          dataset.getSourceDataFromFile(
+              dataset.dataVariables()[0],
+              new int[] {3, 0, 0},
+              new int[] {1, 1, 1},
+              new int[] {3, 1, 1});
+      assertNotNull(newSlice);
+      assertEquals(4, newSlice.size());
+      assertEquals(27.0, newSlice.getDouble(0), 1e-6);
+      assertEquals(28.0, newSlice.getDouble(1), 1e-6);
+      assertEquals(29.0, newSlice.getDouble(2), 1e-6);
+      assertEquals(30.0, newSlice.getDouble(3), 1e-6);
+
+      // 4. Clean executor shutdown & dataset close
+      executor.shutdown();
+      assertTrue(
+          executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS),
+          "Executor service should shut down cleanly.");
+      dataset.close();
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
   void testFromXml() throws Throwable {
     Initialization.edStatic();
     Path tempDir = Files.createTempDirectory("zarr_xml_test");
