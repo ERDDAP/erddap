@@ -560,7 +560,7 @@ public abstract class EDDTableFromFilesNcLow extends EDDTableFromFiles {
   @Override
   protected Map<String, FileVariableMetadata> getFileMetadata(String fullDir, String fileName)
       throws Throwable {
-    if (isZarr() || !EDStatic.config.useNcMetadataForFileTable) {
+    if (isZarr()) {
       return super.getFileMetadata(fullDir, fileName);
     }
 
