@@ -1,5 +1,8 @@
 package gov.noaa.pfel.erddap;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -532,5 +535,251 @@ class ErddapTests {
     // +
     // "It was hard to get the public and private AWS S3 datasets working
     // correctly.\n");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertIndexJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertIndexJte()");
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ServletOutputStream outStream =
+        new ServletOutputStream() {
+          @Override
+          public boolean isReady() {
+            return true;
+          }
+
+          @Override
+          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+
+          @Override
+          public void write(int b) throws java.io.IOException {
+            baos.write(b);
+          }
+        };
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getRequestURI()).thenReturn("/erddap/convert/index.html");
+    when(request.getParameter("jte")).thenReturn("true");
+
+    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
+    doAnswer(
+            invocation -> {
+              String key = invocation.getArgument(0);
+              Object val = invocation.getArgument(1);
+              attributes.put(key, val);
+              return null;
+            })
+        .when(request)
+        .setAttribute(anyString(), any());
+    when(request.getAttribute(anyString()))
+        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+
+    erddap.doConvert(
+        0, 1, request, response, null, "convert/index.html", "/erddap/convert/".length(), "");
+    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    Test.ensureTrue(
+        result.contains("ERDDAP has some simple forms to help you do some common conversions."),
+        "Missing convertHtml text");
+    Test.ensureTrue(
+        result.contains("/convert/oceanicAtmosphericAcronyms.html"), "Missing acronyms link");
+    Test.ensureTrue(result.contains("/convert/fipscounty.html"), "Missing fips county link");
+    Test.ensureTrue(result.contains("/convert/interpolate.html"), "Missing interpolate link");
+    Test.ensureTrue(result.contains("/convert/keywords.html"), "Missing keywords link");
+    Test.ensureTrue(result.contains("/convert/time.html"), "Missing time link");
+    Test.ensureTrue(result.contains("/convert/units.html"), "Missing units link");
+    Test.ensureTrue(result.contains("/convert/color.html"), "Missing color link");
+    Test.ensureTrue(result.contains("/convert/urls.html"), "Missing urls link");
+    Test.ensureTrue(
+        result.contains("/convert/oceanicAtmosphericVariableNames.html"),
+        "Missing variable names link");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertIndexLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertIndexLegacy()");
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ServletOutputStream outStream =
+        new ServletOutputStream() {
+          @Override
+          public boolean isReady() {
+            return true;
+          }
+
+          @Override
+          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+
+          @Override
+          public void write(int b) throws java.io.IOException {
+            baos.write(b);
+          }
+        };
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getRequestURI()).thenReturn("/erddap/convert/index.html");
+    when(request.getParameter("jte")).thenReturn("false");
+
+    erddap.doConvert(
+        0, 1, request, response, null, "convert/index.html", "/erddap/convert/".length(), "");
+    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    Test.ensureTrue(
+        result.contains("ERDDAP has some simple forms to help you do some common conversions."),
+        "Missing convertHtml text in legacy");
+    Test.ensureTrue(
+        result.contains("/convert/oceanicAtmosphericAcronyms.html"),
+        "Missing acronyms link in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag in legacy");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertIndexJteMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertIndexJteMultiLanguage()");
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ServletOutputStream outStream =
+        new ServletOutputStream() {
+          @Override
+          public boolean isReady() {
+            return true;
+          }
+
+          @Override
+          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+
+          @Override
+          public void write(int b) throws java.io.IOException {
+            baos.write(b);
+          }
+        };
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getRequestURI()).thenReturn("/erddap/fr/convert/index.html");
+    when(request.getParameter("jte")).thenReturn("true");
+
+    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
+    doAnswer(
+            invocation -> {
+              String key = invocation.getArgument(0);
+              Object val = invocation.getArgument(1);
+              attributes.put(key, val);
+              return null;
+            })
+        .when(request)
+        .setAttribute(anyString(), any());
+    when(request.getAttribute(anyString()))
+        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        request,
+        response,
+        null,
+        "convert/index.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_HTML, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French convertHtml text");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertIndexJteAuthenticated() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertIndexJteAuthenticated()");
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ServletOutputStream outStream =
+        new ServletOutputStream() {
+          @Override
+          public boolean isReady() {
+            return true;
+          }
+
+          @Override
+          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+
+          @Override
+          public void write(int b) throws java.io.IOException {
+            baos.write(b);
+          }
+        };
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getRequestURI()).thenReturn("/erddap/convert/index.html");
+    when(request.getParameter("jte")).thenReturn("true");
+
+    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
+    doAnswer(
+            invocation -> {
+              String key = invocation.getArgument(0);
+              Object val = invocation.getArgument(1);
+              attributes.put(key, val);
+              return null;
+            })
+        .when(request)
+        .setAttribute(anyString(), any());
+    when(request.getAttribute(anyString()))
+        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+
+    String prevAuth = gov.noaa.pfel.erddap.util.EDStatic.config.authentication;
+    gov.noaa.pfel.erddap.util.EDStatic.config.authentication = "custom";
+    try {
+      erddap.doConvert(
+          0,
+          1,
+          request,
+          response,
+          "tester@noaa.gov",
+          "convert/index.html",
+          "/erddap/convert/".length(),
+          "");
+      String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+      Test.ensureTrue(
+          result.contains("ERDDAP has some simple forms to help you do some common conversions."),
+          "Missing convertHtml text");
+      Test.ensureTrue(result.contains("tester@noaa.gov"), "Missing user in header");
+      Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+    } finally {
+      gov.noaa.pfel.erddap.util.EDStatic.config.authentication = prevAuth;
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertRedirect() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertRedirect()");
+    Erddap erddap = new Erddap();
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    when(request.getRequestURI()).thenReturn("/erddap/convert");
+
+    erddap.doConvert(0, 1, request, response, null, "convert", "/erddap/convert".length(), "");
+    verify(response, times(1))
+        .sendRedirect(org.mockito.ArgumentMatchers.contains("/convert/index.html"));
+  }
+
+  @org.junit.jupiter.api.Test
+  void testConvertLinksModel() {
+    String2.log("\n*** ErddapTests.testConvertLinksModel()");
+    var links =
+        gov.noaa.pfel.erddap.jte.Convert.getConverterLinks("http://localhost:8080/erddap", 0);
+    Test.ensureEqual(links.size(), 9, "Should have exactly 9 converter links");
+    for (var link : links) {
+      Test.ensureTrue(
+          link.url.startsWith("http://localhost:8080/erddap/convert/"),
+          "URL must start with convert/");
+      Test.ensureTrue(String2.isSomething(link.text), "Link text must not be empty");
+      Test.ensureTrue(String2.isSomething(link.description), "Link description must not be empty");
+    }
   }
 }
