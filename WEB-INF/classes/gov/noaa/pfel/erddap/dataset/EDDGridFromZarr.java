@@ -300,7 +300,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
         String2.log(errorInMethod + "Warning: Could not read .zattrs metadata: " + ze.getMessage());
       }
 
-      combinedGlobalAttributes = new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes);
+      combinedGlobalAttributes =
+          new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes);
       String tLicense = combinedGlobalAttributes.getString(language, "license");
       if (tLicense != null)
         combinedGlobalAttributes.set(
@@ -356,8 +357,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
   }
 
   /**
-   * Explicit dataset release/close hook to ensure background threads, store handles,
-   * and HTTP/S3 client resources are released on dataset destruction or reload.
+   * Explicit dataset release/close hook to ensure background threads, store handles, and HTTP/S3
+   * client resources are released on dataset destruction or reload.
    */
   @Override
   public void close() {
@@ -367,7 +368,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
         try {
           ac.close();
         } catch (Throwable t) {
-          String2.log("Warning: Exception closing zarrStore in EDDGridFromZarr.close(): " + t.getMessage());
+          String2.log(
+              "Warning: Exception closing zarrStore in EDDGridFromZarr.close(): " + t.getMessage());
         }
       }
       zarrStore = null;
@@ -376,7 +378,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
         try {
           s3Client.close();
         } catch (Throwable t) {
-          String2.log("Warning: Exception closing s3Client in EDDGridFromZarr.close(): " + t.getMessage());
+          String2.log(
+              "Warning: Exception closing s3Client in EDDGridFromZarr.close(): " + t.getMessage());
         }
         s3Client = null;
       }
@@ -399,7 +402,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
       S3Client s3Client = S3Client.create();
       return new ZarrStoreHolder(new S3Store(s3Client, bucket, keyPrefix), s3Client);
     } else if (path.toLowerCase().endsWith(".zip")) {
-      return new ZarrStoreHolder(new dev.zarr.zarrjava.store.ReadOnlyZipStore(Paths.get(path)), null);
+      return new ZarrStoreHolder(
+          new dev.zarr.zarrjava.store.ReadOnlyZipStore(Paths.get(path)), null);
     } else {
       return new ZarrStoreHolder(new FilesystemStore(Paths.get(path)), null);
     }
@@ -655,217 +659,217 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
         throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.");
       }
 
-    ArrayMetadata metadata = zarray.metadata();
-    long[] shape = metadata.shape;
-    int[] chunkShape = metadata.chunkShape();
-    int rank = shape.length;
+      ArrayMetadata metadata = zarray.metadata();
+      long[] shape = metadata.shape;
+      int[] chunkShape = metadata.chunkShape();
+      int rank = shape.length;
 
-    if (start.length != rank || stride.length != rank || stop.length != rank) {
-      throw new IllegalArgumentException(
-          "Constraint dimension count ("
-              + start.length
-              + ") does not match Zarr array rank ("
-              + rank
-              + ") for variable '"
-              + sourceName
-              + "'.");
-    }
-
-    // Validate request bounds and calculate output dimension lengths
-    int[] nRequested = new int[rank];
-    long totalSizeL = 1;
-    for (int d = 0; d < rank; d++) {
-      if (start[d] < 0 || stop[d] >= shape[d] || start[d] > stop[d] || stride[d] < 1) {
+      if (start.length != rank || stride.length != rank || stop.length != rank) {
         throw new IllegalArgumentException(
-            "Invalid slice bounds for dimension "
-                + d
-                + " on '"
+            "Constraint dimension count ("
+                + start.length
+                + ") does not match Zarr array rank ("
+                + rank
+                + ") for variable '"
                 + sourceName
-                + "': start="
-                + start[d]
-                + ", stride="
-                + stride[d]
-                + ", stop="
-                + stop[d]
-                + ", shape="
-                + shape[d]);
-      }
-      nRequested[d] = (stop[d] - start[d]) / stride[d] + 1;
-      totalSizeL *= nRequested[d];
-    }
-
-    if (totalSizeL > Integer.MAX_VALUE) {
-      throw new SimpleException(
-          "Requested data size ("
-              + totalSizeL
-              + ") exceeds maximum allowed PrimitiveArray length.");
-    }
-    int totalSize = (int) totalSizeL;
-
-    // Determine unpacking & target PrimitiveArray type
-    double scaleFactor = edv.scaleFactor();
-    double addOffset = edv.addOffset();
-    boolean unpack = edv.scaleAddOffset();
-
-    PAType destPAType = unpack ? edv.destinationDataPAType() : edv.sourceDataPAType();
-    PrimitiveArray destPA = PrimitiveArray.factory(destPAType, totalSize, true);
-
-    // Missing value definitions
-    double sourceMissingDouble = edv.sourceMissingValue();
-    double sourceFillDouble = edv.sourceFillValue();
-    double destMissingDouble = edv.destinationMissingValue();
-
-    // Check Zarr parsed fill value from metadata if available
-    Object parsedFV = metadata.parsedFillValue();
-    if (parsedFV instanceof Number n) {
-      double fvDouble = n.doubleValue();
-      if (Double.isNaN(sourceFillDouble)) {
-        sourceFillDouble = fvDouble;
-      }
-    }
-
-    // Compute chunk coordinate ranges for each dimension
-    int[] minChunk = new int[rank];
-    int[] maxChunk = new int[rank];
-    int[] nChunks = new int[rank];
-    int totalChunks = 1;
-
-    for (int d = 0; d < rank; d++) {
-      int cSize = chunkShape[d];
-      minChunk[d] = start[d] / cSize;
-      maxChunk[d] = stop[d] / cSize;
-      nChunks[d] = maxChunk[d] - minChunk[d] + 1;
-      totalChunks *= nChunks[d];
-    }
-
-    // Precompute dimension multiplier strides for C-order row-major output index mapping
-    int[] outStrides = new int[rank];
-    if (rank > 0) {
-      outStrides[rank - 1] = 1;
-      for (int d = rank - 2; d >= 0; d--) {
-        outStrides[d] = outStrides[d + 1] * nRequested[d + 1];
-      }
-    }
-
-    // Process overlapping chunks
-    int[] chunkCoordOffset = new int[rank];
-    long[] chunkCoords = new long[rank];
-    int[] kMin = new int[rank];
-    int[] kMax = new int[rank];
-
-    for (int cIdx = 0; cIdx < totalChunks; cIdx++) {
-      int temp = cIdx;
-      for (int d = rank - 1; d >= 0; d--) {
-        chunkCoordOffset[d] = temp % nChunks[d];
-        temp /= nChunks[d];
-        chunkCoords[d] = minChunk[d] + chunkCoordOffset[d];
+                + "'.");
       }
 
-      // Calculate chunk physical bounds and output index overlap bounds [kMin, kMax]
-      boolean hasOverlap = true;
-      long[] physStart = new long[rank];
-      long[] physEnd = new long[rank];
+      // Validate request bounds and calculate output dimension lengths
+      int[] nRequested = new int[rank];
+      long totalSizeL = 1;
+      for (int d = 0; d < rank; d++) {
+        if (start[d] < 0 || stop[d] >= shape[d] || start[d] > stop[d] || stride[d] < 1) {
+          throw new IllegalArgumentException(
+              "Invalid slice bounds for dimension "
+                  + d
+                  + " on '"
+                  + sourceName
+                  + "': start="
+                  + start[d]
+                  + ", stride="
+                  + stride[d]
+                  + ", stop="
+                  + stop[d]
+                  + ", shape="
+                  + shape[d]);
+        }
+        nRequested[d] = (stop[d] - start[d]) / stride[d] + 1;
+        totalSizeL *= nRequested[d];
+      }
+
+      if (totalSizeL > Integer.MAX_VALUE) {
+        throw new SimpleException(
+            "Requested data size ("
+                + totalSizeL
+                + ") exceeds maximum allowed PrimitiveArray length.");
+      }
+      int totalSize = (int) totalSizeL;
+
+      // Determine unpacking & target PrimitiveArray type
+      double scaleFactor = edv.scaleFactor();
+      double addOffset = edv.addOffset();
+      boolean unpack = edv.scaleAddOffset();
+
+      PAType destPAType = unpack ? edv.destinationDataPAType() : edv.sourceDataPAType();
+      PrimitiveArray destPA = PrimitiveArray.factory(destPAType, totalSize, true);
+
+      // Missing value definitions
+      double sourceMissingDouble = edv.sourceMissingValue();
+      double sourceFillDouble = edv.sourceFillValue();
+      double destMissingDouble = edv.destinationMissingValue();
+
+      // Check Zarr parsed fill value from metadata if available
+      Object parsedFV = metadata.parsedFillValue();
+      if (parsedFV instanceof Number n) {
+        double fvDouble = n.doubleValue();
+        if (Double.isNaN(sourceFillDouble)) {
+          sourceFillDouble = fvDouble;
+        }
+      }
+
+      // Compute chunk coordinate ranges for each dimension
+      int[] minChunk = new int[rank];
+      int[] maxChunk = new int[rank];
+      int[] nChunks = new int[rank];
+      int totalChunks = 1;
 
       for (int d = 0; d < rank; d++) {
         int cSize = chunkShape[d];
-        physStart[d] = chunkCoords[d] * cSize;
-        physEnd[d] = Math.min((chunkCoords[d] + 1) * cSize, shape[d]);
+        minChunk[d] = start[d] / cSize;
+        maxChunk[d] = stop[d] / cSize;
+        nChunks[d] = maxChunk[d] - minChunk[d] + 1;
+        totalChunks *= nChunks[d];
+      }
 
-        long pStart = physStart[d];
-        long pEnd = physEnd[d];
-
-        // Smallest k >= 0 such that start_d + k * stride_d >= pStart
-        int minK = 0;
-        if (pStart > start[d]) {
-          long num = pStart - start[d];
-          minK = (int) ((num + stride[d] - 1) / stride[d]);
-        }
-        kMin[d] = Math.max(0, minK);
-
-        // Largest k < nRequested such that start_d + k * stride_d < pEnd
-        int maxK = nRequested[d] - 1;
-        if (pEnd - 1 < start[d] + (long) (nRequested[d] - 1) * stride[d]) {
-          long num = (pEnd - 1) - start[d];
-          maxK = num < 0 ? -1 : (int) (num / stride[d]);
-        }
-        kMax[d] = Math.min(nRequested[d] - 1, maxK);
-
-        if (kMin[d] > kMax[d]) {
-          hasOverlap = false;
-          break;
+      // Precompute dimension multiplier strides for C-order row-major output index mapping
+      int[] outStrides = new int[rank];
+      if (rank > 0) {
+        outStrides[rank - 1] = 1;
+        for (int d = rank - 2; d >= 0; d--) {
+          outStrides[d] = outStrides[d + 1] * nRequested[d + 1];
         }
       }
 
-      if (!hasOverlap) continue;
+      // Process overlapping chunks
+      int[] chunkCoordOffset = new int[rank];
+      long[] chunkCoords = new long[rank];
+      int[] kMin = new int[rank];
+      int[] kMax = new int[rank];
 
-      // Read chunk data via zarr-java
-      ucar.ma2.Array chunkData = null;
-      try {
-        chunkData = zarray.readChunk(chunkCoords);
-      } catch (Throwable t) {
-        // Unwritten, missing, or empty chunk -> treated as missing fill region
-        chunkData = null;
-      }
-
-      // Calculate total element iterations within overlap for this chunk
-      int[] overlapShape = new int[rank];
-      int chunkIterTotal = 1;
-      for (int d = 0; d < rank; d++) {
-        overlapShape[d] = kMax[d] - kMin[d] + 1;
-        chunkIterTotal *= overlapShape[d];
-      }
-
-      int[] localK = new int[rank];
-      int[] chunkLocalOffset = new int[rank];
-
-      for (int iter = 0; iter < chunkIterTotal; iter++) {
-        int tempIter = iter;
-        int outIdx = 0;
-
+      for (int cIdx = 0; cIdx < totalChunks; cIdx++) {
+        int temp = cIdx;
         for (int d = rank - 1; d >= 0; d--) {
-          int offsetInOverlap = tempIter % overlapShape[d];
-          tempIter /= overlapShape[d];
-
-          localK[d] = kMin[d] + offsetInOverlap;
-          outIdx += localK[d] * outStrides[d];
-
-          long fullIdx = start[d] + (long) localK[d] * stride[d];
-          chunkLocalOffset[d] = (int) (fullIdx - physStart[d]);
+          chunkCoordOffset[d] = temp % nChunks[d];
+          temp /= nChunks[d];
+          chunkCoords[d] = minChunk[d] + chunkCoordOffset[d];
         }
 
-        if (chunkData == null) {
-          // Fill missing chunk elements with missing value
-          setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
-        } else {
-          ucar.ma2.Index ma2Idx = chunkData.getIndex();
-          ma2Idx.set(chunkLocalOffset);
+        // Calculate chunk physical bounds and output index overlap bounds [kMin, kMax]
+        boolean hasOverlap = true;
+        long[] physStart = new long[rank];
+        long[] physEnd = new long[rank];
 
-          if (destPAType == PAType.STRING || destPAType == PAType.CHAR) {
-            Object obj = chunkData.getObject(ma2Idx);
-            String sVal = obj != null ? obj.toString() : "";
-            destPA.setString(outIdx, sVal);
+        for (int d = 0; d < rank; d++) {
+          int cSize = chunkShape[d];
+          physStart[d] = chunkCoords[d] * cSize;
+          physEnd[d] = Math.min((chunkCoords[d] + 1) * cSize, shape[d]);
+
+          long pStart = physStart[d];
+          long pEnd = physEnd[d];
+
+          // Smallest k >= 0 such that start_d + k * stride_d >= pStart
+          int minK = 0;
+          if (pStart > start[d]) {
+            long num = pStart - start[d];
+            minK = (int) ((num + stride[d] - 1) / stride[d]);
+          }
+          kMin[d] = Math.max(0, minK);
+
+          // Largest k < nRequested such that start_d + k * stride_d < pEnd
+          int maxK = nRequested[d] - 1;
+          if (pEnd - 1 < start[d] + (long) (nRequested[d] - 1) * stride[d]) {
+            long num = (pEnd - 1) - start[d];
+            maxK = num < 0 ? -1 : (int) (num / stride[d]);
+          }
+          kMax[d] = Math.min(nRequested[d] - 1, maxK);
+
+          if (kMin[d] > kMax[d]) {
+            hasOverlap = false;
+            break;
+          }
+        }
+
+        if (!hasOverlap) continue;
+
+        // Read chunk data via zarr-java
+        ucar.ma2.Array chunkData = null;
+        try {
+          chunkData = zarray.readChunk(chunkCoords);
+        } catch (Throwable t) {
+          // Unwritten, missing, or empty chunk -> treated as missing fill region
+          chunkData = null;
+        }
+
+        // Calculate total element iterations within overlap for this chunk
+        int[] overlapShape = new int[rank];
+        int chunkIterTotal = 1;
+        for (int d = 0; d < rank; d++) {
+          overlapShape[d] = kMax[d] - kMin[d] + 1;
+          chunkIterTotal *= overlapShape[d];
+        }
+
+        int[] localK = new int[rank];
+        int[] chunkLocalOffset = new int[rank];
+
+        for (int iter = 0; iter < chunkIterTotal; iter++) {
+          int tempIter = iter;
+          int outIdx = 0;
+
+          for (int d = rank - 1; d >= 0; d--) {
+            int offsetInOverlap = tempIter % overlapShape[d];
+            tempIter /= overlapShape[d];
+
+            localK[d] = kMin[d] + offsetInOverlap;
+            outIdx += localK[d] * outStrides[d];
+
+            long fullIdx = start[d] + (long) localK[d] * stride[d];
+            chunkLocalOffset[d] = (int) (fullIdx - physStart[d]);
+          }
+
+          if (chunkData == null) {
+            // Fill missing chunk elements with missing value
+            setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
           } else {
-            double rawVal = chunkData.getDouble(ma2Idx);
+            ucar.ma2.Index ma2Idx = chunkData.getIndex();
+            ma2Idx.set(chunkLocalOffset);
 
-            boolean isMissing =
-                Double.isNaN(rawVal)
-                    || (!Double.isNaN(sourceMissingDouble) && rawVal == sourceMissingDouble)
-                    || (!Double.isNaN(sourceFillDouble) && rawVal == sourceFillDouble);
-
-            if (isMissing) {
-              setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
+            if (destPAType == PAType.STRING || destPAType == PAType.CHAR) {
+              Object obj = chunkData.getObject(ma2Idx);
+              String sVal = obj != null ? obj.toString() : "";
+              destPA.setString(outIdx, sVal);
             } else {
-              if (unpack) {
-                double unpackedVal = rawVal * scaleFactor + addOffset;
-                destPA.setDouble(outIdx, unpackedVal);
+              double rawVal = chunkData.getDouble(ma2Idx);
+
+              boolean isMissing =
+                  Double.isNaN(rawVal)
+                      || (!Double.isNaN(sourceMissingDouble) && rawVal == sourceMissingDouble)
+                      || (!Double.isNaN(sourceFillDouble) && rawVal == sourceFillDouble);
+
+              if (isMissing) {
+                setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
               } else {
-                destPA.setDouble(outIdx, rawVal);
+                if (unpack) {
+                  double unpackedVal = rawVal * scaleFactor + addOffset;
+                  destPA.setDouble(outIdx, unpackedVal);
+                } else {
+                  destPA.setDouble(outIdx, rawVal);
+                }
               }
             }
           }
         }
       }
-    }
 
       return destPA;
     } finally {
@@ -1078,7 +1082,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
               outerAxis.addAttributes(),
               newSourceValues);
 
-      // Atomically swap store handles, axisVariables[0], and combinedGlobalAttributes under write lock
+      // Atomically swap store handles, axisVariables[0], and combinedGlobalAttributes under write
+      // lock
       Store oldStore = null;
       S3Client oldS3Client = null;
       zarrReadWriteLock.writeLock().lock();
@@ -1136,7 +1141,8 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
         try {
           oldS3Client.close();
         } catch (Throwable tClose) {
-          String2.log("Warning: Exception closing oldS3Client in lowUpdate: " + tClose.getMessage());
+          String2.log(
+              "Warning: Exception closing oldS3Client in lowUpdate: " + tClose.getMessage());
         }
       }
 
@@ -1257,145 +1263,146 @@ public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
     try {
       try {
         dev.zarr.zarrjava.core.Attributes zattrs = zarrGroup.metadata().attributes();
-      if (zattrs != null) {
-        populateAttributesFromZarr(zattrs, axisSourceTable.globalAttributes());
+        if (zattrs != null) {
+          populateAttributesFromZarr(zattrs, axisSourceTable.globalAttributes());
+        }
+      } catch (ZarrException ze) {
+        String2.log("Warning: Could not read Zarr global attributes: " + ze.getMessage());
       }
-    } catch (ZarrException ze) {
-      String2.log("Warning: Could not read Zarr global attributes: " + ze.getMessage());
-    }
 
-    Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata(zarrGroup);
+      Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata(zarrGroup);
 
-    List<String> axisNames = new ArrayList<>();
-    Map<String, Long> dimLengths = new LinkedHashMap<>();
+      List<String> axisNames = new ArrayList<>();
+      Map<String, Long> dimLengths = new LinkedHashMap<>();
 
-    for (ZarrArrayInfo info : arrayMap.values()) {
-      if (info == null || info.isUnsupportedCodec) continue;
-      if (!info.is1D() && info.dimensionNames != null) {
-        for (int d = 0; d < info.dimensionNames.length; d++) {
-          String dimName = info.dimensionNames[d];
-          long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
-          if (!dimLengths.containsKey(dimName)) {
-            axisNames.add(dimName);
-            dimLengths.put(dimName, len);
+      for (ZarrArrayInfo info : arrayMap.values()) {
+        if (info == null || info.isUnsupportedCodec) continue;
+        if (!info.is1D() && info.dimensionNames != null) {
+          for (int d = 0; d < info.dimensionNames.length; d++) {
+            String dimName = info.dimensionNames[d];
+            long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
+            if (!dimLengths.containsKey(dimName)) {
+              axisNames.add(dimName);
+              dimLengths.put(dimName, len);
+            }
           }
         }
       }
-    }
 
-    if (axisNames.isEmpty()) {
+      if (axisNames.isEmpty()) {
+        for (ZarrArrayInfo info : arrayMap.values()) {
+          if (info != null && !info.isUnsupportedCodec && info.is1D()) {
+            axisNames.add(info.name);
+            dimLengths.put(info.name, info.shape[0]);
+          }
+        }
+      }
+
+      Set<String> axisNameSet = new HashSet<>(axisNames);
+
+      for (int av = 0; av < axisNames.size(); av++) {
+        String axisName = axisNames.get(av);
+        long dimLen = dimLengths.getOrDefault(axisName, 0L);
+
+        ZarrArrayInfo info = getOrOpenZarrArrayInfo(zarrGroup, axisName, arrayMap);
+        PrimitiveArray pa = null;
+        Attributes sourceAtts = new Attributes();
+
+        if (info != null && info.is1D()) {
+          if (info.attributes != null) info.attributes.copyTo(sourceAtts);
+          ucar.ma2.Array nc2Array = info.array.read();
+          boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
+          pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
+        } else {
+          pa = PrimitiveArray.factory(PAType.INT, (int) dimLen, false);
+          for (int i = 0; i < dimLen; i++) {
+            pa.addInt(i);
+          }
+        }
+
+        sourceAtts.remove("_FillValue");
+        sourceAtts.remove("missing_value");
+
+        axisSourceTable.addColumn(av, axisName, pa, sourceAtts);
+
+        Attributes addAtts =
+            makeReadyToUseAddVariableAttributesForDatasetsXml(
+                axisSourceTable.globalAttributes(), sourceAtts, null, axisName, true, true, true);
+        axisAddTable.addColumn(av, axisName, (PrimitiveArray) pa.clone(), addAtts);
+      }
+
+      int dvCount = 0;
       for (ZarrArrayInfo info : arrayMap.values()) {
-        if (info != null && !info.isUnsupportedCodec && info.is1D()) {
-          axisNames.add(info.name);
-          dimLengths.put(info.name, info.shape[0]);
+        if (info == null || info.isUnsupportedCodec) continue;
+        if (axisNameSet.contains(info.name)) continue;
+        if (info.is1D() && isLikelyAxisArray(info)) continue;
+
+        String varName = info.name;
+        Attributes sourceAtts = new Attributes();
+        if (info.attributes != null) {
+          info.attributes.copyTo(sourceAtts);
         }
-      }
-    }
 
-    Set<String> axisNameSet = new HashSet<>(axisNames);
+        PAType paType = info.paType != null ? info.paType : PAType.DOUBLE;
+        PrimitiveArray sourcePA = PrimitiveArray.factory(paType, 1, false);
 
-    for (int av = 0; av < axisNames.size(); av++) {
-      String axisName = axisNames.get(av);
-      long dimLen = dimLengths.getOrDefault(axisName, 0L);
+        dataSourceTable.addColumn(dvCount, varName, sourcePA, sourceAtts);
 
-      ZarrArrayInfo info = getOrOpenZarrArrayInfo(zarrGroup, axisName, arrayMap);
-      PrimitiveArray pa = null;
-      Attributes sourceAtts = new Attributes();
+        Attributes addAtts =
+            makeReadyToUseAddVariableAttributesForDatasetsXml(
+                axisSourceTable.globalAttributes(),
+                sourceAtts,
+                null,
+                varName,
+                paType != PAType.STRING,
+                paType != PAType.STRING,
+                false);
 
-      if (info != null && info.is1D()) {
-        if (info.attributes != null) info.attributes.copyTo(sourceAtts);
-        ucar.ma2.Array nc2Array = info.array.read();
-        boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
-        pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
-      } else {
-        pa = PrimitiveArray.factory(PAType.INT, (int) dimLen, false);
-        for (int i = 0; i < dimLen; i++) {
-          pa.addInt(i);
-        }
+        PrimitiveArray destPA = PrimitiveArray.factory(paType, 1, false);
+        dataAddTable.addColumn(dvCount, varName, destPA, addAtts);
+        dvCount++;
       }
 
-      sourceAtts.remove("_FillValue");
-      sourceAtts.remove("missing_value");
+      tryToFindLLAT(axisSourceTable, axisAddTable);
+      ensureValidNames(dataSourceTable, dataAddTable);
 
-      axisSourceTable.addColumn(av, axisName, pa, sourceAtts);
-
-      Attributes addAtts =
-          makeReadyToUseAddVariableAttributesForDatasetsXml(
-              axisSourceTable.globalAttributes(), sourceAtts, null, axisName, true, true, true);
-      axisAddTable.addColumn(av, axisName, (PrimitiveArray) pa.clone(), addAtts);
-    }
-
-    int dvCount = 0;
-    for (ZarrArrayInfo info : arrayMap.values()) {
-      if (info == null || info.isUnsupportedCodec) continue;
-      if (axisNameSet.contains(info.name)) continue;
-      if (info.is1D() && isLikelyAxisArray(info)) continue;
-
-      String varName = info.name;
-      Attributes sourceAtts = new Attributes();
-      if (info.attributes != null) {
-        info.attributes.copyTo(sourceAtts);
-      }
-
-      PAType paType = info.paType != null ? info.paType : PAType.DOUBLE;
-      PrimitiveArray sourcePA = PrimitiveArray.factory(paType, 1, false);
-
-      dataSourceTable.addColumn(dvCount, varName, sourcePA, sourceAtts);
-
-      Attributes addAtts =
-          makeReadyToUseAddVariableAttributesForDatasetsXml(
+      Attributes globalAddAtts = axisAddTable.globalAttributes();
+      globalAddAtts.set(
+          makeReadyToUseAddGlobalAttributesForDatasetsXml(
               axisSourceTable.globalAttributes(),
-              sourceAtts,
-              null,
-              varName,
-              paType != PAType.STRING,
-              paType != PAType.STRING,
-              false);
+              "Grid",
+              zarrStorePath,
+              externalAddGlobalAttributes,
+              suggestKeywords(dataSourceTable, dataAddTable)));
 
-      PrimitiveArray destPA = PrimitiveArray.factory(paType, 1, false);
-      dataAddTable.addColumn(dvCount, varName, destPA, addAtts);
-      dvCount++;
-    }
+      String tDatasetID = suggestZarrDatasetID(datasetIDPrefix, zarrStorePath, zarrGroupName);
 
-    tryToFindLLAT(axisSourceTable, axisAddTable);
-    ensureValidNames(dataSourceTable, dataAddTable);
+      StringBuilder sb = new StringBuilder();
+      sb.append(
+          "<dataset type=\"EDDGridFromZarr\" datasetID=\""
+              + XML.encodeAsXML(tDatasetID)
+              + "\" active=\"true\">\n");
+      sb.append("    <reloadEveryNMinutes>" + reloadEveryNMinutes + "</reloadEveryNMinutes>\n");
 
-    Attributes globalAddAtts = axisAddTable.globalAttributes();
-    globalAddAtts.set(
-        makeReadyToUseAddGlobalAttributesForDatasetsXml(
-            axisSourceTable.globalAttributes(),
-            "Grid",
-            zarrStorePath,
-            externalAddGlobalAttributes,
-            suggestKeywords(dataSourceTable, dataAddTable)));
+      if (String2.isSomething(cacheFromUrl)) {
+        sb.append("    <cacheFromUrl>" + XML.encodeAsXML(cacheFromUrl) + "</cacheFromUrl>\n");
+      }
 
-    String tDatasetID = suggestZarrDatasetID(datasetIDPrefix, zarrStorePath, zarrGroupName);
+      sb.append("    <zarrStorePath>" + XML.encodeAsXML(zarrStorePath) + "</zarrStorePath>\n");
+      sb.append("    <zarrGroupName>" + XML.encodeAsXML(zarrGroupName) + "</zarrGroupName>\n");
 
-    StringBuilder sb = new StringBuilder();
-    sb.append(
-        "<dataset type=\"EDDGridFromZarr\" datasetID=\""
-            + XML.encodeAsXML(tDatasetID)
-            + "\" active=\"true\">\n");
-    sb.append("    <reloadEveryNMinutes>" + reloadEveryNMinutes + "</reloadEveryNMinutes>\n");
+      sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
+      sb.append(writeAttsForDatasetsXml(true, globalAddAtts, "    "));
 
-    if (String2.isSomething(cacheFromUrl)) {
-      sb.append("    <cacheFromUrl>" + XML.encodeAsXML(cacheFromUrl) + "</cacheFromUrl>\n");
-    }
+      sb.append(
+          writeVariablesForDatasetsXml(
+              axisSourceTable, axisAddTable, "axisVariable", false, false));
+      sb.append(
+          writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
 
-    sb.append("    <zarrStorePath>" + XML.encodeAsXML(zarrStorePath) + "</zarrStorePath>\n");
-    sb.append("    <zarrGroupName>" + XML.encodeAsXML(zarrGroupName) + "</zarrGroupName>\n");
+      sb.append("</dataset>\n\n");
 
-    sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
-    sb.append(writeAttsForDatasetsXml(true, globalAddAtts, "    "));
-
-    sb.append(
-        writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
-    sb.append(
-        writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-
-    sb.append("</dataset>\n\n");
-
-    return sb.toString();
+      return sb.toString();
     } finally {
       holder.close();
     }

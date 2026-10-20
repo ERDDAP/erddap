@@ -8216,6 +8216,11 @@ class JettyTests extends WireMockLifecycle {
     },
     {
       "@type": "Dataset",
+      "name": "NOAA Highly Reflective Clouds, 25N-25S (noaa hrc, hrc.nmissdays), 1.0°, 1971-1985",
+      "sameAs": "http://localhost:8080/erddap/info/testActualRange2/index.html"
+    },
+    {
+      "@type": "Dataset",
       "name": "NOAA NOS SOS, EXPERIMENTAL, 1853-present, Air Temperature",
       "sameAs": "http://localhost:8080/erddap/info/nosSosATemp/index.html"
     },
