@@ -2258,7 +2258,7 @@ public class File2 {
     }
   }
 
-   /**
+  /**
    * This fully skips the specified number of bytes from the inputstream.
    *
    * @param inputStream Best if buffered.
