@@ -227,7 +227,7 @@ public class Erddap extends HttpServlet {
   public long lastClearedFailedLogins = System.currentTimeMillis();
 
   // Bounded lock stripes prevent cache stampedes without String.intern() memory leaks
-  private static final Object[] CACHE_DOWNLOAD_LOCKS = new Object[256];
+  private static final Object[] CACHE_DOWNLOAD_LOCKS = new Object[4096];
 
   static {
     for (int i = 0; i < CACHE_DOWNLOAD_LOCKS.length; i++) {
@@ -7448,14 +7448,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         String cacheDir = edd.cacheDirectory() + (nextPath == null ? "" : nextPath);
         String targetCacheFile = cacheDir + nameAndExt;
 
-        // Use striped lock on path hash to avoid String.intern() string pool pollution
+        // Use 4096-stripe lock on path hash to avoid String.intern() string pool pollution
         int lockIndex = (targetCacheFile.hashCode() & 0x7fffffff) % CACHE_DOWNLOAD_LOCKS.length;
         synchronized (CACHE_DOWNLOAD_LOCKS[lockIndex]) {
           if (File2.isFile(targetCacheFile)) {
             File2.touch(targetCacheFile);
           } else {
-            SSR.downloadFile(
-                localDir + nameAndExt, targetCacheFile, true); // tryToUseCompression is irrelevant
+            String tempFile = targetCacheFile + "." + java.util.UUID.randomUUID() + ".tmp";
+            try {
+              SSR.downloadFile(
+                  localDir + nameAndExt, tempFile, true); // tryToUseCompression is irrelevant
+              Files.move(
+                  Paths.get(tempFile),
+                  Paths.get(targetCacheFile),
+                  java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                  java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } finally {
+              try {
+                Files.deleteIfExists(Paths.get(tempFile));
+              } catch (Exception e) {
+                // Ignore cleanup errors
+              }
+            }
           }
         }
         localDir = cacheDir;
@@ -13851,10 +13865,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + " when it should have used \"identity\".");
       }
 
+      if (fileSize == 0) {
+        response.setHeader("Content-Range", "bytes */0");
+        throw new SimpleException(
+            EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
+                + "Cannot request Range on a 0-byte file.");
+      }
+
       String s = range.trim();
       int dash = s.indexOf('-', 6); // Look for '-' after "bytes="
       if (!s.startsWith("bytes=") || dash == -1 || s.equals("bytes=-")) {
         if (verbose) String2.log("doTransfer invalid range format: " + range);
+        response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
                 + "The Range header must use the format: \"bytes=[first]-[last]\". (one bound is optional)");
@@ -13865,6 +13887,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         if (fileSize < 0) {
           if (verbose)
             String2.log("doTransfer suffix range requested but fileSize unknown for " + fullSource);
+          response.setHeader("Content-Range", "bytes */*");
           throw new SimpleException(
               EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
                   + "Suffix range requested, but file size is unknown for remote files.");
@@ -13872,6 +13895,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         long suffixLen = String2.parseLong(s.substring(dash + 1));
         if (suffixLen <= 0 || suffixLen == Long.MAX_VALUE) {
           if (verbose) String2.log("doTransfer invalid suffix length: " + s);
+          response.setHeader("Content-Range", "bytes */" + fileSize);
           throw new SimpleException(
               EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Invalid suffix length in Range header.");
         }
@@ -13881,14 +13905,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         // Standard range: "bytes=0-1023" or open-ended "bytes=1024-"
         first = String2.parseLong(s.substring(6, dash));
         String lastStr = s.substring(dash + 1);
-        last = lastStr.isEmpty() ? (fileSize >= 0 ? fileSize - 1 : -1) : String2.parseLong(lastStr);
+        if (lastStr.isEmpty()) {
+          last = fileSize >= 0 ? fileSize - 1 : -1;
+        } else {
+          last = String2.parseLong(lastStr);
+          if (last < 0 || last == Long.MAX_VALUE) {
+            if (verbose) String2.log("doTransfer invalid last byte in range: " + s);
+            response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
+            throw new SimpleException(
+                EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Invalid last byte position in Range header.");
+          }
+        }
+      }
+
+      // Speculative range request: if last >= fileSize, clamp to fileSize - 1 per RFC 9110 §14.1.2
+      if (fileSize >= 0 && last >= fileSize) {
+        last = fileSize - 1;
       }
 
       if (first < 0
           || first == Long.MAX_VALUE
-          || last == Long.MAX_VALUE
           || (last >= 0 && first > last)
-          || (fileSize >= 0 && last >= fileSize)) {
+          || (fileSize >= 0 && first >= fileSize)) {
         if (verbose) {
           String2.log(
               "doTransfer Range out of bounds: first="
@@ -13898,6 +13936,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   + ", fileSize="
                   + fileSize);
         }
+        response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
                 + "Invalid Range requested: first="
@@ -13906,14 +13945,14 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + last);
       }
 
-      if (last < -1) {
-        if (fileSize == -1) {
+      if (last < 0) {
+        if (fileSize < 0) {
+          response.setHeader("Content-Range", "bytes */*");
           throw new SimpleException(
               EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
                   + "Invalid Range requested: last byte not specified, but file size isn't known for remote files.");
-        } else {
-          last = fileSize - 1;
         }
+        last = fileSize - 1;
       }
 
       response.setStatus(206); // 206 = Partial Content

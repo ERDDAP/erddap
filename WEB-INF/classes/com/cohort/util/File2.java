@@ -2078,11 +2078,6 @@ public class File2 {
   // 64 KB aligns with Linux page cache readahead and TCP socket buffers
   private static final int COPY_BUFFER_SIZE = 65536;
 
-  // Reusable per-thread buffer eliminates all heap allocations during streaming.
-  // Bounded and safe under servlet container thread pools (e.g. 200 threads * 64 KB = ~12.8 MB).
-  private static final ThreadLocal<byte[]> COPY_BUFFER =
-      ThreadLocal.withInitial(() -> new byte[COPY_BUFFER_SIZE]);
-
   /** A variant that copies the entire source. */
   public static boolean copy(String source, String destination) {
     return copy(source, destination, 0, -1);
@@ -2102,10 +2097,9 @@ public class File2 {
   public static boolean copy(String source, String destination, long first, long last) {
     if (source.equals(destination)) return false;
 
-    // Fast directory existence check avoids unnecessary mkdirs() syscalls
     try {
       File dir = new File(getDirectory(destination));
-      if (!dir.exists()) dir.mkdirs();
+      if (!dir.isDirectory()) dir.mkdirs();
     } catch (Exception e) {
       String2.log(MustBe.throwableToString(e));
       return false;
@@ -2115,49 +2109,47 @@ public class File2 {
     String destBro[] = String2.parseAwsS3Url(destination);
 
     // Fast-path zero-copy OS kernel transfer for uncompressed local files
-    if (sourceBro == null && destBro == null && !isDecompressible(getExtension(source))) {
+    if (sourceBro == null && destBro == null && !isDecompressible(getExtension(source)) && File2.isFile(source)) {
       Path sourcePath = Paths.get(source);
       Path destPath = Paths.get(destination);
 
-      try (FileChannel srcChannel = FileChannel.open(sourcePath, StandardOpenOption.READ);
-          FileChannel destChannel =
-              FileChannel.open(
-                  destPath,
-                  StandardOpenOption.CREATE,
-                  StandardOpenOption.WRITE,
-                  StandardOpenOption.TRUNCATE_EXISTING)) {
-
+      try (FileChannel srcChannel = FileChannel.open(sourcePath, StandardOpenOption.READ)) {
         long fileSize = srcChannel.size();
+
+        // Range boundary validation
+        if (fileSize == 0 && first == 0) {
+          Files.write(destPath, new byte[0]);
+          return true; // Legitimate 0-byte file copy (creates or truncates)
+        }
+        if (first > fileSize || (fileSize > 0 && first >= fileSize)) {
+          return false; // Out-of-bounds start position; destination file must not exist
+        }
+
         long start = Math.max(0, first);
         long maxAvailable = Math.max(0, fileSize - start);
         long count = (last < 0) ? maxAvailable : Math.min(last - start + 1, maxAvailable);
-        if (count <= 0) return true;
+        if (count <= 0) return false;
 
-        long transferred = 0;
-        int zeroCount = 0;
-        while (transferred < count) {
-          long bytes = srcChannel.transferTo(start + transferred, count - transferred, destChannel);
-          if (bytes <= 0) {
-            zeroCount++;
-            if (verbose) {
-              String2.log(
-                  "File2.copy transferTo returned 0 bytes (attempt "
-                      + zeroCount
-                      + "/3) for "
-                      + source);
-            }
-            // Allow up to 3 transient zero-byte yields before treating as an incomplete transfer
-            if (zeroCount >= 3) {
+        try (FileChannel destChannel =
+            FileChannel.open(
+                destPath,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING)) {
+
+          long transferred = 0;
+          long chunkSize = 32 * 1024 * 1024L; // 32 MB chunks
+          while (transferred < count) {
+            long bytesToTransfer = Math.min(count - transferred, chunkSize);
+            long bytes = srcChannel.transferTo(start + transferred, bytesToTransfer, destChannel);
+            if (bytes <= 0) {
               throw new IOException(
-                  "Incomplete transfer: stalled after " + transferred + " of " + count + " bytes.");
+                  "Incomplete transfer: transferTo returned " + bytes + " after " + transferred + " of " + count + " bytes.");
             }
-            Thread.yield();
-          } else {
-            zeroCount = 0;
             transferred += bytes;
           }
+          return true;
         }
-        return true;
       } catch (Exception e) {
         String2.log(String2.ERROR + " in File2.copy (FileChannel) source=" + source + "\n" + e);
         delete(destination);
@@ -2219,8 +2211,10 @@ public class File2 {
    * @return true if successful.
    */
   public static boolean copy(InputStream in, OutputStream out, long first, long last) {
-    // Reusable ThreadLocal buffer eliminates per-request GC allocations
-    byte[] buffer = COPY_BUFFER.get();
+    if (first < 0 || (last >= 0 && first > last)) {
+      return false;
+    }
+    byte[] buffer = new byte[COPY_BUFFER_SIZE];
     long remain = (last < 0) ? Long.MAX_VALUE : (1 + last - first);
 
     try {

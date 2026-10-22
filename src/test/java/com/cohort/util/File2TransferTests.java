@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,7 +23,7 @@ public class File2TransferTests {
   @TempDir Path tempDir;
 
   /**
-   * Verifies that the ThreadLocal<byte[]> COPY_BUFFER does not leak or cause data corruption when
+   * Verifies that local 64 KB buffer allocations do not cause data corruption when
    * multiple threads invoke File2.copy concurrently.
    */
   @Test
@@ -49,7 +50,6 @@ public class File2TransferTests {
           () -> {
             try {
               startGate.await();
-              // Calls the modified File2.copy which uses COPY_BUFFER.get()
               boolean ok = File2.copy(src.toString(), dst.toString());
               if (!ok) {
                 corruptionDetected.set(true);
@@ -72,7 +72,7 @@ public class File2TransferTests {
     pool.shutdown();
 
     assertFalse(
-        corruptionDetected.get(), "Buffer corruption detected across threads using COPY_BUFFER!");
+        corruptionDetected.get(), "Buffer corruption detected across threads!");
   }
 
   /**
@@ -125,5 +125,71 @@ public class File2TransferTests {
     byte[] copied = Files.readAllBytes(dst);
     assertEquals(data.length - 10, copied.length);
     assertArrayEquals(Arrays.copyOfRange(data, 10, data.length), copied);
+  }
+
+  /**
+   * Tests boundary cases for File2.copy: empty files vs out-of-bounds start offsets.
+   */
+  @Test
+  public void testFile2CopyBoundaryCases() throws Exception {
+    Path emptySrc = tempDir.resolve("empty.dat");
+    Path emptyDst = tempDir.resolve("empty_dst.dat");
+    Files.write(emptySrc, new byte[0]);
+
+    // Legitimate 0-byte file copy (first=0, size=0) -> true
+    assertTrue(File2.copy(emptySrc.toString(), emptyDst.toString(), 0, -1));
+
+    Path src = tempDir.resolve("non_empty.dat");
+    Path dst = tempDir.resolve("non_empty_dst.dat");
+    Files.write(src, "Hello World".getBytes()); // 11 bytes
+
+    // Out-of-bounds start offset (first = 20, size = 11) -> false
+    assertFalse(File2.copy(src.toString(), dst.toString(), 20, 30));
+  }
+
+  /**
+   * Verifies that when File2.copy fails due to an out-of-bounds start offset,
+   * no destination file is created on disk.
+   */
+  @Test
+  public void testFile2CopyOutOfBoundsDoesNotCreateDestination() throws Exception {
+    Path src = tempDir.resolve("src_out_of_bounds.dat");
+    Path dst = tempDir.resolve("dst_out_of_bounds.dat");
+    Files.write(src, "test payload".getBytes());
+
+    boolean ok = File2.copy(src.toString(), dst.toString(), 50, 100);
+    assertFalse(ok);
+    assertFalse(Files.exists(dst), "Destination file should not exist after failed out-of-bounds copy");
+  }
+
+  /**
+   * Verifies that File2.copy(InputStream, OutputStream, first, last) returns false
+   * and writes 0 bytes when an inverted range (first > last) is supplied.
+   */
+  @Test
+  public void testStreamCopyInvertedRangeFails() throws Exception {
+    ByteArrayInputStream in = new ByteArrayInputStream("hello world".getBytes());
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    boolean ok = File2.copy(in, out, 10, 5);
+    assertFalse(ok, "Inverted range (first > last) should return false");
+    assertEquals(0, out.size());
+  }
+
+  /**
+   * Verifies that File2.copy can overwrite an existing non-empty file with a 0-byte file
+   * by truncating it without throwing FileAlreadyExistsException.
+   */
+  @Test
+  public void testFile2CopyOverwriteWithZeroByteFile() throws Exception {
+    Path emptySrc = tempDir.resolve("empty_src.dat");
+    Path dst = tempDir.resolve("existing_dst.dat");
+
+    Files.write(emptySrc, new byte[0]);
+    Files.write(dst, "existing content to be truncated".getBytes());
+
+    boolean ok = File2.copy(emptySrc.toString(), dst.toString(), 0, -1);
+    assertTrue(ok, "Overwriting existing file with 0-byte file should succeed");
+    assertEquals(0, Files.size(dst), "Destination file should be truncated to 0 bytes");
   }
 }
