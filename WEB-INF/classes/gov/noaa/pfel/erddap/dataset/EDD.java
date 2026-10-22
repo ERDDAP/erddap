@@ -59,7 +59,7 @@ import io.github.classgraph.AnnotationClassRef;
 import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
-import io.github.classgraph.MethodInfo;
+import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -82,7 +82,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,7 +89,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -540,44 +538,61 @@ public abstract class EDD {
         .toList();
   }
 
+  /** Helper method to load a class by name using the context ClassLoader. */
+  @SuppressWarnings("unchecked")
+  private static <T> Class<T> loadClass(
+      ClassInfo classInfo, Class<T> superType, ClassLoader webappClassLoader) {
+    try {
+      return (Class<T>)
+          Class.forName(classInfo.getName(), false, webappClassLoader).asSubclass(superType);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Failed to load class " + classInfo.getName(), e);
+    }
+  }
+
   /**
    * Scan classpath for concrete/non-abstract EDD subclasses in package gov.noaa.pfel.erddap.dataset
    * and store metadata for each discovered subclass in map of EDDClassInfo objects.
    */
   private static final Map<String, EDDFileTypeInfo> initEddFileTypeInfoMap() {
     String2.log("Scanning FileType classes in package " + FileTypeInterface.class.getPackageName());
+    ClassLoader webappClassLoader = Thread.currentThread().getContextClassLoader();
     try (ScanResult scanResult =
         new ClassGraph()
-            .enableAnnotationInfo()
+            .enableClassLoaders(webappClassLoader)
             .enableClassInfo()
-            .enableMethodInfo()
+            .enableAnnotationInfo()
             .acceptPackages(FileTypeInterface.class.getPackageName())
             .scan()) {
-      return scanResult.getSubclasses(FileTypeInterface.class).stream()
+      ClassInfoList classes =
+          FileTypeInterface.class.isInterface()
+              ? scanResult.getAllClassesImplementing(FileTypeInterface.class)
+              : scanResult.getAllSubclasses(FileTypeInterface.class);
+      return classes.stream()
           .filter(c -> !c.isAbstract())
-          .filter(c -> c.hasAnnotation(FileTypeClass.class))
+          .filter(c -> c.hasAnnotation(FileTypeClass.class.getName()))
           .collect(
               Collectors.toUnmodifiableMap(
                   classInfo -> getFileTypeName(classInfo),
                   classInfo ->
                       new EDDFileTypeInfo(
-                          classInfo.loadClass(FileTypeInterface.class),
-                          classInfo.getAnnotationInfo(FileTypeClass.class))));
+                          loadClass(classInfo, FileTypeInterface.class, webappClassLoader),
+                          classInfo.getAllAnnotationInfo().get(FileTypeClass.class.getName()))));
     }
   }
 
   /**
    * Get State (Sax handler) class for EDD class from annotation if it exists
    *
-   * @param eddClassInfo the ClassInfo object to check
+   * @param classInfo the ClassInfo object to check
    * @return Optional of a State subclass
    */
   private static final String getFileTypeName(ClassInfo classInfo) {
     return classInfo
-        .getAnnotationInfo(FileTypeClass.class)
+        .getAllAnnotationInfo()
+        .get(FileTypeClass.class.getName())
         .getParameterValues()
-        .get("fileTypeName")
-        .getValue()
+        .getValue("fileTypeName")
         .toString();
   }
 
@@ -603,56 +618,83 @@ public abstract class EDD {
    */
   private static final Map<String, EDDClassInfo> initEddClassInfoMap() {
     String2.log("Scanning EDD classes in package " + EDD.class.getPackageName());
+    ClassLoader webappClassLoader = Thread.currentThread().getContextClassLoader();
     try (ScanResult scanResult =
         new ClassGraph()
-            .enableAnnotationInfo()
+            .enableClassLoaders(webappClassLoader)
             .enableClassInfo()
+            .enableAnnotationInfo()
             .enableMethodInfo()
             .acceptPackages(EDD.class.getPackageName())
             .scan()) {
-      return scanResult.getSubclasses(EDD.class).stream()
+      return scanResult.getAllSubclasses(EDD.class).stream()
           .filter(c -> !c.isAbstract())
           .collect(
               Collectors.toUnmodifiableMap(
                   ClassInfo::getSimpleName,
                   classInfo ->
                       new EDDClassInfo(
-                          classInfo.loadClass(EDD.class),
-                          getFromXmlMethod(classInfo),
-                          getSaxHandler(classInfo))));
+                          loadClass(classInfo, EDD.class, webappClassLoader),
+                          getFromXmlMethod(classInfo, webappClassLoader),
+                          getSaxHandler(classInfo, webappClassLoader))));
     }
   }
 
   /**
    * Get State (Sax handler) class for EDD class from annotation if it exists
    *
-   * @param eddClassInfo the ClassInfo object to check
+   * @param classInfo the ClassInfo object to check
    * @return Optional of a State subclass
    */
-  private static final Optional<Class<State>> getSaxHandler(ClassInfo classInfo) {
-    return Stream.of(classInfo.getAnnotationInfo(SaxHandlerClass.class))
-        .filter(Objects::nonNull)
-        .map(AnnotationInfo::getParameterValues)
-        .map(parameterValues -> parameterValues.get("value"))
-        .filter(Objects::nonNull)
-        .map(annotationParameterValue -> (AnnotationClassRef) annotationParameterValue.getValue())
-        .filter(Objects::nonNull)
-        .map(annotationClassRef -> (Class<State>) annotationClassRef.loadClass())
-        .filter(Objects::nonNull)
-        .findFirst();
+  private static final Optional<Class<State>> getSaxHandler(
+      ClassInfo classInfo, ClassLoader webappClassLoader) {
+    AnnotationInfo annotationInfo =
+        classInfo.getAllAnnotationInfo().get(SaxHandlerClass.class.getName());
+    if (annotationInfo == null) {
+      return Optional.empty();
+    }
+    AnnotationClassRef classRef =
+        (AnnotationClassRef) annotationInfo.getParameterValues().getValue("value");
+    if (classRef == null) {
+      return Optional.empty();
+    }
+    try {
+      @SuppressWarnings("unchecked")
+      Class<State> clazz =
+          (Class<State>)
+              Class.forName(classRef.getName(), false, webappClassLoader).asSubclass(State.class);
+      return Optional.of(clazz);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Failed to load SaxHandler class " + classRef.getName(), e);
+    }
   }
 
   /**
    * Get fromXml method annotated with EDDFromXmlMethod from EDD class if it exists
    *
-   * @param eddClassInfo the ClassInfo object to check
+   * @param classInfo the ClassInfo object to check
    * @return Optional of the fromXml method
    */
-  private static final Optional<Method> getFromXmlMethod(ClassInfo classInfo) {
+  private static final Optional<Method> getFromXmlMethod(
+      ClassInfo classInfo, ClassLoader webappClassLoader) {
     return classInfo.getMethodInfo("fromXml").stream()
-        .filter(mi -> mi.hasAnnotation(EDDFromXmlMethod.class))
-        .map(MethodInfo::loadClassAndGetMethod)
-        .findFirst();
+        .filter(mi -> mi.hasAnnotation(EDDFromXmlMethod.class.getName()))
+        .findFirst()
+        .map(
+            mi -> {
+              try {
+                Class<?> declaringClass =
+                    Class.forName(mi.getClassInfo().getName(), false, webappClassLoader);
+                Method m =
+                    declaringClass.getDeclaredMethod(
+                        "fromXml", Erddap.class, SimpleXMLReader.class);
+                m.setAccessible(true);
+                return m;
+              } catch (Exception e) {
+                throw new RuntimeException(
+                    "Failed to load method fromXml for " + classInfo.getName(), e);
+              }
+            });
   }
 
   /**
