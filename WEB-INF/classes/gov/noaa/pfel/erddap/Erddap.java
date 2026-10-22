@@ -13868,8 +13868,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       if (fileSize == 0) {
         response.setHeader("Content-Range", "bytes */0");
         throw new SimpleException(
-            EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + "Cannot request Range on a 0-byte file.");
+            EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Cannot request Range on a 0-byte file.");
       }
 
       String s = range.trim();
@@ -13913,7 +13912,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             if (verbose) String2.log("doTransfer invalid last byte in range: " + s);
             response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
             throw new SimpleException(
-                EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Invalid last byte position in Range header.");
+                EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
+                    + "Invalid last byte position in Range header.");
           }
         }
       }

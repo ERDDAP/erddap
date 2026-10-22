@@ -2109,7 +2109,10 @@ public class File2 {
     String destBro[] = String2.parseAwsS3Url(destination);
 
     // Fast-path zero-copy OS kernel transfer for uncompressed local files
-    if (sourceBro == null && destBro == null && !isDecompressible(getExtension(source)) && File2.isFile(source)) {
+    if (sourceBro == null
+        && destBro == null
+        && !isDecompressible(getExtension(source))
+        && File2.isFile(source)) {
       Path sourcePath = Paths.get(source);
       Path destPath = Paths.get(destination);
 
@@ -2144,7 +2147,13 @@ public class File2 {
             long bytes = srcChannel.transferTo(start + transferred, bytesToTransfer, destChannel);
             if (bytes <= 0) {
               throw new IOException(
-                  "Incomplete transfer: transferTo returned " + bytes + " after " + transferred + " of " + count + " bytes.");
+                  "Incomplete transfer: transferTo returned "
+                      + bytes
+                      + " after "
+                      + transferred
+                      + " of "
+                      + count
+                      + " bytes.");
             }
             transferred += bytes;
           }

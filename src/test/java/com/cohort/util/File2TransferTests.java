@@ -23,8 +23,8 @@ public class File2TransferTests {
   @TempDir Path tempDir;
 
   /**
-   * Verifies that local 64 KB buffer allocations do not cause data corruption when
-   * multiple threads invoke File2.copy concurrently.
+   * Verifies that local 64 KB buffer allocations do not cause data corruption when multiple threads
+   * invoke File2.copy concurrently.
    */
   @Test
   public void testConcurrentCopyThreadLocalBufferSafety() throws Exception {
@@ -71,8 +71,7 @@ public class File2TransferTests {
     assertTrue(endGate.await(10, TimeUnit.SECONDS), "Concurrent copy timed out");
     pool.shutdown();
 
-    assertFalse(
-        corruptionDetected.get(), "Buffer corruption detected across threads!");
+    assertFalse(corruptionDetected.get(), "Buffer corruption detected across threads!");
   }
 
   /**
@@ -127,9 +126,7 @@ public class File2TransferTests {
     assertArrayEquals(Arrays.copyOfRange(data, 10, data.length), copied);
   }
 
-  /**
-   * Tests boundary cases for File2.copy: empty files vs out-of-bounds start offsets.
-   */
+  /** Tests boundary cases for File2.copy: empty files vs out-of-bounds start offsets. */
   @Test
   public void testFile2CopyBoundaryCases() throws Exception {
     Path emptySrc = tempDir.resolve("empty.dat");
@@ -148,8 +145,8 @@ public class File2TransferTests {
   }
 
   /**
-   * Verifies that when File2.copy fails due to an out-of-bounds start offset,
-   * no destination file is created on disk.
+   * Verifies that when File2.copy fails due to an out-of-bounds start offset, no destination file
+   * is created on disk.
    */
   @Test
   public void testFile2CopyOutOfBoundsDoesNotCreateDestination() throws Exception {
@@ -159,12 +156,13 @@ public class File2TransferTests {
 
     boolean ok = File2.copy(src.toString(), dst.toString(), 50, 100);
     assertFalse(ok);
-    assertFalse(Files.exists(dst), "Destination file should not exist after failed out-of-bounds copy");
+    assertFalse(
+        Files.exists(dst), "Destination file should not exist after failed out-of-bounds copy");
   }
 
   /**
-   * Verifies that File2.copy(InputStream, OutputStream, first, last) returns false
-   * and writes 0 bytes when an inverted range (first > last) is supplied.
+   * Verifies that File2.copy(InputStream, OutputStream, first, last) returns false and writes 0
+   * bytes when an inverted range (first > last) is supplied.
    */
   @Test
   public void testStreamCopyInvertedRangeFails() throws Exception {
@@ -177,8 +175,8 @@ public class File2TransferTests {
   }
 
   /**
-   * Verifies that File2.copy can overwrite an existing non-empty file with a 0-byte file
-   * by truncating it without throwing FileAlreadyExistsException.
+   * Verifies that File2.copy can overwrite an existing non-empty file with a 0-byte file by
+   * truncating it without throwing FileAlreadyExistsException.
    */
   @Test
   public void testFile2CopyOverwriteWithZeroByteFile() throws Exception {
