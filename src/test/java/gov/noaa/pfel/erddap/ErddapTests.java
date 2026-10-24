@@ -782,4 +782,270 @@ class ErddapTests {
       Test.ensureTrue(String2.isSomething(link.description), "Link description must not be empty");
     }
   }
+
+  private record MockWebContext(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      java.io.ByteArrayOutputStream baos) {
+    public String getOutput() {
+      return baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    }
+  }
+
+  private MockWebContext createMockWebContext(String uri, boolean jte) throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ServletOutputStream outStream =
+        new ServletOutputStream() {
+          @Override
+          public boolean isReady() {
+            return true;
+          }
+
+          @Override
+          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+
+          @Override
+          public void write(int b) throws java.io.IOException {
+            baos.write(b);
+          }
+        };
+    when(response.getOutputStream()).thenReturn(outStream);
+    when(request.getRequestURI()).thenReturn(uri);
+    when(request.getParameter("jte")).thenReturn(String.valueOf(jte));
+
+    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
+    doAnswer(
+            invocation -> {
+              String key = invocation.getArgument(0);
+              Object val = invocation.getArgument(1);
+              attributes.put(key, val);
+              return null;
+            })
+        .when(request)
+        .setAttribute(anyString(), any());
+    when(request.getAttribute(anyString()))
+        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+
+    return new MockWebContext(request, response, baos);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertURLsJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertURLsJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/urls.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert Out-of-Date URLs into Up-to-Date URLs"),
+        "Missing Convert URLs title");
+    Test.ensureTrue(result.contains("convert/urls.html"), "Missing form action");
+    Test.ensureTrue(result.contains("<textarea name=\"text\""), "Missing text textarea");
+    Test.ensureTrue(result.contains("Convert"), "Missing convert button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertURLsWithQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertURLsWithQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/urls.html", true);
+
+    String query = "text=Check+ftp%3A%2F%2Feclipse.ncdc.noaa.gov%2Fpub%2FOI-daily%2Fdaily-sst.pdf";
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/convert/".length(),
+        query);
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert Out-of-Date URLs into Up-to-Date URLs"),
+        "Missing Convert URLs title");
+    Test.ensureTrue(
+        result.contains("https://journals.ametsoc.org/doi/full/10.1175/2007JCLI1824.1"),
+        "Missing converted URL result");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertURLsLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertURLsLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/urls.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert Out-of-Date URLs into Up-to-Date URLs"),
+        "Missing Convert URLs title in legacy");
+    Test.ensureTrue(result.contains("<textarea name=\"text\""), "Missing textarea in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertColorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertColorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert value to color from colorbar"), "Missing Color converter title");
+    Test.ensureTrue(result.contains("Define the Colorbar:"), "Missing define colorbar section");
+    Test.ensureTrue(result.contains("Rainbow"), "Missing Rainbow palette option");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertColorWithQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertColorWithQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", true);
+
+    String query = "value=10&p=Rainbow&pc=C&ps=linear&pMin=0&pMax=20&pSec=10";
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        query);
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert value to color from colorbar"), "Missing Color converter title");
+    Test.ensureTrue(result.contains("Value color:"), "Missing Value color section");
+    Test.ensureTrue(result.contains("Hex:"), "Missing Hex color label");
+    Test.ensureTrue(result.contains("RGB:"), "Missing RGB color label");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertColorLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertColorLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert value to color from colorbar"),
+        "Missing Color converter title in legacy");
+    Test.ensureTrue(
+        result.contains("Define the Colorbar:"), "Missing define colorbar section in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertURLsJteMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertURLsJteMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/urls.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_URLS, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French convert URLs title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertColorJteMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertColorJteMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/color.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_COLORS_MESSAGE, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French color converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertColorErrorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertColorErrorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        "value=not_a_number");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Invalid Input or Parameters"), "Missing warning for invalid parameters");
+    Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
 }
