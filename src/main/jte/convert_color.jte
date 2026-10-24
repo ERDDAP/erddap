@@ -77,9 +77,9 @@
         <input type="text" name="pSec" value="${nSectionsStr}" size="10" maxlength="60" title="Number of sections in the color bar">
         <br>
 
-        <button type="submit" name="submit" value="Get Color">Get Color</button>
+        <button type="submit" value="Get Color">Get Color</button>
 
-        @if(!queryValue.isEmpty())
+        @if(String2.isSomething(queryValue))
             @if(tError == null)
                 <br><br><div><b>Value color:</b></div>
                 <span>Hex: ${hexColor}</span>

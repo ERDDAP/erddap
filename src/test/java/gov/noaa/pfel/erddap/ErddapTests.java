@@ -783,10 +783,16 @@ class ErddapTests {
     }
   }
 
-  @org.junit.jupiter.api.Test
-  void testDoConvertURLsJte() throws Throwable {
-    String2.log("\n*** ErddapTests.testDoConvertURLsJte()");
-    Erddap erddap = new Erddap();
+  private record MockWebContext(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      java.io.ByteArrayOutputStream baos) {
+    public String getOutput() {
+      return baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    }
+  }
+
+  private MockWebContext createMockWebContext(String uri, boolean jte) throws Exception {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
     java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -806,8 +812,8 @@ class ErddapTests {
           }
         };
     when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/urls.html");
-    when(request.getParameter("jte")).thenReturn("true");
+    when(request.getRequestURI()).thenReturn(uri);
+    when(request.getParameter("jte")).thenReturn(String.valueOf(jte));
 
     java.util.Map<String, Object> attributes = new java.util.HashMap<>();
     doAnswer(
@@ -822,9 +828,25 @@ class ErddapTests {
     when(request.getAttribute(anyString()))
         .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
 
+    return new MockWebContext(request, response, baos);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertURLsJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertURLsJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/urls.html", true);
+
     erddap.doConvert(
-        0, 1, request, response, null, "convert/urls.html", "/erddap/convert/".length(), "");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert Out-of-Date URLs into Up-to-Date URLs"),
         "Missing Convert URLs title");
@@ -838,45 +860,19 @@ class ErddapTests {
   void testDoConvertURLsWithQueryJte() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertURLsWithQueryJte()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/urls.html");
-    when(request.getParameter("jte")).thenReturn("true");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/convert/urls.html", true);
 
     String query = "text=Check+ftp%3A%2F%2Feclipse.ncdc.noaa.gov%2Fpub%2FOI-daily%2Fdaily-sst.pdf";
     erddap.doConvert(
-        0, 1, request, response, null, "convert/urls.html", "/erddap/convert/".length(), query);
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/convert/".length(),
+        query);
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert Out-of-Date URLs into Up-to-Date URLs"),
         "Missing Convert URLs title");
@@ -890,44 +886,18 @@ class ErddapTests {
   void testDoConvertURLsLegacy() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertURLsLegacy()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/urls.html");
-    when(request.getParameter("jte")).thenReturn("false");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/convert/urls.html", false);
 
     erddap.doConvert(
-        0, 1, request, response, null, "convert/urls.html", "/erddap/convert/".length(), "");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/urls.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert Out-of-Date URLs into Up-to-Date URLs"),
         "Missing Convert URLs title in legacy");
@@ -939,44 +909,18 @@ class ErddapTests {
   void testDoConvertColorJte() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertColorJte()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/color.html");
-    when(request.getParameter("jte")).thenReturn("true");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", true);
 
     erddap.doConvert(
-        0, 1, request, response, null, "convert/color.html", "/erddap/convert/".length(), "");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert value to color from colorbar"), "Missing Color converter title");
     Test.ensureTrue(result.contains("Define the Colorbar:"), "Missing define colorbar section");
@@ -988,45 +932,19 @@ class ErddapTests {
   void testDoConvertColorWithQueryJte() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertColorWithQueryJte()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/color.html");
-    when(request.getParameter("jte")).thenReturn("true");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", true);
 
     String query = "value=10&p=Rainbow&pc=C&ps=linear&pMin=0&pMax=20&pSec=10";
     erddap.doConvert(
-        0, 1, request, response, null, "convert/color.html", "/erddap/convert/".length(), query);
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        query);
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert value to color from colorbar"), "Missing Color converter title");
     Test.ensureTrue(result.contains("Value color:"), "Missing Value color section");
@@ -1039,44 +957,18 @@ class ErddapTests {
   void testDoConvertColorLegacy() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertColorLegacy()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/color.html");
-    when(request.getParameter("jte")).thenReturn("false");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", false);
 
     erddap.doConvert(
-        0, 1, request, response, null, "convert/color.html", "/erddap/convert/".length(), "");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/color.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert value to color from colorbar"),
         "Missing Color converter title in legacy");
@@ -1089,52 +981,19 @@ class ErddapTests {
   void testDoConvertURLsJteMultiLanguage() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertURLsJteMultiLanguage()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/fr/convert/urls.html");
-    when(request.getParameter("jte")).thenReturn("true");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/urls.html", true);
 
     int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
     erddap.doConvert(
         frenchLang,
         1,
-        request,
-        response,
+        ctx.request(),
+        ctx.response(),
         null,
         "convert/urls.html",
         "/erddap/fr/convert/".length(),
         "");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    String result = ctx.getOutput();
     String expectedFrenchMsg =
         gov.noaa.pfel.erddap.util.EDStatic.messages.get(
             gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_URLS, frenchLang);
@@ -1147,52 +1006,19 @@ class ErddapTests {
   void testDoConvertColorJteMultiLanguage() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertColorJteMultiLanguage()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/fr/convert/color.html");
-    when(request.getParameter("jte")).thenReturn("true");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/color.html", true);
 
     int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
     erddap.doConvert(
         frenchLang,
         1,
-        request,
-        response,
+        ctx.request(),
+        ctx.response(),
         null,
         "convert/color.html",
         "/erddap/fr/convert/".length(),
         "");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    String result = ctx.getOutput();
     String expectedFrenchMsg =
         gov.noaa.pfel.erddap.util.EDStatic.messages.get(
             gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_COLORS_MESSAGE, frenchLang);
@@ -1205,51 +1031,18 @@ class ErddapTests {
   void testDoConvertColorErrorJte() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertColorErrorJte()");
     Erddap erddap = new Erddap();
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    ServletOutputStream outStream =
-        new ServletOutputStream() {
-          @Override
-          public boolean isReady() {
-            return true;
-          }
-
-          @Override
-          public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
-
-          @Override
-          public void write(int b) throws java.io.IOException {
-            baos.write(b);
-          }
-        };
-    when(response.getOutputStream()).thenReturn(outStream);
-    when(request.getRequestURI()).thenReturn("/erddap/convert/color.html");
-    when(request.getParameter("jte")).thenReturn("true");
-
-    java.util.Map<String, Object> attributes = new java.util.HashMap<>();
-    doAnswer(
-            invocation -> {
-              String key = invocation.getArgument(0);
-              Object val = invocation.getArgument(1);
-              attributes.put(key, val);
-              return null;
-            })
-        .when(request)
-        .setAttribute(anyString(), any());
-    when(request.getAttribute(anyString()))
-        .thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
+    MockWebContext ctx = createMockWebContext("/erddap/convert/color.html", true);
 
     erddap.doConvert(
         0,
         1,
-        request,
-        response,
+        ctx.request(),
+        ctx.response(),
         null,
         "convert/color.html",
         "/erddap/convert/".length(),
         "value=not_a_number");
-    String result = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+    String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Invalid Input or Parameters"), "Missing warning for invalid parameters");
     Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
