@@ -13873,7 +13873,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
       String s = range.trim();
       int dash = s.indexOf('-', 6); // Look for '-' after "bytes="
-      if (!s.startsWith("bytes=") || dash == -1 || s.equals("bytes=-")) {
+      if (!s.regionMatches(true, 0, "bytes=", 0, 6)
+          || dash == -1
+          || s.equalsIgnoreCase("bytes=-")) {
         if (verbose) String2.log("doTransfer invalid range format: " + range);
         response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
         throw new SimpleException(
