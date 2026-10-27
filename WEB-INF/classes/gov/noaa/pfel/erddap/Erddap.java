@@ -24280,102 +24280,136 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             request, language, loggedInAs, "convert/color.html", queryString, "Color Plotter", out);
 
     try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              + ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; Colors</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
-              + "</h2>\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(EDStatic.messages.get(Message.CONVERT, language), "Colors"),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/color.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
+        params.put("queryValue", queryValue);
+        params.put("palette", palette);
+        params.put("palettes", EDStatic.messages.palettes0);
+        params.put("continuity", continuity);
+        params.put("scale", scale);
+        params.put("scales", EDV.VALID_SCALES0);
+        params.put("minStr", minStr);
+        params.put("maxStr", maxStr);
+        params.put("nSectionsStr", nSectionsStr);
+        params.put("hexColor", hexColor);
+        params.put("rgbColor", rgbColor);
+        params.put("colorMapRender", colorMapRender != null ? colorMapRender : "");
+        params.put("tError", tError);
+        engine.render("convert_color.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                + ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; Colors</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
+                + "</h2>\n");
 
-      writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
+        writer.write(widgets.beginForm("getColor", "GET", tErddapUrl + "/convert/color.html", ""));
 
-      writer.write(
-          "<b>Value to convert</b> (e.g., 12.5): "
-              + widgets.textField("value", "Enter a number", 10, 15, queryValue, "")
-              + "<br><br>");
-      writer.write("<div><b>Define the Colorbar:</b></div>\n");
-      writer.write(
-          "Color Palette: "
-              + widgets.select(
-                  "p",
-                  "Select the base color palette to use",
-                  1,
-                  EDStatic.messages.palettes0,
-                  Math.max(0, String2.indexOf(EDStatic.messages.palettes0, palette)),
-                  "")
-              + "<br>");
+        writer.write(
+            "<b>Value to convert</b> (e.g., 12.5): "
+                + widgets.textField("value", "Enter a number", 10, 15, queryValue, "")
+                + "<br><br>");
+        writer.write("<div><b>Define the Colorbar:</b></div>\n");
+        writer.write(
+            "Color Palette: "
+                + widgets.select(
+                    "p",
+                    "Select the base color palette to use",
+                    1,
+                    EDStatic.messages.palettes0,
+                    Math.max(0, String2.indexOf(EDStatic.messages.palettes0, palette)),
+                    "")
+                + "<br>");
 
-      writer.write(
-          "Continuity: "
-              + widgets.select(
-                  "pc",
-                  "Continuous or Discrete",
-                  1,
-                  new String[] {"", "Continuous", "Discrete"},
-                  "Discrete".equalsIgnoreCase(continuity) ? 2 : 1,
-                  "")
-              + "<br>");
+        writer.write(
+            "Continuity: "
+                + widgets.select(
+                    "pc",
+                    "Continuous or Discrete",
+                    1,
+                    new String[] {"", "Continuous", "Discrete"},
+                    "Discrete".equalsIgnoreCase(continuity) ? 2 : 1,
+                    "")
+                + "<br>");
 
-      writer.write(
-          "Scale: "
-              + widgets.select(
-                  "ps",
-                  "Scale",
-                  1,
-                  EDV.VALID_SCALES0,
-                  Math.max(0, EDV.VALID_SCALES0.indexOf(scale)),
-                  "")
-              + "<br>");
+        writer.write(
+            "Scale: "
+                + widgets.select(
+                    "ps",
+                    "Scale",
+                    1,
+                    EDV.VALID_SCALES0,
+                    Math.max(0, EDV.VALID_SCALES0.indexOf(scale)),
+                    "")
+                + "<br>");
 
-      writer.write(
-          "Colorbar Minimum Value: "
-              + widgets.textField(
-                  "pMin", "Minimum value represented by the colorbar", 10, 60, minStr, "")
-              + "<br>");
-      writer.write(
-          "Colorbar Maximum Value: "
-              + widgets.textField(
-                  "pMax", "Maximum value represented by the colorbar", 10, 60, maxStr, "")
-              + "<br>");
+        writer.write(
+            "Colorbar Minimum Value: "
+                + widgets.textField(
+                    "pMin", "Minimum value represented by the colorbar", 10, 60, minStr, "")
+                + "<br>");
+        writer.write(
+            "Colorbar Maximum Value: "
+                + widgets.textField(
+                    "pMax", "Maximum value represented by the colorbar", 10, 60, maxStr, "")
+                + "<br>");
 
-      writer.write(
-          "Colorbar Sections: "
-              + widgets.textField(
-                  "pSec", "Number of sections in the color bar", 10, 60, nSectionsStr, "")
-              + "<br>");
+        writer.write(
+            "Colorbar Sections: "
+                + widgets.textField(
+                    "pSec", "Number of sections in the color bar", 10, 60, nSectionsStr, "")
+                + "<br>");
 
-      writer.write(widgets.htmlButton("submit", null, "Get Color", "", "Get Color", ""));
+        writer.write(widgets.htmlButton("submit", null, "Get Color", "", "Get Color", ""));
 
-      if (!queryValue.isEmpty()) {
-        if (tError == null) {
-          writer.write("<br><br><div><b>Value color:</b></div>\n");
-          writer.write("<span>Hex: " + hexColor + "</span>\n");
-          writer.write("<br><span>RGB: " + rgbColor + "</span>\n");
-          writer.write(
-              "<br><div style='height:15px; width:40px; background-color:"
-                  + hexColor
-                  + "; border:1px solid black;'></div><br>\n");
-          if (colorMapRender != null && !colorMapRender.equals("")) {
-            writer.write(colorMapRender);
+        if (!queryValue.isEmpty()) {
+          if (tError == null) {
+            writer.write("<br><br><div><b>Value color:</b></div>\n");
+            writer.write("<span>Hex: " + hexColor + "</span>\n");
+            writer.write("<br><span>RGB: " + rgbColor + "</span>\n");
+            writer.write(
+                "<br><div style='height:15px; width:40px; background-color:"
+                    + hexColor
+                    + "; border:1px solid black;'></div><br>\n");
+            if (colorMapRender != null && !colorMapRender.equals("")) {
+              writer.write(colorMapRender);
+            }
+          } else {
+            writer.write(
+                "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
           }
-        } else {
-          writer.write(
-              "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
         }
-      }
 
-      writer.write("<br>" + widgets.endForm() + "\n</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        writer.write("<br>" + widgets.endForm() + "\n</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t);
       writer.write(EDStatic.htmlForException(language, t));
@@ -24468,67 +24502,99 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert URLs",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "URLs") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; URLs</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_URLS, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_URLS_INTRO, language));
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(EDStatic.messages.get(Message.CONVERT, language), "URLs"),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        engine.render(
+            "convert_urls.jte",
+            Map.of(
+                "endOfRequest",
+                "convert/urls.html",
+                "tErddapUrl",
+                tErddapUrl,
+                "language",
+                language,
+                "youAreHere",
+                youAreHere,
+                "loggedInAs",
+                Objects.requireNonNullElse(loggedInAs, ""),
+                "request",
+                request,
+                "inputText",
+                tText.length() > 0 ? tText : sample,
+                "resultText",
+                rText),
+            new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert", "URLs") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; URLs</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_URLS, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_URLS_INTRO, language));
 
-      // convert
-      writer.write(
-          "<p>"
-              + widgets.beginForm("convertURLs", "GET", tErddapUrl + "/convert/urls.html", "")
-              + "<strong>"
-              + EDStatic.messages.get(Message.CONVERT_URLS, language)
-              + "</strong>\n"
-              + "<br>"
-              + "<textarea name=\"text\" cols=\"80\" rows=\"6\" maxlength=\"1000\" wrap=\"soft\">"
-              + XML.encodeAsHTML(tText.length() > 0 ? tText : sample)
-              + "</textarea>\n"
-              + "<br>"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
-                  "")
-              + "\n");
+        // convert
+        writer.write(
+            "<p>"
+                + widgets.beginForm("convertURLs", "GET", tErddapUrl + "/convert/urls.html", "")
+                + "<strong>"
+                + EDStatic.messages.get(Message.CONVERT_URLS, language)
+                + "</strong>\n"
+                + "<br>"
+                + "<textarea name=\"text\" cols=\"80\" rows=\"6\" maxlength=\"1000\" wrap=\"soft\">"
+                + XML.encodeAsHTML(tText.length() > 0 ? tText : sample)
+                + "</textarea>\n"
+                + "<br>"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
+                    "")
+                + "\n");
 
-      if (rText.length() == 0) writer.write("<br>&nbsp;\n");
-      else
-        writer.write("<br><span class=\"successColor\">" + XML.encodeAsHTML(rText) + "</span>\n");
+        if (rText.length() == 0) writer.write("<br>&nbsp;\n");
+        else
+          writer.write("<br><span class=\"successColor\">" + XML.encodeAsHTML(rText) + "</span>\n");
 
-      writer.write(widgets.endForm() + "\n");
+        writer.write(widgets.endForm() + "\n");
 
-      // notes
-      writer.write(EDStatic.messages.get(Message.CONVERT_URLS_NOTES, language));
-      writer.write('\n');
+        // notes
+        writer.write(EDStatic.messages.get(Message.CONVERT_URLS_NOTES, language));
+        writer.write('\n');
 
-      // Info about service / .txt option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_URLS_SERVICE, language), tErddapUrl)
-              + "\n");
-      writer.write('\n');
+        // Info about service / .txt option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_URLS_SERVICE, language), tErddapUrl)
+                + "\n");
+        writer.write('\n');
 
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
-
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
       writer.write(EDStatic.htmlForException(language, t));
@@ -24660,7 +24726,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "subscriptions/index.html",
                 "search/index.html",
                 "search/advanced.html",
-                "convert/index.html")
+                "convert/index.html",
+                "convert/urls.html",
+                "convert/color.html")
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
