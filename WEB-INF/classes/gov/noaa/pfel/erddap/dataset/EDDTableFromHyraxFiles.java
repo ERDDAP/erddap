@@ -29,7 +29,13 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import opendap.dap.*;
+import opendap.dap.BaseType;
+import opendap.dap.DAS;
+import opendap.dap.DArray;
+import opendap.dap.DConnect2;
+import opendap.dap.DDS;
+import opendap.dap.DGrid;
+import opendap.dap.PrimitiveVector;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
