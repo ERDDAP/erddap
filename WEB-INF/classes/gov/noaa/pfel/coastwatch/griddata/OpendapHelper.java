@@ -296,80 +296,6 @@ public class OpendapHelper {
   }
 
   /**
-   * This gets the values for one of the attributes for one of the variables from the DAS. But for
-   * more than 2 calls to this, it is more efficient to use getAttributesFromOpendap. This won't
-   * throw an exception.
-   *
-   * @param das the das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param variableName e.g. "lat". Use "GLOBAL" for global attributes (even though they are called
-   *     different things in different files).
-   * @param attributeName e.g., "actual_range"
-   * @return the values associated with the attribute (array.length = 0 if not found) (e.g.,
-   *     {"even"} or {"0.", "360."}).
-   */
-  public static String[] getAttributeValues(DAS das, String variableName, String attributeName) {
-    try {
-      AttributeTable at = getAttributeTable(das, variableName);
-      if (at == null) {
-        String2.log(
-            "NOTE: OpendapHelper.getAttributeValues:\n"
-                + "  attributeTable not found for var="
-                + variableName);
-        return new String[] {};
-      }
-
-      Attribute attribute = at.getAttribute(attributeName);
-      if (attribute == null) {
-        String2.log(
-            "NOTE: OpendapHelper.getAttributeValues:\n"
-                + "  attribute not found for var="
-                + variableName
-                + " attributeName="
-                + attributeName);
-        return new String[] {};
-      }
-
-      List<String> sar = new ArrayList<>();
-      Iterator<String> elems = attribute.getValuesIterator();
-      while (elems.hasNext()) {
-        sar.add(elems.next());
-      }
-      // remove enclosing quotes from strings
-      for (int i = 0; i < sar.size(); i++) {
-        int sariLength = sar.get(i).length();
-        if (sariLength >= 2
-            && sar.get(i).charAt(0) == '"'
-            && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
-      }
-      return String2.toStringArray(sar.toArray());
-    } catch (Exception e) {
-      String2.log(
-          "WARNING: OpendapHelper.getAttributeValues(\nvarName="
-              + variableName
-              + " attributeName="
-              + attributeName
-              + "):"
-              + MustBe.throwableToString(e));
-      return new String[] {};
-    }
-  }
-
-  /**
-   * This gets the first value for the one of the attributes for one of the variables from the DAS.
-   *
-   * @param das the das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param variableName e.g. "time". Use "GLOBAL" for global attributes (even though they are
-   *     called different things in different files).
-   * @param attributeName e.g., "units"
-   * @return the first value value associated with the attribute, represented as a String (or null
-   *     if not found) e.g., "seconds since 1970-01-01"
-   */
-  public static String getAttributeValue(DAS das, String variableName, String attributeName) {
-    String[] values = getAttributeValues(das, variableName, attributeName);
-    return values.length == 0 ? null : values[0];
-  }
-
-  /**
    * Given start, stride, stop, this returns the actual number of points that will be found.
    *
    * @param start
@@ -383,35 +309,6 @@ public class OpendapHelper {
     if (stride < 1) throw new RuntimeException("stride=" + stride + " must be greater than 0");
 
     return 1 + (stop - start) / stride;
-  }
-
-  /**
-   * Get the PrimitiveVector from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For a portion of a DGrid, use, for example,
-   *     "?ssta.ssta[23:1:23][642:1:742][339:1:439]". This should be already percent encoded as
-   *     needed.
-   * @return a PrimitiveVector with the data from the DArray returned by the query
-   * @throws Exception if trouble
-   */
-  public static PrimitiveVector getPrimitiveVector(DConnect2 dConnect, String query)
-      throws Exception {
-    long time = System.currentTimeMillis();
-    DataDDS dataDds = dConnect.getData(query, null);
-    BaseType bt =
-        (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
-    // bt.printVal(System.out, " ");
-    DArray da = (DArray) bt;
-    if (verbose)
-      String2.log(
-          "    OpendapHelper.getPrimitiveVector("
-              + query
-              + ") done. TIME="
-              + (System.currentTimeMillis() - time)
-              + "ms");
-    return da.getPrimitiveVector();
   }
 
   /**
@@ -497,37 +394,6 @@ public class OpendapHelper {
       baseType.printVal(baos, " ");
       throw new SimpleException(String2.ERROR + ": Unrecogized baseType:" + baos);
     }
-  }
-
-  /**
-   * Get a PrimitiveArray result from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For a portion of a DGrid, use, for example,
-   *     "?ssta.ssta[23:1:23][642:1:742][339:1:439]". This should be already percentEncoded as
-   *     needed.
-   * @return a PrimitiveArray with the data from the DArray returned by the query
-   * @throws Exception if trouble
-   */
-  public static PrimitiveArray getPrimitiveArray(DConnect2 dConnect, String query)
-      throws Exception {
-    return getPrimitiveArray(getPrimitiveVector(dConnect, query));
-  }
-
-  /**
-   * Get a PrimitiveArray result from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For a portion of a DGrid, use, for example,
-   *     "?ssta.ssta[23:1:23][642:1:742][339:1:439]". This should be already percent encoded as
-   *     needed.
-   * @return a double[] with the data from the DArray returned by the query
-   * @throws Exception if trouble
-   */
-  public static double[] getDoubleArray(DConnect2 dConnect, String query) throws Exception {
-    return getDoubleArray(getPrimitiveVector(dConnect, query));
   }
 
   /**
@@ -758,41 +624,6 @@ public class OpendapHelper {
     }
     sb.append("  }" + EOL);
     return sb;
-  }
-
-  /**
-   * This converts a numeric primitiveVector to double[].
-   *
-   * @param pv
-   * @return the corresponding double[]
-   * @throws Exception if trouble
-   */
-  public static double[] getDoubleArray(PrimitiveVector pv) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    int n = pv.getLength();
-    double da[] = new double[n];
-    if (pv instanceof Float32PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = Math2.niceDouble(tpv.getValue(i), 7);
-    } else if (pv instanceof Float64PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof BytePrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv
-        instanceof
-        UInt16PrimitiveVector tpv) { // uint16 is instanceof int16! so must test uint16 first
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof Int16PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv
-        instanceof
-        UInt32PrimitiveVector tpv) { // uint32 is instanceof int32! so must test uint32 first
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof Int32PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else {
-      throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
-    }
-    return da;
   }
 
   /**
