@@ -2,6 +2,7 @@
 @import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
 @import com.cohort.util.String2
+@import com.cohort.util.XML
 @import jakarta.servlet.http.HttpServletRequest
 @import java.text.MessageFormat
 
@@ -50,8 +51,8 @@
     <form method="GET" action="${tErddapUrl}/convert/time.html" name="toNumeric">
         $unsafe{MessageFormat.format(
             TemplateHelper.getMessage(Message.CONVERT_TO_NUMERIC_TIME, language),
-            "</strong>\n<input type=\"text\" name=\"stringTime\" value=\"" + stringTime1 + "\" size=\"22\" maxlength=\"40\" title=\"" + stringTimeTooltip + "\"><br><strong>",
-            "</strong>\n<input type=\"text\" name=\"units\" value=\"" + units1 + "\" size=\"37\" maxlength=\"60\" title=\"" + unitsTooltip + "\">."
+            "</strong>\n<input type=\"text\" name=\"stringTime\" value=\"" + XML.encodeAsHTMLAttribute(stringTime1) + "\" size=\"22\" maxlength=\"40\" title=\"" + XML.encodeAsHTMLAttribute(stringTimeTooltip) + "\"><br><strong>",
+            "</strong>\n<input type=\"text\" name=\"units\" value=\"" + XML.encodeAsHTMLAttribute(units1) + "\" size=\"37\" maxlength=\"60\" title=\"" + XML.encodeAsHTMLAttribute(unitsTooltip) + "\">."
         )}
         <br>
         <button type="submit" value="Convert">
@@ -72,7 +73,7 @@
     <form method="GET" action="${tErddapUrl}/convert/time.html" name="toString">
         $unsafe{MessageFormat.format(
             TemplateHelper.getMessage(Message.CONVERT_TO_STRING_TIME, language),
-            "</strong>\n<br><input type=\"text\" name=\"n\" value=\"" + n2 + "\" size=\"15\" maxlength=\"30\" title=\"" + numberTooltip + "\">\n<input type=\"text\" name=\"units\" value=\"" + units2 + "\" size=\"37\" maxlength=\"60\" title=\"" + unitsTooltip + "\">\n<br><strong>"
+            "</strong>\n<br><input type=\"text\" name=\"n\" value=\"" + XML.encodeAsHTMLAttribute(n2) + "\" size=\"15\" maxlength=\"30\" title=\"" + XML.encodeAsHTMLAttribute(numberTooltip) + "\">\n<input type=\"text\" name=\"units\" value=\"" + XML.encodeAsHTMLAttribute(units2) + "\" size=\"37\" maxlength=\"60\" title=\"" + XML.encodeAsHTMLAttribute(unitsTooltip) + "\">\n<br><strong>"
         )}
         <button type="submit" value="Convert">
             <strong>${TemplateHelper.getMessage(Message.CONVERT, language)}</strong>
@@ -92,7 +93,7 @@
     <form method="GET" action="${tErddapUrl}/convert/time.html" name="cleanString">
         $unsafe{MessageFormat.format(
             TemplateHelper.getMessage(Message.CONVERT_ANY_STRING_TIME, language),
-            "</strong>\n<input type=\"text\" name=\"stringTime\" value=\"" + stringTime3 + "\" size=\"22\" maxlength=\"40\" title=\"" + stringTimeTooltip + "\">\n<br><strong>"
+            "</strong>\n<input type=\"text\" name=\"stringTime\" value=\"" + XML.encodeAsHTMLAttribute(stringTime3) + "\" size=\"22\" maxlength=\"40\" title=\"" + XML.encodeAsHTMLAttribute(stringTimeTooltip) + "\">\n<br><strong>"
         )}
         <button type="submit" value="Convert">
             <strong>${TemplateHelper.getMessage(Message.CONVERT, language)}</strong>
@@ -112,7 +113,7 @@
     <form method="GET" action="${tErddapUrl}/convert/time.html" name="cleanUnits">
         $unsafe{MessageFormat.format(
             TemplateHelper.getMessage(Message.CONVERT_TO_PROPER_TIME_UNITS, language),
-            "</strong>\n<input type=\"text\" name=\"units\" value=\"" + units4 + "\" size=\"37\" maxlength=\"60\" title=\"" + unitsTooltip + "\">\n<br><strong>"
+            "</strong>\n<input type=\"text\" name=\"units\" value=\"" + XML.encodeAsHTMLAttribute(units4) + "\" size=\"37\" maxlength=\"60\" title=\"" + XML.encodeAsHTMLAttribute(unitsTooltip) + "\">\n<br><strong>"
         )}
         <button type="submit" value="Convert">
             <strong>${TemplateHelper.getMessage(Message.CONVERT, language)}</strong>

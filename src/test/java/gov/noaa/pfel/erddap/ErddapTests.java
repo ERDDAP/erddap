@@ -1166,6 +1166,32 @@ class ErddapTests {
   }
 
   @org.junit.jupiter.api.Test
+  void testDoConvertTimeXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/time.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/convert/".length(),
+        "stringTime=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E&units=%22%3E%3Cscript%3Ealert(2)%3C%2Fscript%3E");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in stringTime input value");
+    Test.ensureTrue(
+        !result.contains("<script>alert(2)</script>"), "Reflected XSS in units input value");
+    Test.ensureTrue(
+        result.contains(com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>")),
+        "Attribute not escaped with XML.encodeAsHTMLAttribute");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
   void testDoConvertUnitsJte() throws Throwable {
     String2.log("\n*** ErddapTests.testDoConvertUnitsJte()");
     Erddap erddap = new Erddap();
