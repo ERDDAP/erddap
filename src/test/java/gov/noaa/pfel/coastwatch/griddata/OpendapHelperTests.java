@@ -17,7 +17,79 @@ class OpendapHelperTests {
 
   @BeforeAll
   static void init() {
-    Initialization.edStatic();
+    testSupport.WireMockStarter.start();
+  }
+
+  @org.junit.jupiter.api.Test
+  void testAllDapToNcLocal() throws Throwable {
+    testSupport.WireMockStarter.start();
+    int port = testSupport.WireMockStarter.port();
+
+    String dds = "Dataset {\n    Float32 lat[lat = 3];\n    Float32 lon[lon = 4];\n    String station_name;\n} small_test;\n";
+    String das = "Attributes {\n    NC_GLOBAL {\n        String title \"Small Test Dataset\";\n    }\n"
+        + "    lat {\n        String units \"degrees_north\";\n    }\n"
+        + "    lon {\n        String units \"degrees_east\";\n    }\n"
+        + "    station_name {\n        Int32 DODS_strlen 12;\n    }\n}\n";
+
+    com.github.tomakehurst.wiremock.client.WireMock.stubFor(
+        com.github.tomakehurst.wiremock.client.WireMock.get(
+            com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo("/dods/small_test.dds"))
+            .willReturn(
+                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                    .withStatus(200)
+                    .withHeader("XDODS-Server", "dods/3.7")
+                    .withHeader("Content-Description", "dods_dds")
+                    .withBody(dds)));
+
+    com.github.tomakehurst.wiremock.client.WireMock.stubFor(
+        com.github.tomakehurst.wiremock.client.WireMock.get(
+            com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo("/dods/small_test.das"))
+            .willReturn(
+                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                    .withStatus(200)
+                    .withHeader("XDODS-Server", "dods/3.7")
+                    .withHeader("Content-Description", "dods_das")
+                    .withBody(das)));
+
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    baos.write("Dataset {\n    Float32 lat[lat = 3];\n    Float32 lon[lon = 4];\n    String station_name;\n} small_test;\nData:\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    java.io.DataOutputStream dos = new java.io.DataOutputStream(baos);
+    dos.writeInt(3); // lat length
+    dos.writeInt(3); // lat length repeated
+    dos.writeFloat(10.0f);
+    dos.writeFloat(20.0f);
+    dos.writeFloat(30.0f);
+    dos.writeInt(4); // lon length
+    dos.writeInt(4); // lon length repeated
+    dos.writeFloat(-100.0f);
+    dos.writeFloat(-90.0f);
+    dos.writeFloat(-80.0f);
+    dos.writeFloat(-70.0f);
+    byte[] strBytes = "StationA".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    dos.writeInt(strBytes.length);
+    dos.write(strBytes);
+    dos.flush();
+    byte[] dodsBytes = baos.toByteArray();
+
+    com.github.tomakehurst.wiremock.client.WireMock.stubFor(
+        com.github.tomakehurst.wiremock.client.WireMock.get(
+            com.github.tomakehurst.wiremock.client.WireMock.urlMatching("/dods/small_test\\.dods.*"))
+            .willReturn(
+                com.github.tomakehurst.wiremock.client.WireMock.aResponse()
+                    .withStatus(200)
+                    .withHeader("XDODS-Server", "dods/3.7")
+                    .withHeader("Content-Description", "dods_data")
+                    .withBody(dodsBytes)));
+
+    String url = "http://localhost:" + port + "/dods/small_test";
+    String outNcFile = TEMP_DIR.resolve("small_test.nc").toString();
+    OpendapHelper.allDapToNc(url, outNcFile);
+    Test.ensureTrue(com.cohort.util.File2.isFile(outNcFile), "outNcFile should exist: " + outNcFile);
+    String results = dds(outNcFile);
+    Test.ensureTrue(results.contains("float lat(lat=3)"), "results should contain float lat(lat=3):\n" + results);
+    Test.ensureTrue(results.contains("float lon(lon=4)"), "results should contain float lon(lon=4):\n" + results);
+    Test.ensureTrue(results.contains("char station_name(string1=1, station_name_strlen=12)"), "results should contain station_name:\n" + results);
+    com.cohort.util.File2.delete(outNcFile);
   }
 
   /** This tests getting attibutes, notably the DODS_strlen attribute. */
