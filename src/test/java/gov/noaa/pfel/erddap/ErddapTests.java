@@ -1048,4 +1048,243 @@ class ErddapTests {
     Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
     Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
   }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertTimeJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/time.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("Convert a String Time"), "Missing Convert Time title");
+    Test.ensureTrue(result.contains("convert/time.html"), "Missing form action");
+    Test.ensureTrue(result.contains("name=\"toNumeric\""), "Missing toNumeric form");
+    Test.ensureTrue(result.contains("name=\"toString\""), "Missing toString form");
+    Test.ensureTrue(result.contains("name=\"cleanString\""), "Missing cleanString form");
+    Test.ensureTrue(result.contains("name=\"cleanUnits\""), "Missing cleanUnits form");
+    Test.ensureTrue(result.contains("value=\"Convert\""), "Missing Convert button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertTimeWithQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeWithQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/time.html", true);
+
+    String query = "stringTime=2020-01-01T00%3A00%3A00Z&units=seconds+since+1970-01-01";
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/convert/".length(),
+        query);
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("Convert a String Time"), "Missing Convert Time title");
+    Test.ensureTrue(result.contains("1577836800"), "Missing converted time numeric value");
+    Test.ensureTrue(result.contains("class=\"N successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertTimeLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/time.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert a String Time"), "Missing Convert Time title in legacy");
+    Test.ensureTrue(result.contains("convert/time.html"), "Missing form action in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertTimeMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/time.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_TIME, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French time converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertTimeErrorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeErrorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/time.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/convert/".length(),
+        "stringTime=invalid_time_format&units=seconds+since+1970-01-01");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertTimeXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertTimeXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/time.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/time.html",
+        "/erddap/convert/".length(),
+        "stringTime=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E&units=%22%3E%3Cscript%3Ealert(2)%3C%2Fscript%3E");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in stringTime input value");
+    Test.ensureTrue(
+        !result.contains("<script>alert(2)</script>"), "Reflected XSS in units input value");
+    Test.ensureTrue(
+        result.contains(com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>")),
+        "Attribute not escaped with XML.encodeAsHTMLAttribute");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertUnitsJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertUnitsJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/units.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/units.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("Convert UDUNITS"), "Missing Convert Units title");
+    Test.ensureTrue(result.contains("convert/units.html"), "Missing form action");
+    Test.ensureTrue(result.contains("name=\"getUcum\""), "Missing getUcum form");
+    Test.ensureTrue(result.contains("name=\"getUdunits\""), "Missing getUdunits form");
+    Test.ensureTrue(
+        result.contains("name=\"standarizeUdunits\""), "Missing standarizeUdunits form");
+    Test.ensureTrue(result.contains("value=\"Convert to UCUM\""), "Missing Convert to UCUM button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertUnitsWithQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertUnitsWithQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/units.html", true);
+
+    String query = "UDUNITS=degC%2Fmeter";
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/units.html",
+        "/erddap/convert/".length(),
+        query);
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("Convert UDUNITS"), "Missing Convert Units title");
+    Test.ensureTrue(
+        result.contains("UDUNITS \"degC/meter\" &rarr; UCUM \"Cel.m-1\""),
+        "Missing converted units result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertUnitsLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertUnitsLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/units.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/units.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("Convert Units"), "Missing Convert Units title in legacy");
+    Test.ensureTrue(result.contains("Convert to UCUM"), "Missing Convert to UCUM in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertUnitsMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertUnitsMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/units.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/units.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_UNITS, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French units converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
 }
