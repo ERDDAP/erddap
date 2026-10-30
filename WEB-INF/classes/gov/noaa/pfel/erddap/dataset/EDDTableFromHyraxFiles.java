@@ -584,8 +584,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
           continue;
         }
 
-        PrimitiveArray sourcePA =
-            PrimitiveArray.factory(NcHelper.getElementPAType(var), 2, false);
+        PrimitiveArray sourcePA = PrimitiveArray.factory(NcHelper.getElementPAType(var), 2, false);
         dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
         PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
         dataAddTable.addColumn(

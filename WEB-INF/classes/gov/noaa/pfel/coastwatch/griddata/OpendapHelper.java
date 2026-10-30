@@ -23,11 +23,11 @@ import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +39,6 @@ import opendap.dap.BooleanPrimitiveVector;
 import opendap.dap.BytePrimitiveVector;
 import opendap.dap.DAS;
 import opendap.dap.DArray;
-import opendap.dap.DArrayDimension;
 import opendap.dap.DByte;
 import opendap.dap.DConnect2;
 import opendap.dap.DDS;
@@ -60,11 +59,9 @@ import opendap.dap.Int32PrimitiveVector;
 import opendap.dap.PrimitiveVector;
 import opendap.dap.UInt16PrimitiveVector;
 import opendap.dap.UInt32PrimitiveVector;
-import ucar.ma2.Array;
-import ucar.ma2.ArrayObject;
-import ucar.ma2.DataType;
-import java.util.EnumSet;
 import thredds.client.catalog.ServiceType;
+import ucar.ma2.Array;
+import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.Variable;
@@ -732,7 +729,8 @@ public class OpendapHelper {
 
     DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, dapUrl);
     try (NetcdfDataset dataset =
-        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(NetcdfDataset.Enhance.class), -1, null, null)) {
+        NetcdfDatasets.openDataset(
+            durl, EnumSet.noneOf(NetcdfDataset.Enhance.class), -1, null, null)) {
 
       // find all variables excluding structures/sequences
       List<Variable> srcVars = new ArrayList<>();
@@ -772,8 +770,7 @@ public class OpendapHelper {
           Variable srcVar = srcVars.get(v);
           String varName = srcVar.getShortName();
           if (debug)
-            String2.log(
-                "\ncreate varName=" + varName + " has dataType=" + srcVar.getDataType());
+            String2.log("\ncreate varName=" + varName + " has dataType=" + srcVar.getDataType());
 
           Attributes varAtts = new Attributes();
           NcHelper.getVariableAttributes(srcVar, varAtts);
@@ -821,8 +818,7 @@ public class OpendapHelper {
             newVars[v] = NcHelper.addNc3StringVariable(rootGroup, varName, tDims, strlen);
           } else {
             newVars[v] =
-                NcHelper.addVariable(
-                    rootGroup, varName, NcHelper.getNc3DataType(tPAType), tDims);
+                NcHelper.addVariable(rootGroup, varName, NcHelper.getNc3DataType(tPAType), tDims);
           }
 
           // write data variable attributes in ncOut
