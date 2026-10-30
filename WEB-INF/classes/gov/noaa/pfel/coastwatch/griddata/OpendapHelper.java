@@ -34,9 +34,6 @@ import java.util.List;
 import opendap.dap.Attribute;
 import opendap.dap.AttributeTable;
 import opendap.dap.BaseType;
-import opendap.dap.BaseTypePrimitiveVector;
-import opendap.dap.BooleanPrimitiveVector;
-import opendap.dap.BytePrimitiveVector;
 import opendap.dap.DAS;
 import opendap.dap.DArray;
 import opendap.dap.DByte;
@@ -52,13 +49,7 @@ import opendap.dap.DUInt16;
 import opendap.dap.DUInt32;
 import opendap.dap.DVector;
 import opendap.dap.DataDDS;
-import opendap.dap.Float32PrimitiveVector;
-import opendap.dap.Float64PrimitiveVector;
-import opendap.dap.Int16PrimitiveVector;
-import opendap.dap.Int32PrimitiveVector;
 import opendap.dap.PrimitiveVector;
-import opendap.dap.UInt16PrimitiveVector;
-import opendap.dap.UInt32PrimitiveVector;
 import thredds.client.catalog.ServiceType;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -626,46 +617,6 @@ public class OpendapHelper {
     }
     sb.append("  }" + EOL);
     return sb;
-  }
-
-  /**
-   * This returns the PrimitiveArray elementPAType of a BaseType.
-   *
-   * @param pv
-   * @return the PrimitiveArray elementPAType of this BaseType. This treats all Bytes as signed (it
-   *     doesn't look at _Unsigned attribute).
-   * @throws Exception if trouble
-   */
-  public static PAType getElementPAType(BaseType bt) throws Exception {
-    return getElementPAType(bt.newPrimitiveVector()); // a new PV of suitable type for the BaseType
-  }
-
-  /**
-   * This returns the PrimitiveArray elementPAType of a PrimitiveVector.
-   *
-   * @param pv
-   * @return the PrimitiveArray elementPAType of this BaseType. This treats all Bytes as signed (it
-   *     doesn't look at _Unsigned attribute).
-   * @throws Exception if trouble
-   */
-  public static PAType getElementPAType(PrimitiveVector pv) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    // String2.pressEnterToContinue(">> OpendapHelper.getElementPAType(" + pv.toString());
-    if (pv instanceof Float32PrimitiveVector) return PAType.FLOAT;
-    if (pv instanceof Float64PrimitiveVector) return PAType.DOUBLE;
-    if (pv instanceof BytePrimitiveVector)
-      return PAType
-          .BYTE; // technically should be UByte, but ERDDAP and TDS traditionally treat DAP bytes as
-    // signed
-    if (pv instanceof UInt16PrimitiveVector)
-      return PAType.USHORT; // UInt16 is instanceof Int16! so must test uint16 first
-    if (pv instanceof UInt32PrimitiveVector)
-      return PAType.UINT; // UInt32 is instanceof Int32! so must test uint32 first
-    if (pv instanceof Int16PrimitiveVector) return PAType.SHORT;
-    if (pv instanceof Int32PrimitiveVector) return PAType.INT;
-    if (pv instanceof BaseTypePrimitiveVector) return PAType.STRING; // ???
-    if (pv instanceof BooleanPrimitiveVector) return PAType.BOOLEAN;
-    throw new Exception(String2.ERROR + ": Unknown PrimitiveVector (" + pv + ").");
   }
 
   /**
