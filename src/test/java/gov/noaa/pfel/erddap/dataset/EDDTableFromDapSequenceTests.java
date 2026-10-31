@@ -263,7 +263,7 @@ class EDDTableFromDapSequenceTests {
 
     // EDDGridFromDap should fail and try EDDTableFromDapSequence and generate same
     // result
-    results = EDDGridFromDap.generateDatasetsXml(tUrl, null, null, null, 1440, null) + "\n";
+    results = EDDGridFromDap.generateDatasetsXml(tUrl, null, 1440, null) + "\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // ensure it is ready-to-use by making a dataset from it

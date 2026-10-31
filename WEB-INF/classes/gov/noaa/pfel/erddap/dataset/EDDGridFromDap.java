@@ -40,8 +40,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import opendap.dap.DAS;
-import opendap.dap.DDS;
 import opendap.dap.NoSuchVariableException;
 import thredds.client.catalog.Access;
 import thredds.client.catalog.Catalog;
@@ -1182,8 +1180,6 @@ public class EDDGridFromDap extends EDDGrid {
    *
    * @param tLocalSourceUrl the base url for the dataset (no extension), e.g.,
    *     "https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day"
-   * @param das The das for the tLocalSourceUrl, or null.
-   * @param dds The dds for the tLocalSourceUrl, or null.
    * @param dimensionNames If not null, only the variables that use these dimensions, in this order,
    *     will be loaded. If it is null, the vars with the most dimensions (found first, if tie) will
    *     be loaded.
@@ -1198,8 +1194,6 @@ public class EDDGridFromDap extends EDDGrid {
    */
   public static String generateDatasetsXml(
       String tLocalSourceUrl,
-      DAS das,
-      DDS dds,
       String dimensionNames[],
       int tReloadEveryNMinutes,
       Attributes externalAddGlobalAttributes)
@@ -1340,8 +1334,6 @@ public class EDDGridFromDap extends EDDGrid {
               results.append(
                   generateDatasetsXml(
                       tLocalSourceUrl,
-                      das,
-                      dds,
                       tDimensionNames,
                       tReloadEveryNMinutes,
                       externalAddGlobalAttributes));
@@ -1822,12 +1814,7 @@ public class EDDGridFromDap extends EDDGrid {
       // append to results  (it should succeed completely, or fail)
       results.write(
           generateDatasetsXml(
-              tLocalSourceUrl,
-              null,
-              null,
-              null,
-              tReloadEveryNMinutes,
-              externalAddGlobalAttributes));
+              tLocalSourceUrl, null, tReloadEveryNMinutes, externalAddGlobalAttributes));
       time = System.currentTimeMillis() - time;
       String2.distributeTime(time, datasetSuccessTimes);
       String ts = indent + tLocalSourceUrl + "  (" + time + " ms)\n";
