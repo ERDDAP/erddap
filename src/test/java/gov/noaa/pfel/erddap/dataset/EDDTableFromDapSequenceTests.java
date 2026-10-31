@@ -11,10 +11,8 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.List;
 import opendap.dap.BaseType;
-import opendap.dap.DAS;
 import opendap.dap.DByte;
 import opendap.dap.DConnect2;
-import opendap.dap.DDS;
 import opendap.dap.DFloat32;
 import opendap.dap.DFloat64;
 import opendap.dap.DInt16;
@@ -25,7 +23,6 @@ import opendap.dap.DUInt16;
 import opendap.dap.DUInt32;
 import opendap.dap.DataDDS;
 import org.junit.jupiter.api.BeforeAll;
-import tags.TagDisabledExternalERDDAP;
 import tags.TagDisabledLocalERDDAP;
 import tags.TagDisabledMissingDataset;
 import testDataset.EDDTestDataset;
@@ -607,12 +604,6 @@ class EDDTableFromDapSequenceTests {
     int language = 0;
     String sourceUrl = "http://dapper.pmel.noaa.gov/dapper/argo/argo_all.cdp"; // no longer running
     String2.log("\n*** EDDTableFromDapSequence.testArgo " + sourceUrl);
-    try (DConnect2 dConnect = new DConnect2(sourceUrl, EDDTableFromDapSequence.acceptDeflate)) {
-      String2.log("getDAS");
-      DAS das = dConnect.getDAS();
-      String2.log("getDDS");
-      DDS dds = dConnect.getDDS();
-    }
     EDDTable tedd = (EDDTable) EDDTableFromDapSequence.oneFromDatasetsXml(null, "pmelArgoAll");
     String tq =
         "longitude,latitude,id&id<=1000000&.draw=markers&.marker=4|5&.color=0x000000&.colorBar=|C|Linear|||";
@@ -1023,18 +1014,6 @@ class EDDTableFromDapSequenceTests {
 
     expected = "zztop\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
-  }
-
-  /** Test reading .das */
-  @org.junit.jupiter.api.Test
-  @TagDisabledExternalERDDAP
-  void testReadDas() throws Exception {
-    String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
-    String url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";
-    try (DConnect2 dConnect = new DConnect2(url, true)) {
-      DAS das = dConnect.getDAS();
-      DDS dds = dConnect.getDDS();
-    }
   }
 
   /** Test graph made from subsetVariables data */
