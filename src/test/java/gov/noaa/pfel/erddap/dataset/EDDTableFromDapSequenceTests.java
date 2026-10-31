@@ -9,19 +9,6 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
-import java.util.List;
-import opendap.dap.BaseType;
-import opendap.dap.DByte;
-import opendap.dap.DConnect2;
-import opendap.dap.DFloat32;
-import opendap.dap.DFloat64;
-import opendap.dap.DInt16;
-import opendap.dap.DInt32;
-import opendap.dap.DSequence;
-import opendap.dap.DString;
-import opendap.dap.DUInt16;
-import opendap.dap.DUInt32;
-import opendap.dap.DataDDS;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagDisabledLocalERDDAP;
 import tags.TagDisabledMissingDataset;
@@ -811,49 +798,6 @@ class EDDTableFromDapSequenceTests {
     results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
     expected = "\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
-  }
-
-  /** NOT FINISHED. */
-  @org.junit.jupiter.api.Test
-  @TagDisabledMissingDataset // Connection can't be opened
-  void testDapErdlasNewportCtd() throws Throwable {
-    // the basicQuery
-    for (int test = 1; test < 2; test++) {
-      String url =
-          test == 0
-              ? "https://oceanwatch.pfeg.noaa.gov:8080/dods/GLOBEC/GLOBEC_birds?birds.year,birds.species,birds.head_c,birds.month_local,birds.day_local&birds.year=2000&birds.month_local=8&birds.day_local=7"
-              : "http://las.pfeg.noaa.gov/cgi-bin/ERDserver/northwest.sql?northwest.temperature,northwest.ctd_station_code,northwest.datetime,northwest.station,northwest.longitude,northwest.latitude&northwest.datetime%3E13821";
-      System.out.println("\ntesting url=" + url);
-      try (DConnect2 dConnect = new DConnect2(url, true)) {
-        DataDDS dataDds = dConnect.getData((opendap.dap.StatusUI) null); // null = no statusUI
-
-        // *** read the data (row-by-row, as it wants)
-        DSequence outerSequence = (DSequence) dataDds.getVariables().nextElement();
-        int nOuterRows = outerSequence.getRowCount();
-        System.out.println("nRows=" + nOuterRows);
-        for (int outerRow = 0; outerRow < Math.min(5, nOuterRows); outerRow++) {
-          List<BaseType> outerVector = outerSequence.getRow(outerRow);
-          StringBuilder sb = new StringBuilder();
-
-          // process the other outerCol
-          for (int outerCol = 0; outerCol < outerVector.size(); outerCol++) {
-            if (outerCol > 0) sb.append(", ");
-            BaseType obt = (BaseType) outerVector.get(outerCol);
-            if (obt instanceof DByte t) sb.append(t.getValue());
-            else if (obt instanceof DFloat32 t) sb.append(t.getValue());
-            else if (obt instanceof DFloat64 t) sb.append(t.getValue());
-            else if (obt instanceof DInt16 t) sb.append(t.getValue());
-            else if (obt instanceof DUInt16 t) sb.append(t.getValue());
-            else if (obt instanceof DInt32 t) sb.append(t.getValue());
-            else if (obt instanceof DUInt32 t) sb.append(t.getValue());
-            else if (obt instanceof DString t) sb.append(t.getValue());
-            else if (obt instanceof DSequence t) sb.append("DSequence)");
-            else sb.append(obt.getTypeName());
-          }
-          System.out.println(sb.toString());
-        }
-      }
-    }
   }
 
   /** */
