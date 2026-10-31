@@ -17,7 +17,6 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -26,10 +25,16 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.File;
-import java.util.Enumeration;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import opendap.dap.*;
+import thredds.client.catalog.ServiceType;
+import ucar.ma2.DataType;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
@@ -555,74 +560,66 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     // and a parallel table to hold the addAttributes
     Table dataSourceTable = new Table();
     Table dataAddTable = new Table();
-    try (DConnect2 dConnect = new DConnect2(oneFileDapUrl, acceptDeflate)) {
-      DAS das = dConnect.getDAS();
-      DDS dds = dConnect.getDDS();
+    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, oneFileDapUrl);
+    try (NetcdfDataset dataset =
+        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
 
       // get source global attributes
-      OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
+      NcHelper.getGroupAttributes(dataset.getRootGroup(), dataSourceTable.globalAttributes());
 
       // variables
-      Enumeration<BaseType> en = dds.getVariables();
       double maxTimeES = Double.NaN;
       Attributes gridMappingAtts = null;
-      while (en.hasMoreElements()) {
-        BaseType baseType = en.nextElement();
-        String varName = baseType.getClearName();
+      for (Variable var : dataset.getVariables()) {
+        String varName = var.getShortName();
         Attributes sourceAtts = new Attributes();
-        OpendapHelper.getAttributes(das, varName, sourceAtts);
+        NcHelper.getVariableAttributes(var, sourceAtts);
 
         // Is this the pseudo-data var with CF grid_mapping (projection) information?
         if (gridMappingAtts == null) gridMappingAtts = NcHelper.getGridMappingAtts(sourceAtts);
 
-        PrimitiveVector pv = null; // for determining data type
-        if (baseType instanceof DGrid dGrid) { // for multidim vars
-          BaseType bt0 = dGrid.getVar(0); // holds the data
-          pv = bt0 instanceof DArray tbt0 ? tbt0.getPrimitiveVector() : bt0.newPrimitiveVector();
-        } else if (baseType instanceof DArray dArray) { // for the dimension vars
-          pv = dArray.getPrimitiveVector();
-        } else {
-          if (verbose) String2.log("  baseType=" + baseType + " isn't supported yet.\n");
+        if (var.getDataType() == DataType.STRUCTURE
+            || var instanceof ucar.nc2.Structure
+            || var.getRank() == 0) {
+          continue;
         }
-        if (pv != null) {
-          PrimitiveArray sourcePA =
-              PrimitiveArray.factory(OpendapHelper.getElementPAType(pv), 2, false);
-          dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
-          PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
-          dataAddTable.addColumn(
-              dataAddTable.nColumns(),
-              varName,
-              destPA,
-              makeReadyToUseAddVariableAttributesForDatasetsXml(
-                  dataSourceTable.globalAttributes(),
-                  sourceAtts,
-                  null,
-                  varName,
-                  destPA.elementType() != PAType.STRING, // tryToAddStandardName
-                  destPA.elementType() != PAType.STRING, // addColorBarMinMax
-                  true)); // tryToFindLLAT
 
-          // if a variable has timeUnits, files are likely sorted by time
-          // and no harm if files aren't sorted that way
-          String tUnits = sourceAtts.getString("units");
-          if (tSortedColumnSourceName.length() == 0 && Calendar2.isTimeUnits(tUnits))
-            tSortedColumnSourceName = varName;
+        PrimitiveArray sourcePA = PrimitiveArray.factory(NcHelper.getElementPAType(var), 2, false);
+        dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, sourceAtts);
+        PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+        dataAddTable.addColumn(
+            dataAddTable.nColumns(),
+            varName,
+            destPA,
+            makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(),
+                sourceAtts,
+                null,
+                varName,
+                destPA.elementType() != PAType.STRING, // tryToAddStandardName
+                destPA.elementType() != PAType.STRING, // addColorBarMinMax
+                true)); // tryToFindLLAT
 
-          if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
-            try {
-              if (Calendar2.isNumericTimeUnits(tUnits)) {
-                double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); // throws exception
-                maxTimeES =
-                    Calendar2.unitsSinceToEpochSeconds(
-                        tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
-              } else { // string time units
-                maxTimeES =
-                    Calendar2.tryToEpochSeconds(
-                        destPA.getString(destPA.size() - 1)); // NaN if trouble
-              }
-            } catch (Throwable t) {
-              String2.log("caught while trying to get maxTimeES: " + MustBe.throwableToString(t));
+        // if a variable has timeUnits, files are likely sorted by time
+        // and no harm if files aren't sorted that way
+        String tUnits = sourceAtts.getString("units");
+        if (tSortedColumnSourceName.length() == 0 && Calendar2.isTimeUnits(tUnits))
+          tSortedColumnSourceName = varName;
+
+        if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+          try {
+            if (Calendar2.isNumericTimeUnits(tUnits)) {
+              double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); // throws exception
+              maxTimeES =
+                  Calendar2.unitsSinceToEpochSeconds(
+                      tbf[0], tbf[1], destPA.getDouble(destPA.size() - 1));
+            } else { // string time units
+              maxTimeES =
+                  Calendar2.tryToEpochSeconds(
+                      destPA.getString(destPA.size() - 1)); // NaN if trouble
             }
+          } catch (Throwable t) {
+            String2.log("caught while trying to get maxTimeES: " + MustBe.throwableToString(t));
           }
         }
       }

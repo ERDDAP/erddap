@@ -5,17 +5,13 @@ import com.cohort.util.File2;
 import com.cohort.util.Image2Tests;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import opendap.dap.DAS;
-import opendap.dap.DConnect2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagDisabledExternalERDDAP;
 import tags.TagDisabledLocalERDDAP;
-import tags.TagDisabledMissingDataset;
 import tags.TagImageComparison;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -314,26 +310,6 @@ class EDDTableFromErddapTests {
     String2.log("\n*** EDDTableFromErddap.testFromErddapFromErddap");
     EDDTable edd = (EDDTableFromErddap) EDDTestDataset.gettestFromErddapFromErddap();
     // String2.log(edd.toString());
-  }
-
-  @org.junit.jupiter.api.Test
-  @TagDisabledMissingDataset
-  void testDegreesSignAttribute() throws Throwable {
-    String2.log("\n*** EDDTableFromErddap.testDegreesSignAttribute");
-    String url =
-        // "http://localhost:8080/cwexperimental/tabledap/erdCalcofiSur";
-        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalcofiSur";
-    try (DConnect2 dConnect = new DConnect2(url, true)) {
-      DAS das = dConnect.getDAS();
-      String results = OpendapHelper.getDasString(das);
-      // String expected = "zztop";
-      // Test.ensureEqual(results, expected, "results=\n" + results);
-    }
-    EDDTable edd =
-        (EDDTableFromErddap)
-            EDDTableFromErddap.oneFromDatasetsXml(null, "testCalcofiSurFromErddap");
-    // String2.log(edd.toString());
-
   }
 
   /** This tests dealing with remote not having ioos_category, but local requiring it. */
