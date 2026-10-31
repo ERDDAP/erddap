@@ -4,12 +4,17 @@ import com.cohort.array.Attributes;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import java.nio.file.Path;
-import opendap.dap.DAS;
-import opendap.dap.DConnect2;
+import java.util.EnumSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import tags.TagDisabledThredds;
 import testDataset.Initialization;
+import thredds.client.catalog.ServiceType;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 class OpendapHelperTests {
 
@@ -111,10 +116,13 @@ class OpendapHelperTests {
     String url =
         "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
     String2.log("\n* OpendapHelper.testGetAttributes\n" + url);
-    try (DConnect2 dConnect = new DConnect2(url, true)) {
-      DAS das = dConnect.getDAS();
+    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, url);
+    try (NetcdfDataset dataset =
+        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+      Variable var = dataset.findVariable("flag");
+      Test.ensureNotNull(var, "Variable 'flag' not found in dataset");
       Attributes atts = new Attributes();
-      OpendapHelper.getAttributes(das, "flag", atts);
+      NcHelper.getVariableAttributes(var, atts);
 
       String results = atts.toString();
       String expected = // the DODS_ attributes are from an attribute that is a container.
