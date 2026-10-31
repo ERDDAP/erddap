@@ -15,14 +15,10 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
-import java.io.ByteArrayOutputStream;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import opendap.dap.DAS;
-import opendap.dap.DDS;
 import thredds.client.catalog.ServiceType;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -67,30 +63,6 @@ public class OpendapHelper {
   public static final String EOL = "\n";
 
   public static final int DEFAULT_TIMEOUT = 120000; // 2 minutes in millis
-
-  /**
-   * This converts a das to a string.
-   *
-   * @param das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @return the string form of the das
-   */
-  public static String getDasString(DAS das) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    das.print(baos);
-    return baos.toString(StandardCharsets.UTF_8);
-  }
-
-  /**
-   * This converts a dds to a string.
-   *
-   * @param dds from dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @return the string form of the dds
-   */
-  public static String getDdsString(DDS dds) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    dds.print(baos);
-    return baos.toString(StandardCharsets.UTF_8);
-  }
 
   /**
    * Given start, stride, stop, this returns the actual number of points that will be found.

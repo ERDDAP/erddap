@@ -902,8 +902,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     }
 
     if (outerSequenceName == null)
-      throw new SimpleException(
-          "No Sequence variable was found for " + tLocalSourceUrl + ".dds.");
+      throw new SimpleException("No Sequence variable was found for " + tLocalSourceUrl + ".dds.");
 
     // add missing_value and/or _FillValue if needed
     addMvFvAttsIfNeeded(dataSourceTable, dataAddTable);
