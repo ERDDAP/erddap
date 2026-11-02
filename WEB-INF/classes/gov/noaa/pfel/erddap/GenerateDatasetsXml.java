@@ -361,12 +361,7 @@ public class GenerateDatasetsXml {
               String2.log("working...");
               printToBoth(
                   EDDGridFromDap.generateDatasetsXml(
-                      s1,
-                      null,
-                      null,
-                      null,
-                      String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES),
-                      null));
+                      s1, null, String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
             }
             case "EDDGridFromEDDTable" -> {
               s1 = get(args, 1, s1, "datasetID of underlying EDDTable");

@@ -26,7 +26,6 @@ import com.cohort.util.Test;
 import com.cohort.util.XML;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.pointdata.TableTests;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -75,6 +74,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,9 +82,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import opendap.dap.DAS;
-import opendap.dap.DConnect2;
-import opendap.dap.DDS;
 import org.apache.http.HttpStatus;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
@@ -109,9 +106,13 @@ import testDataset.EDDTestDataset;
 import testDataset.Initialization;
 import testSupport.ExternalTestUrls;
 import testSupport.WireMockLifecycle;
+import thredds.client.catalog.ServiceType;
+import ucar.ma2.DataType;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 @TagJetty
@@ -13098,107 +13099,117 @@ netcdf EDDTableFromNcFiles_Data.nc {
     int language = 0;
 
     String baseUrl = ExternalTestUrls.apdrcHawaiiBase();
-    // get das and dds
     String threddsUrl = baseUrl + "/dods/public_data/SODA/soda_pop2.2.4";
     String erddapUrl =
         EDStatic.erddapUrl + "/griddap/hawaii_d90f_20ee_c4cb"; // in tests, always non-https url
-    DConnect2 threddsConnect = new DConnect2(threddsUrl, true);
-    DConnect2 erddapConnect = new DConnect2(erddapUrl, true); // in tests, always non-https url
-    DAS das = erddapConnect.getDAS();
-    PrimitiveArray tpas[], epas[];
-
-    // get global attributes
     Attributes attributes = new Attributes();
-    OpendapHelper.getAttributes(das, "GLOBAL", attributes);
-    Test.ensureEqual(attributes.getString("contributor_name"), null, "");
-    Test.ensureEqual(
-        attributes.getString("keywords"),
-        "circulation, currents, density, depths, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, eastward, eastward_sea_water_velocity, means, monthly, northward, northward_sea_water_velocity, ocean, oceans, pop, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, soda, tamu, temperature, umd, upward, upward_sea_water_velocity, velocity, water",
-        "");
-
-    // get attributes for a dimension
-    attributes.clear();
-    OpendapHelper.getAttributes(das, "latitude", attributes);
-    Test.ensureEqual(attributes.getString("coordsys"), null, "");
-    Test.ensureEqual(attributes.get("fraction_digits"), null, ""); // test if
-    // stored in
-    // correct
-    // form
-
-    // get attributes for grid variable
-    attributes.clear();
-    OpendapHelper.getAttributes(das, "salt", attributes);
-    Test.ensureEqual(attributes.getString("standard_name"), "sea_water_practical_salinity", "");
-    Test.ensureEqual(attributes.getString("units"), "PSU", "");
-
-    // test get dimension data - all
-    String threddsQuery = "lat";
-    String erddapQuery = "latitude";
-    String2.log(
-        "\nFrom thredds:\n"
-            + String2.annotatedString(
-                SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsQuery)));
-    String2.log(
-        "\nFrom erddap:\n"
-            + String2.annotatedString(
-                SSR.getUrlResponseStringUnchanged(erddapUrl + ".asc?" + erddapQuery))); // in tests,
-    // always
-    // non-https
-    // url
-    tpas = OpendapHelper.getPrimitiveArrays(threddsConnect, "?" + threddsQuery);
-    epas = OpendapHelper.getPrimitiveArrays(erddapConnect, "?" + erddapQuery);
-    Test.ensureEqual(tpas[0].size(), 330, "");
-    Test.ensureEqual(epas[0].size(), 330, "");
-    Test.ensureEqual(tpas[0].getDouble(0), -75.25, "");
-    Test.ensureEqual(epas[0].getDouble(0), -75.25, "");
-    Test.ensureEqual(tpas[0].getDouble(300), 74.75, "");
-    Test.ensureEqual(epas[0].getDouble(300), 74.75, "");
-
-    // test get dimension data - part
-    threddsQuery = SSR.percentEncode("lat[10:2:20]");
-    erddapQuery = SSR.percentEncode("latitude[10:2:20]");
-    String2.log(
-        "\nFrom thredds:\n"
-            + String2.annotatedString(
-                SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsQuery)));
-    String2.log(
-        "\nFrom erddap:\n"
-            + String2.annotatedString(
-                SSR.getUrlResponseStringUnchanged(erddapUrl + ".asc?" + erddapQuery))); // in tests,
-    // always
-    // non-https
-    // url
-    tpas = OpendapHelper.getPrimitiveArrays(threddsConnect, "?" + threddsQuery);
-    epas = OpendapHelper.getPrimitiveArrays(erddapConnect, "?" + erddapQuery);
-    Test.ensureEqual(tpas[0].toString(), "-70.25, -69.25, -68.25, -67.25, -66.25, -65.25", "");
-    Test.ensureEqual(epas[0].toString(), "-70.25, -69.25, -68.25, -67.25, -66.25, -65.25", "");
-
-    // get grid data
-    // chlorophyll[177][0][2080:20:2500][4500:20:4940]
-    String threddsUserDapQuery = SSR.percentEncode("salt[177][0][8:2:10][350]");
     String griddapUserDapQuery = SSR.percentEncode("salt[177][0][8:2:10][350]");
-    String2.log(
-        "\nFrom thredds:\n"
-            + String2.annotatedString(
-                SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsUserDapQuery)));
-    String2.log(
-        "\nFrom erddap:\n"
-            + String2.annotatedString(
-                SSR.getUrlResponseStringUnchanged(
-                    erddapUrl + ".asc?" + griddapUserDapQuery))); // in
-    // tests,
-    // always
-    // non-https
-    // url
+    DatasetUrl threddsDurl = DatasetUrl.create(ServiceType.OPENDAP, threddsUrl);
+    DatasetUrl erddapDurl = DatasetUrl.create(ServiceType.OPENDAP, erddapUrl);
+    try (NetcdfDataset threddsDataset =
+            NetcdfDatasets.openDataset(threddsDurl, EnumSet.noneOf(Enhance.class), -1, null, null);
+        NetcdfDataset erddapDataset =
+            NetcdfDatasets.openDataset(erddapDurl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
 
-    // corresponding time varies, so just make sure they match
-    tpas = OpendapHelper.getPrimitiveArrays(threddsConnect, "?" + threddsUserDapQuery);
-    epas = OpendapHelper.getPrimitiveArrays(erddapConnect, "?" + griddapUserDapQuery);
-    // Test.ensureEqual(epas[1], tpas[1], ""); // time
-    Test.ensureEqual(epas[2], tpas[2], ""); // alt
-    Test.ensureEqual(epas[3], tpas[3], ""); // lat
-    Test.ensureEqual(epas[4], tpas[4], ""); // lon
-    Test.ensureEqual(epas[0], tpas[0], ""); // data
+      // get global attributes
+      NcHelper.getGroupAttributes(erddapDataset.getRootGroup(), attributes);
+      Test.ensureEqual(attributes.getString("contributor_name"), null, "");
+      Test.ensureEqual(
+          attributes.getString("keywords"),
+          "circulation, currents, density, depths, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, eastward, eastward_sea_water_velocity, means, monthly, northward, northward_sea_water_velocity, ocean, oceans, pop, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, soda, tamu, temperature, umd, upward, upward_sea_water_velocity, velocity, water",
+          "");
+
+      // get attributes for a dimension
+      attributes.clear();
+      Variable latVar = erddapDataset.findVariable("latitude");
+      Test.ensureNotNull(latVar, "Variable 'latitude' not found");
+      NcHelper.getVariableAttributes(latVar, attributes);
+      Test.ensureEqual(attributes.getString("coordsys"), null, "");
+      Test.ensureEqual(attributes.get("fraction_digits"), null, ""); // test if
+      // stored in
+      // correct
+      // form
+
+      // get attributes for grid variable
+      attributes.clear();
+      Variable saltVar = erddapDataset.findVariable("salt");
+      Test.ensureNotNull(saltVar, "Variable 'salt' not found");
+      NcHelper.getVariableAttributes(saltVar, attributes);
+      Test.ensureEqual(attributes.getString("standard_name"), "sea_water_practical_salinity", "");
+      Test.ensureEqual(attributes.getString("units"), "PSU", "");
+
+      // test get dimension data - all
+      String threddsQuery = "lat";
+      String erddapQuery = "latitude";
+      String2.log(
+          "\nFrom thredds:\n"
+              + String2.annotatedString(
+                  SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsQuery)));
+      String2.log(
+          "\nFrom erddap:\n"
+              + String2.annotatedString(
+                  SSR.getUrlResponseStringUnchanged(
+                      erddapUrl + ".asc?" + erddapQuery))); // in tests,
+      // always
+      // non-https
+      // url
+      Variable tLat = threddsDataset.findVariable("lat");
+      Variable eLat = erddapDataset.findVariable("latitude");
+      PrimitiveArray tpa = NcHelper.getPrimitiveArray(tLat.read());
+      PrimitiveArray epa = NcHelper.getPrimitiveArray(eLat.read());
+      Test.ensureEqual(tpa.size(), 330, "");
+      Test.ensureEqual(epa.size(), 330, "");
+      Test.ensureEqual(tpa.getDouble(0), -75.25, "");
+      Test.ensureEqual(epa.getDouble(0), -75.25, "");
+      Test.ensureEqual(tpa.getDouble(300), 74.75, "");
+      Test.ensureEqual(epa.getDouble(300), 74.75, "");
+
+      // test get dimension data - part
+      threddsQuery = SSR.percentEncode("lat[10:2:20]");
+      erddapQuery = SSR.percentEncode("latitude[10:2:20]");
+      String2.log(
+          "\nFrom thredds:\n"
+              + String2.annotatedString(
+                  SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsQuery)));
+      String2.log(
+          "\nFrom erddap:\n"
+              + String2.annotatedString(
+                  SSR.getUrlResponseStringUnchanged(
+                      erddapUrl + ".asc?" + erddapQuery))); // in tests,
+      // always
+      // non-https
+      // url
+      tpa = NcHelper.getPrimitiveArray(tLat.read(new ucar.ma2.Section("10:20:2")));
+      epa = NcHelper.getPrimitiveArray(eLat.read(new ucar.ma2.Section("10:20:2")));
+      Test.ensureEqual(tpa.toString(), "-70.25, -69.25, -68.25, -67.25, -66.25, -65.25", "");
+      Test.ensureEqual(epa.toString(), "-70.25, -69.25, -68.25, -67.25, -66.25, -65.25", "");
+
+      // get grid data
+      String threddsUserDapQuery = SSR.percentEncode("salt[177][0][8:2:10][350]");
+      String2.log(
+          "\nFrom thredds:\n"
+              + String2.annotatedString(
+                  SSR.getUrlResponseStringUnchanged(threddsUrl + ".asc?" + threddsUserDapQuery)));
+      String2.log(
+          "\nFrom erddap:\n"
+              + String2.annotatedString(
+                  SSR.getUrlResponseStringUnchanged(
+                      erddapUrl + ".asc?" + griddapUserDapQuery))); // in
+      // tests,
+      // always
+      // non-https
+      // url
+
+      Variable tSalt = threddsDataset.findVariable("salt");
+      Variable eSalt = erddapDataset.findVariable("salt");
+      PrimitiveArray tGridData =
+          NcHelper.getPrimitiveArray(
+              tSalt.read(new ucar.ma2.Section("177:177, 0:0, 8:10:2, 350:350")));
+      PrimitiveArray eGridData =
+          NcHelper.getPrimitiveArray(
+              eSalt.read(new ucar.ma2.Section("177:177, 0:0, 8:10:2, 350:350")));
+      Test.ensureEqual(eGridData, tGridData, "");
+    }
 
     // *** test that EDDGridFromDAP works via netcdf-java library
     String2.log("\n****************** EDDGridFromDap test netcdf-java\n");
@@ -17306,29 +17317,32 @@ netcdf EDDTableFromNcFiles_Data.nc {
     Test.ensureEqual(results, expected, "RESULTS=\n" + results);
   }
 
-  /** OpendapHelper */
+  private static String getScalarOrMultiDimVarNames(String url) throws Exception {
+    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, url);
+    try (NetcdfDataset dataset =
+        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+      List<String> names = new ArrayList<>();
+      for (Variable var : dataset.getVariables()) {
+        if (var.isMemberOfStructure()
+            || var.getDataType() == DataType.STRUCTURE
+            || var.getDataType() == DataType.SEQUENCE
+            || var instanceof ucar.nc2.Structure) {
+          continue;
+        }
+        names.add(var.getShortName());
+      }
+      return String2.toCSSVString(names.toArray(new String[0]));
+    }
+  }
 
-  /** This tests findAllVars. */
+  /** This tests finding scalar or multidimensional variables via NetcdfDataset. */
   @org.junit.jupiter.api.Test
   @TagJetty
   @TagDisabledThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
-    String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
+    String2.log("\n\n*** JettyTests.testFindAllScalarOrMultiDimVars");
     String expected, results;
-    DDS dds;
     String url;
-
-    /*
-     * //test of Sequence DAP dataset
-     * String2.log("\n*** test of Sequence DAP dataset");
-     * url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
-     * dConnect = new DConnect2(url, true);
-     * dds = dConnect.getDDS();
-     * results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
-     * expected =
-     * "zztop";
-     * Test.ensureEqual(results, expected, "results=" + results);
-     */
 
     // test of DArray DAP dataset
     // 2018-09-13 https: works in browser by not yet in Java. 2019-06-28 https works
@@ -17336,10 +17350,7 @@ netcdf EDDTableFromNcFiles_Data.nc {
     url =
         "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
     String2.log("\n*** test of DArray DAP dataset\n" + url);
-    try (DConnect2 dConnect = new DConnect2(url, true)) {
-      dds = dConnect.getDDS();
-    }
-    results = String2.toCSSVString(OpendapHelper.findAllScalarOrMultiDimVars(dds));
+    results = getScalarOrMultiDimVarNames(url);
     expected =
         "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag, history";
     Test.ensureEqual(results, expected, "results=" + results);
@@ -17347,38 +17358,18 @@ netcdf EDDTableFromNcFiles_Data.nc {
     // ***** test of DGrid DAP dataset
     String2.log("\n*** test of DGrid DAP dataset");
     url = "http://localhost:8080/erddap/griddap/erdQSwindmday";
-    try (DConnect2 dConnect2 = new DConnect2(url, true)) {
-      dds = dConnect2.getDDS();
-    }
-    results = String2.toCSSVString(OpendapHelper.findAllScalarOrMultiDimVars(dds));
+    results = getScalarOrMultiDimVarNames(url);
     expected = "time, altitude, latitude, longitude, x_wind, y_wind";
     Test.ensureEqual(results, expected, "results=" + results);
-
-    // ***** test of NODC template dataset
-    /**
-     * 2020-10-26 disabled because source is unreliable String2.log("\n*** test of NODC template
-     * dataset"); url =
-     * "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
-     * dConnect = new DConnect2(url, true); dds = dConnect.getDDS(); results =
-     * String2.toCSSVString(findAllScalarOrMultiDimVars(dds)); expected = "time, lat, lon, alt,
-     * station_name, temperature, salinity, density, conductivity, " + "turbidity, fluorescence,
-     * platform1, temperature_qc, salinity_qc, density_qc, " + "conductivity_qc, turbidity_qc,
-     * fluorescence_qc, instrument1, instrument2, " + "instrument3, ht_wgs84, ht_mllw, crs";
-     * Test.ensureEqual(results, expected, "results=" + results);
-     */
 
     // ***** test of sequence dataset (no vars should be found
     String2.log("\n*** test of sequence dataset");
     url = "http://localhost:8080/erddap/tabledap/erdCAMarCatLY";
-    try (DConnect2 dConnect3 = new DConnect2(url, true)) {
-      dds = dConnect3.getDDS();
-    }
-    results = String2.toCSSVString(OpendapHelper.findAllScalarOrMultiDimVars(dds));
+    results = getScalarOrMultiDimVarNames(url);
     expected = "";
     Test.ensureEqual(results, expected, "results=" + results);
 
-    /* */
-    String2.log("\n*** OpendapHelper.testFindAllScalarOrMultiDimVars finished.");
+    String2.log("\n*** JettyTests.testFindAllScalarOrMultiDimVars finished.");
   }
 
   @org.junit.jupiter.api.Test
