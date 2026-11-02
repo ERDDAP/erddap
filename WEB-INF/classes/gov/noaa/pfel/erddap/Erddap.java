@@ -23637,245 +23637,312 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert Time",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">"
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "time") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.TIME, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_TIME, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_TIME_INTRO, language)
-              + "\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.TIME, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/time.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
 
-      // Convert from a String Time to Numeric Time n units
-      writer.write(
-          "<br>"
-              + widgets.beginForm("toNumeric", "GET", tErddapUrl + "/convert/time.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_NUMERIC_TIME, language),
-                  "</strong>\n"
-                      + widgets.textField(
-                          "stringTime",
-                          stringTimeTooltip,
-                          22,
-                          40,
-                          queryStringTime.length() > 0
-                              ? queryStringTime
-                              : queryIsoTime.length() > 0
-                                  ? queryIsoTime
-                                  : answerIsoTime.length() > 0 ? answerIsoTime : defaultIsoTime,
-                          "")
-                      + "<br><strong>",
-                  "</strong>\n"
-                      + widgets.textField(
-                          "units",
-                          unitsTooltip,
-                          37,
-                          60,
-                          queryUnits.length() > 0
-                              ? queryUnits
-                              : answerUnits.length() > 0 ? answerUnits : defaultUnits,
-                          "")
-                      + ".")
-              + "\n<br>"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT, language),
-                  "")
-              + "\n");
+        params.put(
+            "stringTime1",
+            queryStringTime.length() > 0
+                ? queryStringTime
+                : queryIsoTime.length() > 0
+                    ? queryIsoTime
+                    : answerIsoTime.length() > 0 ? answerIsoTime : defaultIsoTime);
+        params.put(
+            "units1",
+            queryUnits.length() > 0
+                ? queryUnits
+                : answerUnits.length() > 0 ? answerUnits : defaultUnits);
+        params.put("stringTimeTooltip", stringTimeTooltip);
+        params.put("unitsTooltip", unitsTooltip);
+        params.put("numberTooltip", numberTooltip);
+        params.put("toNumeric", toNumeric);
+        params.put(
+            "toNumericResult",
+            queryStringTime + " = " + answerIsoTime + " = " + answerN + " " + answerUnits);
 
-      if (toNumeric) {
-        writer.write(
-            tError == null
-                ? "<br><span class=\"N successColor\">"
-                    + XML.encodeAsHTML(
-                        queryStringTime
-                            + " = "
-                            + answerIsoTime
-                            + " = "
-                            + answerN
-                            + " "
-                            + answerUnits)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        params.put("n2", queryN.length() > 0 ? queryN : answerN.length() > 0 ? answerN : defaultN);
+        params.put(
+            "units2",
+            queryUnits.length() > 0
+                ? queryUnits
+                : answerUnits.length() > 0 ? answerUnits : defaultUnits);
+        params.put("toString", toString);
+        params.put("toStringResult", answerN + " " + answerUnits + " = " + answerIsoTime);
+
+        params.put(
+            "stringTime3", queryStringTime.length() > 0 ? queryStringTime : defaultOtherTime);
+        params.put("cleanString", cleanString);
+        params.put(
+            "cleanStringResult", queryStringTime + " @ " + answerFormat + " = " + answerIsoTime);
+
+        params.put("units4", queryUnits.length() > 0 ? queryUnits : defaultOtherUnits);
+        params.put("cleanUnits", cleanUnits);
+        params.put("cleanUnitsResult", queryUnits + " = " + answerUnits);
+
+        params.put("tError", tError);
+
+        engine.render("convert_time.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
-        writer.write("<br>&nbsp;\n");
-      }
-
-      writer.write("<br>" + widgets.endForm() + "\n");
-
-      // Convert from n units to an ISO String Time
-      writer.write(
-          "<br>"
-              + widgets.beginForm("toString", "GET", tErddapUrl + "/convert/time.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_STRING_TIME, language),
-                  "</strong>\n<br>"
-                      + widgets.textField(
-                          "n",
-                          numberTooltip,
-                          15,
-                          30,
-                          queryN.length() > 0 ? queryN : answerN.length() > 0 ? answerN : defaultN,
-                          "")
-                      + "\n"
-                      + widgets.textField(
-                          "units",
-                          unitsTooltip,
-                          37,
-                          60,
-                          queryUnits.length() > 0
-                              ? queryUnits
-                              : answerUnits.length() > 0 ? answerUnits : defaultUnits,
-                          "")
-                      + "\n<br><strong>")
-              + "\n"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT, language),
-                  "")
-              + "\n");
-
-      if (toString) {
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerN)
-                    + " "
-                    + XML.encodeAsHTML(answerUnits)
-                    + " = "
-                    + XML.encodeAsHTML(answerIsoTime)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
-      }
+            "<div class=\"standard_width\">"
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert", "time") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.TIME, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_TIME, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_TIME_INTRO, language)
+                + "\n");
 
-      writer.write("<br>" + widgets.endForm() + "\n");
-
-      // clean a String Time
-      writer.write(
-          "<br>"
-              + widgets.beginForm("cleanString", "GET", tErddapUrl + "/convert/time.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_ANY_STRING_TIME, language),
-                  "</strong>\n"
-                      + widgets.textField(
-                          "stringTime",
-                          stringTimeTooltip,
-                          22,
-                          40,
-                          queryStringTime.length() > 0 ? queryStringTime : defaultOtherTime,
-                          "")
-                      + "\n<br><strong>")
-              + "\n"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT, language),
-                  "")
-              + "\n");
-
-      if (cleanString) {
+        // Convert from a String Time to Numeric Time n units
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(
-                        queryStringTime + " @ " + answerFormat + " = " + answerIsoTime)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
-      }
+            "<br>"
+                + widgets.beginForm("toNumeric", "GET", tErddapUrl + "/convert/time.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_NUMERIC_TIME, language),
+                    "</strong>\n"
+                        + widgets.textField(
+                            "stringTime",
+                            stringTimeTooltip,
+                            22,
+                            40,
+                            queryStringTime.length() > 0
+                                ? queryStringTime
+                                : queryIsoTime.length() > 0
+                                    ? queryIsoTime
+                                    : answerIsoTime.length() > 0 ? answerIsoTime : defaultIsoTime,
+                            "")
+                        + "<br><strong>",
+                    "</strong>\n"
+                        + widgets.textField(
+                            "units",
+                            unitsTooltip,
+                            37,
+                            60,
+                            queryUnits.length() > 0
+                                ? queryUnits
+                                : answerUnits.length() > 0 ? answerUnits : defaultUnits,
+                            "")
+                        + ".")
+                + "\n<br>"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    "")
+                + "\n");
 
-      writer.write("<br>" + widgets.endForm() + "\n");
+        if (toNumeric) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"N successColor\">"
+                      + XML.encodeAsHTML(
+                          queryStringTime
+                              + " = "
+                              + answerIsoTime
+                              + " = "
+                              + answerN
+                              + " "
+                              + answerUnits)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
 
-      // clean units
-      writer.write(
-          "<br>"
-              + widgets.beginForm("cleanUnits", "GET", tErddapUrl + "/convert/time.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_PROPER_TIME_UNITS, language),
-                  "</strong>\n"
-                      + widgets.textField(
-                          "units",
-                          unitsTooltip,
-                          37,
-                          60,
-                          queryUnits.length() > 0 ? queryUnits : defaultOtherUnits,
-                          "")
-                      + "\n<br><strong>")
-              + "\n"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT, language),
-                  "")
-              + "\n");
+        writer.write("<br>" + widgets.endForm() + "\n");
 
-      if (cleanUnits) {
+        // Convert from n units to an ISO String Time
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(queryUnits + " = " + answerUnits)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
+            "<br>"
+                + widgets.beginForm("toString", "GET", tErddapUrl + "/convert/time.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_STRING_TIME, language),
+                    "</strong>\n<br>"
+                        + widgets.textField(
+                            "n",
+                            numberTooltip,
+                            15,
+                            30,
+                            queryN.length() > 0
+                                ? queryN
+                                : answerN.length() > 0 ? answerN : defaultN,
+                            "")
+                        + "\n"
+                        + widgets.textField(
+                            "units",
+                            unitsTooltip,
+                            37,
+                            60,
+                            queryUnits.length() > 0
+                                ? queryUnits
+                                : answerUnits.length() > 0 ? answerUnits : defaultUnits,
+                            "")
+                        + "\n<br><strong>")
+                + "\n"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    "")
+                + "\n");
+
+        if (toString) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerN)
+                      + " "
+                      + XML.encodeAsHTML(answerUnits)
+                      + " = "
+                      + XML.encodeAsHTML(answerIsoTime)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write("<br>" + widgets.endForm() + "\n");
+
+        // clean a String Time
+        writer.write(
+            "<br>"
+                + widgets.beginForm("cleanString", "GET", tErddapUrl + "/convert/time.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_ANY_STRING_TIME, language),
+                    "</strong>\n"
+                        + widgets.textField(
+                            "stringTime",
+                            stringTimeTooltip,
+                            22,
+                            40,
+                            queryStringTime.length() > 0 ? queryStringTime : defaultOtherTime,
+                            "")
+                        + "\n<br><strong>")
+                + "\n"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    "")
+                + "\n");
+
+        if (cleanString) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(
+                          queryStringTime + " @ " + answerFormat + " = " + answerIsoTime)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write("<br>" + widgets.endForm() + "\n");
+
+        // clean units
+        writer.write(
+            "<br>"
+                + widgets.beginForm("cleanUnits", "GET", tErddapUrl + "/convert/time.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_PROPER_TIME_UNITS, language),
+                    "</strong>\n"
+                        + widgets.textField(
+                            "units",
+                            unitsTooltip,
+                            37,
+                            60,
+                            queryUnits.length() > 0 ? queryUnits : defaultOtherUnits,
+                            "")
+                        + "\n<br><strong>")
+                + "\n"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    "")
+                + "\n");
+
+        if (cleanUnits) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(queryUnits + " = " + answerUnits)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write("<br>" + widgets.endForm() + "\n");
+
+        // reset the form
+        writer.write(
+            "<br><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/time.html\">"
+                + EDStatic.messages.get(Message.RESET_THE_FORM, language)
+                + "</a>\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
+                + "\n");
+
+        // notes
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TIME_NOTES, language),
+                    tErddapUrl,
+                    EDStatic.messages.get(Message.CONVERT_TIME_UNITS_HELP, language))
+                + "\n");
+
+        // Info about .txt time service option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TIME_SERVICE, language), tErddapUrl)
+                + "\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      writer.write("<br>" + widgets.endForm() + "\n");
-
-      // reset the form
-      writer.write(
-          "<br><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/time.html\">"
-              + EDStatic.messages.get(Message.RESET_THE_FORM, language)
-              + "</a>\n"
-              + "<p>"
-              + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
-              + "\n");
-
-      // notes
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TIME_NOTES, language),
-                  tErddapUrl,
-                  EDStatic.messages.get(Message.CONVERT_TIME_UNITS_HELP, language))
-              + "\n");
-
-      // Info about .txt time service option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TIME_SERVICE, language), tErddapUrl)
-              + "\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -23992,174 +24059,205 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert Units",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "units") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.UNITS, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_UNITS, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_UNITS_INTRO, language));
-
-      // convert to ucum
-      writer.write(
-          "<br>"
-              + // necessary for the blank line before start of form (not <p>)
-              widgets.beginForm("getUcum", "GET", tErddapUrl + "/convert/units.html", "")
-              + EDStatic.messages.get(Message.CONVERT_FROM_UDUNITS_TO_UCUM, language)
-              + "\n"
-              + "<br>UDUNITS:\n"
-              + widgets.textField(
-                  "UDUNITS",
-                  "For example, degC/meter",
-                  40,
-                  100,
-                  tUdunits.length() > 0
-                      ? tUdunits
-                      : rStandardizeUdunits.length() > 0
-                          ? rStandardizeUdunits
-                          : rUdunits.length() > 0 ? rUdunits : "degC/meter",
-                  "")
-              + " "
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert to UCUM",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT_TO_UCUM, language),
-                  "")
-              + "\n");
-
-      if (tUdunits.length() == 0) writer.write("<br>&nbsp;\n");
-      else
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.UNITS, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/units.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
+        params.put("tUdunits", tUdunits);
+        params.put("rUcum", rUcum);
+        params.put("tUcum", tUcum);
+        params.put("rUdunits", rUdunits);
+        params.put("tStandardizeUdunits", tStandardizeUdunits);
+        params.put("rStandardizeUdunits", rStandardizeUdunits);
+        params.put("unitsStandard", EDStatic.config.units_standard);
+        engine.render("convert_units.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
         writer.write(
-            "<br><span class=\"successColor\">UDUNITS \""
-                + XML.encodeAsHTML(tUdunits)
-                + "\" &rarr; UCUM \""
-                + XML.encodeAsHTML(rUcum)
-                + "\"</span>\n");
+            "<div class=\"standard_width\">\n"
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert", "units") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.UNITS, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_UNITS, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_UNITS_INTRO, language));
 
-      writer.write(widgets.endForm() + "\n");
-
-      // convert to udunits
-      writer.write(
-          "<br>"
-              + widgets.beginForm("getUdunits", "GET", tErddapUrl + "/convert/units.html", "")
-              + EDStatic.messages.get(Message.CONVERT_FROM_UCUM_TO_UDUNITS, language)
-              + "\n"
-              + "<br>UCUM:\n"
-              + widgets.textField(
-                  "UCUM",
-                  "For example, Cel.m-1",
-                  40,
-                  100,
-                  tUcum.length() > 0 ? tUcum : rUcum.length() > 0 ? rUcum : "Cel.m-1",
-                  "")
-              + " "
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert to UDUNITS",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT_TO_UDUNITS, language),
-                  "")
-              + "\n");
-
-      if (tUcum.length() == 0) writer.write("<br>&nbsp;\n");
-      else
+        // convert to ucum
         writer.write(
-            "<br><span class=\"successColor\">UCUM \""
-                + XML.encodeAsHTML(tUcum)
-                + "\" &rarr; UDUNITS \""
-                + XML.encodeAsHTML(rUdunits)
-                + "\"</span>\n");
+            "<br>"
+                + // necessary for the blank line before start of form (not <p>)
+                widgets.beginForm("getUcum", "GET", tErddapUrl + "/convert/units.html", "")
+                + EDStatic.messages.get(Message.CONVERT_FROM_UDUNITS_TO_UCUM, language)
+                + "\n"
+                + "<br>UDUNITS:\n"
+                + widgets.textField(
+                    "UDUNITS",
+                    "For example, degC/meter",
+                    40,
+                    100,
+                    tUdunits.length() > 0
+                        ? tUdunits
+                        : rStandardizeUdunits.length() > 0
+                            ? rStandardizeUdunits
+                            : rUdunits.length() > 0 ? rUdunits : "degC/meter",
+                    "")
+                + " "
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert to UCUM",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT_TO_UCUM, language),
+                    "")
+                + "\n");
 
-      writer.write(widgets.endForm());
-      writer.write('\n');
+        if (tUdunits.length() == 0) writer.write("<br>&nbsp;\n");
+        else
+          writer.write(
+              "<br><span class=\"successColor\">UDUNITS \""
+                  + XML.encodeAsHTML(tUdunits)
+                  + "\" &rarr; UCUM \""
+                  + XML.encodeAsHTML(rUcum)
+                  + "\"</span>\n");
 
-      // standardize udunits
-      writer.write(
-          "<br>"
-              + // necessary for the blank line before start of form (not <p>)
-              widgets.beginForm("standarizeUdunits", "GET", tErddapUrl + "/convert/units.html", "")
-              + "<strong>"
-              + EDStatic.messages.get(Message.OR_COMMA, language)
-              + "</strong>\n"
-              + EDStatic.messages.get(Message.CONVERT_STANDARDIZE_UDUNITS, language)
-              + "\n"
-              + "<br>UDUNITS:\n"
-              + widgets.textField(
-                  "STANDARDIZE_UDUNITS",
-                  "For example, deg_C/meter",
-                  40,
-                  100,
-                  tStandardizeUdunits.length() > 0
-                      ? tStandardizeUdunits
-                      : rUdunits.length() > 0
-                          ? rUdunits
-                          : tUdunits.length() > 0 ? tUdunits : "degC/meter",
-                  "")
-              + " "
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Standardize UDUNITS",
-                  "",
-                  EDStatic.messages.get(Message.CONVERT_STANDARDIZE_UDUNITS, language),
-                  "")
-              + "\n");
+        writer.write(widgets.endForm() + "\n");
 
-      if (tStandardizeUdunits.length() == 0) writer.write("<br>&nbsp;\n");
-      else
+        // convert to udunits
         writer.write(
-            "<br><span class=\"successColor\">UDUNITS \""
-                + XML.encodeAsHTML(tStandardizeUdunits)
-                + "\" &rarr; UDUNITS \""
-                + XML.encodeAsHTML(rStandardizeUdunits)
-                + "\"</span>\n");
+            "<br>"
+                + widgets.beginForm("getUdunits", "GET", tErddapUrl + "/convert/units.html", "")
+                + EDStatic.messages.get(Message.CONVERT_FROM_UCUM_TO_UDUNITS, language)
+                + "\n"
+                + "<br>UCUM:\n"
+                + widgets.textField(
+                    "UCUM",
+                    "For example, Cel.m-1",
+                    40,
+                    100,
+                    tUcum.length() > 0 ? tUcum : rUcum.length() > 0 ? rUcum : "Cel.m-1",
+                    "")
+                + " "
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert to UDUNITS",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT_TO_UDUNITS, language),
+                    "")
+                + "\n");
 
-      writer.write(widgets.endForm() + "\n");
+        if (tUcum.length() == 0) writer.write("<br>&nbsp;\n");
+        else
+          writer.write(
+              "<br><span class=\"successColor\">UCUM \""
+                  + XML.encodeAsHTML(tUcum)
+                  + "\" &rarr; UDUNITS \""
+                  + XML.encodeAsHTML(rUdunits)
+                  + "\"</span>\n");
 
-      writer.write("<p>" + EDStatic.messages.get(Message.CONVERT_BYPASS, language) + "\n");
+        writer.write(widgets.endForm());
+        writer.write('\n');
 
-      // notes
-      writer.write(EDStatic.messages.get(Message.CONVERT_UNITS_NOTES, language));
-      writer.write('\n');
+        // standardize udunits
+        writer.write(
+            "<br>"
+                + // necessary for the blank line before start of form (not <p>)
+                widgets.beginForm(
+                    "standarizeUdunits", "GET", tErddapUrl + "/convert/units.html", "")
+                + "<strong>"
+                + EDStatic.messages.get(Message.OR_COMMA, language)
+                + "</strong>\n"
+                + EDStatic.messages.get(Message.CONVERT_STANDARDIZE_UDUNITS, language)
+                + "\n"
+                + "<br>UDUNITS:\n"
+                + widgets.textField(
+                    "STANDARDIZE_UDUNITS",
+                    "For example, deg_C/meter",
+                    40,
+                    100,
+                    tStandardizeUdunits.length() > 0
+                        ? tStandardizeUdunits
+                        : rUdunits.length() > 0
+                            ? rUdunits
+                            : tUdunits.length() > 0 ? tUdunits : "degC/meter",
+                    "")
+                + " "
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Standardize UDUNITS",
+                    "",
+                    EDStatic.messages.get(Message.CONVERT_STANDARDIZE_UDUNITS, language),
+                    "")
+                + "\n");
 
-      // Info about service / .txt option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_UNITS_SERVICE, language), tErddapUrl)
-              + "\n");
-      writer.write('\n');
+        if (tStandardizeUdunits.length() == 0) writer.write("<br>&nbsp;\n");
+        else
+          writer.write(
+              "<br><span class=\"successColor\">UDUNITS \""
+                  + XML.encodeAsHTML(tStandardizeUdunits)
+                  + "\" &rarr; UDUNITS \""
+                  + XML.encodeAsHTML(rStandardizeUdunits)
+                  + "\"</span>\n");
 
-      // info about syntax differences
-      writer.write(EDStatic.messages.get(Message.CONVERT_UNITS_COMPARISON, language));
-      writer.write('\n');
+        writer.write(widgets.endForm() + "\n");
 
-      // info about tabledap unitsFilter &units("UCUM")
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_UNITS_FILTER, language),
-                  tErddapUrl,
-                  EDStatic.config.units_standard)
-              + "\n");
+        writer.write("<p>" + EDStatic.messages.get(Message.CONVERT_BYPASS, language) + "\n");
 
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        // notes
+        writer.write(EDStatic.messages.get(Message.CONVERT_UNITS_NOTES, language));
+        writer.write('\n');
+
+        // Info about service / .txt option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_UNITS_SERVICE, language), tErddapUrl)
+                + "\n");
+        writer.write('\n');
+
+        // info about syntax differences
+        writer.write(EDStatic.messages.get(Message.CONVERT_UNITS_COMPARISON, language));
+        writer.write('\n');
+
+        // info about tabledap unitsFilter &units("UCUM")
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_UNITS_FILTER, language),
+                    tErddapUrl,
+                    EDStatic.config.units_standard)
+                + "\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -24728,7 +24826,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "search/advanced.html",
                 "convert/index.html",
                 "convert/urls.html",
-                "convert/color.html")
+                "convert/color.html",
+                "convert/time.html",
+                "convert/units.html")
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
