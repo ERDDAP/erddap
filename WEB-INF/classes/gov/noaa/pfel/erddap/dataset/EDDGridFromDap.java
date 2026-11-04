@@ -244,7 +244,25 @@ public class EDDGridFromDap extends EDDGrid {
    * @throws Throwable if trouble
    */
   public static NetcdfDataset openDataset(String url) throws Exception {
-    DatasetUrl durl = DatasetUrl.create(thredds.client.catalog.ServiceType.OPENDAP, url);
+    DatasetUrl durl;
+    if (url.startsWith("dap4:") || url.startsWith("dap4://") || url.endsWith("#dap4")) {
+      String cleanUrl = url;
+      if (cleanUrl.startsWith("dap4://")) {
+        // Strip dap4:// and keep standard http/https transport
+        cleanUrl =
+            (cleanUrl.contains(":443") || cleanUrl.contains("https"))
+                ? "https://" + cleanUrl.substring(7)
+                : "http://" + cleanUrl.substring(7);
+      } else if (cleanUrl.startsWith("dap4:")) {
+        cleanUrl = cleanUrl.substring(5);
+      } else if (cleanUrl.endsWith("#dap4")) {
+        cleanUrl = cleanUrl.substring(0, cleanUrl.length() - 5);
+      }
+
+      durl = DatasetUrl.create(ServiceType.DAP4, cleanUrl);
+    } else {
+      durl = DatasetUrl.create(ServiceType.OPENDAP, url);
+    }
     return NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null);
   }
 

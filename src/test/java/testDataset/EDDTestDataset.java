@@ -45310,6 +45310,33 @@ public class EDDTestDataset {
 """;
   }
 
+  public static EDD getUcarD4tsTest01() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_ucarD4tsTest01());
+  }
+
+  private static String xmlFragment_ucarD4tsTest01() {
+    return """
+      <dataset type="EDDGridFromDap" datasetID="ucar_d4ts_test01" active="true">
+          <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+          <updateEveryNMillis>10000</updateEveryNMillis>
+          <defaultDataQuery>i32[0:1]</defaultDataQuery>
+          <sourceUrl>dap4:http://test.opendap.org/opendap/hyrax/tutorials/20220812010000-OSISAF-L3C_GHRSST-SSTsubskin-GOES16-ssteqc_goes16_20220812_010000-v02.0-fv01.0.nc</sourceUrl>
+          <addAttributes>
+              <att name="title">D4TS Test 01 Dataset</att>
+          </addAttributes>
+          <axisVariable>
+              <sourceName>d1</sourceName>
+              <destinationName>d1</destinationName>
+          </axisVariable>
+          <dataVariable>
+              <sourceName>i32</sourceName>
+              <destinationName>i32</destinationName>
+              <dataType>int</dataType>
+          </dataVariable>
+      </dataset>
+      """;
+  }
+
   public static EDD getosisafGhrsstDap4() throws Throwable {
     return EDD.oneFromXmlFragment(null, xmlFragment_osisafGhrsstDap4());
   }
@@ -45321,7 +45348,7 @@ public class EDDTestDataset {
         + "    <onChange></onChange>\n"
         + "    <defaultDataQuery>sea_surface_temperature[0][0:10][0:10]</defaultDataQuery>\n"
         + "    <defaultGraphQuery>sea_surface_temperature[0][:][:]&amp;.draw=surface&amp;.colorBar=Rainbow|C|Linear|270|305|</defaultGraphQuery>\n"
-        + "    <sourceUrl>http://test.opendap.org/opendap/hyrax/tutorials/20220812010000-OSISAF-L3C_GHRSST-SSTsubskin-GOES16-ssteqc_goes16_20220812_010000-v02.0-fv01.0.nc#dap4</sourceUrl>\n"
+        + "    <sourceUrl>dap4:http://test.opendap.org/opendap/hyrax/tutorials/20220812010000-OSISAF-L3C_GHRSST-SSTsubskin-GOES16-ssteqc_goes16_20220812_010000-v02.0-fv01.0.nc</sourceUrl>\n"
         + "    <addAttributes>\n"
         + "        <att name=\"cdm_data_type\">Grid</att>\n"
         + "        <att name=\"Conventions\">CF-1.7, ACDD-1.3</att>\n"

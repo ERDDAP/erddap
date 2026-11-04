@@ -37,7 +37,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import tags.TagDisabledExternalERDDAP;
 import tags.TagDisabledExternalOther;
-import tags.TagDisabledFlaky;
 import tags.TagDisabledIncompleteTest;
 import tags.TagDisabledMissingDataset;
 import tags.TagDisabledThredds;
@@ -11445,45 +11444,35 @@ class EDDGridFromDapTests extends WireMockLifecycle {
   }
 
   @org.junit.jupiter.api.Test
-  @TagDisabledFlaky
-  void testOsisafGhrsstDap4() throws Throwable {
-    String tDatasetID = "osisaf_l3c_ghrsst_goes16_dap4";
-    EDDGrid edd = (EDDGrid) EDDTestDataset.getosisafGhrsstDap4();
+  void testUcarD4tsTest01() throws Throwable {
+    String tDatasetID = "ucar_d4ts_test01";
+    EDDGrid edd = (EDDGrid) EDDTestDataset.getUcarD4tsTest01();
 
-    // Verify dataset attributes
+    // Verify dataset metadata and variables
     Test.ensureEqual(edd.datasetID(), tDatasetID, "datasetID");
-    Test.ensureEqual(
-        edd.title(0), "GHRSST L3C GOES16 Subskin SST (test.opendap.org DAP4 Test)", "title");
-    Test.ensureEqual(
-        edd.axisVariableDestinationNames(),
-        new String[] {"time", "latitude", "longitude"},
-        "axisVariableNames");
-    Test.ensureEqual(
-        edd.dataVariableDestinationNames(),
-        new String[] {"sea_surface_temperature", "wind_speed", "quality_level"},
-        "dataVariableNames");
+    Test.ensureEqual(edd.title(0), "D4TS Test 01 Dataset", "title");
+    Test.ensureEqual(edd.axisVariableDestinationNames(), new String[] {"d1"}, "axisVariableNames");
+    Test.ensureEqual(edd.dataVariableDestinationNames(), new String[] {"i32"}, "dataVariableNames");
 
-    // Test querying a subset to CSV format
+    // Query data over DAP4 and verify CSV serialization
     String tName =
         edd.makeNewFileForDapQuery(
             0,
             null,
             null,
-            "sea_surface_temperature[0][0:1][0:1]",
+            "i32[0:1]",
             EDStatic.config.fullTestCacheDirectory,
             edd.className() + "_" + tDatasetID,
             ".csv");
     String results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
 
     Test.ensureEqual(
-"""
-time,latitude,longitude,sea_surface_temperature
-UTC,degrees_north,degrees_east,kelvin
-2022-08-12T01:00:00Z,-59.975,-134.975,NaN
-2022-08-12T01:00:00Z,-59.975,-134.925,NaN
-2022-08-12T01:00:00Z,-59.925,-134.975,NaN
-2022-08-12T01:00:00Z,-59.925,-134.925,NaN
-            """,
+        """
+        d1,i32
+
+        0,17
+        1,37
+        """,
         results,
         "CSV data check, results:\n" + results);
   }
