@@ -57,7 +57,7 @@
         <awssdkVersion>2.57.1</awssdkVersion>
         <luceneVersion>10.5.2</luceneVersion>
         <nettyVersion>4.2.19.Final</nettyVersion>
-        <mavenTestPluginVersion>3.6.0</mavenTestPluginVersion>
+        <mavenTestPluginVersion>3.6.1</mavenTestPluginVersion>
         <jacocoMavenVersion>0.8.15</jacocoMavenVersion>
         <download.unpackWhenChanged>true</download.unpackWhenChanged>
         <argLine.extra></argLine.extra>
