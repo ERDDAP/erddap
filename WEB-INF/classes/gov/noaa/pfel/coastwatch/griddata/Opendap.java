@@ -18,8 +18,8 @@ import gov.noaa.pfel.coastwatch.TimePeriods;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import ucar.ma2.Array;
 import ucar.ma2.Range;
@@ -179,13 +179,15 @@ public class Opendap {
 
     // gridMissingValue:  get from _FillValue  (it is preferred over missing_value)
     PrimitiveArray fillValuePa = NcHelper.getVariableAttribute(gridVar, "_FillValue");
-    gridMissingValue = fillValuePa != null && fillValuePa.size() > 0 ? fillValuePa.getString(0) : null;
+    gridMissingValue =
+        fillValuePa != null && fillValuePa.size() > 0 ? fillValuePa.getString(0) : null;
     if (verbose) String2.log("  gridMissing value from _FillValue=" + gridMissingValue);
 
     // gridMissingValue:  get from missingValue is second best
     if (gridMissingValue == null) {
       PrimitiveArray missingValuePa = NcHelper.getVariableAttribute(gridVar, "missing_value");
-      gridMissingValue = missingValuePa != null && missingValuePa.size() > 0 ? missingValuePa.getString(0) : null;
+      gridMissingValue =
+          missingValuePa != null && missingValuePa.size() > 0 ? missingValuePa.getString(0) : null;
       if (verbose) String2.log("  gridMissing value from missing_value=" + gridMissingValue);
     }
 
@@ -239,7 +241,8 @@ public class Opendap {
           // centered ("Centered Time" or anything other than "End Time")
           // or aren't yet centered ("End Time").
           PrimitiveArray longNamePa = NcHelper.getVariableAttribute(coordVar, "long_name");
-          timeLongName = longNamePa != null && longNamePa.size() > 0 ? longNamePa.getString(0) : null;
+          timeLongName =
+              longNamePa != null && longNamePa.size() > 0 ? longNamePa.getString(0) : null;
         }
         case "depth", "altitude" -> gridDepthDimension = po;
         case "lat", "latitude" -> {
@@ -628,10 +631,11 @@ public class Opendap {
         long checkTime = System.currentTimeMillis();
         Variable timeVar = ncd.findVariable(gridDimensionNames[gridTimeDimension]);
         if (timeVar == null) {
-          throw new RuntimeException("Time variable not found: " + gridDimensionNames[gridTimeDimension]);
+          throw new RuntimeException(
+              "Time variable not found: " + gridDimensionNames[gridTimeDimension]);
         }
-        int[] origin = new int[] { minIndex[gridTimeDimension] };
-        int[] shape = new int[] { 1 };
+        int[] origin = new int[] {minIndex[gridTimeDimension]};
+        int[] shape = new int[] {1};
         PrimitiveArray observedTimePa = NcHelper.getPrimitiveArray(timeVar.read(origin, shape));
         double observedTime = observedTimePa.getDouble(0);
 
@@ -1058,10 +1062,11 @@ public class Opendap {
       if (gridTimeDimension >= 0) {
         Variable timeVar = ncd.findVariable(gridDimensionNames[gridTimeDimension]);
         if (timeVar == null) {
-          throw new RuntimeException("Time variable not found: " + gridDimensionNames[gridTimeDimension]);
+          throw new RuntimeException(
+              "Time variable not found: " + gridDimensionNames[gridTimeDimension]);
         }
-        int[] origin = new int[] { minIndex[gridTimeDimension] };
-        int[] shape = new int[] { 1 };
+        int[] origin = new int[] {minIndex[gridTimeDimension]};
+        int[] shape = new int[] {1};
         PrimitiveArray timePA = NcHelper.getPrimitiveArray(timeVar.read(origin, shape));
         double observedMinTime = timePA.getDouble(0);
 

@@ -9,8 +9,9 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.griddata.Opendap;
-import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import opendap.dap.DAS;
 import opendap.dap.DConnect2;
@@ -211,7 +212,8 @@ public class OpendapTest extends NetCheckTest {
           dds = dConnect.getDDS();
         }
       }
-      try (ucar.nc2.dataset.NetcdfDataset ncd = ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
+      try (ucar.nc2.dataset.NetcdfDataset ncd =
+          ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
         opendap.getGridInfo(ncd, variableName, missingValue);
       }
       opendap.getTimeOptions(
@@ -241,7 +243,7 @@ public class OpendapTest extends NetCheckTest {
 
       // check dasMustContain
       if (dasMustContain != null && dasMustContain.length() > 0) {
-        String dasString = OpendapHelper.getDasString(das);
+        String dasString = getDasString(das);
         if (dasString.indexOf(dasMustContain) < 0) {
           errorSB.append(
               "  "
@@ -255,7 +257,7 @@ public class OpendapTest extends NetCheckTest {
 
       // check ddsMustContain
       if (ddsMustContain != null && ddsMustContain.length() > 0) {
-        String ddsString = OpendapHelper.getDdsString(dds);
+        String ddsString = getDdsString(dds);
         if (ddsString.indexOf(ddsMustContain) < 0) {
           errorSB.append(
               "  "
@@ -457,5 +459,29 @@ public class OpendapTest extends NetCheckTest {
             + "ms");
     /* */
 
+  }
+
+  /**
+   * This converts a das to a string.
+   *
+   * @param das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
+   * @return the string form of the das
+   */
+  public static String getDasString(DAS das) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    das.print(baos);
+    return baos.toString(StandardCharsets.UTF_8);
+  }
+
+  /**
+   * This converts a dds to a string.
+   *
+   * @param dds from dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT)
+   * @return the string form of the dds
+   */
+  public static String getDdsString(DDS dds) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    dds.print(baos);
+    return baos.toString(StandardCharsets.UTF_8);
   }
 }

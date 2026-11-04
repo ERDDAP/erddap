@@ -190,6 +190,28 @@ public class TableTests {
         "");
     Test.ensureEqual(table.getColumnName(4), "Long Data", "");
     Test.ensureEqual(table.columnAttributes(4).getString("units"), "longs", "");
+
+    // test BitSet recycling and rowsWithData / tryToApplyConstraintsAndKeep
+    Table tFilter = new Table();
+    tFilter.addColumn("col1", new DoubleArray(new double[] {1.0, 2.0, Double.NaN, 4.0}));
+    tFilter.addColumn("col2", new DoubleArray(new double[] {10.0, Double.NaN, Double.NaN, 40.0}));
+
+    java.util.BitSet recycled = new java.util.BitSet();
+    java.util.BitSet bsWithData = tFilter.rowsWithData(recycled);
+    Test.ensureEqual(bsWithData.cardinality(), 3, "rowsWithData cardinality");
+    Test.ensureTrue(recycled == bsWithData, "rowsWithData reused BitSet instance");
+
+    StringArray conNames = new StringArray(new String[] {"col1", "col2"});
+    StringArray conOps = new StringArray(new String[] {">", ">"});
+    StringArray conVals = new StringArray(new String[] {"0.0", "0.0"});
+
+    Table tKeep = new Table();
+    tKeep.addColumn("col1", new DoubleArray(new double[] {1.0, 2.0, Double.NaN, 4.0}));
+    tKeep.addColumn("col2", new DoubleArray(new double[] {10.0, Double.NaN, Double.NaN, 40.0}));
+
+    int kept = tKeep.tryToApplyConstraintsAndKeep(-1, conNames, conOps, conVals, recycled);
+    Test.ensureEqual(kept, 2, "tryToApplyConstraintsAndKeep cardinality");
+    Test.ensureEqual(tKeep.nRows(), 2, "tryToApplyConstraintsAndKeep nRows");
   }
 
   @org.junit.jupiter.api.Test

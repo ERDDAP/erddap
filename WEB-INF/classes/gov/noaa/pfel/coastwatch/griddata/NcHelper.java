@@ -5,6 +5,7 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
@@ -15,7 +16,10 @@ import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.UByteArray;
+import com.cohort.array.UIntArray;
 import com.cohort.array.ULongArray;
+import com.cohort.array.UShortArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -30,10 +34,20 @@ import java.util.Collections;
 import java.util.List;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayBoolean;
+import ucar.ma2.ArrayByte;
 import ucar.ma2.ArrayChar;
+import ucar.ma2.ArrayDouble;
+import ucar.ma2.ArrayFloat;
+import ucar.ma2.ArrayInt;
+import ucar.ma2.ArrayLong;
 import ucar.ma2.ArrayObject;
+import ucar.ma2.ArrayShort;
 import ucar.ma2.ArrayString;
 import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.IteratorFast;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 import ucar.ma2.StructureData;
 import ucar.ma2.StructureDataIterator;
 import ucar.ma2.StructureMembers;
@@ -203,27 +217,8 @@ public class NcHelper {
    *     numeric ArrayXxx.D1)
    */
   private static PrimitiveArray decodeAttributeToPrimitive(Array nc2Array) {
-    // String[] from ArrayChar.Dn
-    if (nc2Array instanceof ArrayChar ac) {
-      ArrayObject ao = ac.make1DStringArray();
-      Object[] oa = (Object[]) ao.copyTo1DJavaArray();
-      StringArray sa = new StringArray(oa.length, false);
-      for (Object o : oa)
-        sa.add(o == null ? null : String2.fromJson(String2.trimEnd(o.toString())));
-      return sa;
-    }
-
-    // byte[] from ArrayBoolean.Dn
-    if (nc2Array instanceof ArrayBoolean) {
-      boolean boolAr[] = (boolean[]) nc2Array.copyTo1DJavaArray();
-      int n = boolAr.length;
-      byte byteAr[] = new byte[n];
-      for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
-      return PrimitiveArray.factory(byteAr, nc2Array.isUnsigned());
-    }
-
-    // ArrayXxxnumeric
-    return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), nc2Array.isUnsigned());
+    if (nc2Array == null) return null;
+    return getPrimitiveArray(nc2Array, false, nc2Array.isUnsigned());
   }
 
   /**
@@ -377,7 +372,8 @@ public class NcHelper {
         // String2.log("***getAttribute string=\"" + ts + "\"");
         return new Attribute(name, ts);
       } else {
-        String s = ((StringArray) pa).toNewlineString();
+        StringArray sa = pa instanceof StringArray tsa ? tsa : new StringArray(pa);
+        String s = sa.toNewlineString();
         return new Attribute(name, s.length() == 0 ? "" : s.substring(0, s.length() - 1));
       }
     }
@@ -537,6 +533,42 @@ public class NcHelper {
   }
 
   /**
+   * This reads a section of values from an nDimensional variable using a ucar.ma2.Section.
+   *
+   * @param variable
+   * @param section
+   * @return a suitable primitiveArray
+   */
+  public static PrimitiveArray getPrimitiveArray(Variable variable, ucar.ma2.Section section)
+      throws Exception {
+    return getPrimitiveArray(variable, section, true);
+  }
+
+  /**
+   * This reads a section of values from an nDimensional variable using a ucar.ma2.Section.
+   *
+   * @param variable
+   * @param section
+   * @param buildStringsFromChars only applies to source DataType=char variables.
+   * @return a suitable primitiveArray
+   */
+  public static PrimitiveArray getPrimitiveArray(
+      Variable variable, ucar.ma2.Section section, boolean buildStringsFromChars) throws Exception {
+    if (section == null) {
+      return getPrimitiveArray(variable, buildStringsFromChars);
+    }
+    if (section.getRank() == variable.getRank() - 1
+        && variable.getDataType() == DataType.CHAR
+        && variable.getRank() > 0) {
+      int strLen = variable.getDimension(variable.getRank() - 1).getLength();
+      List<Range> ranges = new ArrayList<>(section.getRanges());
+      ranges.add(new Range(0, strLen - 1));
+      section = new Section(ranges);
+    }
+    return getPrimitiveArray(variable.read(section), buildStringsFromChars, isUnsigned(variable));
+  }
+
+  /**
    * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
    *
    * @param nc2Array an nc2Array
@@ -548,11 +580,25 @@ public class NcHelper {
    */
   public static PrimitiveArray getPrimitiveArray(
       Array nc2Array, boolean buildStringsFromChars, boolean isUnsigned) {
-    // String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
+    if (nc2Array == null) return null;
+
+    boolean unsigned = isUnsigned || nc2Array.isUnsigned();
+
     // String[] from ArrayChar.Dn
     if (buildStringsFromChars && nc2Array instanceof ArrayChar na) {
       ArrayObject ao = na.make1DStringArray();
-      Object[] oa = (Object[]) ao.copyTo1DJavaArray();
+      Object storage = ao.getStorage();
+      Object[] oa;
+      if (storage != null
+          && storage.getClass().isArray()
+          && ao.getSize() == java.lang.reflect.Array.getLength(storage)) {
+        oa = (Object[]) storage;
+      } else {
+        oa = (Object[]) ao.copyTo1DJavaArray();
+      }
+      if (oa instanceof String[] sa) {
+        return new StringArray(sa);
+      }
       StringArray sa = new StringArray(oa.length, false);
       for (Object o : oa) sa.add(o == null ? null : String2.trimEnd(o.toString()));
       return sa;
@@ -560,17 +606,70 @@ public class NcHelper {
 
     // byte[] from ArrayBoolean.Dn
     if (nc2Array instanceof ArrayBoolean ab) {
-      boolean boolAr[] = (boolean[]) ab.copyTo1DJavaArray();
-      int n = boolAr.length;
+      int n = Math2.narrowToInt(nc2Array.getSize());
       byte byteAr[] = new byte[n];
-      for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
-      return PrimitiveArray.factory(
-          byteAr, false); // never unsigned (not needed, and unsigned is often trouble)
+      Object storage = ab.getStorage();
+      if (storage instanceof boolean[] boolAr && boolAr.length == n) {
+        for (int i = 0; i < n; i++) byteAr[i] = boolAr[i] ? (byte) 1 : (byte) 0;
+      } else {
+        IndexIterator iter = nc2Array.getIndexIterator();
+        for (int i = 0; i < n; i++) byteAr[i] = iter.getBooleanNext() ? (byte) 1 : (byte) 0;
+      }
+      return new com.cohort.array.ByteArray(byteAr);
     }
 
-    // ArrayXxxnumeric
-    return PrimitiveArray.factory(
-        nc2Array.copyTo1DJavaArray(), isUnsigned || nc2Array.isUnsigned());
+    // Fast-path: wrap storage directly if array is contiguous, un-transformed, and matches size
+    Object storage = nc2Array.getStorage();
+    if (storage != null
+        && storage.getClass().isArray()
+        && nc2Array.getSize() == java.lang.reflect.Array.getLength(storage)
+        && nc2Array.getIndexIterator() instanceof IteratorFast) {
+      if (storage instanceof double[] da) return new DoubleArray(da);
+      if (storage instanceof float[] fa) return new FloatArray(fa);
+      if (storage instanceof int[] ia) return unsigned ? new UIntArray(ia) : new IntArray(ia);
+      if (storage instanceof short[] sa) return unsigned ? new UShortArray(sa) : new ShortArray(sa);
+      if (storage instanceof byte[] ba) return unsigned ? new UByteArray(ba) : new ByteArray(ba);
+      if (storage instanceof long[] la) return unsigned ? new ULongArray(la) : new LongArray(la);
+      if (storage instanceof char[] ca) return new CharArray(ca);
+      if (storage instanceof String[] sa) return new StringArray(sa);
+      return PrimitiveArray.factory(storage, unsigned);
+    }
+
+    // Non-contiguous or strided view array: copy directly into target PrimitiveArray without
+    // copyTo1DJavaArray
+    int n = Math2.narrowToInt(nc2Array.getSize());
+    IndexIterator iter = nc2Array.getIndexIterator();
+    if (nc2Array instanceof ArrayDouble) {
+      double[] ar = new double[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getDoubleNext();
+      return new DoubleArray(ar);
+    } else if (nc2Array instanceof ArrayFloat) {
+      float[] ar = new float[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getFloatNext();
+      return new FloatArray(ar);
+    } else if (nc2Array instanceof ArrayInt) {
+      int[] ar = new int[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getIntNext();
+      return unsigned ? new UIntArray(ar) : new IntArray(ar);
+    } else if (nc2Array instanceof ArrayShort) {
+      short[] ar = new short[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getShortNext();
+      return unsigned ? new UShortArray(ar) : new ShortArray(ar);
+    } else if (nc2Array instanceof ArrayByte) {
+      byte[] ar = new byte[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getByteNext();
+      return unsigned ? new UByteArray(ar) : new ByteArray(ar);
+    } else if (nc2Array instanceof ArrayLong) {
+      long[] ar = new long[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getLongNext();
+      return unsigned ? new ULongArray(ar) : new LongArray(ar);
+    } else if (nc2Array instanceof ArrayChar) {
+      char[] ar = new char[n];
+      for (int i = 0; i < n; i++) ar[i] = iter.getCharNext();
+      return new CharArray(ar);
+    }
+
+    return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), unsigned);
   }
 
   // was
@@ -1375,6 +1474,217 @@ public class NcHelper {
   }
 
   /**
+   * Fuses NetCDF Array extraction and scale_factor/add_offset unpacking into a single pass directly
+   * into the destination DoubleArray or FloatArray to avoid allocating an intermediate raw array.
+   *
+   * @param var the NetCDF variable
+   * @param nc2Array the read NetCDF Array
+   * @param isUnsigned whether the variable is unsigned
+   * @return the unpacked PrimitiveArray
+   * @throws Exception if trouble
+   */
+  public static PrimitiveArray getUnpackedPrimitiveArray(
+      Variable var, Array nc2Array, boolean isUnsigned) throws Exception {
+    if (nc2Array == null) return null;
+
+    Attributes atts = new Attributes();
+    getVariableAttributes(var, atts);
+
+    PrimitiveArray scalePA = atts.get("scale_factor");
+    PrimitiveArray addPA = atts.get("add_offset");
+
+    if (scalePA != null || addPA != null) {
+      double scale = 1;
+      double add = 0;
+      PAType targetPAType = null;
+      if (scalePA != null) {
+        scale = scalePA.getNiceDouble(0);
+        if (Double.isNaN(scale)) scale = 1;
+        targetPAType = scalePA.elementType();
+      }
+      if (addPA != null) {
+        add = addPA.getNiceDouble(0);
+        if (Double.isNaN(add)) add = 0;
+        if (targetPAType == null) targetPAType = addPA.elementType();
+      }
+      if (targetPAType == null) {
+        targetPAType = getElementPAType(var);
+      }
+
+      boolean unsigned = isUnsigned || isUnsigned(var);
+      double dFillValue =
+          unsigned ? atts.getUnsignedDouble("_FillValue") : atts.getDouble("_FillValue");
+      double dMissingValue =
+          unsigned ? atts.getUnsignedDouble("missing_value") : atts.getDouble("missing_value");
+      boolean hasMissingValue = !Double.isNaN(dMissingValue);
+      boolean hasFillValue = !Double.isNaN(dFillValue);
+
+      int n = Math2.narrowToInt(nc2Array.getSize());
+      Object storage = nc2Array.getStorage();
+      boolean isFast =
+          storage != null
+              && storage.getClass().isArray()
+              && nc2Array.getSize() == java.lang.reflect.Array.getLength(storage)
+              && nc2Array.getIndexIterator() instanceof IteratorFast;
+
+      if (targetPAType == PAType.FLOAT) {
+        float[] dest = new float[n];
+
+        if (isFast && storage instanceof short[] sa) {
+          for (int i = 0; i < n; i++) {
+            double val = unsigned ? (sa[i] & 0xffff) : sa[i];
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Float.NaN;
+            } else {
+              dest[i] = (float) (val * scale + add);
+            }
+          }
+        } else if (isFast && storage instanceof byte[] ba) {
+          for (int i = 0; i < n; i++) {
+            double val = unsigned ? (ba[i] & 0xff) : ba[i];
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Float.NaN;
+            } else {
+              dest[i] = (float) (val * scale + add);
+            }
+          }
+        } else if (isFast && storage instanceof int[] ia) {
+          for (int i = 0; i < n; i++) {
+            double val = unsigned ? (ia[i] & 0xffffffffL) : ia[i];
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Float.NaN;
+            } else {
+              dest[i] = (float) (val * scale + add);
+            }
+          }
+        } else if (isFast && storage instanceof float[] fa) {
+          for (int i = 0; i < n; i++) {
+            float val = fa[i];
+            if (Float.isNaN(val)
+                || (hasMissingValue && val == dMissingValue)
+                || (hasFillValue && val == dFillValue)) {
+              dest[i] = Float.NaN;
+            } else {
+              dest[i] = (float) (val * scale + add);
+            }
+          }
+        } else if (isFast && storage instanceof double[] da) {
+          for (int i = 0; i < n; i++) {
+            double val = da[i];
+            if (Double.isNaN(val)
+                || (hasMissingValue && val == dMissingValue)
+                || (hasFillValue && val == dFillValue)) {
+              dest[i] = Float.NaN;
+            } else {
+              dest[i] = (float) (val * scale + add);
+            }
+          }
+        } else {
+          IndexIterator iter = nc2Array.getIndexIterator();
+          DataType dataType = var.getDataType();
+          boolean isByte = dataType == DataType.BYTE || dataType == DataType.UBYTE;
+          boolean isShort = dataType == DataType.SHORT || dataType == DataType.USHORT;
+          boolean isInt = dataType == DataType.INT || dataType == DataType.UINT;
+
+          for (int i = 0; i < n; i++) {
+            double val = iter.getDoubleNext();
+            if (unsigned) {
+              if (isByte) val = ((byte) val) & 0xff;
+              else if (isShort) val = ((short) val) & 0xffff;
+              else if (isInt) val = ((int) val) & 0xffffffffL;
+            }
+
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Float.NaN;
+            } else {
+              dest[i] = (float) (val * scale + add);
+            }
+          }
+        }
+        return new FloatArray(dest);
+      } else {
+        double[] dest = new double[n];
+
+        if (isFast && storage instanceof short[] sa) {
+          for (int i = 0; i < n; i++) {
+            double val = unsigned ? (sa[i] & 0xffff) : sa[i];
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Double.NaN;
+            } else {
+              dest[i] = val * scale + add;
+            }
+          }
+        } else if (isFast && storage instanceof byte[] ba) {
+          for (int i = 0; i < n; i++) {
+            double val = unsigned ? (ba[i] & 0xff) : ba[i];
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Double.NaN;
+            } else {
+              dest[i] = val * scale + add;
+            }
+          }
+        } else if (isFast && storage instanceof int[] ia) {
+          for (int i = 0; i < n; i++) {
+            double val = unsigned ? (ia[i] & 0xffffffffL) : ia[i];
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Double.NaN;
+            } else {
+              dest[i] = val * scale + add;
+            }
+          }
+        } else if (isFast && storage instanceof float[] fa) {
+          for (int i = 0; i < n; i++) {
+            float val = fa[i];
+            if (Float.isNaN(val)
+                || (hasMissingValue && val == dMissingValue)
+                || (hasFillValue && val == dFillValue)) {
+              dest[i] = Double.NaN;
+            } else {
+              dest[i] = val * scale + add;
+            }
+          }
+        } else if (isFast && storage instanceof double[] da) {
+          for (int i = 0; i < n; i++) {
+            double val = da[i];
+            if (Double.isNaN(val)
+                || (hasMissingValue && val == dMissingValue)
+                || (hasFillValue && val == dFillValue)) {
+              dest[i] = Double.NaN;
+            } else {
+              dest[i] = val * scale + add;
+            }
+          }
+        } else {
+          IndexIterator iter = nc2Array.getIndexIterator();
+          DataType dataType = var.getDataType();
+          boolean isByte = dataType == DataType.BYTE || dataType == DataType.UBYTE;
+          boolean isShort = dataType == DataType.SHORT || dataType == DataType.USHORT;
+          boolean isInt = dataType == DataType.INT || dataType == DataType.UINT;
+
+          for (int i = 0; i < n; i++) {
+            double val = iter.getDoubleNext();
+            if (unsigned) {
+              if (isByte) val = ((byte) val) & 0xff;
+              else if (isShort) val = ((short) val) & 0xffff;
+              else if (isInt) val = ((int) val) & 0xffffffffL;
+            }
+
+            if ((hasMissingValue && val == dMissingValue) || (hasFillValue && val == dFillValue)) {
+              dest[i] = Double.NaN;
+            } else {
+              dest[i] = val * scale + add;
+            }
+          }
+        }
+        return new DoubleArray(dest);
+      }
+    }
+
+    PrimitiveArray pa = getPrimitiveArray(nc2Array, true, isUnsigned);
+    return atts.unpackPA(var.getFullName(), pa, true, true);
+  }
+
+  /**
    * This returns the double value of an attribute. If the attribute DataType is DataType.FLOAT,
    * this nicely converts the float to a double.
    *
@@ -1659,18 +1969,19 @@ public class NcHelper {
     boolean isChar = variable.getDataType() == DataType.CHAR;
     int nDim = variable.getRank();
     int oShape[] = variable.getShape();
-    // ???verify that shape is valid?
-    int origin[] = new int[nDim]; // all 0's
-    int shape[] = new int[nDim];
-    origin[0] = firstRow;
-    Arrays.fill(shape, 1);
+    List<Range> ranges = new ArrayList<>();
+    ranges.add(new Range(firstRow, lastRow));
+    for (int d = 1; d < nDim; d++) {
+      if (isChar && d == nDim - 1) {
+        ranges.add(new Range(0, oShape[d] - 1));
+      } else {
+        ranges.add(new Range(0, 0));
+      }
+    }
+    Section section = new Section(ranges);
     int nRows = lastRow - firstRow + 1;
-    shape[0] = nRows;
-    if (isChar) shape[nDim - 1] = oShape[nDim - 1]; // nChars / String
-    PrimitiveArray pa = getPrimitiveArray(variable.read(origin, shape), true, isUnsigned(variable));
+    PrimitiveArray pa = getPrimitiveArray(variable, section, true);
 
-    // eek! opendap returns a full-sized array!
-    //     netcdf  returns a shape-sized array
     if (pa.size() < nRows)
       Test.error(
           String2.ERROR
@@ -1683,12 +1994,10 @@ public class NcHelper {
               + pa.size()
               + ").");
     if (pa.size() > nRows) {
-      // it full-sized; reduce to correct size
       if (reallyVerbose)
         String2.log("    NcHelper.getPrimitiveArray variable.read returned entire variable!");
-      pa.removeRange(
-          lastRow + 1, pa.size()); // remove tail first (so don't have to move it when remove head
-      pa.removeRange(0, firstRow - 1); // remove head section
+      pa.removeRange(lastRow + 1, pa.size());
+      pa.removeRange(0, firstRow - 1);
     }
     return pa;
   }
@@ -1878,11 +2187,20 @@ public class NcHelper {
     if (paType == PAType.CHAR) {
       // netcdf-java 3 & 4 just write 1 byte chars
       // (but nc4 will writes strings as utf-8 encoded
-      pa = new CharArray(pa).toIso88591();
+      if (pa instanceof CharArray tca) {
+        pa = tca.toIso88591();
+      } else {
+        pa = new CharArray(pa).toIso88591();
+      }
     } else if (nc3Mode) {
       if (paType == PAType.LONG || paType == PAType.ULONG) pa = new DoubleArray(pa);
-      else if (paType == PAType.STRING)
-        pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
+      else if (paType == PAType.STRING) {
+        if (pa instanceof StringArray tsa) {
+          pa = tsa.toIso88591(); // netcdf-java 3 just writes low byte
+        } else {
+          pa = new StringArray(pa).toIso88591(); // netcdf-java 3 just writes low byte
+        }
+      }
     }
 
     if (nc3Mode && paType == PAType.STRING) {
@@ -1922,21 +2240,45 @@ public class NcHelper {
         okRows.set(0, nRows); // make all 'true' initially
       }
 
-      // read the data
-      cumReadTime -= System.currentTimeMillis();
-      PrimitiveArray pa = getPrimitiveArray(variable.read());
-      cumReadTime += System.currentTimeMillis();
-
-      // test the data
+      // test the data in chunks using Section reads
       double tMin = min[col];
       double tMax = max[col];
-      int row = okRows.nextSetBit(0);
+      int nRows = variable.getDimension(0).getLength();
+      int chunkSize = 10000;
       int lastSetBit = -1;
+
+      int row = okRows.nextSetBit(0);
       while (row >= 0) {
-        double d = pa.getDouble(row);
-        if (d < tMin || d > tMax || Double.isNaN(d)) okRows.clear(row);
-        else lastSetBit = row;
-        row = okRows.nextSetBit(row + 1);
+        int chunkStart = (row / chunkSize) * chunkSize;
+        int chunkEnd = Math.min(chunkStart + chunkSize - 1, nRows - 1);
+
+        List<Range> ranges = new ArrayList<>();
+        ranges.add(new Range(chunkStart, chunkEnd));
+        boolean isChar = variable.getDataType() == DataType.CHAR;
+        int nDim = variable.getRank();
+        int oShape[] = variable.getShape();
+        for (int d = 1; d < nDim; d++) {
+          if (isChar && d == nDim - 1) {
+            ranges.add(new Range(0, oShape[d] - 1));
+          } else {
+            ranges.add(new Range(0, 0));
+          }
+        }
+        Section chunkSection = new Section(ranges);
+
+        cumReadTime -= System.currentTimeMillis();
+        PrimitiveArray pa = getPrimitiveArray(variable, chunkSection, true);
+        cumReadTime += System.currentTimeMillis();
+
+        while (row >= 0 && row <= chunkEnd) {
+          double d = pa.getDouble(row - chunkStart);
+          if (d < tMin || d > tMax || Double.isNaN(d)) {
+            okRows.clear(row);
+          } else {
+            lastSetBit = row;
+          }
+          row = okRows.nextSetBit(row + 1);
+        }
       }
       if (lastSetBit == -1) return okRows;
     }
@@ -1987,14 +2329,15 @@ public class NcHelper {
         tpas[var] = pas[var];
         if (tpas[var].elementType() == PAType.CHAR) {
           // nc 'char' is 1 byte!  So store java char (2 bytes) as shorts.
-          tpas[var] = new ShortArray(((CharArray) pas[var]).toArray());
+          CharArray ca = pas[var] instanceof CharArray tca ? tca : new CharArray(pas[var]);
+          tpas[var] = new ShortArray(ca.toArray());
         } else if (tpas[var].elementType() == PAType.LONG
             || tpas[var].elementType() == PAType.ULONG) {
           // these will always be decoded by fromJson as-is; no need to encode with toJson
           tpas[var] = new StringArray(pas[var]);
         } else if (tpas[var].elementType() == PAType.STRING) {
           // .nc strings only support characters 1..255, so encode as Json strings
-          StringArray oldSa = (StringArray) pas[var];
+          StringArray oldSa = pas[var] instanceof StringArray tsa ? tsa : new StringArray(pas[var]);
           int tSize = oldSa.size();
           StringArray newSa = new StringArray(tSize, false);
           tpas[var] = newSa;

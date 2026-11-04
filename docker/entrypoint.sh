@@ -57,6 +57,23 @@ if [ "$1" = 'start-tomcat.sh' ] || [ "$1" = 'catalina.sh' ]; then
     fi
     sync
 
+    # If ERDDAP_SYMLINK_DATASETS_XML is set and references an existing file, symlink it to datasets.xml
+    if [ -n "$ERDDAP_SYMLINK_DATASETS_XML" ]; then
+      if [ ! -f "$ERDDAP_SYMLINK_DATASETS_XML" ]; then
+        echo "ERDDAP_SYMLINK_DATASETS_XML is set to ${ERDDAP_SYMLINK_DATASETS_XML} which does not exist" >&2
+        exit 1
+      fi
+      echo "Symlinking datasets.xml from ${ERDDAP_SYMLINK_DATASETS_XML}"
+      DATASETS_XML="${CATALINA_HOME}/content/erddap/datasets.xml"
+      if [ -f "$DATASETS_XML" ] && [ ! -L "$DATASETS_XML" ]; then
+        # datasets.xml exists and is not a symlink, make a backup
+        BACKUP_DATASETS_XML="${DATASETS_XML%%.*}.$(date -u '+%Y%m%dT%H%M%SZ').xml"
+        echo "Backing up existing datasets.xml to ${BACKUP_DATASETS_XML}"
+        mv "$DATASETS_XML" "${BACKUP_DATASETS_XML}"
+      fi
+      ln -sf "$ERDDAP_SYMLINK_DATASETS_XML" "$DATASETS_XML"
+    fi
+
     ###
     # Run executables/shell scripts in /init.d on each container startup
     # Inspired by postgres' /docker-entrypoint-initdb.d

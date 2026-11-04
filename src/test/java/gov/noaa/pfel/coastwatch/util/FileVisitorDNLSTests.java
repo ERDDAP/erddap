@@ -363,13 +363,13 @@ class FileVisitorDNLSTests {
     // verbose = true;
     Table table;
     String results, expected;
-    // this works in browser: http://nasanex.s3.us-west-2.amazonaws.com
+    // this works in browser: http://nasa-nex.s3.us-west-2.amazonaws.com
     // the full parent here doesn't work in a browser.
-    // But ERDDAP knows that "nasanex" is the bucket name and
+    // But ERDDAP knows that "nasa-nex" is the bucket name and
     // "NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/" is the prefix.
     // See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
     String parent =
-        "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
+        "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
     String child = "CONUS/";
     String pathRegex = null;
 
@@ -378,7 +378,7 @@ class FileVisitorDNLSTests {
       // !recursive and dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "https://nasanex.s3.us-west-2.amazonaws.com",
+              "https://nasa-nex.s3.us-west-2.amazonaws.com",
               ".*",
               false,
               ".*",
@@ -386,107 +386,114 @@ class FileVisitorDNLSTests {
       results = table.dataToString();
       expected =
           "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/AVHRR/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/CMIP5/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/Landsat/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/LOCA/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/MAIAC/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/MODIS/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NAIP/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-GDDP/,,,\n";
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/AVHRR/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/CMIP5/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/Landsat/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/LOCA/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/MAIAC/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/MODIS/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NAIP/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-GDDP/,,,\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // !recursive and dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/",
+              "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/",
               ".*",
               false,
               ".*",
               true); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,1380418295000,35\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/CONTRIB/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/NEX-quartile/,,,\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,35\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,2717227\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/CONTRIB/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/NEX-quartile/,,\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // !recursive and !dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "https://nasanex.s3.us-west-2.amazonaws.com",
+              "https://nasa-nex.s3.us-west-2.amazonaws.com",
               ".*",
               false,
               ".*",
               false); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      table.removeColumn("lastModified");
       results = table.dataToString();
-      expected = "directory,name,lastModified,size\n";
+      expected = "directory,name,size\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // !recursive and !dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/",
+              "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/",
               ".*",
               false,
               ".*",
               false); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,1380418295000,35\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,35\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,2717227\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // recursive and dirToo
       table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
       // recursive and !dirToo
       table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, false);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
       // !recursive and dirToo
       table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
       // !recursive and !dirToo
       table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, false);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
     } /* */
@@ -497,24 +504,15 @@ class FileVisitorDNLSTests {
     parent = "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/";
     pathRegex = ".*";
     table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true);
+    table.removeColumn("lastModified");
     results = table.dataToString();
     expected =
-        "directory,name,lastModified,size\n"
-            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/,,,\n"
-            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,,,\n"
-            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380002190_e20183380004563_c20183380004595.nc,1582123265000,12524368\n"
-            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380007190_e20183380009563_c20183380009597.nc,1582123265000,12357541\n"
-            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380012190_e20183380014503_c20183380014536.nc,1582123255000,12187253\n";
-    // before 2020-03-03 these were the first returned rows:
-    // "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,,,\n"
-    // +
-    // "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381637189_e20183381639562_c20183381639596.nc,1543941659000,9269699\n"
-    // +
-    // "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381642189_e20183381644502_c20183381644536.nc,1543942123000,9585452\n"
-    // +
-    // "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381647189_e20183381649562_c20183381649596.nc,1543942279000,9894495\n"
-    // +
-    // "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/16/,OR_ABI-L1b-RadC-M3C01_G17_s20183381652189_e20183381654562_c20183381654595.nc,1543942520000,10195765\n";
+        "directory,name,size\n"
+            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/,,\n"
+            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,,\n"
+            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380002190_e20183380004563_c20183380004595.nc,12524368\n"
+            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380007190_e20183380009563_c20183380009597.nc,12357541\n"
+            + "https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2018/338/00/,OR_ABI-L1b-RadC-M3C01_G17_s20183380012190_e20183380014503_c20183380014536.nc,12187253\n";
     if (expected.length() > results.length()) String2.log("results=\n" + results);
     Test.ensureEqual(
         results.substring(0, expected.length()),
@@ -532,7 +530,7 @@ class FileVisitorDNLSTests {
 
     Table table;
     String results, expected;
-    String parent = "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
+    String parent = "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
     String child = "CONUS/";
     String pathRegex = null;
 
@@ -541,7 +539,7 @@ class FileVisitorDNLSTests {
       // !recursive and dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "s3://nasanex/",
+              "s3://nasa-nex/",
               ".*",
               false,
               ".*",
@@ -549,40 +547,41 @@ class FileVisitorDNLSTests {
       results = table.dataToString();
       expected =
           "directory,name,lastModified,size\n"
-              + "s3://nasanex/AVHRR/,,,\n"
-              + "s3://nasanex/CMIP5/,,,\n"
-              + "s3://nasanex/Landsat/,,,\n"
-              + "s3://nasanex/LOCA/,,,\n"
-              + "s3://nasanex/MAIAC/,,,\n"
-              + "s3://nasanex/MODIS/,,,\n"
-              + "s3://nasanex/NAIP/,,,\n"
-              + "s3://nasanex/NEX-DCP30/,,,\n"
-              + "s3://nasanex/NEX-GDDP/,,,\n";
+              + "s3://nasa-nex/AVHRR/,,,\n"
+              + "s3://nasa-nex/CMIP5/,,,\n"
+              + "s3://nasa-nex/Landsat/,,,\n"
+              + "s3://nasa-nex/LOCA/,,,\n"
+              + "s3://nasa-nex/MAIAC/,,,\n"
+              + "s3://nasa-nex/MODIS/,,,\n"
+              + "s3://nasa-nex/NAIP/,,,\n"
+              + "s3://nasa-nex/NEX-DCP30/,,,\n"
+              + "s3://nasa-nex/NEX-GDDP/,,,\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // !recursive and dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "s3://nasanex/NEX-DCP30/",
+              "s3://nasa-nex/NEX-DCP30/",
               ".*",
               false,
               ".*",
               true); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "s3://nasanex/NEX-DCP30/,,,\n"
-              + "s3://nasanex/NEX-DCP30/,doi.txt,1380418295000,35\n"
-              + "s3://nasanex/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/,,,\n"
-              + "s3://nasanex/NEX-DCP30/CONTRIB/,,,\n"
-              + "s3://nasanex/NEX-DCP30/NEX-quartile/,,,\n";
+          "directory,name,size\n"
+              + "s3://nasa-nex/NEX-DCP30/,,\n"
+              + "s3://nasa-nex/NEX-DCP30/,doi.txt,35\n"
+              + "s3://nasa-nex/NEX-DCP30/,nex-dcp30-s3-files.json,2717227\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/,,\n"
+              + "s3://nasa-nex/NEX-DCP30/CONTRIB/,,\n"
+              + "s3://nasa-nex/NEX-DCP30/NEX-quartile/,,\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // !recursive and !dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "s3://nasanex",
+              "s3://nasa-nex",
               ".*",
               false,
               ".*",
@@ -594,62 +593,67 @@ class FileVisitorDNLSTests {
       // !recursive and !dirToo
       table =
           FileVisitorDNLS.oneStep(
-              "s3://nasanex/NEX-DCP30/",
+              "s3://nasa-nex/NEX-DCP30/",
               ".*",
               false,
               ".*",
               false); // fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "s3://nasanex/NEX-DCP30/,doi.txt,1380418295000,35\n"
-              + "s3://nasanex/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n";
+          "directory,name,size\n"
+              + "s3://nasa-nex/NEX-DCP30/,doi.txt,35\n"
+              + "s3://nasa-nex/NEX-DCP30/,nex-dcp30-s3-files.json,2717227\n";
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // recursive and dirToo
       table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
       // recursive and !dirToo
       table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, false);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
       // !recursive and dirToo
       table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
       // !recursive and !dirToo
       table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, false);
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "s3://nasanex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "s3://nasa-nex/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
     }
@@ -696,13 +700,13 @@ class FileVisitorDNLSTests {
     // debugMode = true;
     Table table;
     String results, expected;
-    // this works in browser: http://nasanex.s3.us-west-2.amazonaws.com
+    // this works in browser: http://nasa-nex.s3.us-west-2.amazonaws.com
     // the full parent here doesn't work in a browser.
-    // But ERDDAP knows that "nasanex" is the bucket name and
+    // But ERDDAP knows that "nasa-nex" is the bucket name and
     // "NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/" is the prefix.
     // See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
     String parent =
-        "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
+        "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
     String pathRegex = null;
     String fullResults = null;
 
@@ -719,14 +723,15 @@ class FileVisitorDNLSTests {
               parent, ".*\\.nc", true, pathRegex, true); // there is a .nc.md5 for each
       // .nc, so
       // oneStep filters client-side
+      table.removeColumn("lastModified");
       results = table.dataToString();
       expected =
-          "directory,name,lastModified,size\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
-              + "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+          "directory,name,size\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1368229240\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1368487462\n"
+              + "https://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1368894133\n";
       if (expected.length() > results.length()) String2.log("results=\n" + results);
       Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 

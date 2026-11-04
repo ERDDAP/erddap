@@ -1,7 +1,7 @@
 package gov.noaa.pfel.coastwatch.pointdata.parquet;
 
-import com.cohort.array.PAOne;
-import java.util.List;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.pointdata.parquet.CustomWriteSupport.RowRef;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.hadoop.ParquetWriter;
@@ -9,13 +9,14 @@ import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.schema.MessageType;
 
-public class ParquetWriterBuilder extends ParquetWriter.Builder<List<PAOne>, ParquetWriterBuilder> {
+public class ParquetWriterBuilder extends ParquetWriter.Builder<RowRef, ParquetWriterBuilder> {
 
   private final CustomWriteSupport writeSupport;
 
-  public ParquetWriterBuilder(MessageType schema, OutputFile file, Map<String, String> metadata) {
+  public ParquetWriterBuilder(
+      Table table, MessageType schema, OutputFile file, Map<String, String> metadata) {
     super(file);
-    writeSupport = new CustomWriteSupport(schema, metadata);
+    writeSupport = new CustomWriteSupport(table, schema, metadata);
   }
 
   @Override
@@ -24,7 +25,7 @@ public class ParquetWriterBuilder extends ParquetWriter.Builder<List<PAOne>, Par
   }
 
   @Override
-  protected WriteSupport<List<PAOne>> getWriteSupport(Configuration conf) {
+  protected WriteSupport<RowRef> getWriteSupport(Configuration conf) {
     return writeSupport;
   }
 }

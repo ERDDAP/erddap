@@ -9,6 +9,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.google.common.collect.ImmutableList;
+import gov.noaa.pfel.erddap.util.BufferedFileChannel;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -16,8 +17,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.io.UTFDataFormatException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -145,22 +150,37 @@ public class StringArray extends PrimitiveArray {
     array = new String[capacity];
     if (active) {
       size = capacity;
-      for (int i = 0; i < size; i++) array[i] = "";
+      Arrays.fill(array, 0, size, "");
     }
   }
 
   /**
-   * A constructor which gets values from anArray[i]. THERE IS NO StringArray CONSTRUCTOR WHICH
-   * LET'S YOU SPECIFY THE BACKING ARRAY! The values anArray are stored in a different way in a
-   * different data structure.
+   * A constructor which uses the provided array as the backing array. The initial 'size' will be
+   * anArray.length. The array is not copied, so if the caller changes the array, this StringArray
+   * will be affected.
    *
    * @param anArray
    */
   public StringArray(final String[] anArray) {
-    int al = anArray.length;
-    array = new String[al];
-    size = 0;
-    for (String s : anArray) add(s);
+    if (anArray == null) {
+      array = new String[8];
+      size = 0;
+      return;
+    }
+    for (int i = 0; i < anArray.length; i++) {
+      String s = anArray[i];
+      if (s == null) {
+        anArray[i] = null;
+      } else if (s.length() == 0) {
+        anArray[i] = "";
+      } else if (i > 0 && s.equals(anArray[i - 1])) {
+        anArray[i] = anArray[i - 1];
+      } else {
+        anArray[i] = String2.canonical(s);
+      }
+    }
+    array = anArray;
+    size = anArray.length;
   }
 
   /**
@@ -492,22 +512,27 @@ public class StringArray extends PrimitiveArray {
     if (stopIndex < startIndex) return pa == null ? new StringArray(new String[0]) : pa;
 
     int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
-    StringArray sa = null; // for the results
     if (pa == null) {
-      sa = new StringArray(willFind, true);
-    } else {
-      sa = (StringArray) pa;
+      return new PrimitiveView(this, startIndex, stride, willFind);
+    }
+    if (pa instanceof StringArray sa) {
       sa.ensureCapacity(willFind);
       sa.size = willFind;
+      String[] tar = sa.array;
+      if (stride == 1) {
+        System.arraycopy(array, startIndex, tar, 0, willFind);
+      } else {
+        int po = 0;
+        for (int i = startIndex; i <= stopIndex; i += stride) tar[po++] = array[i];
+      }
+      return sa;
     }
-    String[] tar = sa.array;
-    if (stride == 1) {
-      System.arraycopy(array, startIndex, tar, 0, willFind);
-    } else {
-      int po = 0;
-      for (int i = startIndex; i <= stopIndex; i += stride) tar[po++] = array[i];
+    pa.clear();
+    pa.ensureCapacity(willFind);
+    for (int i = startIndex; i <= stopIndex; i += stride) {
+      pa.addFromPA(this, i, 1);
     }
-    return sa;
+    return pa;
   }
 
   /**
@@ -540,11 +565,16 @@ public class StringArray extends PrimitiveArray {
   public void add(final String value) {
     if (size == array.length) // if we're at capacity
     ensureCapacity(size + 1L);
-    array[size++] =
-        value == null
-            ? null
-            : // quick, saves time
-            value.length() == 0 ? "" : String2.canonical(value);
+    if (value == null) {
+      array[size++] = null;
+    } else if (value.length() == 0) {
+      array[size++] = "";
+    } else if (size > 0 && value.equals(array[size - 1])) {
+      array[size] = array[size - 1];
+      size++;
+    } else {
+      array[size++] = String2.canonical(value);
+    }
   }
 
   /**
@@ -566,6 +596,18 @@ public class StringArray extends PrimitiveArray {
   @Override
   public void add(final StructureData sd, final String memberName) {
     add(sd.getScalarString(memberName));
+  }
+
+  /**
+   * This reads one value from the StrutureData and adds it to this PA.
+   *
+   * @param sd from an .nc file
+   * @param memberName
+   * @param count
+   */
+  @Override
+  public void addN(final StructureData sd, final String memberName, int count) {
+    addN(count, sd.getScalarString(memberName));
   }
 
   /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is
@@ -991,9 +1033,7 @@ public class StringArray extends PrimitiveArray {
       int newCapacity = (int) Math.min(Integer.MAX_VALUE - 1, array.length + (long) array.length);
       if (newCapacity < minCapacity) newCapacity = (int) minCapacity; // safe since checked above
       Math2.ensureMemoryAvailable(8L * newCapacity, "StringArray"); // 8L is guess
-      String[] newArray = new String[newCapacity];
-      System.arraycopy(array, 0, newArray, 0, size);
-      array = newArray; // do last to minimize concurrency problems
+      array = Arrays.copyOf(array, newCapacity); // do last to minimize concurrency problems
     }
   }
 
@@ -1004,10 +1044,9 @@ public class StringArray extends PrimitiveArray {
    *     return an array with their storage type e.g., ULongArray returns a long[].
    */
   public String[] toArray() {
+    if (array.length == size) return array;
     Math2.ensureMemoryAvailable(8L * size, "StringArray.toArray"); // 8L is guess
-    String[] tArray = new String[size];
-    for (int i = 0; i < size; i++) tArray[i] = array[i];
-    return tArray;
+    return Arrays.copyOfRange(array, 0, size);
   }
 
   /**
@@ -1209,8 +1248,8 @@ public class StringArray extends PrimitiveArray {
    * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
    */
   @Override
-  public String getJsonString(final int index) {
-    return String2.toJson(get(index));
+  public void getJsonString(final int index, final StringBuilder sb) {
+    String2.toJson(get(index), sb);
   }
 
   /**
@@ -1390,9 +1429,7 @@ public class StringArray extends PrimitiveArray {
   @Override
   public void trimToSize() {
     if (size == array.length) return;
-    final String[] newArray = new String[size];
-    System.arraycopy(array, 0, newArray, 0, size);
-    array = newArray;
+    array = Arrays.copyOf(array, size);
   }
 
   /**
@@ -1425,7 +1462,10 @@ public class StringArray extends PrimitiveArray {
           + " value(s); the other has "
           + other.size()
           + " value(s).";
-    for (int i = 0; i < size; i++)
+    final int mismatchIdx = Arrays.mismatch(array, 0, size, other.array, 0, size);
+    if (mismatchIdx == -1 && maxIsMV == other.maxIsMV) return "";
+    final int startIdx = (maxIsMV == other.maxIsMV) ? mismatchIdx : 0;
+    for (int i = startIdx; i < size; i++)
       if (!array[i].equals(other.array[i]))
         return "The two StringArrays aren't equal: this["
             + i
@@ -1582,6 +1622,154 @@ public class StringArray extends PrimitiveArray {
   }
 
   /**
+   * This writes the active elements (0 ... size-1) to a FileChannel using native byte order.
+   *
+   * @param channel the FileChannel
+   * @return the number of bytes written
+   * @throws Exception if trouble
+   */
+  @Override
+  public long writeToChannel(final BufferedFileChannel channel) throws Exception {
+    return writeToChannel(channel, 0, size);
+  }
+
+  // Helper method to write a String in Java Modified UTF-8 format directly into a ByteBuffer.
+  private static void writeUtfBytes(final String s, final ByteBuffer buf) {
+    final int sLen = s.length();
+    for (int i = 0; i < sLen; i++) {
+      final char c = s.charAt(i);
+      if (c >= 0x0001 && c <= 0x007F) {
+        buf.put((byte) c);
+      } else if (c > 0x07FF) {
+        buf.put((byte) (0xE0 | ((c >> 12) & 0x0F)));
+        buf.put((byte) (0x80 | ((c >> 6) & 0x3F)));
+        buf.put((byte) (0x80 | (c & 0x3F)));
+      } else {
+        buf.put((byte) (0xC0 | ((c >> 6) & 0x1F)));
+        buf.put((byte) (0x80 | (c & 0x3F)));
+      }
+    }
+  }
+
+  /**
+   * Writes a subset of elements (offset ... offset+length-1) to a BufferedFileChannel using chunked
+   * ByteBuffer serialization without bypassing channel buffering.
+   */
+  @Override
+  public long writeToChannel(final BufferedFileChannel channel, final int offset, final int length)
+      throws Exception {
+    if (channel == null) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in StringArray.writeToChannel: BufferedFileChannel is null.");
+    }
+    if (offset < 0) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in StringArray.writeToChannel: offset (" + offset + ") < 0.");
+    }
+    if (length < 0) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in StringArray.writeToChannel: length (" + length + ") < 0.");
+    }
+    if (offset + (long) length > size) {
+      throw new IllegalArgumentException(
+          String2.ERROR
+              + " in StringArray.writeToChannel: offset + length ("
+              + (offset + (long) length)
+              + ") > size ("
+              + size
+              + ").");
+    }
+    if (length == 0) {
+      return 0L;
+    }
+
+    long bytesWritten = 0;
+    final int CHUNK_SIZE = 65536; // 64 KB heap buffer for UTF string batching
+    final ByteBuffer byteBuf = getCleanIoBuffer();
+
+    for (int i = offset; i < offset + length; i++) {
+      String s = get(i);
+      if (s == null) {
+        s = "";
+      }
+
+      int utfLen = 0;
+      final int sLen = s.length();
+      for (int cIdx = 0; cIdx < sLen; cIdx++) {
+        final char c = s.charAt(cIdx);
+        if (c >= 0x0001 && c <= 0x007F) {
+          utfLen++;
+        } else if (c > 0x07FF) {
+          utfLen += 3;
+        } else {
+          utfLen += 2;
+        }
+      }
+
+      if (utfLen > 65535) {
+        throw new UTFDataFormatException(
+            String2.ERROR
+                + " in StringArray.writeToChannel: string length ("
+                + utfLen
+                + ") > 65535 bytes.");
+      }
+
+      final int totalStringBytes = 2 + utfLen;
+
+      if (byteBuf.remaining() < totalStringBytes) {
+        byteBuf.flip();
+        bytesWritten += channel.write(byteBuf);
+        byteBuf.clear();
+      }
+
+      if (totalStringBytes > CHUNK_SIZE) {
+        final ByteBuffer largeBuf = getCleanIoBuffer();
+        largeBuf.putShort((short) utfLen);
+        writeUtfBytes(s, largeBuf);
+        largeBuf.flip();
+        bytesWritten += channel.write(largeBuf);
+      } else {
+        byteBuf.putShort((short) utfLen);
+        writeUtfBytes(s, byteBuf);
+      }
+    }
+
+    if (byteBuf.position() > 0) {
+      byteBuf.flip();
+      bytesWritten += channel.write(byteBuf);
+    }
+
+    return bytesWritten;
+  }
+
+  /**
+   * This reads/adds n elements from a FileChannel using native byte order.
+   *
+   * @param channel the FileChannel
+   * @param n the number of elements to read
+   * @throws Exception if trouble
+   */
+  @Override
+  public void readFromChannel(final FileChannel channel, final int n) throws Exception {
+    if (channel == null) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in StringArray.readFromChannel: FileChannel is null.");
+    }
+    if (n < 0) {
+      throw new IllegalArgumentException(
+          String2.ERROR + " in StringArray.readFromChannel: n (" + n + ") < 0.");
+    }
+    if (n == 0) {
+      return;
+    }
+    ensureCapacity(size + (long) n);
+    final DataInputStream dis = new DataInputStream(Channels.newInputStream(channel));
+    for (int i = 0; i < n; i++) {
+      add(dis.readUTF());
+    }
+  }
+
+  /**
    * This writes 'size' elements to a DataOutputStream.
    *
    * @param dos the DataOutputStream
@@ -1664,21 +1852,30 @@ public class StringArray extends PrimitiveArray {
    * @param s
    * @throws Exception if trouble
    */
-  public static void externalizeForDODS(final DataOutputStream dos, final String s)
-      throws Exception {
+  public static void externalizeForDODS(
+      final DataOutputStream dos, final String s, byte[] workBuffer) throws Exception {
     int n = s.length();
-    dos.writeInt(n); // for Strings, just write size once
-    for (int i = 0; i < n; i++) { // just low 8 bits written; no utf or other unicode support,
-      final char c =
-          s.charAt(i); // 2016-11-29 I added: char>255 -> '?', it's better than low 8 bits
-      dos.writeByte(
-          c < 256
-              ? c
-              : '?'); // dods.dap.DString reader assumes ISO-8859-1, which is first page of unicode
+    dos.writeInt(n); // Write 4-byte length prefix
+
+    // Ensure workBuffer is large enough for length + padding
+    int paddedLen = n + ((4 - (n % 4)) % 4);
+    if (workBuffer.length < paddedLen) {
+      workBuffer = new byte[Math.max(paddedLen, workBuffer.length * 2)];
     }
 
-    // pad to 4 bytes boundary at end
-    while (n++ % 4 != 0) dos.writeByte(0);
+    // Pack characters into byte array in memory
+    for (int i = 0; i < n; i++) {
+      char c = s.charAt(i);
+      workBuffer[i] = (byte) (c < 256 ? c : '?');
+    }
+
+    // Add 4-byte boundary padding
+    for (int i = n; i < paddedLen; i++) {
+      workBuffer[i] = 0;
+    }
+
+    // Single I/O call to underlying stream
+    dos.write(workBuffer, 0, paddedLen);
   }
 
   /**
@@ -1693,7 +1890,8 @@ public class StringArray extends PrimitiveArray {
   public void externalizeForDODS(final DataOutputStream dos) throws Exception {
     dos.writeInt(size);
     dos.writeInt(size); // yes, a second time
-    for (int i = 0; i < size; i++) externalizeForDODS(dos, get(i));
+    byte[] buffer = new byte[1024];
+    for (int i = 0; i < size; i++) externalizeForDODS(dos, get(i), buffer);
   }
 
   /**
@@ -1706,8 +1904,9 @@ public class StringArray extends PrimitiveArray {
    * @throws Exception if trouble
    */
   @Override
-  public void externalizeForDODS(final DataOutputStream dos, final int i) throws Exception {
-    externalizeForDODS(dos, get(i));
+  public void externalizeForDODS(final DataOutputStream dos, final int i, byte[] workBuffer)
+      throws Exception {
+    externalizeForDODS(dos, get(i), workBuffer);
   }
 
   /**
@@ -1975,9 +2174,15 @@ public class StringArray extends PrimitiveArray {
    *     (e.g., "a quote "" within a phrase"). The resulting parts are all trim'd.
    */
   public static List<String> wordsAndQuotedPhrases(final String searchFor, final List<String> sa) {
+    return wordsAndQuotedPhrases(searchFor, sa, null);
+  }
+
+  public static List<String> wordsAndQuotedPhrases(
+      final String searchFor, final List<String> sa, final boolean[] isColumnNeeded) {
     sa.clear();
     if (searchFor == null) return sa;
     int po = 0;
+    int col = 0;
     final int n = searchFor.length();
     while (po < n) {
       final char ch = searchFor.charAt(po);
@@ -1993,8 +2198,13 @@ public class StringArray extends PrimitiveArray {
             po2++;
           }
         }
-        final String s = searchFor.substring(po + 1, po2);
-        sa.add(String2.replaceAll(s, "\"\"", "\""));
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          sa.add(null);
+        } else {
+          final String s = searchFor.substring(po + 1, po2);
+          sa.add(String2.replaceAll(s, "\"\"", "\""));
+        }
+        col++;
         po = po2 + 1;
       } else if (String2.isWhite(ch) || ch == ',') {
         // whitespace or comma
@@ -2006,7 +2216,12 @@ public class StringArray extends PrimitiveArray {
             && !String2.isWhite(searchFor.charAt(po2))
             && searchFor.charAt(po2) != ',') po2++;
         // String2.log("searchFor=" + searchFor + " wordPo=" + po + " po2=" + po2);
-        sa.add(searchFor.substring(po, po2));
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          sa.add(null);
+        } else {
+          sa.add(searchFor.substring(po, po2));
+        }
+        col++;
         po = po2;
       }
     }
@@ -2168,11 +2383,23 @@ public class StringArray extends PrimitiveArray {
       final boolean trim,
       final boolean keepNothing,
       final List<String> al) {
+    return arrayListFromCSV(word, searchFor, separatorChars, trim, keepNothing, al, null);
+  }
+
+  public static List<String> arrayListFromCSV(
+      final StringBuilder word,
+      final String searchFor,
+      final String separatorChars,
+      final boolean trim,
+      final boolean keepNothing,
+      final List<String> al,
+      final boolean[] isColumnNeeded) {
     word.setLength(0);
     al.clear();
     if (searchFor == null || searchFor.length() == 0) return al;
     // String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
     int po = 0; // next char to be looked at
+    int col = 0;
     int n = searchFor.length();
     boolean isQuoted = false; // is this item quoted?
     while (po <= n) { // ==n closes things out
@@ -2267,7 +2494,9 @@ public class StringArray extends PrimitiveArray {
 
         // end of word?
       } else if (po == n + 1 || separatorChars.indexOf(ch) >= 0) { // e.g., comma or semicolon
-        if (trim && !isQuoted) {
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          al.add(null);
+        } else if (trim && !isQuoted) {
           String s = String2.trimAndToString(word);
           if (s.length() > 0 || keepNothing || isQuoted) {
             al.add(s);
@@ -2275,6 +2504,7 @@ public class StringArray extends PrimitiveArray {
         } else if (word.length() > 0 || keepNothing || isQuoted) {
           al.add(word.toString());
         }
+        col++;
         word.setLength(0);
         isQuoted = false;
         if (po == n + 1) break;
@@ -2307,11 +2537,23 @@ public class StringArray extends PrimitiveArray {
       final boolean trim,
       final boolean keepNothing,
       final List<String> al) {
+    return arrayListFromCSV(word, searchFor, separatorChars, trim, keepNothing, al, null);
+  }
+
+  public static List<String> arrayListFromCSV(
+      final StringBuilder word,
+      final String searchFor,
+      final char separatorChars,
+      final boolean trim,
+      final boolean keepNothing,
+      final List<String> al,
+      final boolean[] isColumnNeeded) {
     word.setLength(0);
     al.clear();
     if (searchFor == null || searchFor.length() == 0) return al;
     // String2.log(">> arrayFrom s=" + String2.annotatedString(searchFor));
     int po = 0; // next char to be looked at
+    int col = 0;
     int n = searchFor.length();
     boolean isQuoted = false; // is this item quoted?
     while (po <= n) { // ==n closes things out
@@ -2407,7 +2649,9 @@ public class StringArray extends PrimitiveArray {
         // end of word?
         // separatorChars.indexOf(ch) >= 0
       } else if (po == n + 1 || ch == separatorChars) { // e.g., comma or semicolon
-        if (trim && !isQuoted) {
+        if (isColumnNeeded != null && col < isColumnNeeded.length && !isColumnNeeded[col]) {
+          al.add(null);
+        } else if (trim && !isQuoted) {
           String s = String2.trimAndToString(word);
           if (s.length() > 0 || keepNothing || isQuoted) {
             al.add(s);
@@ -2415,6 +2659,7 @@ public class StringArray extends PrimitiveArray {
         } else if (word.length() > 0 || keepNothing || isQuoted) {
           al.add(word.toString());
         }
+        col++;
         word.setLength(0);
         isQuoted = false;
         if (po == n + 1) break;

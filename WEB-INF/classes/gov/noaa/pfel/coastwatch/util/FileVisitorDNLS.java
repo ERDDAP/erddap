@@ -411,7 +411,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
           // If files have file-system-like names, e.g.,
           //  url=http://bucketname.s3.region.amazonaws.com/  key=dir1/dir2/fileName.ext
           //  e.g.,
-          // http://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+          // http://nasa-nex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
           //  They are just object keys with internal slashes.
           // So specify prefix in request.
           Pattern fileNameRegexPattern = Pattern.compile(tFileNameRegex);

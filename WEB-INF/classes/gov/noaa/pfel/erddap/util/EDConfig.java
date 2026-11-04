@@ -5,6 +5,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -12,7 +13,6 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
-import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.http.CorsResponseFilter;
 import gov.noaa.pfel.erddap.util.Metrics.FeatureFlag;
 import java.awt.Color;
@@ -20,6 +20,7 @@ import java.awt.Image;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 public class EDConfig {
@@ -215,9 +216,11 @@ public class EDConfig {
   // these are all non-null if in awsS3Output mode, otherwise all are null
   public String awsS3OutputBucketUrl = null; // ends in slash
   public String awsS3OutputBucket = null; // the short name of the bucket
-  public S3TransferManager awsS3OutputTransferManager = null;
+  public String awsS3OutputRegion = null;
   public boolean useAwsCrt;
   public boolean useAwsAnonymous;
+  public double s3TargetThroughputInGbps = 20.0;
+  public Integer s3MaxConcurrency = null;
 
   public final String corsAllowHeaders;
   public final String[] corsAllowOrigin;
@@ -228,23 +231,15 @@ public class EDConfig {
   public boolean usePrometheusMetrics = true;
   @FeatureFlag public final boolean listPrivateDatasets;
   @FeatureFlag public final boolean subscriptionSystemActive;
-  @FeatureFlag public final boolean convertersActive;
-  @FeatureFlag public final boolean slideSorterActive;
   @FeatureFlag public final boolean fgdcActive;
-  @FeatureFlag public final boolean iso19115Active;
-  @FeatureFlag public final boolean jsonldActive;
   @FeatureFlag public final boolean geoServicesRestActive;
   @FeatureFlag public final boolean filesActive;
   @FeatureFlag public final boolean defaultAccessibleViaFiles;
   @FeatureFlag public final boolean dataProviderFormActive;
-  @FeatureFlag public final boolean outOfDateDatasetsActive;
   @FeatureFlag public final boolean politicalBoundariesActive;
-  @FeatureFlag public final boolean wmsClientActive;
   @FeatureFlag public final boolean enableMqttBroker;
   @FeatureFlag public boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
-  @FeatureFlag public final boolean wmsActive;
-  @FeatureFlag public boolean quickRestart;
   @FeatureFlag public final boolean subscribeToRemoteErddapDataset;
   @FeatureFlag public boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
@@ -271,19 +266,22 @@ public class EDConfig {
   @FeatureFlag public boolean useSaxParser;
   @FeatureFlag public boolean publishMqttNotif;
   @FeatureFlag public boolean enableEnvParsing;
-  @FeatureFlag public boolean updateSubsRssOnFileChanges;
-  @FeatureFlag public final boolean useEddReflection;
   @FeatureFlag public boolean enableCors;
-  @FeatureFlag public boolean includeNcCFSubsetVariables;
-  @FeatureFlag public boolean ncHeaderMakeFile = false;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
+
+  /**
+   * When true, a request that names a real dataset but matches no data answers 422 Unprocessable
+   * Content instead of 404, so a client can tell it apart from a dataset that is not there while
+   * raise_for_status() and similar checks still fire. Off by default, which keeps the long-standing
+   * 404. See https://github.com/ERDDAP/erddap/issues/410
+   */
+  @FeatureFlag public boolean use422ForNoDataStatusCode = false;
+
   @FeatureFlag public boolean useHeadersForUrl = true;
-  @FeatureFlag public boolean generateCroissantSchema = true;
-  @FeatureFlag public boolean touchThreadOnlyWhenItems = true;
-  @FeatureFlag public boolean taskCacheClear = true;
-  @FeatureFlag public boolean useNcMetadataForFileTable = true;
-  @FeatureFlag public boolean backgroundCreateSubsetTables = true;
+  @FeatureFlag public boolean verifyHostNameErddapUrl = true;
+  public java.util.Set<String> allowedHosts =
+      java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -464,8 +462,6 @@ public class EDConfig {
     }
     variableNameCategoryAttributeIndex = String2.indexOf(categoryAttributes, "variableName");
 
-    String wmsActiveString = getSetupEVString(setup, ev, "wmsActive", "");
-    wmsActive = !String2.isSomething(wmsActiveString) || String2.parseBoolean(wmsActiveString);
     wmsSampleDatasetID = getSetupEVString(setup, ev, "wmsSampleDatasetID", wmsSampleDatasetID);
     wmsSampleVariable = getSetupEVString(setup, ev, "wmsSampleVariable", wmsSampleVariable);
     wmsSampleBBox110 = getSetupEVString(setup, ev, "wmsSampleBBox110", wmsSampleBBox110);
@@ -534,10 +530,7 @@ public class EDConfig {
                 + String2.AWS_S3_REGEX());
 
       awsS3OutputBucket = bro[0];
-      String region = bro[1];
-
-      // build the awsS3OutputTransferManager
-      awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
+      awsS3OutputRegion = bro[1];
 
       // note that I could set LifecycleRule(s) for the bucket via
       // awsS3OutputClient.putBucketLifecycleConfiguration
@@ -548,12 +541,13 @@ public class EDConfig {
     // optional parameter to disable AWS Common Runtime
     useAwsCrt = getSetupEVBoolean(setup, ev, "useAwsCrt", true);
     useAwsAnonymous = getSetupEVBoolean(setup, ev, "useAwsAnonymous", false);
+    s3TargetThroughputInGbps = getSetupEVDouble(setup, ev, "s3TargetThroughputInGbps", 20.0);
+    int maxConcurrency = getSetupEVInt(setup, ev, "s3MaxConcurrency", -1);
+    s3MaxConcurrency = maxConcurrency > 0 ? Integer.valueOf(maxConcurrency) : null;
 
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 
     fgdcActive = getSetupEVBoolean(setup, ev, "fgdcActive", true);
-    iso19115Active = getSetupEVBoolean(setup, ev, "iso19115Active", true);
-    jsonldActive = getSetupEVBoolean(setup, ev, "jsonldActive", true);
     // until geoServicesRest is finished, it is always inactive
     geoServicesRestActive =
         false; // getSetupEVBoolean(setup, ev,          "geoServicesRestActive",      false);
@@ -562,9 +556,7 @@ public class EDConfig {
         getSetupEVBoolean(
             setup, ev, "defaultAccessibleViaFiles", false); // false matches historical behavior
     dataProviderFormActive = getSetupEVBoolean(setup, ev, "dataProviderFormActive", true);
-    outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
     politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
-    wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
     enableMqttBroker = getSetupEVBoolean(setup, ev, "enableMqttBroker", false);
 
     // until SOS is finished, it is always inactive
@@ -634,11 +626,6 @@ public class EDConfig {
         getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
     requestCacheMillis =
         getSetupEVInt(setup, ev, "requestCacheMinutes", DEFAULT_cacheMinutes / 15) * 60000L;
-    touchThreadOnlyWhenItems = getSetupEVBoolean(setup, ev, "touchThreadOnlyWhenItems", true);
-    taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
-    useNcMetadataForFileTable = getSetupEVBoolean(setup, ev, "useNcMetadataForFileTable", true);
-    backgroundCreateSubsetTables =
-        getSetupEVBoolean(setup, ev, "backgroundCreateSubsetTables", true);
     lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
     loadDatasetsMinMillis =
         Math.max(
@@ -659,19 +646,15 @@ public class EDConfig {
 
     lowResLogoImageFile =
         getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
-    quickRestart = getSetupEVBoolean(setup, ev, "quickRestart", true);
     passwordEncoding = getSetupEVString(setup, ev, "passwordEncoding", "UEPSHA256");
     searchEngine = getSetupEVString(setup, ev, "searchEngine", "original");
 
     subscribeToRemoteErddapDataset =
         getSetupEVBoolean(setup, ev, "subscribeToRemoteErddapDataset", true);
     subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
-    convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
     useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
     publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
     enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
-    updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
-    useEddReflection = getSetupEVBoolean(setup, ev, "useEddReflection", true);
     enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
     corsAllowHeaders =
         getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
@@ -679,16 +662,51 @@ public class EDConfig {
         String2.split(
             String2.toLowerCase(getSetupEVString(setup, ev, "corsAllowOrigin", (String) null)),
             ',');
+    use422ForNoDataStatusCode = getSetupEVBoolean(setup, ev, "use422ForNoDataStatusCode", false);
     useHeadersForUrl = getSetupEVBoolean(setup, ev, "useHeadersForUrl", true);
-    slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
+
+    verifyHostNameErddapUrl = getSetupEVBoolean(setup, ev, "verifyHostNameErddapUrl", true);
+    String allowedHostsStr = getSetupEVString(setup, ev, "allowedHosts", "");
+    allowedHosts = java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+    if (String2.isSomething(allowedHostsStr)) {
+      String[] parts = String2.split(allowedHostsStr, ',');
+      for (String part : parts) {
+        if (part != null) {
+          String normalized = part.trim().toLowerCase();
+          // closing bracket is for IPv6 addresses, e.g., [::1]:8080
+          int closingBracket = normalized.indexOf(']');
+          if (closingBracket >= 0) {
+            int colonIdx = normalized.indexOf(':', closingBracket);
+            if (colonIdx >= 0) {
+              normalized = normalized.substring(0, colonIdx);
+            }
+          } else {
+            int colonIdx = normalized.indexOf(':');
+            if (colonIdx >= 0) {
+              normalized = normalized.substring(0, colonIdx);
+            }
+          }
+          normalized = normalized.trim();
+          if (!normalized.isEmpty()) {
+            allowedHosts.add(normalized);
+          }
+        }
+      }
+    }
+    // Automatically parse domain names from baseUrl and baseHttpsUrl
+    String baseDomain = String2.extractDomain(baseUrl, false);
+    if (baseDomain != null && !baseDomain.isEmpty()) {
+      allowedHosts.add(baseDomain);
+    }
+    String baseHttpsDomain = String2.extractDomain(baseHttpsUrl, false);
+    if (baseHttpsDomain != null && !baseHttpsDomain.isEmpty()) {
+      allowedHosts.add(baseHttpsDomain);
+    }
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");
-    includeNcCFSubsetVariables = getSetupEVBoolean(setup, ev, "includeNcCFSubsetVariables", false);
-    ncHeaderMakeFile = getSetupEVBoolean(setup, ev, "ncHeaderMakeFile", false);
     useSisISO19115 = getSetupEVBoolean(setup, ev, "useSisISO19115", false);
     useSisISO19139 = getSetupEVBoolean(setup, ev, "useSisISO19139", false);
-    generateCroissantSchema = getSetupEVBoolean(setup, ev, "generateCroissantSchema", true);
     deploymentInfo = getSetupEVString(setup, ev, "deploymentInfo", "");
     // Mqtt flags initialization
     mqttServerHost = getSetupEVString(setup, ev, "mqttServerHost", DEFAULT_MQTT_HOST);
@@ -718,6 +736,16 @@ public class EDConfig {
     googleEarthLogoFileHeight = tImage.getHeight(null);
 
     lazyInitializeStatics();
+  }
+
+  // access the transfer manager from the cache
+  public S3TransferManager getS3TransferManager() {
+    try {
+      return EDStatic.buildS3TransferManager(awsS3OutputRegion);
+    } catch (ExecutionException e) {
+      String2.log(MustBe.throwableToString(e));
+      throw new RuntimeException(e);
+    }
   }
 
   private void copyContentImagesToWebApps() {
@@ -796,8 +824,7 @@ public class EDConfig {
    * @param tDefault the default value
    * @return the desired value (or the default if it isn't defined anywhere)
    */
-  private int getSetupEVInt(
-      ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
+  int getSetupEVInt(ResourceBundle2 setup, Map<String, String> ev, String paramName, int tDefault) {
     String value = ev.get("ERDDAP_" + paramName);
     if (value != null) {
       int valuei = String2.parseInt(value);
@@ -827,5 +854,29 @@ public class EDConfig {
       return value;
     }
     return setup.getNotNothingString(paramName, errorInMethod);
+  }
+
+  /**
+   * This gets a double from setup.xml or environmentalVariables (preferred). Ensures the value is
+   * positive (> 0) and finite; falls back to tDefault otherwise.
+   *
+   * @param setup from setup.xml
+   * @param ev from System.getenv()
+   * @param paramName If present in ev, it will be ERDDAP_paramName.
+   * @param tDefault the default value
+   * @return the desired value (or default if not defined or <= 0/invalid)
+   */
+  double getSetupEVDouble(
+      ResourceBundle2 setup, Map<String, String> ev, String paramName, double tDefault) {
+    String s = getSetupEVString(setup, ev, paramName, null);
+    if (String2.isSomething(s)) {
+      double valued = String2.parseDouble(s);
+      if (Double.isFinite(valued) && valued > 0) {
+        return valued;
+      }
+      String2.log(
+          "WARNING: " + paramName + " (" + s + ") is invalid or <= 0. Using default: " + tDefault);
+    }
+    return tDefault;
   }
 }

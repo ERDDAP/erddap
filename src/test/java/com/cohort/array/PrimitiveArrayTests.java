@@ -3,6 +3,7 @@ package com.cohort.array;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.erddap.util.BufferedFileChannel;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
@@ -366,6 +367,355 @@ class PrimitiveArrayTests {
             StringArray.simpleFromNccsv("'a', ''")); // doesn't match regex
     Test.ensureEqual(pa.elementTypeString(), "String", "");
     Test.ensureEqual(pa.toString(), "'a', ''", "");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testFileChannelBulkIO() throws Throwable {
+    String2.log("*** PrimitiveArray.testFileChannelBulkIO");
+    java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("bulk_io_test", ".bin");
+    try {
+      // 1. DoubleArray test
+      {
+        DoubleArray original = new DoubleArray(new double[] {1.1, 2.2, 3.3, 4.4, 5.5});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+
+          // test writing full channel
+          long bytesWritten = original.writeToChannel(channel);
+          Test.ensureEqual(bytesWritten, 5L * 8L, "DoubleArray bytesWritten full");
+
+          // test writing subset
+          channel.fileChannel().position(0);
+          channel.fileChannel().truncate(0);
+          bytesWritten = original.writeToChannel(channel, 1, 3); // elements 2.2, 3.3, 4.4
+          Test.ensureEqual(bytesWritten, 3L * 8L, "DoubleArray bytesWritten subset");
+
+          // test writing 0 length
+          bytesWritten = original.writeToChannel(channel, 1, 0);
+          Test.ensureEqual(bytesWritten, 0L, "DoubleArray write 0 length");
+
+          // test read back
+          channel.fileChannel().position(0);
+          DoubleArray target = new DoubleArray();
+          target.readFromChannel(channel.fileChannel(), 3);
+          Test.ensureEqual(target.size(), 3, "DoubleArray read size");
+          Test.ensureEqual(target.get(0), 2.2, "DoubleArray val 0");
+          Test.ensureEqual(target.get(1), 3.3, "DoubleArray val 1");
+          Test.ensureEqual(target.get(2), 4.4, "DoubleArray val 2");
+
+          // test reading 0 length
+          target.readFromChannel(channel.fileChannel(), 0);
+          Test.ensureEqual(target.size(), 3, "DoubleArray read 0 length size");
+
+          // test bounds error
+          boolean failed = false;
+          try {
+            original.writeToChannel(channel, -1, 3);
+          } catch (IllegalArgumentException e) {
+            failed = true;
+          }
+          Test.ensureTrue(
+              failed, "DoubleArray: should throw IllegalArgumentException for offset < 0");
+
+          failed = false;
+          try {
+            original.writeToChannel(channel, 1, -1);
+          } catch (IllegalArgumentException e) {
+            failed = true;
+          }
+          Test.ensureTrue(
+              failed, "DoubleArray: should throw IllegalArgumentException for length < 0");
+
+          failed = false;
+          try {
+            original.writeToChannel(channel, 2, 4);
+          } catch (IllegalArgumentException e) {
+            failed = true;
+          }
+          Test.ensureTrue(
+              failed,
+              "DoubleArray: should throw IllegalArgumentException for offset + length > size");
+
+          failed = false;
+          try {
+            original.readFromChannel(channel.fileChannel(), -1);
+          } catch (IllegalArgumentException e) {
+            failed = true;
+          }
+          Test.ensureTrue(failed, "DoubleArray: should throw IllegalArgumentException for n < 0");
+
+          failed = false;
+          try {
+            original.writeToChannel((BufferedFileChannel) null, 1, 1);
+          } catch (IllegalArgumentException e) {
+            failed = true;
+          }
+          Test.ensureTrue(
+              failed, "DoubleArray: should throw IllegalArgumentException for null channel write");
+
+          failed = false;
+          try {
+            original.readFromChannel(null, 1);
+          } catch (IllegalArgumentException e) {
+            failed = true;
+          }
+          Test.ensureTrue(
+              failed, "DoubleArray: should throw IllegalArgumentException for null channel read");
+        }
+      }
+
+      // 2. ByteArray test
+      {
+        ByteArray original = new ByteArray(new byte[] {10, 20, 30, 40});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel, 1, 2); // 20, 30
+          Test.ensureEqual(bytesWritten, 2L, "ByteArray bytesWritten");
+          channel.fileChannel().position(0);
+          ByteArray target = new ByteArray();
+          target.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(target.size(), 2, "ByteArray read size");
+          Test.ensureEqual(target.get(0), (byte) 20, "ByteArray val 0");
+          Test.ensureEqual(target.get(1), (byte) 30, "ByteArray val 1");
+        }
+      }
+
+      // 3. FloatArray test
+      {
+        FloatArray original = new FloatArray(new float[] {1.5f, 2.5f, 3.5f});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel);
+          Test.ensureEqual(bytesWritten, 3L * 4L, "FloatArray bytesWritten");
+          channel.fileChannel().position(0);
+          FloatArray target = new FloatArray();
+          target.readFromChannel(channel.fileChannel(), 3);
+          Test.ensureEqual(target.get(0), 1.5f, "FloatArray val 0");
+          Test.ensureEqual(target.get(1), 2.5f, "FloatArray val 1");
+        }
+      }
+
+      // 4. IntArray test
+      {
+        IntArray original = new IntArray(new int[] {100, 200, 300});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel);
+          Test.ensureEqual(bytesWritten, 3L * 4L, "IntArray bytesWritten");
+          channel.fileChannel().position(0);
+          IntArray target = new IntArray();
+          target.readFromChannel(channel.fileChannel(), 3);
+          Test.ensureEqual(target.get(0), 100, "IntArray val 0");
+          Test.ensureEqual(target.get(1), 200, "IntArray val 1");
+        }
+      }
+
+      // 5. LongArray test
+      {
+        LongArray original = new LongArray(new long[] {1000L, 2000L});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel);
+          Test.ensureEqual(bytesWritten, 2L * 8L, "LongArray bytesWritten");
+          channel.fileChannel().position(0);
+          LongArray target = new LongArray();
+          target.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(target.get(0), 1000L, "LongArray val 0");
+        }
+      }
+
+      // 6. ShortArray test
+      {
+        ShortArray original = new ShortArray(new short[] {10, 20});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel);
+          Test.ensureEqual(bytesWritten, 2L * 2L, "ShortArray bytesWritten");
+          channel.fileChannel().position(0);
+          ShortArray target = new ShortArray();
+          target.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(target.get(0), (short) 10, "ShortArray val 0");
+        }
+      }
+
+      // 7. CharArray test
+      {
+        CharArray original = new CharArray(new char[] {'a', 'b', 'c'});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel);
+          Test.ensureEqual(bytesWritten, 3L * 2L, "CharArray bytesWritten");
+          channel.fileChannel().position(0);
+          CharArray target = new CharArray();
+          target.readFromChannel(channel.fileChannel(), 3);
+          Test.ensureEqual(target.get(0), 'a', "CharArray val 0");
+        }
+      }
+
+      // 8. StringArray test
+      {
+        StringArray original = new StringArray(new String[] {"hello", "world"});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          long bytesWritten = original.writeToChannel(channel);
+          channel.fileChannel().position(0);
+          StringArray target = new StringArray();
+          target.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(target.get(0), "hello", "StringArray val 0");
+          Test.ensureEqual(target.get(1), "world", "StringArray val 1");
+        }
+      }
+
+      // 9. Unsigned arrays: UByteArray, UShortArray, UIntArray, ULongArray test
+      {
+        UByteArray uba = new UByteArray(new byte[] {1, 2});
+        UShortArray usa = new UShortArray(new short[] {1, 2});
+        UIntArray uia = new UIntArray(new int[] {1, 2});
+        ULongArray ula = new ULongArray(new long[] {1, 2});
+
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+
+          uba.writeToChannel(channel);
+          channel.fileChannel().position(0);
+          UByteArray ubaT = new UByteArray();
+          ubaT.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(ubaT.get(0), 1, "UByteArray val 0");
+
+          channel.fileChannel().position(0);
+          channel.fileChannel().truncate(0);
+          usa.writeToChannel(channel);
+          channel.fileChannel().position(0);
+          UShortArray usaT = new UShortArray();
+          usaT.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(usaT.get(0), 1, "UShortArray val 0");
+
+          channel.fileChannel().position(0);
+          channel.fileChannel().truncate(0);
+          uia.writeToChannel(channel);
+          channel.fileChannel().position(0);
+          UIntArray uiaT = new UIntArray();
+          uiaT.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(uiaT.get(0), 1L, "UIntArray val 0");
+
+          channel.fileChannel().position(0);
+          channel.fileChannel().truncate(0);
+          ula.writeToChannel(channel);
+          channel.fileChannel().position(0);
+          ULongArray ulaT = new ULongArray();
+          ulaT.readFromChannel(channel.fileChannel(), 2);
+          Test.ensureEqual(ulaT.get(0).toString(), "1", "ULongArray val 0");
+        }
+      }
+
+      // 10. EOFException check for DoubleArray and ByteArray
+      {
+        DoubleArray originalD = new DoubleArray(new double[] {1.1, 2.2});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          originalD.writeToChannel(channel);
+
+          channel.fileChannel().position(0);
+          DoubleArray target = new DoubleArray();
+          boolean threwEOF = false;
+          try {
+            target.readFromChannel(channel.fileChannel(), 3);
+          } catch (java.io.EOFException e) {
+            threwEOF = true;
+          }
+          Test.ensureTrue(
+              threwEOF,
+              "DoubleArray: should throw EOFException when reading more elements than available");
+        }
+
+        ByteArray originalB = new ByteArray(new byte[] {1, 2});
+        try (BufferedFileChannel channel =
+            new BufferedFileChannel(
+                java.nio.channels.FileChannel.open(
+                    tempFile,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.WRITE,
+                    java.nio.file.StandardOpenOption.READ))) {
+          channel.fileChannel().truncate(0);
+          originalB.writeToChannel(channel);
+
+          channel.fileChannel().position(0);
+          ByteArray target = new ByteArray();
+          boolean threwEOF = false;
+          try {
+            target.readFromChannel(channel.fileChannel(), 3);
+          } catch (java.io.EOFException e) {
+            threwEOF = true;
+          }
+          Test.ensureTrue(
+              threwEOF,
+              "ByteArray: should throw EOFException when reading more elements than available");
+        }
+      }
+
+    } finally {
+      java.nio.file.Files.deleteIfExists(tempFile);
+    }
   }
 
   /**

@@ -40,7 +40,9 @@ class EDDTableFromHttpGetTests {
   void tearDown() {
     // Wait for all background tasks to finish to avoid interference between tests
     // e.g. TASK_CREATE_SUBSET_TABLE
-    Awaitility.await().atMost(Duration.ofSeconds(30)).until(() -> EDStatic.nUnfinishedTasks() <= 0);
+    Awaitility.await()
+        .atMost(Duration.ofSeconds(120))
+        .until(() -> EDStatic.nUnfinishedTasks() <= 0);
   }
 
   @org.junit.jupiter.api.Test

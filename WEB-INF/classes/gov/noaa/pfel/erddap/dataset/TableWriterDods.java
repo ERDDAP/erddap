@@ -100,9 +100,10 @@ public class TableWriterDods extends TableWriter {
     PrimitiveArray pas[] = new PrimitiveArray[nColumns];
     for (int col = 0; col < nColumns; col++) pas[col] = table.getColumn(col);
 
+    byte[] buffer = new byte[1024];
     for (int row = 0; row < nRows; row++) {
       dos.writeInt(0x5A << 24); // start of instance
-      for (int col = 0; col < nColumns; col++) pas[col].externalizeForDODS(dos, row);
+      for (int col = 0; col < nColumns; col++) pas[col].externalizeForDODS(dos, row, buffer);
     }
 
     // so data gets to user right away

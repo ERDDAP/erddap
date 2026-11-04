@@ -3,7 +3,6 @@ package gov.noaa.pfel.coastwatch.griddata;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import opendap.dap.DConnect2;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagDisabledIncompleteTest;
 import tags.TagDisabledThredds;
@@ -20,9 +19,11 @@ class OpendapTests {
   void testLocalFile() throws Exception {
     Grid.verbose = true;
     Opendap.verbose = true;
-    String localFile = OpendapTests.class.getResource("/gov/noaa/pfel/coastwatch/griddata/test.nc").getPath();
+    String localFile =
+        OpendapTests.class.getResource("/gov/noaa/pfel/coastwatch/griddata/test.nc").getPath();
     Opendap opendap = new Opendap(localFile, true);
-    try (ucar.nc2.dataset.NetcdfDataset ncd = ucar.nc2.dataset.NetcdfDatasets.openDataset(localFile)) {
+    try (ucar.nc2.dataset.NetcdfDataset ncd =
+        ucar.nc2.dataset.NetcdfDatasets.openDataset(localFile)) {
       opendap.getGridInfo(ncd, "ATssta", "-1.0e34");
     }
     Test.ensureEqual(opendap.gridNLatValues, 3, "nLat");
@@ -71,7 +72,8 @@ class OpendapTests {
     // test THREDDS //was :8081
     opendap =
         new Opendap("https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/3day", true);
-    try (ucar.nc2.dataset.NetcdfDataset ncd = ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
+    try (ucar.nc2.dataset.NetcdfDataset ncd =
+        ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
       opendap.getGridInfo(ncd, "GAssta", "-1.0e34");
     }
     Test.ensureEqual(
@@ -86,7 +88,8 @@ class OpendapTests {
     opendap =
         new Opendap( // was :8081
             "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day", true);
-    try (ucar.nc2.dataset.NetcdfDataset ncd2 = ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
+    try (ucar.nc2.dataset.NetcdfDataset ncd2 =
+        ucar.nc2.dataset.NetcdfDatasets.openDataset(opendap.url)) {
       opendap.getGridInfo(ncd2, "AGssta", "-1.0e34");
     }
     Test.ensureEqual(opendap.getLat(0), -75, "");

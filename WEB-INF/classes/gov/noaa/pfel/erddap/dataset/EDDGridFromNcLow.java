@@ -290,10 +290,12 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
           avPa[avi] =
               avi > 0 && dimSize1 < 32000 ? new ShortArray(0, dimSize1) : new IntArray(0, dimSize1);
         } else {
-          avPa[avi] = NcHelper.getPrimitiveArray(var);
-          if (unpack())
+          if (unpack()) {
             avPa[avi] =
-                NcHelper.unpackPA(var, avPa[avi], true, true); // lookForStringTime, lookForUnsigned
+                NcHelper.getUnpackedPrimitiveArray(var, var.read(), NcHelper.isUnsigned(var));
+          } else {
+            avPa[avi] = NcHelper.getPrimitiveArray(var);
+          }
         }
       }
 
@@ -423,25 +425,12 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             String tSel = selection;
             if (edv.sourceDataPAType() == PAType.STRING)
               tSel += ",0:" + (var.getShape(var.getRank() - 1) - 1);
-            paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel), true, NcHelper.isUnsigned(var));
-            // 2020-02-27 WARNING: in netcdf-java 5+, when reading nc3 file,
-            //  variable with _Unsigned="true" behaves in raw way
-            /*
-            String2.log(">> EDDGridFrimNcFilesLow.getSourceDataFromFile " + edv.sourceName() +
-                " sourceDataPAType()=" + edv.sourceDataPAType() +
-                " var.getDataType()=" + var.getDataType() +                //returns raw (signed) dataType
-                " dataType.isUnsigned=" + var.getDataType().isUnsigned() + //returns false
-                " pa.elementType()=" + paa[dvi].elementType() +
-                " pa.isUnsigned=" + paa[dvi].isUnsigned() );
-                //    "[" + selection + "]\n" + paa[dvi].toString());
-            /* */
-
-            if (unpack())
+            if (unpack()) {
               paa[dvi] =
-                  NcHelper.unpackPA(
-                      var, paa[dvi], true,
-                      true); // lookForStringTime, lookForUnsigned (which changes type, eg unsigned
-            // byte to signed short)
+                  NcHelper.getUnpackedPrimitiveArray(var, var.read(tSel), NcHelper.isUnsigned(var));
+            } else {
+              paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel), true, NcHelper.isUnsigned(var));
+            }
 
             nValues = paa[dvi].size();
           }

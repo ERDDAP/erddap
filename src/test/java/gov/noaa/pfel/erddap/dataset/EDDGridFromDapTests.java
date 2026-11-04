@@ -3023,7 +3023,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
             + suggDatasetID2
             + "\" active=\"true\">\n";
 
-    String results = EDDGridFromDap.generateDatasetsXml(url, null, null, null, -1, null);
+    String results = EDDGridFromDap.generateDatasetsXml(url, null, -1, null);
     results = results.replaceAll("... ... .. ..:..:.. HST ....", "DDD MMM dd hh:mm:ss HST yyyy");
     Test.ensureEqual(results.substring(0, expected1.length()), expected1, "results=\n" + results);
 
@@ -3292,7 +3292,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
               + suggDatasetID2
               + "\" active=\"true\">\n";
 
-      results = EDDGridFromDap.generateDatasetsXml(url, null, null, null, -1, null);
+      results = EDDGridFromDap.generateDatasetsXml(url, null, -1, null);
 
       results =
           results.replaceAll(
@@ -3517,7 +3517,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
             + "</dataset>\n"
             + "\n";
 
-    String results = EDDGridFromDap.generateDatasetsXml(url, null, null, null, -1, null);
+    String results = EDDGridFromDap.generateDatasetsXml(url, null, -1, null);
     results =
         results.replaceAll(
             "<reloadEveryNMinutes>\\d*</reloadEveryNMinutes>",
@@ -3549,8 +3549,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
 
     try {
       String results =
-          EDDGridFromDap.generateDatasetsXml(
-              url, null, null, new String[] {"run", "time"}, -1, null);
+          EDDGridFromDap.generateDatasetsXml(url, new String[] {"run", "time"}, -1, null);
       throw new RuntimeException("Shouldn't get here.");
 
     } catch (Throwable t) {
@@ -6796,7 +6795,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
               + "    longitude = 8640;\n"
               + "  variables:\n"
               + "    float chlorophyll\\(time=\\d{3}, altitude=1, latitude=4320, longitude=8640\\);\n"
-              + "      :_CoordinateAxes = \"time altitude latitude longitude \";\n"
+              + "      :_CoordinateAxes = \"time altitude latitude longitude\";\n"
               + "      :_FillValue = -9999999.0f; // float\n"
               + "      :colorBarMaximum = 30.0; // double\n"
               + "      :colorBarMinimum = 0.03; // double\n"
@@ -7402,7 +7401,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
     // String2.log(SSR.getUrlResponseStringNewline(url + ".das"));
     int language = 0;
 
-    String results = EDDGridFromDap.generateDatasetsXml(url, null, null, null, 10080, null);
+    String results = EDDGridFromDap.generateDatasetsXml(url, null, 10080, null);
 
     // KNOWN PROBLEM knownProblem -- these times bounce around -- I don't know why
     String change[] =
@@ -8315,8 +8314,6 @@ class EDDGridFromDapTests extends WireMockLifecycle {
         EDDGridFromDap.generateDatasetsXml(
             "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day",
             null,
-            null,
-            null,
             -1,
             null);
     String2.log(results);
@@ -8670,8 +8667,6 @@ class EDDGridFromDapTests extends WireMockLifecycle {
     String results =
         EDDGridFromDap.generateDatasetsXml(
             "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml",
-            null,
-            null,
             new String[] {"time", "lat", "lon"},
             -1,
             null);
@@ -10217,7 +10212,7 @@ class EDDGridFromDapTests extends WireMockLifecycle {
             + "</dataset>\n"
             + "\n";
 
-    String results = EDDGridFromDap.generateDatasetsXml(url, null, null, null, -1, null);
+    String results = EDDGridFromDap.generateDatasetsXml(url, null, -1, null);
 
     Test.ensureEqual(results, expected, "results=\n" + results);
   }

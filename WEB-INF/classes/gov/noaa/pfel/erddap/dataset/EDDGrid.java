@@ -556,15 +556,7 @@ public abstract class EDDGrid extends EDD {
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null) {
 
-      if (!EDStatic.config.wmsActive)
-        accessibleViaWMS =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
-                    "WMS",
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WMS")));
-      else if (lonIndex < 0 || latIndex < 0)
+      if (lonIndex < 0 || latIndex < 0)
         accessibleViaWMS =
             String2.canonical(
                 MessageFormat.format(
@@ -2454,18 +2446,24 @@ public abstract class EDDGrid extends EDD {
   public String changed(EDD old) {
     if (old == null) return super.changed(old); // so message is consistent
 
-    if (!(old instanceof EDDGrid oldG)) return EDStatic.messages.EDDChangedTableToGrid + "\n";
+    if (!(old instanceof EDDGrid oldG)) {
+      return EDStatic.messages.EDDChangedTableToGrid + "\n";
+    }
 
     // check most important things first
     int nAv = axisVariables.length;
-    StringBuilder diff = new StringBuilder();
-    String oldS = "" + oldG.axisVariables().length;
-    String newS = "" + nAv;
-    if (!oldS.equals(newS)) {
-      diff.append(
-          MessageFormat.format(EDStatic.messages.EDDChangedAxesDifferentNVar, oldS, newS) + "\n");
-      return diff.toString(); // because tests below assume nAv are same
+    int oldAvLen = oldG.axisVariables().length;
+
+    // Direct primitive comparison avoids string allocation on match
+    if (oldAvLen != nAv) {
+      return MessageFormat.format(
+              EDStatic.messages.EDDChangedAxesDifferentNVar,
+              String.valueOf(oldAvLen),
+              String.valueOf(nAv))
+          + "\n";
     }
+
+    StringBuilder diff = new StringBuilder();
 
     for (int av = 0; av < nAv; av++) {
       EDVGridAxis oldAV = oldG.axisVariables[av];
@@ -2473,69 +2471,77 @@ public abstract class EDDGrid extends EDD {
       String newName = newAV.destinationName();
       String msg2 = "#" + av + "=" + newName;
 
-      oldS = oldAV.destinationName();
-      newS = newName;
-      if (!oldS.equals(newS))
+      String oldDestName = oldAV.destinationName();
+      if (!oldDestName.equals(newName)) {
         diff.append(
-            MessageFormat.format(
-                    EDStatic.messages.EDDChangedAxes2Different, "destinationName", msg2, oldS, newS)
-                + "\n");
+                MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "destinationName",
+                    msg2,
+                    oldDestName,
+                    newName))
+            .append("\n");
+      }
 
-      oldS = oldAV.destinationDataType();
-      newS = newAV.destinationDataType();
-      if (!oldS.equals(newS))
+      String oldType = oldAV.destinationDataType();
+      String newType = newAV.destinationDataType();
+      if (!oldType.equals(newType)) {
         diff.append(
-            MessageFormat.format(
+                MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
                     "destinationDataType",
                     msg2,
-                    oldS,
-                    newS)
-                + "\n");
+                    oldType,
+                    newType))
+            .append("\n");
+      }
 
-      // most import case: new time value will be displayed as an iso time
-      oldS = "" + oldAV.sourceValues().size();
-      newS = "" + newAV.sourceValues().size();
-      if (!oldS.equals(newS))
+      int oldSize = oldAV.sourceValues().size();
+      int newSize = newAV.sourceValues().size();
+      if (oldSize != newSize) {
         diff.append(
-            MessageFormat.format(
-                    EDStatic.messages.EDDChangedAxes2Different, "numberOfValues", msg2, oldS, newS)
-                + "\n");
+                MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes2Different,
+                    "numberOfValues",
+                    msg2,
+                    String.valueOf(oldSize),
+                    String.valueOf(newSize)))
+            .append("\n");
+      }
 
       int diffIndex = newAV.sourceValues().diffIndex(oldAV.sourceValues());
-      if (diffIndex >= 0)
+      if (diffIndex >= 0) {
+        String oldValStr =
+            (diffIndex >= oldAV.sourceValues().size())
+                ? EDStatic.messages.EDDChangedNoValue
+                : oldAV.destinationToString(oldAV.destinationValue(diffIndex).getDouble(0));
+
+        String newValStr =
+            (diffIndex >= newAV.sourceValues().size())
+                ? EDStatic.messages.EDDChangedNoValue
+                : newAV.destinationToString(newAV.destinationValue(diffIndex).getDouble(0));
+
         diff.append(
-            MessageFormat.format(
+                MessageFormat.format(
                     EDStatic.messages.EDDChangedAxes2Different,
                     "destinationValues",
                     msg2,
-                    "index #"
-                        + diffIndex
-                        + "="
-                        + (diffIndex >= oldAV.sourceValues().size()
-                            ? EDStatic.messages.EDDChangedNoValue
-                            : oldAV.destinationToString(
-                                oldAV.destinationValue(diffIndex).getDouble(0))),
-                    "index #"
-                        + diffIndex
-                        + "="
-                        + (diffIndex >= newAV.sourceValues().size()
-                            ? EDStatic.messages.EDDChangedNoValue
-                            : newAV.destinationToString(
-                                newAV.destinationValue(diffIndex).getDouble(0))))
-                + "\n");
+                    "index #" + diffIndex + "=" + oldValStr,
+                    "index #" + diffIndex + "=" + newValStr))
+            .append("\n");
+      }
 
       String s =
           String2.differentLine(
               oldAV.combinedAttributes().toString(), newAV.combinedAttributes().toString());
-      if (s.length() > 0)
+      if (!s.isEmpty()) {
         diff.append(
-            MessageFormat.format(
-                    EDStatic.messages.EDDChangedAxes1Different, "combinedAttribute", msg2, s)
-                + "\n");
+                MessageFormat.format(
+                    EDStatic.messages.EDDChangedAxes1Different, "combinedAttribute", msg2, s))
+            .append("\n");
+      }
     }
 
-    // check least important things last
     diff.append(super.changed(oldG));
     return diff.toString();
   }
@@ -6433,6 +6439,15 @@ public abstract class EDDGrid extends EDD {
     String strideTooltip = sss + EDStatic.messages.get(Message.EDD_GRID_STRIDE_TOOLTIP, language);
     String downloadTooltip = EDStatic.messages.get(Message.EDD_GRID_DOWNLOAD_TOOLTIP, language);
     String gap = "&nbsp;&nbsp;&nbsp;";
+    // a row for each axisVariable
+    int nAv = axisVariables.length;
+    StringBuilder checkAllConstraints = new StringBuilder();
+    StringBuilder uncheckAllConstraints = new StringBuilder();
+    for (int av = 0; av < nAv; av++) {
+      checkAllConstraints.append(formName + ".aconch" + av + ".checked=true;");
+      uncheckAllConstraints.append(formName + ".aconch" + av + ".checked=false;");
+    }
+
     writer.write(
         "<tr>\n"
             + "  <th class=\"L\">"
@@ -6444,6 +6459,30 @@ public abstract class EDDGrid extends EDD {
                 loggedInAs,
                 dimHelp + EDStatic.messages.get(Message.EDD_GRID_VAR_HAS_DIM_TOOLTIP, language))
             + " </th>\n"
+            + "  <th class=\"L\">"
+            + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_HTML, language)
+            + " "
+            + EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"narrow_max_width\">"
+                    + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language)
+                    + "</div>")
+            + "<br>"
+            + widgets.button(
+                "button",
+                "CheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL, language),
+                "onclick=\"" + checkAllConstraints + "\"")
+            + widgets.button(
+                "button",
+                "UncheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
+                "onclick=\"" + uncheckAllConstraints + "\"")
+            + "  &nbsp;</th>\n"
             + "  <th class=\"L\">"
             + EDStatic.messages.get(Message.EDD_GRID_START, language)
             + " "
@@ -6490,8 +6529,6 @@ public abstract class EDDGrid extends EDD {
             // EDStatic.messages.EDDGridDimensionLastTooltipAr[language]) + "</th>\n" +
             "</tr>\n");
 
-    // a row for each axisVariable
-    int nAv = axisVariables.length;
     String sliderFromNames[] = new String[nAv];
     String sliderToNames[] = new String[nAv];
     int sliderNThumbs[] = new int[nAv];
@@ -6529,6 +6566,22 @@ public abstract class EDDGrid extends EDD {
       writer.write(EDStatic.htmlTooltipImageEDVGA(request, language, loggedInAs, edvga));
       writer.write("&nbsp;</td>\n");
 
+      // apply constraint checkbox
+      boolean hasUserConstraint =
+          userDapQuery.length() > 0
+              && (!isAxisDapQuery || destinationNames.indexOf(edvga.destinationName()) >= 0);
+      boolean aconchChecked = userDapQuery.length() > 0 ? hasUserConstraint : true;
+      writer.write("  <td>");
+      writer.write(
+          widgets.checkbox(
+              "aconch" + av,
+              EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language),
+              aconchChecked,
+              "1",
+              "",
+              ""));
+      writer.write("  &nbsp;</td>\n");
+
       // set default start, stride, stop
       int tStarti = av == timeIndex ? sourceSize - 1 : 0;
       int tStopi = sourceSize - 1;
@@ -6558,12 +6611,26 @@ public abstract class EDDGrid extends EDD {
       String edvgaTooltip = edvga.htmlRangeTooltip(language);
       writer.write("  <td>");
       // new style: textField
-      writer.write(widgets.textField("start" + av, edvgaTooltip, 22, 40, tStart, ""));
+      writer.write(
+          widgets.textField(
+              "start" + av,
+              edvgaTooltip,
+              22,
+              40,
+              tStart,
+              "oninput=\"" + formName + ".aconch" + av + ".checked=true;\""));
       writer.write("  </td>\n");
 
       // stride
       writer.write("  <td>"); // + gap);
-      writer.write(widgets.textField("stride" + av, edvgaTooltip, 7, 20, tStride, ""));
+      writer.write(
+          widgets.textField(
+              "stride" + av,
+              edvgaTooltip,
+              7,
+              20,
+              tStride,
+              "oninput=\"" + formName + ".aconch" + av + ".checked=true;\""));
       writer.write(
           "  " + // gap +
               "</td>\n");
@@ -6571,7 +6638,14 @@ public abstract class EDDGrid extends EDD {
       // stop
       writer.write("  <td>");
       // new style: textField
-      writer.write(widgets.textField("stop" + av, edvgaTooltip, 22, 40, tStop, ""));
+      writer.write(
+          widgets.textField(
+              "stop" + av,
+              edvgaTooltip,
+              22,
+              40,
+              tStop,
+              "oninput=\"" + formName + ".aconch" + av + ".checked=true;\""));
       writer.write("  </td>\n");
 
       // n Values
@@ -6603,7 +6677,7 @@ public abstract class EDDGrid extends EDD {
               : Math2.roundToInt((tStopi * (EDV.SLIDER_PIXELS - 1.0)) / safeSourceSize1);
       writer.write(
           "<tr>\n"
-              + "  <td colspan=\"6\">\n"
+              + "  <td colspan=\"7\">\n"
               + widgets.spacer(10, 1, "")
               + // was "style=\"text-align:left\"") +
               widgets.dualSlider(av, EDV.SLIDER_PIXELS - 1, "")
@@ -6729,55 +6803,53 @@ public abstract class EDDGrid extends EDD {
             + datasetID
             + "\" + ft.substring(0, ft.indexOf(\" - \")) + \"?\";\n"
             + "  var sss = new Array(); var cum = \"\"; var done = false;\n"
-            +
 
-            // gather startStrideStop and cumulative sss.   %5B=[ %5D=] %7C=|
-            "  for (var av = 0; av < "
+            // gather startStrideStop and cumulative sss
+            + "  for (var av = 0; av < "
             + nAv
             + "; av++) {\n"
-            + "    sss[av] = \"%5B(\" + "
-            + "eval(\"form1.start\"  + av + \".value\") + \"):\" + "
-            +
-            // "eval(\"form1.start\"  + av + \".options[form1.start\"  + av +
-            // \".selectedIndex].text\") + \"):\" + " +
-            "eval(\"form1.stride\" + av + \".value\") + \":(\" + "
-            + "eval(\"form1.stop\"   + av + \".value\") + \")%5D\";\n"
-            +
-            // "eval(\"form1.stop\"   + av + \".options[form1.stop\"   + av +
-            // \".selectedIndex].text\") + \")]\";\n" +
-            "    cum += sss[av];\n"
+            + "    var tAconch = form1[\"aconch\" + av];\n"
+            + "    if (tAconch && !tAconch.checked) {\n"
+            + "      sss[av] = \"%5B%5D\";\n"
+            + "    } else {\n"
+            + "      sss[av] = \"%5B(\" + "
+            + "form1[\"start\" + av].value + \"):\" + "
+            + "form1[\"stride\" + av].value + \":(\" + "
+            + "form1[\"stop\" + av].value + \")%5D\";\n"
+            + "    }\n"
+            + "    cum += sss[av];\n"
             + "  }\n"
-            +
 
             // see if any dataVars were selected
-            "  for (var dv = 0; dv < "
+            + "  for (var dv = 0; dv < "
             + dataVariables.length
             + "; dv++) {\n"
-            + "    if (eval(\"form1.dvar\" + dv + \".checked\")) {\n"
+            + "    if (form1[\"dvar\" + dv].checked) {\n"
             + "      if (result.length > 0) result += \",\";\n"
-            + "      result += (eval(\"form1.dvar\" + dv + \".value\")) + cum; }\n"
+            + "      result += form1[\"dvar\" + dv].value + cum;\n"
+            + "    }\n"
             + "  }\n"
-            +
 
             // else find selected axes
-            "  if (result.length > 0) {\n"
+            + "  if (result.length > 0) {\n"
             + "    result = start + result;\n"
             + "  } else {\n"
             + "    result = start;\n"
             + "    for (var av = 0; av < "
             + nAv
             + "; av++) {\n"
-            + "      if (eval(\"form1.avar\" + av + \".checked\")) { \n"
+            + "      if (form1[\"avar\" + av].checked) {\n"
             + "        if (result.length > start.length) result += \",\";\n"
-            + "        result += (eval(\"form1.avar\" + av + \".value\")) + sss[av];\n"
+            + "        result += form1[\"avar\" + av].value + sss[av];\n"
             + "      }\n"
             + "    }\n"
-            + "    if (result.length == start.length) { result = \"\";\n"
-            + "      throw new Error(\"Please select (check) one of the variables.\"); }\n"
+            + "    if (result.length == start.length) {\n"
+            + "      result = \"\";\n"
+            + "      throw new Error(\"Please select (check) one of the variables.\");\n"
+            + "    }\n"
             + "  }\n"
-            + "} catch (e) {alert(e);}\n"
-            + // result is in 'result'  (or "" if error or nothing selected)
-            "form1.tUrl.value = result;\n";
+            + "} catch (e) { alert(e); }\n"
+            + "form1.tUrl.value = result;\n";
 
     // just generate URL
     writer.write("<br>");
@@ -7922,18 +7994,16 @@ public abstract class EDDGrid extends EDD {
             + "</a>\n"
             + "     (e.g., 2002-08-03T12:30:00Z, but some variables include milliseconds, e.g.,\n"
             + "     2002-08-03T12:30:00.123Z).\n"
-            + (EDStatic.config.convertersActive
-                ? "     <br>ERDDAP has a utility to\n"
-                    + "       <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "       a Numeric Time to/from a String Time</a>.\n"
-                    + "     See also:\n"
-                    + "       <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "       ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "     <br>ERDDAP has a utility to\n"
+            + "       <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "       a Numeric Time to/from a String Time</a>.\n"
+            + "     See also:\n"
+            + "       <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "       ERDDAP Deals with Time</a>.\n"
             + "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n"
             + "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string"
             + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
@@ -7968,18 +8038,16 @@ public abstract class EDDGrid extends EDD {
             + "     And this is consistent with some other places in ERDDAP that try to repair\n"
             + "     invalid input when the intention is clear, instead of just returning an error\n"
             + "     message.)\n"
-            + (EDStatic.config.convertersActive
-                ? "     ERDDAP has a utility to\n"
-                    + "       <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "       a Numeric Time to/from a String Time</a>.\n"
-                    + "     See also:\n"
-                    + "       <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "       ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "     ERDDAP has a utility to\n"
+            + "       <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "       a Numeric Time to/from a String Time</a>.\n"
+            + "     See also:\n"
+            + "       <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "       ERDDAP Deals with Time</a>.\n"
             + "   <li><a class=\"selfLink\" id=\"lastInParentheses\" href=\"#lastInParentheses\" rel=\"bookmark\"><kbd>(last)</kbd></a> - ERDDAP interprets \n"
             + "       a <kbd>start</kbd> or <kbd>stop</kbd> value of <kbd>(last)</kbd> as the last\n"
             + "     available index.\n"
@@ -10031,18 +10099,16 @@ public abstract class EDDGrid extends EDD {
             + "      <br>In ERDDAP, this parameter is optional and the default is always the last time available.\n"
             + "      <br>The WCS standard allows <i>time=beginTime,endTime,timeRes</i>.  ERDDAP doesn't allow this.\n"
             + "      <br>The WCS standard allows <i>time=time1,time2,...</i>  ERDDAP doesn't allow this.</td>\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>ERDDAP has a utility to\n"
-                    + "        <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "        a Numeric Time to/from a String Time</a>.\n"
-                    + "      <br>See also:\n"
-                    + "        <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "        ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "      <br>ERDDAP has a utility to\n"
+            + "        <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "        a Numeric Time to/from a String Time</a>.\n"
+            + "      <br>See also:\n"
+            + "        <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "        ERDDAP Deals with Time</a>.\n"
             + "  </tr>\n"
             + "  <tr>\n"
             + "    <td><i>parameter=value</i>\n"

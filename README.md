@@ -98,10 +98,10 @@ If you'd like to skip the tests while building use `mvn package -DskipTests`. Yo
 To format code locally you can run:
 
 (Windows)
-`mvn git-code-format:format-code -D"gcf.globPattern=**/*"`
+`mvn validate git-code-format:format-code -D"gcf.globPattern=**/*"`
 
 (Other)
-`mvn git-code-format:format-code -Dgcf.globPattern=**/*`
+`mvn validate git-code-format:format-code -Dgcf.globPattern=**/*`
 
 Code should be automatically formatted during a git pre-commit step to simplify reviews. It can still be useful sometimes to format code before making a git commit.
 

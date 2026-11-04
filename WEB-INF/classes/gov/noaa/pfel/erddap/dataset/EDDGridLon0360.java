@@ -696,7 +696,8 @@ public class EDDGridLon0360 extends EDDGrid {
       // 1 request, and lon values are already correct
       if (debugMode)
         String2.log(">> getSourceData: all from new left: " + rStart + ":" + rStride + ":" + rStop);
-      IntArray newConstraints = (IntArray) tConstraints.subset(0, 1, tConstraints.size() - 1);
+      IntArray newConstraints =
+          (IntArray) tConstraints.subset(new IntArray(), 0, 1, tConstraints.size() - 1);
       newConstraints.set(li3 + 0, rStart - (dloni0 - sloni0));
       newConstraints.set(li3 + 2, rStop - (dloni0 - sloni0));
       return tChildDataset.getSourceData(
@@ -709,7 +710,8 @@ public class EDDGridLon0360 extends EDDGrid {
       if (debugMode)
         String2.log(
             ">> getSourceData: all from new right: " + rStart + ":" + rStride + ":" + rStop);
-      IntArray newConstraints = (IntArray) tConstraints.subset(0, 1, tConstraints.size() - 1);
+      IntArray newConstraints =
+          (IntArray) tConstraints.subset(new IntArray(), 0, 1, tConstraints.size() - 1);
       newConstraints.set(li3 + 0, rStart - (dlonim180 - slonim180));
       newConstraints.set(li3 + 2, rStop - (dlonim180 - slonim180));
       PrimitiveArray results[] =
@@ -734,7 +736,8 @@ public class EDDGridLon0360 extends EDDGrid {
           ">> getSourceData: request from left and right: " + rStart + ":" + rStride + ":" + rStop);
 
     // find request for new left half
-    IntArray newConstraints = (IntArray) tConstraints.subset(0, 1, tConstraints.size() - 1);
+    IntArray newConstraints =
+        (IntArray) tConstraints.subset(new IntArray(), 0, 1, tConstraints.size() - 1);
     PrimitiveArray newLeftResults[] = null;
     if (rStart <= dloni179) {
       // some values are from sloni0 to sloni179

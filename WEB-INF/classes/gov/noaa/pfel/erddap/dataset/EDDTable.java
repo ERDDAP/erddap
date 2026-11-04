@@ -5,13 +5,16 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PAOne;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
@@ -53,7 +56,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -684,15 +686,11 @@ public abstract class EDDTable extends EDD {
     // This isn't required (ERDDAP was/could be lazy), but doing it makes initial access fast
     //  and makes it thread-safe (always done in constructor's thread).
     if (accessibleViaSubset().length() == 0 && accessibleTo == null) {
-      if (EDStatic.config.backgroundCreateSubsetTables) {
-        Object taskOA[] = new Object[2];
-        taskOA[0] = TaskThread.TASK_CREATE_SUBSET_TABLE;
-        taskOA[1] = this;
-        EDStatic.addTask(taskOA);
-        EDStatic.ensureTaskThreadIsRunningIfNeeded();
-      } else {
-        createSubsetVariablesTable();
-      }
+      Object taskOA[] = new Object[2];
+      taskOA[0] = TaskThread.TASK_CREATE_SUBSET_TABLE;
+      taskOA[1] = this;
+      EDStatic.addTask(taskOA);
+      EDStatic.ensureTaskThreadIsRunningIfNeeded();
     }
 
     // add standard metadata to combinedGlobalAttributes
@@ -3521,66 +3519,111 @@ public abstract class EDDTable extends EDD {
       StringArray scriptTypes,
       Map<String, Set<String>> scriptNeedsColumns) {
 
-    if (scriptNames != null) {
-      // if (debugMode) String2.log(">> raw table:\n" + table.dataToString(5));
-      int nRows = table.nRows();
-      for (int sni = 0; sni < scriptNames.size(); sni++) {
-        PrimitiveArray pa =
-            PrimitiveArray.factory(
-                PAType.fromCohortString(scriptTypes.get(sni)), nRows, false); // active?
-        JexlScript jscript = Script2.jexlEngine().createScript(scriptNames.get(sni).substring(1));
+    if (scriptNames == null || scriptNames.size() == 0) return;
+
+    int nRows = table.nRows();
+
+    for (int sni = 0; sni < scriptNames.size(); sni++) {
+      String rawScript = scriptNames.get(sni);
+      String scriptExpr =
+          rawScript.startsWith("=") ? rawScript.substring(1).trim() : rawScript.trim();
+      PAType paType = PAType.fromCohortString(scriptTypes.get(sni));
+      PrimitiveArray pa = PrimitiveArray.factory(paType, nRows, false);
+      Set<String> neededCols = scriptNeedsColumns.get(rawScript);
+
+      // 1. FAST-PATH: Direct Column Copy/Rename (=row.colName)
+      if (scriptExpr.startsWith("row.") && isSimpleIdentifier(scriptExpr.substring(4))) {
+        String srcCol = scriptExpr.substring(4);
+        int srcColIndex = table.findColumnNumber(srcCol);
+        if (srcColIndex >= 0) {
+          PrimitiveArray srcPa = table.getColumn(srcColIndex);
+          pa.append(srcPa);
+          table.addColumn(rawScript, pa);
+          continue;
+        }
+      }
+
+      // 2. FAST-PATH: Constant Expressions (evaluated once for all rows)
+      if (neededCols == null || neededCols.isEmpty()) {
+        JexlScript jscript = Script2.jexlEngine().createScript(scriptExpr);
         MapContext jcontext = Script2.jexlMapContext();
         ScriptRow scriptRow = new ScriptRow(fullFileName, table);
         jcontext.set("row", scriptRow);
-        boolean firstError = true;
+        Object val = null;
+        try {
+          val = jscript.execute(jcontext);
+        } catch (Exception e) {
+          String2.log(
+              "Caught: first script error (for col="
+                  + String2.toJson(rawScript)
+                  + " row[0]):\n"
+                  + MustBe.throwableToString(e));
+        }
 
-        if (scriptNeedsColumns.get(scriptNames.get(sni)).size() == 0) {
-          // script doesn't refer to any columns (e.g., =10.0),
-          // so just parse once and duplicate that value.
-          // scriptRow.setRow(0); //already done
-          Object o = null;
-          try {
-            o = jscript.execute(jcontext);
-          } catch (Exception e2) {
-            if (firstError) {
-              String2.log(
-                  "Caught: first script error (for col="
-                      + String2.toJson(scriptNames.get(sni))
-                      + " row[0]):\n"
-                      + MustBe.throwableToString(e2));
-              firstError = false;
-            }
-            o = null;
-          }
-          for (int row = 0; row < nRows; row++) pa.addObject(o);
+        for (int row = 0; row < nRows; row++) pa.addObject(val);
+        table.addColumn(rawScript, pa);
+        continue;
+      }
 
-        } else {
-          for (int row = 0; row < nRows; row++) {
-            scriptRow.setRow(row);
-            Object o = null;
-            try {
-              o = jscript.execute(jcontext);
-            } catch (Exception e2) {
-              if (firstError) {
-                String2.log(
-                    "Caught: first script error (for col="
-                        + String2.toJson(scriptNames.get(sni))
-                        + " row["
-                        + row
-                        + "]):\n"
-                        + MustBe.throwableToString(e2));
-                firstError = false;
-              }
-              o = null;
-            }
-            pa.addObject(o);
-            // if (debugMode && row < 5) String2.log(">> row[" + row + "] o.class().getName()=" +
-            // o.getClass().getName() + " value=" + (o instanceof Number? ((Number)o).doubleValue()
-            // : o.toString()));
+      // 3. JEXL EVALUATION WITH UNBOXED PRIMITIVE APPENDS
+      JexlScript jscript = Script2.jexlEngine().createScript(scriptExpr);
+      MapContext jcontext = Script2.jexlMapContext();
+      ScriptRow scriptRow = new ScriptRow(fullFileName, table);
+      jcontext.set("row", scriptRow);
+      boolean firstError = true;
+
+      for (int row = 0; row < nRows; row++) {
+        scriptRow.setRow(row);
+        Object o = null;
+        try {
+          o = jscript.execute(jcontext);
+        } catch (Exception e2) {
+          if (firstError) {
+            String2.log(
+                "Caught: first script error (for col="
+                    + String2.toJson(rawScript)
+                    + " row["
+                    + row
+                    + "]):\n"
+                    + MustBe.throwableToString(e2));
+            firstError = false;
           }
         }
-        table.addColumn(scriptNames.get(sni), pa);
+
+        // Direct primitive append to bypass pa.addObject() reflection/boxing overhead
+        addTypedObject(pa, paType, o);
       }
+
+      table.addColumn(rawScript, pa);
+    }
+  }
+
+  private static boolean isSimpleIdentifier(String s) {
+    if (s.isEmpty()) return false;
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (!Character.isJavaIdentifierPart(c)) return false;
+    }
+    return true;
+  }
+
+  private static void addTypedObject(PrimitiveArray pa, PAType paType, Object o) {
+    if (o == null) {
+      pa.addString("");
+      return;
+    }
+    if (o instanceof Number num) {
+      switch (paType) {
+        case DOUBLE -> ((DoubleArray) pa).add(num.doubleValue());
+        case FLOAT -> ((FloatArray) pa).add(num.floatValue());
+        case INT -> ((IntArray) pa).add(num.intValue());
+        case LONG -> ((LongArray) pa).add(num.longValue());
+        case SHORT -> ((ShortArray) pa).add(num.shortValue());
+        case BYTE -> ((ByteArray) pa).add(num.byteValue());
+        default -> pa.addObject(o);
+      }
+    } else {
+      pa.addObject(o);
     }
   }
 
@@ -3707,21 +3750,21 @@ public abstract class EDDTable extends EDD {
         int ncOffset = 0;
         int bufferSize = EDStatic.config.partialRequestMaxCells;
         PrimitiveArray pa = null;
-        try (DataInputStream dis = twawm.dataInputStream(col)) {
+        try (java.nio.channels.FileChannel channel = twawm.openColumnChannel(col)) {
           PAType colType = twawm.columnType(col);
           Array array;
 
           while (nToGo > 0) {
-            bufferSize = Math.min(nToGo, bufferSize); // actual number to be transferred
+            int nToRead = Math.min(nToGo, bufferSize); // actual number to be transferred
             // use of != below (not <) lets toObjectArray below return internal array since
             // size=capacity
             if (pa == null || pa.elementType() != twawm.columnType(col)) {
               pa = twawm.columnEmptyPA(col);
-              pa.ensureCapacity(bufferSize);
+              pa.ensureCapacity(nToRead);
             }
             pa.clear();
             pa.setMaxIsMV(twawm.columnMaxIsMV(col)); // reset it after clear()
-            pa.readDis(dis, bufferSize);
+            TableWriterAll.readColumnChunk(col, channel, pa, ncOffset, nToRead);
             if (debugMode)
               String2.log(
                   ">> col="
@@ -3730,8 +3773,8 @@ public abstract class EDDTable extends EDD {
                       + nToGo
                       + " ncOffset="
                       + ncOffset
-                      + " bufferSize="
-                      + bufferSize
+                      + " nToRead="
+                      + nToRead
                       + " pa.capacity="
                       + pa.capacity()
                       + " pa.size="
@@ -3744,7 +3787,7 @@ public abstract class EDDTable extends EDD {
               array =
                   Array.factory(
                       NcHelper.getNc3DataType(colType),
-                      new int[] {bufferSize},
+                      new int[] {nToRead},
                       tsa.toIso88591().toObjectArray());
               ncWriter.writeStringDataToChar(newVar, new int[] {ncOffset}, array);
 
@@ -3762,19 +3805,17 @@ public abstract class EDDTable extends EDD {
                 // pa is temporary, so ok to change chars
                 array =
                     Array.factory(
-                        DataType.CHAR, new int[] {bufferSize}, ca.toIso88591().toObjectArray());
+                        DataType.CHAR, new int[] {nToRead}, ca.toIso88591().toObjectArray());
               } else {
                 array =
                     Array.factory(
-                        NcHelper.getNc3DataType(colType),
-                        new int[] {bufferSize},
-                        pa.toObjectArray());
+                        NcHelper.getNc3DataType(colType), new int[] {nToRead}, pa.toObjectArray());
               }
               ncWriter.write(newVar, new int[] {ncOffset}, array);
             }
 
-            nToGo -= bufferSize;
-            ncOffset += bufferSize;
+            nToGo -= nToRead;
+            ncOffset += nToRead;
             // String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType ==
             // PAType.STRING));
           }
@@ -4198,7 +4239,6 @@ public abstract class EDDTable extends EDD {
         } else if (nodcMode) {
           // write nodc obsVar[feature][obs]
           int origin[] = {0, 0};
-          PrimitiveArray subsetPa = null;
           for (int feature = 0; feature < nFeatures; feature++) {
             // write the data for this feature
             origin[0] = feature;
@@ -4206,7 +4246,7 @@ public abstract class EDDTable extends EDD {
             int firstRow = featureFirstRow.get(feature);
             int tNRows = featureNRows.get(feature);
             int stopRow = firstRow + tNRows - 1;
-            subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
+            PrimitiveArray subsetPa = pa.subset(firstRow, 1, stopRow);
             NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tNRows}, subsetPa);
 
             // and write missing values
@@ -4215,12 +4255,19 @@ public abstract class EDDTable extends EDD {
               // String2.log("  writeMVs: feature=" + feature + " origin[1]=" + origin[1] +
               //  " tNRows=" + tNRows + " maxFeatureNRows=" + maxFeatureNRows);
               tNRows = maxFeatureNRows - tNRows;
-              subsetPa.clear();
               // if (tEdv.destinationDataPAType() == PAType.LONG)
               //    subsetPa.addNStrings(tNRows, "" + tSafeMV);
               // else
-              if (subsetPa instanceof StringArray) subsetPa.addNStrings(tNRows, "");
-              else subsetPa.addNDoubles(tNRows, tSafeMV);
+              // subsetPa is a PrimitiveView, so add elements will materialize the view
+              // previously the subsetPa was cleared just above here, so rather than clear
+              // and then cause it to materialize, we just make a proper PrimitiveArray.
+
+              if (subsetPa.elementType() == PAType.STRING) {
+                subsetPa = new StringArray(tNRows, true); // true->fills with ""
+              } else {
+                subsetPa = PrimitiveArray.factory(subsetPa.elementType(), tNRows, false);
+                subsetPa.addNDoubles(tNRows, tSafeMV);
+              }
               NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tNRows}, subsetPa);
             }
           }
@@ -4670,7 +4717,6 @@ public abstract class EDDTable extends EDD {
             int origin[] = new int[2];
             int firstRow;
             int lastRow = -1;
-            PrimitiveArray tpa = null;
             for (int feature = 0; feature < nFeatures; feature++) {
               // write data
               origin[0] = feature;
@@ -4678,7 +4724,7 @@ public abstract class EDDTable extends EDD {
               int tnProfiles = nProfilesPerFeature.get(feature);
               firstRow = lastRow + 1;
               lastRow = firstRow + tnProfiles - 1;
-              tpa = pa.subset(tpa, firstRow, 1, lastRow);
+              PrimitiveArray tpa = pa.subset(firstRow, 1, lastRow);
               NcHelper.write(nc3Mode, ncWriter, newVar, origin, new int[] {1, tnProfiles}, tpa);
 
               // write fill values
@@ -4726,7 +4772,7 @@ public abstract class EDDTable extends EDD {
             int firstRow = profileFirstObsRow.get(profile);
             int tNRows = nObsPerProfile.get(profile);
             int stopRow = firstRow + tNRows - 1;
-            subsetPa = pa.subset(subsetPa, firstRow, 1, stopRow);
+            subsetPa = pa.subset(firstRow, 1, stopRow);
             shape[2] = tNRows;
             NcHelper.write(nc3Mode, ncWriter, newVar, origin, shape, subsetPa);
           }
@@ -4880,8 +4926,39 @@ public abstract class EDDTable extends EDD {
             EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
             "onclick=\"" + uncheckAll + "\""));
 
+    writer.write("  &nbsp;</th>\n");
+
+    StringBuilder checkAllConstraints = new StringBuilder();
+    StringBuilder uncheckAllConstraints = new StringBuilder();
+    for (int dv = 0; dv < nDv; dv++) {
+      checkAllConstraints.append(formName + ".conch" + dv + ".checked=true;");
+      uncheckAllConstraints.append(formName + ".conch" + dv + ".checked=false;");
+    }
     writer.write(
-        "  &nbsp;</th>\n"
+        "  <th>"
+            + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_HTML, language)
+            + " "
+            + EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                "<div class=\"narrow_max_width\">"
+                    + EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language)
+                    + "</div>")
+            + "<br>"
+            + widgets.button(
+                "button",
+                "CheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_CHECK_ALL, language),
+                "onclick=\"" + checkAllConstraints + "\"")
+            + widgets.button(
+                "button",
+                "UncheckAllCon",
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP, language),
+                EDStatic.messages.get(Message.EDD_TABLE_UNCHECK_ALL, language),
+                "onclick=\"" + uncheckAllConstraints + "\"")
+            + "  &nbsp;</th>\n"
             + "  <th colspan=\"2\">"
             + EDStatic.messages.get(Message.EDD_TABLE_OPT_CONSTRAINT1_HTML, language)
             + " "
@@ -4969,25 +5046,11 @@ public abstract class EDDTable extends EDD {
         extra = edv.longName() + (extra.length() == 0 ? "" : ", " + extra);
       if (extra.length() > 0) extra = " (" + extra + ")";
 
-      // variables: checkbox varname (longName, units)
-      writer.write("  <td>");
-      writer.write(
-          widgets.checkbox(
-              "varch" + dv,
-              EDStatic.messages.get(Message.EDD_TABLE_CHECK_THE_VARIABLES, language),
-              userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0),
-              edv.destinationName(),
-              edv.destinationName()
-                  + extra
-                  + " "
-                  + EDStatic.htmlTooltipImageEDV(request, language, loggedInAs, edv),
-              ""));
-      writer.write("  &nbsp;</td>\n");
-
       // get default constraints
       String[] tOp = {">=", "<="};
       double[] tValD = {Double.NaN, Double.NaN};
       String[] tValS = {null, null};
+      boolean hasUserConstraint = false;
       if (userDapQuery.length() > 0) {
         // get constraints from userDapQuery?
         boolean done0 = false;
@@ -4995,6 +5058,7 @@ public abstract class EDDTable extends EDD {
         for (int con = 0; con < 2; con++) {
           int tConi = constraintVariables.indexOf(edv.destinationName());
           if (tConi >= 0) {
+            hasUserConstraint = true;
             String cOp = constraintOps.get(tConi);
             int putIn = cOp.startsWith("<") || done0 ? 1 : 0; // prefer 0 first
             if (putIn == 0) done0 = true;
@@ -5022,6 +5086,34 @@ public abstract class EDDTable extends EDD {
           tValS[0] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tValD[0], "");
         }
       }
+
+      // variables: checkbox varname (longName, units)
+      writer.write("  <td>");
+      writer.write(
+          widgets.checkbox(
+              "varch" + dv,
+              EDStatic.messages.get(Message.EDD_TABLE_CHECK_THE_VARIABLES, language),
+              userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0),
+              edv.destinationName(),
+              edv.destinationName()
+                  + extra
+                  + " "
+                  + EDStatic.htmlTooltipImageEDV(request, language, loggedInAs, edv),
+              ""));
+      writer.write("  &nbsp;</td>\n");
+
+      // apply constraint checkbox
+      boolean conchChecked = userDapQuery.length() > 0 ? hasUserConstraint : true;
+      writer.write("  <td>");
+      writer.write(
+          widgets.checkbox(
+              "conch" + dv,
+              EDStatic.messages.get(Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP, language),
+              conchChecked,
+              "1",
+              "",
+              ""));
+      writer.write("  &nbsp;</td>\n");
 
       // write constraints html
       String valueWidgetName = "val" + dv + "_";
@@ -5060,7 +5152,14 @@ public abstract class EDDTable extends EDD {
         } else if (tOp[con].equals(PrimitiveArray.REGEX_OP) || isChar || isString) {
           tVal = String2.toJson(tVal); // enclose in "
         }
-        writer.write(widgets.textField(valueWidgetName + con, tTooltip, 19, 255, tVal, ""));
+        writer.write(
+            widgets.textField(
+                valueWidgetName + con,
+                tTooltip,
+                19,
+                255,
+                tVal,
+                "oninput=\"" + docFormName + ".conch" + dv + ".checked=true;\""));
         writer.write("  </td>\n");
       }
 
@@ -5107,6 +5206,11 @@ public abstract class EDDTable extends EDD {
                         + ".val"
                         + dv
                         + "_0.value=this.value;"
+                        + " "
+                        + docFormName
+                        + ".conch"
+                        + dv
+                        + ".checked=true;"
                         + "'",
                     true)
                 + // encodeSpaces solves the problem with consecutive internal spaces
@@ -5146,6 +5250,11 @@ public abstract class EDDTable extends EDD {
                 + dv
                 + "_0.value="
                 + "dis.options[dis.selectedIndex].text;\n"
+                + "      "
+                + docFormName
+                + ".conch"
+                + dv
+                + ".checked=true;\n"
                 + "    }\" >\n"
                 + "  </td>\n"
                 + "  <td class=\"B\">"
@@ -5181,6 +5290,11 @@ public abstract class EDDTable extends EDD {
                 + dv
                 + "_0.value="
                 + "dis.options[dis.selectedIndex].text;\n"
+                + "      "
+                + docFormName
+                + ".conch"
+                + dv
+                + ".checked=true;\n"
                 + "    }\" >\n"
                 + "  </td>\n"
                 + "  <td>&nbsp;"
@@ -5254,7 +5368,7 @@ public abstract class EDDTable extends EDD {
         if (sliderInitToPositions[dv] == -1) sliderInitToPositions[dv] = EDV.SLIDER_PIXELS - 1;
         writer.write(
             "<tr>\n"
-                + "  <td colspan=\"5\">\n"
+                + "  <td colspan=\"6\">\n"
                 + widgets.spacer(10, 1, "")
                 + // was "style=\"text-align:left\"") +
                 widgets.dualSlider(dv, EDV.SLIDER_PIXELS - 1, "")
@@ -5378,20 +5492,25 @@ public abstract class EDDTable extends EDD {
             + formName
             + ".varch\" + dv);\n"
             + "    if (tVar.checked) rv.push(tVar.value);\n"
-            + "    var tOp  = eval(\"d."
+            + "    var tConch = eval(\"d."
+            + formName
+            + ".conch\" + dv);\n"
+            + "    if (tConch && tConch.checked) {\n"
+            + "      var tOp  = eval(\"d."
             + formName
             + ".op\"  + dv + \"_0\");\n"
-            + "    var tVal = eval(\"d."
+            + "      var tVal = eval(\"d."
             + formName
             + ".val\" + dv + \"_0\");\n"
-            + "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
-            + "    tOp  = eval(\"d."
+            + "      if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "      tOp  = eval(\"d."
             + formName
             + ".op\"  + dv + \"_1\");\n"
-            + "    tVal = eval(\"d."
+            + "      tVal = eval(\"d."
             + formName
             + ".val\" + dv + \"_1\");\n"
-            + "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "      if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "    }\n"
             + "  }\n"
             + (addVariablesWhereAttNames == null
                 ? ""
@@ -6843,18 +6962,16 @@ public abstract class EDDTable extends EDD {
             + "</a>\n"
             + "      (e.g., <kbd>2002-08-03T12:30:00Z</kbd>, but some time variables in some datasets include\n"
             + "      milliseconds, e.g., <kbd>2002-08-03T12:30:00.123Z</kbd>).\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>ERDDAP has a utility to\n"
-                    + "        <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "        a Numeric Time to/from a String Time</a>.\n"
-                    + "      <br>See also:\n"
-                    + "        <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "        ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "      <br>ERDDAP has a utility to\n"
+            + "        <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "        a Numeric Time to/from a String Time</a>.\n"
+            + "      <br>See also:\n"
+            + "        <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "        ERDDAP Deals with Time</a>.\n"
             + "    <li>tabledap extends the OPeNDAP standard to allow you to specify time values in the\n"
             + "      ISO 8601 date/time format (<kbd><i>YYYY-MM-DD</i>T<i>hh:mm:ss.SSSZ</i></kbd>, where Z is 'Z' or a &plusmn;hh\n"
             + "      or &plusmn;hh:mm offset from the Zulu/GMT time zone. If you omit Z and the offset, the\n"
@@ -6886,18 +7003,16 @@ public abstract class EDDTable extends EDD {
             + "      And this is consistent with some other places in ERDDAP that try to repair\n"
             + "      invalid input when the intention is clear, instead of just returning an error\n"
             + "      message.)\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>ERDDAP has a utility to\n"
-                    + "        <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "        a Numeric Time to/from a String Time</a>.\n"
-                    + "      <br>See also:\n"
-                    + "        <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "        ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "      <br>ERDDAP has a utility to\n"
+            + "        <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "        a Numeric Time to/from a String Time</a>.\n"
+            + "      <br>See also:\n"
+            + "        <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "        ERDDAP Deals with Time</a>.\n"
             + "    <li><a class=\"selfLink\" id=\"now\" href=\"#now\" rel=\"bookmark\">tabledap</a>\n"
             + "      extends the OPeNDAP standard to allow you to specify constraints for\n"
             + "      time and timestamp variables relative to <kbd>now</kbd>. The constraint can be simply,\n"
@@ -7231,12 +7346,10 @@ public abstract class EDDTable extends EDD {
             + "      <br>On this ERDDAP, the default for most/all datasets is "
             + EDStatic.config.units_standard
             + ".\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/units.html\"\n"
-                    + "      >units converter</a>.\n"
-                : "")
+            + "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/units.html\"\n"
+            + "      >units converter</a>.\n"
             + "      <br>&nbsp;\n"
             + "    </ul>\n"
             +
@@ -12735,16 +12848,13 @@ public abstract class EDDTable extends EDD {
         tAccessibleViaSubset = EDStatic.messages.get(Message.SUBSET_NOT_SET_UP, 0);
 
       if ((className.equals("EDDTableFromDapSequence") || className.equals("EDDTableFromErddap"))
-          && EDStatic.config.quickRestart
           && EDStatic.initialLoadDatasets()
           && File2.isFile(quickRestartFullFileName())) {
 
         // don't delete subset and distinct files  (to reuse them)
         if (verbose) String2.log("  quickRestart: reusing subset and distinct files");
 
-      } else if ((this instanceof EDDTableFromFiles)
-          && EDStatic.config.quickRestart
-          && EDStatic.initialLoadDatasets()) {
+      } else if ((this instanceof EDDTableFromFiles) && EDStatic.initialLoadDatasets()) {
 
         // 2022-07-26 don't delete subset and distinct files  (to reuse them)
         // !! It would be better if this ensured that subset.nc has same variables as
@@ -13047,21 +13157,12 @@ public abstract class EDDTable extends EDD {
   @Override
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null)
-      if (!EDStatic.config.wmsActive)
-        accessibleViaWMS =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
-                    "WMS", // language=0 here because only 1 value of accessibleVia...
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WMS")));
-      else
-        accessibleViaWMS =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
-                    "WMS",
-                    EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
+      accessibleViaWMS =
+          String2.canonical(
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
+                  "WMS",
+                  EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
     return accessibleViaWMS;
   }
 
@@ -20258,6 +20359,7 @@ public abstract class EDDTable extends EDD {
     int nCols = sourceTable.nColumns();
     Test.ensureEqual(nCols, destTable.nColumns(), "sourceTable.nColumns != destTable.nColumns");
     StringArray suggest = new StringArray();
+    BitSet keep = new BitSet();
     for (int col = 0; col < nCols; col++) {
       PrimitiveArray pa = (PrimitiveArray) sourceTable.getColumn(col).clone();
       pa.sort();
@@ -20266,7 +20368,7 @@ public abstract class EDDTable extends EDD {
         PAOne tmv = pa.tryToFindNumericMissingValue();
         if (tmv != null) {
 
-          BitSet keep = new BitSet();
+          keep.clear();
           keep.set(0, nRows);
           pa.applyConstraint(
               false, // morePrecise,

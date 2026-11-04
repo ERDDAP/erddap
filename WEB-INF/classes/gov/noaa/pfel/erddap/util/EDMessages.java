@@ -489,6 +489,10 @@ public class EDMessages {
     EDD_TABLE_CHECK_THE_VARIABLES,
     EDD_TABLE_SELECT_AN_OPERATOR,
     EDD_TABLE_FROM_EDD_GRID_SUMMARY,
+    EDD_TABLE_APPLY_CONSTRAINT_HTML,
+    EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP,
+    EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP,
+    EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP,
     EDD_TABLE_OPT_CONSTRAINT1_HTML,
     EDD_TABLE_OPT_CONSTRAINT2_HTML,
     EDD_TABLE_OPT_CONSTRAINT_VAR,
@@ -2102,6 +2106,18 @@ public class EDMessages {
     translatedMessages.put(
         Message.EDD_TABLE_FROM_EDD_GRID_SUMMARY,
         getNotNothingString(messagesAr, "EDDTableFromEDDGridSummary", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_APPLY_CONSTRAINT_HTML,
+        getNotNothingString(messagesAr, "EDDTableApplyConstraintHtml", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_APPLY_CONSTRAINT_TOOLTIP,
+        getNotNothingString(messagesAr, "EDDTableApplyConstraintTooltip", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_CHECK_ALL_CONSTRAINTS_TOOLTIP,
+        getNotNothingString(messagesAr, "EDDTableCheckAllConstraintsTooltip", errorInMethod));
+    translatedMessages.put(
+        Message.EDD_TABLE_UNCHECK_ALL_CONSTRAINTS_TOOLTIP,
+        getNotNothingString(messagesAr, "EDDTableUncheckAllConstraintsTooltip", errorInMethod));
     translatedMessages.put(
         Message.EDD_TABLE_OPT_CONSTRAINT1_HTML,
         getNotNothingString(messagesAr, "EDDTableOptConstraint1Html", errorInMethod));
@@ -3771,16 +3787,12 @@ public class EDMessages {
           String2.replaceAll(
               standardShortDescriptionHtmlArray[tl],
               "&convertTimeReference;",
-              EDStatic.config.convertersActive
-                  ? translatedMessages.get(Message.CONVERT_TIME_REFERENCE)[tl]
-                  : "");
+              translatedMessages.get(Message.CONVERT_TIME_REFERENCE)[tl]);
       standardShortDescriptionHtmlArray[tl] =
           String2.replaceAll(
               standardShortDescriptionHtmlArray[tl],
               "&wmsManyDatasets;",
-              EDStatic.config.wmsActive
-                  ? translatedMessages.get(Message.WMS_MANY_DATASETS)[tl]
-                  : "");
+              translatedMessages.get(Message.WMS_MANY_DATASETS)[tl]);
     }
 
     // just one
@@ -4037,13 +4049,13 @@ public class EDMessages {
           String2.replaceAll(
               translatedMessages.get(Message.DO_WITH_GRAPHS)[tl],
               "&ssUse;",
-              EDStatic.config.slideSorterActive ? translatedMessages.get(Message.SS_USE)[tl] : "");
+              translatedMessages.get(Message.SS_USE)[tl]);
 
       translatedMessages.get(Message.THE_LONG_DESCRIPTION_HTML)[tl] =
           String2.replaceAll(
               translatedMessages.get(Message.THE_LONG_DESCRIPTION_HTML)[tl],
               "&ssUse;",
-              EDStatic.config.slideSorterActive ? translatedMessages.get(Message.SS_USE)[tl] : "");
+              translatedMessages.get(Message.SS_USE)[tl]);
       translatedMessages.get(Message.THE_LONG_DESCRIPTION_HTML)[tl] =
           String2.replaceAll(
               translatedMessages.get(Message.THE_LONG_DESCRIPTION_HTML)[tl],
