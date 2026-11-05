@@ -14,6 +14,7 @@ public class EDDTableFromZarrHandler extends BaseTableHandler {
   private long tChunkCacheSize = -1;
   private String tAwsRegion = null;
   private String tAwsEndpoint = null;
+  private String tCacheFromUrl = null;
 
   public EDDTableFromZarrHandler(SaxHandler saxHandler, String datasetID, State completeState) {
     super(saxHandler, datasetID, completeState);
@@ -37,6 +38,7 @@ public class EDDTableFromZarrHandler extends BaseTableHandler {
       case "chunkCacheSize" -> tChunkCacheSize = String2.parseLong(contentStr);
       case "awsRegion" -> tAwsRegion = contentStr;
       case "awsEndpoint" -> tAwsEndpoint = contentStr;
+      case "cacheFromUrl" -> tCacheFromUrl = contentStr;
       default -> {
         return false;
       }
@@ -65,6 +67,7 @@ public class EDDTableFromZarrHandler extends BaseTableHandler {
         tRowDimensionName,
         tChunkCacheSize,
         tAwsRegion,
-        tAwsEndpoint);
+        tAwsEndpoint,
+        tCacheFromUrl);
   }
 }

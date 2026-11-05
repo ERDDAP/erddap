@@ -1234,4 +1234,450 @@ class EDDTableFromZarrTests {
             () -> dataset.getDataForDapQuery(0, null, "", "dim0,double_nan&double_nan>0", tw2));
     assertTrue(se.getMessage().contains("no matching results"), "Should indicate 0 rows matched");
   }
+
+  @Test
+  void testLowUpdateNoChange() throws Throwable {
+    Initialization.edStatic();
+    EDDTableFromZarr dataset =
+        (EDDTableFromZarr) EDDTestDataset.gettestZarr_table_compressedData();
+    assertNotNull(dataset);
+    boolean updated = dataset.lowUpdate(0, "testLowUpdateNoChange: ", System.currentTimeMillis());
+    assertFalse(updated, "lowUpdate on static dataset should return false");
+  }
+
+  @Test
+  void testLowUpdateWithAppendedRows() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_table_lowupdate_appended_test");
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.core.Attributes timeZattrs = new dev.zarr.zarrjava.core.Attributes();
+      timeZattrs.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeZattrs.set("standard_name", "time");
+
+      // Initial state: N = 3 rows with chunkShape = 3
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(3)
+                      .withChunkShape(3)
+                      .withDataType(float64)
+                      .withDimensionNames("obs")
+                      .withAttributes(timeZattrs),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {100.0, 101.0, 102.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("latitude"),
+              mb -> mb.withShape(3).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {30.0, 31.0, 32.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("longitude"),
+              mb -> mb.withShape(3).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {-120.0, -121.0, -122.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("salinity"),
+              mb -> mb.withShape(3).withChunkShape(3).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {35.0, 35.1, 35.2}));
+
+      LocalizedAttributes globalAtts = new LocalizedAttributes();
+      globalAtts.set(0, "title", "LowUpdate Appended Rows Test");
+      globalAtts.set(0, "summary", "Test lowUpdate with appended rows");
+      globalAtts.set(0, "institution", "NOAA");
+      globalAtts.set(0, "infoUrl", "https://example.org");
+      globalAtts.set(0, "cdm_data_type", "Point");
+      globalAtts.set(0, "time_coverage_start", "1970-01-01T00:01:40Z");
+
+      EDDTableFromZarr dataset =
+          new EDDTableFromZarr(
+              "lowupdate_appended_test",
+              null,
+              null,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              globalAtts,
+              null, // auto-discovery
+              60,
+              tempDir.toString(),
+              "",
+              "obs",
+              -1,
+              null,
+              null);
+
+      assertEquals(3, dataset.numRows());
+
+      TableWriterAllWithMetadata tw1 =
+          new TableWriterAllWithMetadata(
+              0, dataset, "", dataset.cacheDirectory(), "lowupdate1.twawm");
+      dataset.getDataForDapQuery(0, null, "", "time,latitude,longitude,salinity", tw1);
+      Table t1 = tw1.cumulativeTable();
+      assertNotNull(t1);
+      assertEquals(3, t1.nRows());
+
+      // Append M = 2 rows -> N + M = 5 rows
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(5)
+                      .withDataType(float64)
+                      .withDimensionNames("obs")
+                      .withAttributes(timeZattrs),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {5},
+                  new double[] {100.0, 101.0, 102.0, 103.0, 104.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("latitude"),
+              mb -> mb.withShape(5).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {5},
+                  new double[] {30.0, 31.0, 32.0, 33.0, 34.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("longitude"),
+              mb -> mb.withShape(5).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {5},
+                  new double[] {-120.0, -121.0, -122.0, -123.0, -124.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("salinity"),
+              mb -> mb.withShape(5).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {5},
+                  new double[] {35.0, 35.1, 35.2, 35.3, 35.4}));
+
+      boolean updated =
+          dataset.lowUpdate(
+              0, "testLowUpdateWithAppendedRows: ", System.currentTimeMillis());
+      assertTrue(updated, "lowUpdate should return true when rows are appended");
+      assertEquals(5, dataset.numRows());
+
+      TableWriterAllWithMetadata tw2 =
+          new TableWriterAllWithMetadata(
+              0, dataset, "", dataset.cacheDirectory(), "lowupdate2.twawm");
+      dataset.getDataForDapQuery(0, null, "", "time,latitude,longitude,salinity", tw2);
+      Table t2 = tw2.cumulativeTable();
+      assertNotNull(t2);
+      assertEquals(5, t2.nRows());
+
+      assertEquals(
+          "1970-01-01T00:01:44Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+
+    } finally {
+      File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testLowUpdateLaggingColumnDeferral() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_table_lowupdate_lagging_test");
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.core.Attributes timeZattrs = new dev.zarr.zarrjava.core.Attributes();
+      timeZattrs.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeZattrs.set("standard_name", "time");
+
+      // Initial state: N = 3 rows
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(3)
+                      .withDataType(float64)
+                      .withDimensionNames("obs")
+                      .withAttributes(timeZattrs),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {100.0, 101.0, 102.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("salinity"),
+              mb -> mb.withShape(3).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {35.0, 35.1, 35.2}));
+
+      LocalizedAttributes globalAtts = new LocalizedAttributes();
+      globalAtts.set(0, "title", "Lagging Column Deferral Test");
+      globalAtts.set(0, "summary", "Test lowUpdate lagging column deferral");
+      globalAtts.set(0, "institution", "NOAA");
+      globalAtts.set(0, "infoUrl", "https://example.org");
+      globalAtts.set(0, "cdm_data_type", "Other");
+
+      EDDTableFromZarr dataset =
+          new EDDTableFromZarr(
+              "lagging_column_test",
+              null,
+              null,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              globalAtts,
+              null, // auto-discovery
+              60,
+              tempDir.toString(),
+              "",
+              "obs",
+              -1,
+              null,
+              null);
+
+      assertEquals(3, dataset.numRows());
+
+      // Simulate partial write: expand time to 5 rows, keep salinity at 3 rows
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(5)
+                      .withDataType(float64)
+                      .withDimensionNames("obs")
+                      .withAttributes(timeZattrs),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {5},
+                  new double[] {100.0, 101.0, 102.0, 103.0, 104.0}));
+
+      boolean updated1 =
+          dataset.lowUpdate(
+              0, "testLowUpdateLaggingColumnDeferral: ", System.currentTimeMillis());
+      assertFalse(updated1, "lowUpdate should defer (return false) when a column lags behind");
+      assertEquals(3, dataset.numRows(), "numRows should remain 3 when update is deferred");
+
+      // Now catch up salinity column to 5 rows
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("salinity"),
+              mb -> mb.withShape(5).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {5},
+                  new double[] {35.0, 35.1, 35.2, 35.3, 35.4}));
+
+      boolean updated2 =
+          dataset.lowUpdate(
+              0, "testLowUpdateLaggingColumnDeferral: ", System.currentTimeMillis());
+      assertTrue(updated2, "lowUpdate should return true after lagging column catches up");
+      assertEquals(5, dataset.numRows());
+
+    } finally {
+      File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testLowUpdateConcurrentQuery() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_table_concurrent_query_test");
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.core.Attributes timeZattrs = new dev.zarr.zarrjava.core.Attributes();
+      timeZattrs.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeZattrs.set("standard_name", "time");
+
+      // Initial state: N = 3 rows
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(3)
+                      .withDataType(float64)
+                      .withDimensionNames("obs")
+                      .withAttributes(timeZattrs),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {100.0, 101.0, 102.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("salinity"),
+              mb -> mb.withShape(3).withDataType(float64).withDimensionNames("obs"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {35.0, 35.1, 35.2}));
+
+      LocalizedAttributes globalAtts = new LocalizedAttributes();
+      globalAtts.set(0, "title", "Concurrent Query Test");
+      globalAtts.set(0, "summary", "Test lowUpdate concurrent queries");
+      globalAtts.set(0, "institution", "NOAA");
+      globalAtts.set(0, "infoUrl", "https://example.org");
+      globalAtts.set(0, "cdm_data_type", "Other");
+
+      EDDTableFromZarr dataset =
+          new EDDTableFromZarr(
+              "concurrent_query_test",
+              null,
+              null,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              globalAtts,
+              null, // auto-discovery
+              60,
+              tempDir.toString(),
+              "",
+              "obs",
+              -1,
+              null,
+              null);
+
+      // Append rows in store to N = 5 rows with chunkShape = 3 (chunk 0 = 3 rows, chunk 1 = 2 rows)
+      dev.zarr.zarrjava.v3.Array timeArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(5)
+                      .withChunkShape(3)
+                      .withDataType(float64)
+                      .withDimensionNames("obs")
+                      .withAttributes(timeZattrs),
+              true);
+      timeArr.write(
+          new long[] {0},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {100.0, 101.0, 102.0}));
+      timeArr.write(
+          new long[] {3},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {103.0, 104.0}));
+
+      dev.zarr.zarrjava.v3.Array salArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("salinity"),
+              mb -> mb.withShape(5).withChunkShape(3).withDataType(float64).withDimensionNames("obs"),
+              true);
+      salArr.write(
+          new long[] {0},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {35.0, 35.1, 35.2}));
+      salArr.write(
+          new long[] {3},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {35.3, 35.4}));
+
+      // Launch concurrent query workers
+      int numThreads = 4;
+      java.util.concurrent.ExecutorService executor =
+          java.util.concurrent.Executors.newFixedThreadPool(numThreads);
+      java.util.concurrent.atomic.AtomicBoolean running =
+          new java.util.concurrent.atomic.AtomicBoolean(true);
+      java.util.concurrent.atomic.AtomicInteger queryErrorCount =
+          new java.util.concurrent.atomic.AtomicInteger(0);
+
+      for (int i = 0; i < numThreads; i++) {
+        final int threadIdx = i;
+        executor.submit(
+            () -> {
+              int queryNum = 0;
+              while (running.get()) {
+                try {
+                  TableWriterAllWithMetadata tw =
+                      new TableWriterAllWithMetadata(
+                          0,
+                          dataset,
+                          "",
+                          dataset.cacheDirectory(),
+                          "concurrent_" + threadIdx + "_" + (queryNum++) + ".twawm");
+                  dataset.getDataForDapQuery(0, null, "", "time,salinity", tw);
+                  Table t = tw.cumulativeTable();
+                  if (t == null || (t.nRows() != 3 && t.nRows() != 5)) {
+                    com.cohort.util.String2.log("Unexpected nRows=" + (t == null ? "null" : t.nRows()));
+                    queryErrorCount.incrementAndGet();
+                  }
+                } catch (Throwable ex) {
+                  com.cohort.util.String2.log("Query exception: " + com.cohort.util.MustBe.throwableToString(ex));
+                  queryErrorCount.incrementAndGet();
+                }
+              }
+            });
+      }
+
+      Thread.sleep(100);
+
+      // Invoke lowUpdate while concurrent query workers are executing
+      boolean updated =
+          dataset.lowUpdate(0, "testLowUpdateConcurrentQuery: ", System.currentTimeMillis());
+      assertTrue(updated, "lowUpdate should succeed during concurrent queries");
+
+      Thread.sleep(100);
+      running.set(false);
+      executor.shutdown();
+      assertTrue(executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS));
+
+      assertEquals(0, queryErrorCount.get(), "Concurrent queries should encounter 0 errors");
+      assertEquals(5, dataset.numRows());
+
+      // Confirm query after lowUpdate returns 5 rows
+      TableWriterAllWithMetadata finalTw =
+          new TableWriterAllWithMetadata(
+              0, dataset, "", dataset.cacheDirectory(), "concurrent_final.twawm");
+      dataset.getDataForDapQuery(0, null, "", "time,salinity", finalTw);
+      Table finalTable = finalTw.cumulativeTable();
+      assertNotNull(finalTable);
+      assertEquals(5, finalTable.nRows());
+
+    } finally {
+      File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
 }

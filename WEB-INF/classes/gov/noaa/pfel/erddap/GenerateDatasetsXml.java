@@ -503,9 +503,9 @@ public class GenerateDatasetsXml {
             }
             case "EDDGridFromZarr" -> {
               doGridFromZarr(args);
-
-              // EDDTable
             }
+
+            // EDDTable
             case "EDDTableFromAsciiFiles" -> {
               s1 = get(args, 1, s1, "Starting directory");
               s2 = get(args, 2, s2, "File name regex (e.g., \".*\\.asc\")");
@@ -1461,12 +1461,6 @@ public class GenerateDatasetsXml {
     System.exit(0);
   }
 
-  /**
-   * Auto-generates ERDDAP datasets.xml chunk for an EDDGridFromZarr dataset.
-   *
-   * @param args command line / interactive arguments
-   * @throws Throwable if error
-   */
   /**
    * Auto-generates ERDDAP datasets.xml chunk for an EDDTableFromZarr dataset.
    *
