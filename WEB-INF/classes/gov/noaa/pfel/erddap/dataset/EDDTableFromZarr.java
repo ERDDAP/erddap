@@ -1405,7 +1405,12 @@ public class EDDTableFromZarr extends EDDTable {
         // Pass 1: Evaluate constraints against chunk data
         BitSet rowMask =
             evaluateChunkConstraints(
-                startRow, currentChunkSize, constraintVarsAndOps, zarrArrayMap, metadataMap, activeGroup);
+                startRow,
+                currentChunkSize,
+                constraintVarsAndOps,
+                zarrArrayMap,
+                metadataMap,
+                activeGroup);
 
         int cardinal = rowMask.cardinality();
         if (cardinal == 0) {
@@ -1417,7 +1422,13 @@ public class EDDTableFromZarr extends EDDTable {
         // Pass 2: Extract requested variable row batch
         Table batchTable =
             extractRowBatch(
-                startRow, currentChunkSize, rowMask, requestedVarNames, zarrArrayMap, metadataMap, activeGroup);
+                startRow,
+                currentChunkSize,
+                rowMask,
+                requestedVarNames,
+                zarrArrayMap,
+                metadataMap,
+                activeGroup);
 
         if (cumulativeBatchTable == null) {
           cumulativeBatchTable = batchTable;
@@ -1497,7 +1508,12 @@ public class EDDTableFromZarr extends EDDTable {
       Map<String, ZarrArrayInfo> metadataMap)
       throws Throwable {
     return evaluateChunkConstraints(
-        startRow, currentChunkSize, constraintVarsAndOps, zarrArrayMap, metadataMap, this.zarrGroup);
+        startRow,
+        currentChunkSize,
+        constraintVarsAndOps,
+        zarrArrayMap,
+        metadataMap,
+        this.zarrGroup);
   }
 
   protected BitSet evaluateChunkConstraints(
@@ -1971,8 +1987,7 @@ public class EDDTableFromZarr extends EDDTable {
     try {
       // 1. Store Re-inspection & Shape Detection
       freshStore =
-          createZarrStore(
-              this.zarrStorePath, this.cacheFromUrl, this.awsRegion, this.awsEndpoint);
+          createZarrStore(this.zarrStorePath, this.cacheFromUrl, this.awsRegion, this.awsEndpoint);
       Group freshGroup = openZarrGroup(freshStore, this.zarrGroupName);
       Map<String, ZarrArrayInfo> freshArrayMap = parseZarrMetadata(freshGroup);
 
@@ -2099,7 +2114,9 @@ public class EDDTableFromZarr extends EDDTable {
           } else if (info.is2DStringOrChar()) {
             if (info.shape != null && info.shape.length == 2) {
               long colLen = info.shape[0];
-              if (this.numRows > 0 && info.shape[1] == this.numRows && info.shape[0] != this.numRows) {
+              if (this.numRows > 0
+                  && info.shape[1] == this.numRows
+                  && info.shape[0] != this.numRows) {
                 colLen = info.shape[1];
               }
               if (colLen < newNumRows) {
@@ -2160,8 +2177,7 @@ public class EDDTableFromZarr extends EDDTable {
 
         if (newTimeEndIso != null) {
           combinedGlobalAttributes.set(language, "time_coverage_end", newTimeEndIso);
-          String timeStartStr =
-              combinedGlobalAttributes.getString(language, "time_coverage_start");
+          String timeStartStr = combinedGlobalAttributes.getString(language, "time_coverage_start");
           if (timeStartStr != null) {
             timeStartSec = Calendar2.isoStringToEpochSeconds(timeStartStr);
             if (!Double.isNaN(timeStartSec)

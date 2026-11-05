@@ -1238,8 +1238,7 @@ class EDDTableFromZarrTests {
   @Test
   void testLowUpdateNoChange() throws Throwable {
     Initialization.edStatic();
-    EDDTableFromZarr dataset =
-        (EDDTableFromZarr) EDDTestDataset.gettestZarr_table_compressedData();
+    EDDTableFromZarr dataset = (EDDTableFromZarr) EDDTestDataset.gettestZarr_table_compressedData();
     assertNotNull(dataset);
     boolean updated = dataset.lowUpdate(0, "testLowUpdateNoChange: ", System.currentTimeMillis());
     assertFalse(updated, "lowUpdate on static dataset should return false");
@@ -1292,7 +1291,8 @@ class EDDTableFromZarrTests {
 
       dev.zarr.zarrjava.v3.Array.create(
               store.resolve("salinity"),
-              mb -> mb.withShape(3).withChunkShape(3).withDataType(float64).withDimensionNames("obs"),
+              mb ->
+                  mb.withShape(3).withChunkShape(3).withDataType(float64).withDimensionNames("obs"),
               true)
           .write(
               ucar.ma2.Array.factory(
@@ -1384,8 +1384,7 @@ class EDDTableFromZarrTests {
                   new double[] {35.0, 35.1, 35.2, 35.3, 35.4}));
 
       boolean updated =
-          dataset.lowUpdate(
-              0, "testLowUpdateWithAppendedRows: ", System.currentTimeMillis());
+          dataset.lowUpdate(0, "testLowUpdateWithAppendedRows: ", System.currentTimeMillis());
       assertTrue(updated, "lowUpdate should return true when rows are appended");
       assertEquals(5, dataset.numRows());
 
@@ -1489,8 +1488,7 @@ class EDDTableFromZarrTests {
                   new double[] {100.0, 101.0, 102.0, 103.0, 104.0}));
 
       boolean updated1 =
-          dataset.lowUpdate(
-              0, "testLowUpdateLaggingColumnDeferral: ", System.currentTimeMillis());
+          dataset.lowUpdate(0, "testLowUpdateLaggingColumnDeferral: ", System.currentTimeMillis());
       assertFalse(updated1, "lowUpdate should defer (return false) when a column lags behind");
       assertEquals(3, dataset.numRows(), "numRows should remain 3 when update is deferred");
 
@@ -1506,8 +1504,7 @@ class EDDTableFromZarrTests {
                   new double[] {35.0, 35.1, 35.2, 35.3, 35.4}));
 
       boolean updated2 =
-          dataset.lowUpdate(
-              0, "testLowUpdateLaggingColumnDeferral: ", System.currentTimeMillis());
+          dataset.lowUpdate(0, "testLowUpdateLaggingColumnDeferral: ", System.currentTimeMillis());
       assertTrue(updated2, "lowUpdate should return true after lagging column catches up");
       assertEquals(5, dataset.numRows());
 
@@ -1604,7 +1601,8 @@ class EDDTableFromZarrTests {
       dev.zarr.zarrjava.v3.Array salArr =
           dev.zarr.zarrjava.v3.Array.create(
               store.resolve("salinity"),
-              mb -> mb.withShape(5).withChunkShape(3).withDataType(float64).withDimensionNames("obs"),
+              mb ->
+                  mb.withShape(5).withChunkShape(3).withDataType(float64).withDimensionNames("obs"),
               true);
       salArr.write(
           new long[] {0},
@@ -1641,11 +1639,13 @@ class EDDTableFromZarrTests {
                   dataset.getDataForDapQuery(0, null, "", "time,salinity", tw);
                   Table t = tw.cumulativeTable();
                   if (t == null || (t.nRows() != 3 && t.nRows() != 5)) {
-                    com.cohort.util.String2.log("Unexpected nRows=" + (t == null ? "null" : t.nRows()));
+                    com.cohort.util.String2.log(
+                        "Unexpected nRows=" + (t == null ? "null" : t.nRows()));
                     queryErrorCount.incrementAndGet();
                   }
                 } catch (Throwable ex) {
-                  com.cohort.util.String2.log("Query exception: " + com.cohort.util.MustBe.throwableToString(ex));
+                  com.cohort.util.String2.log(
+                      "Query exception: " + com.cohort.util.MustBe.throwableToString(ex));
                   queryErrorCount.incrementAndGet();
                 }
               }
