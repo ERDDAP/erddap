@@ -42,6 +42,7 @@ import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import gov.noaa.pfel.erddap.variable.EDVTimeStampGridAxis;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -58,15 +60,38 @@ import software.amazon.awssdk.services.s3.S3Client;
  * @author ERDDAP Development Team
  */
 @SaxHandlerClass(EDDGridFromZarrHandler.class)
-public class EDDGridFromZarr extends EDDGrid {
+public class EDDGridFromZarr extends EDDGrid implements AutoCloseable {
+
+  // Container to pair a Zarr Store with an optional S3Client instance for lifecycle tracking
+  protected static record ZarrStoreHolder(Store store, S3Client s3Client) implements AutoCloseable {
+    @Override
+    public void close() {
+      if (store instanceof AutoCloseable ac) {
+        try {
+          ac.close();
+        } catch (Throwable t) {
+          String2.log("Warning: Exception closing Zarr store: " + t.getMessage());
+        }
+      }
+      if (s3Client != null) {
+        try {
+          s3Client.close();
+        } catch (Throwable t) {
+          String2.log("Warning: Exception closing S3Client: " + t.getMessage());
+        }
+      }
+    }
+  }
 
   // Private instance variables for Zarr configuration and zarr-java handles
   private String zarrStorePath;
   private String zarrGroupName;
   private long chunkCacheSize;
   private Store zarrStore;
+  private S3Client s3Client;
   private Group zarrGroup;
-  private final Object zarrLock = new Object();
+  private Map<String, ZarrArrayInfo> zarrArrayMap;
+  private final ReentrantReadWriteLock zarrReadWriteLock = new ReentrantReadWriteLock();
 
   /**
    * Static factory method to construct an EDDGridFromZarr dataset from an XML configuration.
@@ -259,73 +284,69 @@ public class EDDGridFromZarr extends EDDGrid {
 
     // Initialize zarr-java Store reader
     try {
-      this.zarrStore = createZarrStore(this.zarrStorePath);
-    } catch (Exception e) {
-      throw new RuntimeException(
-          errorInMethod + "Failed to initialize Zarr store at path: " + this.zarrStorePath, e);
-    }
+      ZarrStoreHolder holder = createZarrStore(this.zarrStorePath);
+      this.zarrStore = holder.store();
+      this.s3Client = holder.s3Client();
 
-    // Open specified Zarr root or subgroup
-    try {
+      // Open specified Zarr root or subgroup
       this.zarrGroup = openZarrGroup(this.zarrStore, this.zarrGroupName);
-    } catch (Exception e) {
-      throw new RuntimeException(
-          errorInMethod
-              + "Failed to open Zarr group '"
-              + this.zarrGroupName
-              + "' in store: "
-              + this.zarrStorePath,
-          e);
-    }
 
-    // Extract .zattrs and populate ERDDAP combinedGlobalAttributes
-    sourceGlobalAttributes = new Attributes();
-    try {
-      dev.zarr.zarrjava.core.Attributes zattrs = this.zarrGroup.metadata().attributes();
-      if (zattrs != null) {
-        populateAttributesFromZarr(zattrs, sourceGlobalAttributes);
+      // Extract .zattrs and populate ERDDAP combinedGlobalAttributes
+      sourceGlobalAttributes = new Attributes();
+      try {
+        dev.zarr.zarrjava.core.Attributes zattrs = this.zarrGroup.metadata().attributes();
+        if (zattrs != null) {
+          populateAttributesFromZarr(zattrs, sourceGlobalAttributes);
+        }
+      } catch (ZarrException ze) {
+        String2.log(errorInMethod + "Warning: Could not read .zattrs metadata: " + ze.getMessage());
       }
-    } catch (ZarrException ze) {
-      String2.log(errorInMethod + "Warning: Could not read .zattrs metadata: " + ze.getMessage());
-    }
 
-    combinedGlobalAttributes = new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes);
-    String tLicense = combinedGlobalAttributes.getString(language, "license");
-    if (tLicense != null)
-      combinedGlobalAttributes.set(
-          language,
-          "license",
-          String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
-    combinedGlobalAttributes.removeValue("\"null\"");
-    if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
-      combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
+      combinedGlobalAttributes =
+          new LocalizedAttributes(addGlobalAttributes, sourceGlobalAttributes);
+      String tLicense = combinedGlobalAttributes.getString(language, "license");
+      if (tLicense != null)
+        combinedGlobalAttributes.set(
+            language,
+            "license",
+            String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+      combinedGlobalAttributes.removeValue("\"null\"");
+      if (combinedGlobalAttributes.getString(language, "cdm_data_type") == null)
+        combinedGlobalAttributes.set(language, "cdm_data_type", "Grid");
 
-    // Discover Zarr metadata
-    Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata();
+      // Discover Zarr metadata
+      Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata();
 
-    if (tDataVariables != null) {
-      for (DataVariableInfo dvi : tDataVariables) {
-        if (dvi != null && String2.isSomething(dvi.sourceName())) {
-          getOrOpenZarrArrayInfo(dvi.sourceName(), arrayMap);
+      if (tDataVariables != null) {
+        for (DataVariableInfo dvi : tDataVariables) {
+          if (dvi != null && String2.isSomething(dvi.sourceName())) {
+            getOrOpenZarrArrayInfo(dvi.sourceName(), arrayMap);
+          }
         }
       }
-    }
 
-    // Build grid axes
-    this.axisVariables = buildGridAxes(tAxisVariables, arrayMap);
+      // Build grid axes
+      this.axisVariables = buildGridAxes(tAxisVariables, tDataVariables, arrayMap);
 
-    // Collect axis source names
-    Set<String> axisSourceNames = new HashSet<>();
-    for (EDVGridAxis axis : this.axisVariables) {
-      if (axis != null && axis.sourceName() != null) {
-        axisSourceNames.add(axis.sourceName());
+      // Collect axis source names
+      Set<String> axisSourceNames = new HashSet<>();
+      for (EDVGridAxis axis : this.axisVariables) {
+        if (axis != null && axis.sourceName() != null) {
+          axisSourceNames.add(axis.sourceName());
+        }
       }
+
+      // Cache arrayMap
+      this.zarrArrayMap = arrayMap;
+
+      // Build data variables
+      this.dataVariables = buildDataVariables(tDataVariables, arrayMap, axisSourceNames);
+
+      ensureValid();
+    } catch (Throwable e) {
+      close();
+      throw e;
     }
-
-    // Build data variables
-    this.dataVariables = buildDataVariables(tDataVariables, arrayMap, axisSourceNames);
-
-    ensureValid();
 
     long cTime = System.currentTimeMillis() - constructionStartMillis;
     if (verbose)
@@ -340,28 +361,73 @@ public class EDDGridFromZarr extends EDDGrid {
     if (!dimensionValuesInMemory) saveDimensionValuesInFile();
   }
 
+  /**
+   * Explicit dataset release/close hook to ensure background threads, store handles, and HTTP/S3
+   * client resources are released on dataset destruction or reload.
+   */
+  @Override
+  public void close() {
+    zarrReadWriteLock.writeLock().lock();
+    try {
+      if (zarrStore instanceof AutoCloseable ac) {
+        try {
+          ac.close();
+        } catch (Throwable t) {
+          String2.log(
+              "Warning: Exception closing zarrStore in EDDGridFromZarr.close(): " + t.getMessage());
+        }
+      }
+      zarrStore = null;
+
+      if (s3Client != null) {
+        try {
+          s3Client.close();
+        } catch (Throwable t) {
+          String2.log(
+              "Warning: Exception closing s3Client in EDDGridFromZarr.close(): " + t.getMessage());
+        }
+        s3Client = null;
+      }
+      zarrGroup = null;
+      if (zarrArrayMap != null) {
+        zarrArrayMap.clear();
+        zarrArrayMap = null;
+      }
+    } finally {
+      zarrReadWriteLock.writeLock().unlock();
+    }
+  }
+
   /** Helper method to instantiate the appropriate zarr-java Store for local, HTTP, or S3 URIs. */
-  private static Store createZarrStore(String path) throws IOException {
+  private static ZarrStoreHolder createZarrStore(String path) throws IOException {
     if (path == null) throw new IllegalArgumentException("Zarr store path cannot be null.");
     if (path.startsWith("http://") || path.startsWith("https://")) {
-      return new HttpStore(path);
+      return new ZarrStoreHolder(new HttpStore(path), null);
     } else if (path.startsWith("s3://") || path.startsWith("s3a://")) {
       String s3Path = path.substring(path.indexOf("://") + 3);
       int firstSlash = s3Path.indexOf('/');
       String bucket = firstSlash > 0 ? s3Path.substring(0, firstSlash) : s3Path;
       String keyPrefix = firstSlash > 0 ? s3Path.substring(firstSlash + 1) : "";
       S3Client s3Client = S3Client.create();
-      return new S3Store(s3Client, bucket, keyPrefix);
+      return new ZarrStoreHolder(new S3Store(s3Client, bucket, keyPrefix), s3Client);
     } else if (path.toLowerCase().endsWith(".zip")) {
-      return new dev.zarr.zarrjava.store.ReadOnlyZipStore(Paths.get(path));
+      return new ZarrStoreHolder(
+          new dev.zarr.zarrjava.store.ReadOnlyZipStore(Paths.get(path)), null);
     } else {
-      return new FilesystemStore(Paths.get(path));
+      return new ZarrStoreHolder(new FilesystemStore(Paths.get(path)), null);
     }
   }
 
   private static Group openZarrGroup(Store store, String groupName) throws Exception {
+    String cleanGroupName = groupName != null ? groupName.trim() : "";
+    while (cleanGroupName.startsWith("/")) {
+      cleanGroupName = cleanGroupName.substring(1).trim();
+    }
+    while (cleanGroupName.endsWith("/")) {
+      cleanGroupName = cleanGroupName.substring(0, cleanGroupName.length() - 1).trim();
+    }
     StoreHandle handle;
-    if (groupName == null || groupName.isEmpty() || "/".equals(groupName.trim())) {
+    if (cleanGroupName.isEmpty()) {
       handle = store.resolve();
       try {
         return Group.open(handle);
@@ -398,7 +464,7 @@ public class EDDGridFromZarr extends EDDGrid {
         throw e;
       }
     } else {
-      String[] groupKeys = String2.split(groupName, '/');
+      String[] groupKeys = String2.split(cleanGroupName, '/');
       handle = store.resolve(groupKeys);
       return Group.open(handle);
     }
@@ -576,256 +642,350 @@ public class EDDGridFromZarr extends EDDGrid {
   public PrimitiveArray getSourceDataFromFile(EDV edv, int[] start, int[] stride, int[] stop)
       throws Throwable {
 
-    if (edv == null) {
-      throw new IllegalArgumentException("EDV data variable cannot be null.");
-    }
-    String sourceName = edv.sourceName();
-    if (!String2.isSomething(sourceName)) {
-      throw new IllegalArgumentException("EDV sourceName is empty.");
-    }
+    zarrReadWriteLock.readLock().lock();
+    try {
+      if (edv == null) {
+        throw new IllegalArgumentException("EDV data variable cannot be null.");
+      }
+      String sourceName = edv.sourceName();
+      if (!String2.isSomething(sourceName)) {
+        throw new IllegalArgumentException("EDV sourceName is empty.");
+      }
 
-    // Retrieve Zarr array handle
-    ZarrArrayInfo info = getOrOpenZarrArrayInfo(sourceName, new LinkedHashMap<>());
-    Array zarray = info != null ? info.array : null;
-    if (zarray == null) {
-      try {
-        Node node = zarrGroup.get(sourceName);
-        if (node instanceof Array za) {
-          zarray = za;
-        }
-      } catch (Throwable t) {
+      // Retrieve Zarr array handle from cached zarrArrayMap
+      ZarrArrayInfo info = zarrArrayMap != null ? zarrArrayMap.get(sourceName) : null;
+      if (info == null) {
+        info =
+            getOrOpenZarrArrayInfo(
+                sourceName, zarrArrayMap != null ? zarrArrayMap : new LinkedHashMap<>());
+      }
+      Array zarray = info != null ? info.array : null;
+      if (zarray == null && zarrGroup != null) {
         try {
-          StoreHandle childHandle = zarrGroup.storeHandle.resolve(sourceName);
-          zarray = Array.open(childHandle);
-        } catch (Throwable t2) {
-          throw new SimpleException(
-              "Data variable '" + sourceName + "' not found in Zarr store.", t2);
+          Node node = zarrGroup.get(sourceName);
+          if (node instanceof Array za) {
+            zarray = za;
+          }
+        } catch (Throwable t) {
+          try {
+            StoreHandle childHandle = zarrGroup.storeHandle.resolve(sourceName);
+            zarray = Array.open(childHandle);
+          } catch (Throwable t2) {
+            throw new SimpleException(
+                "Data variable '" + sourceName + "' not found in Zarr store.", t2);
+          }
         }
       }
-    }
-    if (zarray == null) {
-      throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.");
-    }
+      if (zarray == null) {
+        throw new SimpleException("Data variable '" + sourceName + "' not found in Zarr store.");
+      }
 
-    ArrayMetadata metadata = zarray.metadata();
-    long[] shape = metadata.shape;
-    int[] chunkShape = metadata.chunkShape();
-    int rank = shape.length;
+      ArrayMetadata metadata = zarray.metadata();
+      long[] shape = metadata.shape;
+      int[] chunkShape = metadata.chunkShape();
+      int rank = shape.length;
 
-    if (start.length != rank || stride.length != rank || stop.length != rank) {
-      throw new IllegalArgumentException(
-          "Constraint dimension count ("
-              + start.length
-              + ") does not match Zarr array rank ("
-              + rank
-              + ") for variable '"
-              + sourceName
-              + "'.");
-    }
-
-    // Validate request bounds and calculate output dimension lengths
-    int[] nRequested = new int[rank];
-    long totalSizeL = 1;
-    for (int d = 0; d < rank; d++) {
-      if (start[d] < 0 || stop[d] >= shape[d] || start[d] > stop[d] || stride[d] < 1) {
+      if (start.length != rank || stride.length != rank || stop.length != rank) {
         throw new IllegalArgumentException(
-            "Invalid slice bounds for dimension "
-                + d
-                + " on '"
+            "Constraint dimension count ("
+                + start.length
+                + ") does not match Zarr array rank ("
+                + rank
+                + ") for variable '"
                 + sourceName
-                + "': start="
-                + start[d]
-                + ", stride="
-                + stride[d]
-                + ", stop="
-                + stop[d]
-                + ", shape="
-                + shape[d]);
-      }
-      nRequested[d] = (stop[d] - start[d]) / stride[d] + 1;
-      totalSizeL *= nRequested[d];
-    }
-
-    if (totalSizeL > Integer.MAX_VALUE) {
-      throw new SimpleException(
-          "Requested data size ("
-              + totalSizeL
-              + ") exceeds maximum allowed PrimitiveArray length.");
-    }
-    int totalSize = (int) totalSizeL;
-
-    // Determine unpacking & target PrimitiveArray type
-    double scaleFactor = edv.scaleFactor();
-    double addOffset = edv.addOffset();
-    boolean unpack = edv.scaleAddOffset();
-
-    PAType destPAType = unpack ? edv.destinationDataPAType() : edv.sourceDataPAType();
-    PrimitiveArray destPA = PrimitiveArray.factory(destPAType, totalSize, true);
-
-    // Missing value definitions
-    double sourceMissingDouble = edv.sourceMissingValue();
-    double sourceFillDouble = edv.sourceFillValue();
-    double destMissingDouble = edv.destinationMissingValue();
-
-    // Check Zarr parsed fill value from metadata if available
-    Object parsedFV = metadata.parsedFillValue();
-    if (parsedFV instanceof Number n) {
-      double fvDouble = n.doubleValue();
-      if (Double.isNaN(sourceFillDouble)) {
-        sourceFillDouble = fvDouble;
-      }
-    }
-
-    // Compute chunk coordinate ranges for each dimension
-    int[] minChunk = new int[rank];
-    int[] maxChunk = new int[rank];
-    int[] nChunks = new int[rank];
-    int totalChunks = 1;
-
-    for (int d = 0; d < rank; d++) {
-      int cSize = chunkShape[d];
-      minChunk[d] = start[d] / cSize;
-      maxChunk[d] = stop[d] / cSize;
-      nChunks[d] = maxChunk[d] - minChunk[d] + 1;
-      totalChunks *= nChunks[d];
-    }
-
-    // Precompute dimension multiplier strides for C-order row-major output index mapping
-    int[] outStrides = new int[rank];
-    if (rank > 0) {
-      outStrides[rank - 1] = 1;
-      for (int d = rank - 2; d >= 0; d--) {
-        outStrides[d] = outStrides[d + 1] * nRequested[d + 1];
-      }
-    }
-
-    // Process overlapping chunks
-    int[] chunkCoordOffset = new int[rank];
-    long[] chunkCoords = new long[rank];
-    int[] kMin = new int[rank];
-    int[] kMax = new int[rank];
-
-    for (int cIdx = 0; cIdx < totalChunks; cIdx++) {
-      int temp = cIdx;
-      for (int d = rank - 1; d >= 0; d--) {
-        chunkCoordOffset[d] = temp % nChunks[d];
-        temp /= nChunks[d];
-        chunkCoords[d] = minChunk[d] + chunkCoordOffset[d];
+                + "'.");
       }
 
-      // Calculate chunk physical bounds and output index overlap bounds [kMin, kMax]
-      boolean hasOverlap = true;
-      long[] physStart = new long[rank];
-      long[] physEnd = new long[rank];
+      // Validate request bounds and calculate output dimension lengths
+      int[] nRequested = new int[rank];
+      long totalSizeL = 1;
+      for (int d = 0; d < rank; d++) {
+        if (start[d] < 0 || stop[d] >= shape[d] || start[d] > stop[d] || stride[d] < 1) {
+          throw new IllegalArgumentException(
+              "Invalid slice bounds for dimension "
+                  + d
+                  + " on '"
+                  + sourceName
+                  + "': start="
+                  + start[d]
+                  + ", stride="
+                  + stride[d]
+                  + ", stop="
+                  + stop[d]
+                  + ", shape="
+                  + shape[d]);
+        }
+        nRequested[d] = (stop[d] - start[d]) / stride[d] + 1;
+        totalSizeL *= nRequested[d];
+      }
+
+      if (totalSizeL > Integer.MAX_VALUE) {
+        throw new SimpleException(
+            "Requested data size ("
+                + totalSizeL
+                + ") exceeds maximum allowed PrimitiveArray length.");
+      }
+      int totalSize = (int) totalSizeL;
+
+      // Determine unpacking & target PrimitiveArray type
+      double scaleFactor = edv.scaleFactor();
+      double addOffset = edv.addOffset();
+      boolean unpack = edv.scaleAddOffset();
+
+      PAType destPAType = unpack ? edv.destinationDataPAType() : edv.sourceDataPAType();
+      PrimitiveArray destPA = PrimitiveArray.factory(destPAType, totalSize, true);
+
+      // Missing value definitions
+      double sourceMissingDouble = edv.sourceMissingValue();
+      double sourceFillDouble = edv.sourceFillValue();
+      double destMissingDouble = edv.destinationMissingValue();
+
+      Long sourceMissingLong = null;
+      Long sourceFillLong = null;
+
+      if ((destPAType == PAType.LONG || destPAType == PAType.ULONG) && !unpack) {
+        Object fv = metadata.parsedFillValue();
+        if (fv instanceof Number n) {
+          sourceFillLong = n.longValue();
+        } else if (fv instanceof String s) {
+          try {
+            sourceFillLong = Long.parseUnsignedLong(s.trim());
+          } catch (Exception e) {
+            try {
+              sourceFillLong = String2.parseLong(s);
+            } catch (Exception e2) {
+              // ignore
+            }
+          }
+        }
+
+        if (edv.combinedAttributes() != null) {
+          PrimitiveArray ma = edv.combinedAttributes().get(0, "missing_value");
+          if (ma != null && ma.size() > 0) {
+            sourceMissingLong = ma.getLong(0);
+          }
+          PrimitiveArray fa = edv.combinedAttributes().get(0, "_FillValue");
+          if (fa != null && fa.size() > 0) {
+            sourceFillLong = fa.getLong(0);
+          }
+        } else if (edv.sourceAttributes() != null) {
+          PrimitiveArray ma = edv.sourceAttributes().get("missing_value");
+          if (ma != null && ma.size() > 0) {
+            sourceMissingLong = ma.getLong(0);
+          }
+          PrimitiveArray fa = edv.sourceAttributes().get("_FillValue");
+          if (fa != null && fa.size() > 0) {
+            sourceFillLong = fa.getLong(0);
+          }
+        }
+        if (destPAType != PAType.ULONG) {
+          if (sourceMissingLong == null && !Double.isNaN(sourceMissingDouble)) {
+            sourceMissingLong = (long) sourceMissingDouble;
+          }
+          if (sourceFillLong == null && !Double.isNaN(sourceFillDouble)) {
+            sourceFillLong = (long) sourceFillDouble;
+          }
+        }
+      } else {
+        Object parsedFV = metadata.parsedFillValue();
+        if (parsedFV instanceof Number n) {
+          double fvDouble = n.doubleValue();
+          if (Double.isNaN(sourceFillDouble)) {
+            sourceFillDouble = fvDouble;
+          }
+        }
+      }
+
+      // Compute chunk coordinate ranges for each dimension
+      int[] minChunk = new int[rank];
+      int[] maxChunk = new int[rank];
+      int[] nChunks = new int[rank];
+      int totalChunks = 1;
 
       for (int d = 0; d < rank; d++) {
         int cSize = chunkShape[d];
-        physStart[d] = chunkCoords[d] * cSize;
-        physEnd[d] = Math.min((chunkCoords[d] + 1) * cSize, shape[d]);
+        minChunk[d] = start[d] / cSize;
+        maxChunk[d] = stop[d] / cSize;
+        nChunks[d] = maxChunk[d] - minChunk[d] + 1;
+        totalChunks *= nChunks[d];
+      }
 
-        long pStart = physStart[d];
-        long pEnd = physEnd[d];
-
-        // Smallest k >= 0 such that start_d + k * stride_d >= pStart
-        int minK = 0;
-        if (pStart > start[d]) {
-          long num = pStart - start[d];
-          minK = (int) ((num + stride[d] - 1) / stride[d]);
-        }
-        kMin[d] = Math.max(0, minK);
-
-        // Largest k < nRequested such that start_d + k * stride_d < pEnd
-        int maxK = nRequested[d] - 1;
-        if (pEnd - 1 < start[d] + (long) (nRequested[d] - 1) * stride[d]) {
-          long num = (pEnd - 1) - start[d];
-          maxK = num < 0 ? -1 : (int) (num / stride[d]);
-        }
-        kMax[d] = Math.min(nRequested[d] - 1, maxK);
-
-        if (kMin[d] > kMax[d]) {
-          hasOverlap = false;
-          break;
+      // Precompute dimension multiplier strides for C-order row-major output index mapping
+      int[] outStrides = new int[rank];
+      if (rank > 0) {
+        outStrides[rank - 1] = 1;
+        for (int d = rank - 2; d >= 0; d--) {
+          outStrides[d] = outStrides[d + 1] * nRequested[d + 1];
         }
       }
 
-      if (!hasOverlap) continue;
+      // Process overlapping chunks
+      int[] chunkCoordOffset = new int[rank];
+      long[] chunkCoords = new long[rank];
+      int[] kMin = new int[rank];
+      int[] kMax = new int[rank];
 
-      // Read chunk data via zarr-java
-      ucar.ma2.Array chunkData = null;
-      try {
-        chunkData = zarray.readChunk(chunkCoords);
-      } catch (Throwable t) {
-        // Unwritten, missing, or empty chunk -> treated as missing fill region
-        chunkData = null;
-      }
-
-      // Calculate total element iterations within overlap for this chunk
-      int[] overlapShape = new int[rank];
-      int chunkIterTotal = 1;
-      for (int d = 0; d < rank; d++) {
-        overlapShape[d] = kMax[d] - kMin[d] + 1;
-        chunkIterTotal *= overlapShape[d];
-      }
-
-      int[] localK = new int[rank];
-      int[] chunkLocalOffset = new int[rank];
-
-      for (int iter = 0; iter < chunkIterTotal; iter++) {
-        int tempIter = iter;
-        int outIdx = 0;
-
+      for (int cIdx = 0; cIdx < totalChunks; cIdx++) {
+        int temp = cIdx;
         for (int d = rank - 1; d >= 0; d--) {
-          int offsetInOverlap = tempIter % overlapShape[d];
-          tempIter /= overlapShape[d];
-
-          localK[d] = kMin[d] + offsetInOverlap;
-          outIdx += localK[d] * outStrides[d];
-
-          long fullIdx = start[d] + (long) localK[d] * stride[d];
-          chunkLocalOffset[d] = (int) (fullIdx - physStart[d]);
+          chunkCoordOffset[d] = temp % nChunks[d];
+          temp /= nChunks[d];
+          chunkCoords[d] = minChunk[d] + chunkCoordOffset[d];
         }
 
-        if (chunkData == null) {
-          // Fill missing chunk elements with missing value
-          setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
-        } else {
-          ucar.ma2.Index ma2Idx = chunkData.getIndex();
-          ma2Idx.set(chunkLocalOffset);
+        // Calculate chunk physical bounds and output index overlap bounds [kMin, kMax]
+        boolean hasOverlap = true;
+        long[] physStart = new long[rank];
+        long[] physEnd = new long[rank];
 
-          if (destPAType == PAType.STRING || destPAType == PAType.CHAR) {
-            Object obj = chunkData.getObject(ma2Idx);
-            String sVal = obj != null ? obj.toString() : "";
-            destPA.setString(outIdx, sVal);
+        for (int d = 0; d < rank; d++) {
+          int cSize = chunkShape[d];
+          physStart[d] = chunkCoords[d] * cSize;
+          physEnd[d] = Math.min((chunkCoords[d] + 1) * cSize, shape[d]);
+
+          long pStart = physStart[d];
+          long pEnd = physEnd[d];
+
+          // Smallest k >= 0 such that start_d + k * stride_d >= pStart
+          int minK = 0;
+          if (pStart > start[d]) {
+            long num = pStart - start[d];
+            minK = (int) ((num + stride[d] - 1) / stride[d]);
+          }
+          kMin[d] = Math.max(0, minK);
+
+          // Largest k < nRequested such that start_d + k * stride_d < pEnd
+          int maxK = nRequested[d] - 1;
+          if (pEnd - 1 < start[d] + (long) (nRequested[d] - 1) * stride[d]) {
+            long num = (pEnd - 1) - start[d];
+            maxK = num < 0 ? -1 : (int) (num / stride[d]);
+          }
+          kMax[d] = Math.min(nRequested[d] - 1, maxK);
+
+          if (kMin[d] > kMax[d]) {
+            hasOverlap = false;
+            break;
+          }
+        }
+
+        if (!hasOverlap) continue;
+
+        // Read chunk data via zarr-java
+        ucar.ma2.Array chunkData = null;
+        try {
+          chunkData = zarray.readChunk(chunkCoords);
+        } catch (Throwable t) {
+          if (isMissingChunkException(t)) {
+            chunkData = null;
           } else {
-            double rawVal = chunkData.getDouble(ma2Idx);
+            throw t;
+          }
+        }
 
-            boolean isMissing =
-                Double.isNaN(rawVal)
-                    || (!Double.isNaN(sourceMissingDouble) && rawVal == sourceMissingDouble)
-                    || (!Double.isNaN(sourceFillDouble) && rawVal == sourceFillDouble);
+        // Calculate total element iterations within overlap for this chunk
+        int[] overlapShape = new int[rank];
+        int chunkIterTotal = 1;
+        for (int d = 0; d < rank; d++) {
+          overlapShape[d] = kMax[d] - kMin[d] + 1;
+          chunkIterTotal *= overlapShape[d];
+        }
 
-            if (isMissing) {
-              setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
-            } else {
-              if (unpack) {
-                double unpackedVal = rawVal * scaleFactor + addOffset;
-                destPA.setDouble(outIdx, unpackedVal);
+        ucar.ma2.Index ma2Idx = chunkData != null ? chunkData.getIndex() : null;
+
+        int[] localK = new int[rank];
+        int[] chunkLocalOffset = new int[rank];
+        int outIdx = 0;
+        for (int d = 0; d < rank; d++) {
+          localK[d] = kMin[d];
+          chunkLocalOffset[d] = (int) (start[d] + (long) kMin[d] * stride[d] - physStart[d]);
+          outIdx += localK[d] * outStrides[d];
+        }
+
+        for (int iter = 0; iter < chunkIterTotal; iter++) {
+          if (chunkData == null) {
+            // Fill missing chunk elements with missing value
+            setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
+          } else {
+            ma2Idx.set(chunkLocalOffset);
+
+            if (destPAType == PAType.STRING || destPAType == PAType.CHAR) {
+              Object obj = chunkData.getObject(ma2Idx);
+              String sVal = obj != null ? obj.toString() : "";
+              destPA.setString(outIdx, sVal);
+            } else if (destPAType == PAType.ULONG && !unpack) {
+              long rawLong = chunkData.getLong(ma2Idx);
+              boolean isMissing =
+                  (sourceMissingLong != null && rawLong == sourceMissingLong)
+                      || (sourceFillLong != null && rawLong == sourceFillLong);
+              if (isMissing) {
+                setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
               } else {
-                destPA.setDouble(outIdx, rawVal);
+                BigInteger ulongVal =
+                    rawLong >= 0
+                        ? BigInteger.valueOf(rawLong)
+                        : BigInteger.valueOf(rawLong & Long.MAX_VALUE).setBit(63);
+                destPA.setULong(outIdx, ulongVal);
               }
+            } else if (destPAType == PAType.LONG && !unpack) {
+              long rawLong = chunkData.getLong(ma2Idx);
+              boolean isMissing =
+                  (sourceMissingLong != null && rawLong == sourceMissingLong)
+                      || (sourceFillLong != null && rawLong == sourceFillLong);
+              if (isMissing) {
+                setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
+              } else {
+                destPA.setLong(outIdx, rawLong);
+              }
+            } else {
+              double rawVal = chunkData.getDouble(ma2Idx);
+
+              boolean isMissing =
+                  Double.isNaN(rawVal)
+                      || (!Double.isNaN(sourceMissingDouble) && rawVal == sourceMissingDouble)
+                      || (!Double.isNaN(sourceFillDouble) && rawVal == sourceFillDouble);
+
+              if (isMissing) {
+                setMissingInDest(destPA, outIdx, destPAType, destMissingDouble);
+              } else {
+                if (unpack) {
+                  double unpackedVal = rawVal * scaleFactor + addOffset;
+                  destPA.setDouble(outIdx, unpackedVal);
+                } else {
+                  destPA.setDouble(outIdx, rawVal);
+                }
+              }
+            }
+          }
+
+          if (iter + 1 < chunkIterTotal) {
+            for (int d = rank - 1; d >= 0; d--) {
+              localK[d]++;
+              chunkLocalOffset[d] += stride[d];
+              outIdx += outStrides[d];
+              if (localK[d] <= kMax[d]) {
+                break;
+              }
+              int overflowSteps = localK[d] - kMin[d];
+              localK[d] = kMin[d];
+              chunkLocalOffset[d] -= overflowSteps * stride[d];
+              outIdx -= overflowSteps * outStrides[d];
             }
           }
         }
       }
-    }
 
-    return destPA;
+      return destPA;
+    } finally {
+      zarrReadWriteLock.readLock().unlock();
+    }
   }
 
   private static void setMissingInDest(
       PrimitiveArray destPA, int index, PAType paType, double missingDouble) {
     if (paType == PAType.STRING || paType == PAType.CHAR) {
       destPA.setString(index, "");
+    } else if (paType == PAType.ULONG) {
+      destPA.setULong(index, null);
     } else if (Double.isNaN(missingDouble)) {
       destPA.setDouble(index, Double.NaN);
     } else {
@@ -914,9 +1074,10 @@ public class EDDGridFromZarr extends EDDGrid {
     String outerAxisSourceName = outerAxis.sourceName();
     int currentAxisLength = outerAxis.sourceValues().size();
 
-    Store freshStore = null;
+    ZarrStoreHolder freshHolder = null;
     try {
-      freshStore = createZarrStore(this.zarrStorePath);
+      freshHolder = createZarrStore(this.zarrStorePath);
+      Store freshStore = freshHolder.store();
       Group freshGroup = openZarrGroup(freshStore, this.zarrGroupName);
 
       Map<String, ZarrArrayInfo> freshArrayMap = parseZarrMetadata(freshGroup);
@@ -967,15 +1128,22 @@ public class EDDGridFromZarr extends EDDGrid {
           if (dv == null || !String2.isSomething(dv.sourceName())) continue;
           ZarrArrayInfo dvInfo = getOrOpenZarrArrayInfo(freshGroup, dv.sourceName(), freshArrayMap);
           if (dvInfo != null && dvInfo.shape != null && dvInfo.shape.length > 0) {
-            int outerDimIdx = 0;
+            int outerDimIdx = -1;
             if (dvInfo.dimensionNames != null
                 && dvInfo.dimensionNames.length == dvInfo.shape.length) {
               for (int d = 0; d < dvInfo.dimensionNames.length; d++) {
-                if (outerAxisSourceName.equals(dvInfo.dimensionNames[d])) {
+                if (isDimNameMatch(outerAxisSourceName, dvInfo.dimensionNames[d])) {
                   outerDimIdx = d;
                   break;
                 }
               }
+            } else if (outerAxisSourceName.equals(dvInfo.name)) {
+              outerDimIdx = 0;
+            }
+            if (outerDimIdx < 0) {
+              // Data variable does not depend on the outer axis (e.g., static topography or
+              // depth-only layer)
+              continue;
             }
             long dvOuterShape = dvInfo.shape[outerDimIdx];
             if (dvOuterShape < newAxisLength) {
@@ -1026,12 +1194,19 @@ public class EDDGridFromZarr extends EDDGrid {
               outerAxis.addAttributes(),
               newSourceValues);
 
-      // Atomically swap store handles, axisVariables[0], and combinedGlobalAttributes under lock
+      // Atomically swap store handles, axisVariables[0], and combinedGlobalAttributes under write
+      // lock
       Store oldStore = null;
-      synchronized (zarrLock) {
+      S3Client oldS3Client = null;
+      zarrReadWriteLock.writeLock().lock();
+      try {
         oldStore = this.zarrStore;
+        oldS3Client = this.s3Client;
+
         this.zarrStore = freshStore;
+        this.s3Client = freshHolder.s3Client();
         this.zarrGroup = freshGroup;
+        this.zarrArrayMap = freshArrayMap;
         this.axisVariables[0] = newAxisVar;
 
         // Update temporal global attributes if primary axis is time
@@ -1061,15 +1236,26 @@ public class EDDGridFromZarr extends EDDGrid {
             // ignore duration calc errors
           }
         }
+      } finally {
+        zarrReadWriteLock.writeLock().unlock();
       }
 
-      // Close previous store if open
+      // Cleanly close superseded store and s3Client
       if (oldStore != null && oldStore != freshStore) {
         if (oldStore instanceof AutoCloseable ac) {
           try {
             ac.close();
-          } catch (Throwable ignore) {
+          } catch (Throwable tClose) {
+            String2.log("Warning: Exception closing oldStore in lowUpdate: " + tClose.getMessage());
           }
+        }
+      }
+      if (oldS3Client != null && oldS3Client != freshHolder.s3Client()) {
+        try {
+          oldS3Client.close();
+        } catch (Throwable tClose) {
+          String2.log(
+              "Warning: Exception closing oldS3Client in lowUpdate: " + tClose.getMessage());
         }
       }
 
@@ -1091,13 +1277,8 @@ public class EDDGridFromZarr extends EDDGrid {
       String2.log(msg + " Error during lowUpdate: " + com.cohort.util.MustBe.throwableToString(t));
       return false;
     } finally {
-      if (freshStore != null && freshStore != this.zarrStore) {
-        if (freshStore instanceof AutoCloseable ac) {
-          try {
-            ac.close();
-          } catch (Throwable ignore) {
-          }
-        }
+      if (freshHolder != null && freshHolder.store() != this.zarrStore) {
+        freshHolder.close();
       }
     }
   }
@@ -1183,7 +1364,8 @@ public class EDDGridFromZarr extends EDDGrid {
       reloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES; // 1440
     }
 
-    Store zarrStore = createZarrStore(zarrStorePath);
+    ZarrStoreHolder holder = createZarrStore(zarrStorePath);
+    Store zarrStore = holder.store();
     Group zarrGroup = openZarrGroup(zarrStore, zarrGroupName);
 
     Table axisSourceTable = new Table();
@@ -1192,146 +1374,152 @@ public class EDDGridFromZarr extends EDDGrid {
     Table dataAddTable = new Table();
 
     try {
-      dev.zarr.zarrjava.core.Attributes zattrs = zarrGroup.metadata().attributes();
-      if (zattrs != null) {
-        populateAttributesFromZarr(zattrs, axisSourceTable.globalAttributes());
+      try {
+        dev.zarr.zarrjava.core.Attributes zattrs = zarrGroup.metadata().attributes();
+        if (zattrs != null) {
+          populateAttributesFromZarr(zattrs, axisSourceTable.globalAttributes());
+        }
+      } catch (ZarrException ze) {
+        String2.log("Warning: Could not read Zarr global attributes: " + ze.getMessage());
       }
-    } catch (ZarrException ze) {
-      String2.log("Warning: Could not read Zarr global attributes: " + ze.getMessage());
-    }
 
-    Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata(zarrGroup);
+      Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata(zarrGroup);
 
-    List<String> axisNames = new ArrayList<>();
-    Map<String, Long> dimLengths = new LinkedHashMap<>();
+      List<String> axisNames = new ArrayList<>();
+      Map<String, Long> dimLengths = new LinkedHashMap<>();
 
-    for (ZarrArrayInfo info : arrayMap.values()) {
-      if (info == null || info.isUnsupportedCodec) continue;
-      if (!info.is1D() && info.dimensionNames != null) {
-        for (int d = 0; d < info.dimensionNames.length; d++) {
-          String dimName = info.dimensionNames[d];
-          long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
-          if (!dimLengths.containsKey(dimName)) {
-            axisNames.add(dimName);
-            dimLengths.put(dimName, len);
+      for (ZarrArrayInfo info : arrayMap.values()) {
+        if (info == null || info.isUnsupportedCodec) continue;
+        if (!info.is1D() && info.dimensionNames != null) {
+          for (int d = 0; d < info.dimensionNames.length; d++) {
+            String dimName = info.dimensionNames[d];
+            long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
+            if (!dimLengths.containsKey(dimName)) {
+              axisNames.add(dimName);
+              dimLengths.put(dimName, len);
+            }
           }
         }
       }
-    }
 
-    if (axisNames.isEmpty()) {
+      if (axisNames.isEmpty()) {
+        for (ZarrArrayInfo info : arrayMap.values()) {
+          if (info != null && !info.isUnsupportedCodec && info.is1D()) {
+            axisNames.add(info.name);
+            dimLengths.put(info.name, info.shape[0]);
+          }
+        }
+      }
+
+      Set<String> axisNameSet = new HashSet<>(axisNames);
+
+      for (int av = 0; av < axisNames.size(); av++) {
+        String axisName = axisNames.get(av);
+        long dimLen = dimLengths.getOrDefault(axisName, 0L);
+
+        ZarrArrayInfo info = getOrOpenZarrArrayInfo(zarrGroup, axisName, arrayMap);
+        PrimitiveArray pa = null;
+        Attributes sourceAtts = new Attributes();
+
+        if (info != null && info.is1D()) {
+          if (info.attributes != null) info.attributes.copyTo(sourceAtts);
+          ucar.ma2.Array nc2Array = info.array.read();
+          boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
+          pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
+        } else {
+          pa = PrimitiveArray.factory(PAType.INT, (int) dimLen, false);
+          for (int i = 0; i < dimLen; i++) {
+            pa.addInt(i);
+          }
+        }
+
+        sourceAtts.remove("_FillValue");
+        sourceAtts.remove("missing_value");
+
+        axisSourceTable.addColumn(av, axisName, pa, sourceAtts);
+
+        Attributes addAtts =
+            makeReadyToUseAddVariableAttributesForDatasetsXml(
+                axisSourceTable.globalAttributes(), sourceAtts, null, axisName, true, true, true);
+        axisAddTable.addColumn(av, axisName, (PrimitiveArray) pa.clone(), addAtts);
+      }
+
+      int dvCount = 0;
       for (ZarrArrayInfo info : arrayMap.values()) {
-        if (info != null && !info.isUnsupportedCodec && info.is1D()) {
-          axisNames.add(info.name);
-          dimLengths.put(info.name, info.shape[0]);
+        if (info == null || info.isUnsupportedCodec) continue;
+        if (axisNameSet.contains(info.name)) continue;
+        if (info.is1D() && isLikelyAxisArray(info)) continue;
+        if (!isMatchingGridDimensions(info, axisNames, dimLengths)) continue;
+
+        String varName = info.name;
+        Attributes sourceAtts = new Attributes();
+        if (info.attributes != null) {
+          info.attributes.copyTo(sourceAtts);
         }
-      }
-    }
 
-    Set<String> axisNameSet = new HashSet<>(axisNames);
+        PAType paType = info.paType != null ? info.paType : PAType.DOUBLE;
+        PrimitiveArray sourcePA = PrimitiveArray.factory(paType, 1, false);
 
-    for (int av = 0; av < axisNames.size(); av++) {
-      String axisName = axisNames.get(av);
-      long dimLen = dimLengths.getOrDefault(axisName, 0L);
+        dataSourceTable.addColumn(dvCount, varName, sourcePA, sourceAtts);
 
-      ZarrArrayInfo info = getOrOpenZarrArrayInfo(zarrGroup, axisName, arrayMap);
-      PrimitiveArray pa = null;
-      Attributes sourceAtts = new Attributes();
+        Attributes addAtts =
+            makeReadyToUseAddVariableAttributesForDatasetsXml(
+                axisSourceTable.globalAttributes(),
+                sourceAtts,
+                null,
+                varName,
+                paType != PAType.STRING,
+                paType != PAType.STRING,
+                false);
 
-      if (info != null && info.is1D()) {
-        if (info.attributes != null) info.attributes.copyTo(sourceAtts);
-        ucar.ma2.Array nc2Array = info.array.read();
-        boolean isUnsigned = NcHelper.isUnsigned(nc2Array.getDataType());
-        pa = NcHelper.getPrimitiveArray(nc2Array, true, isUnsigned);
-      } else {
-        pa = PrimitiveArray.factory(PAType.INT, (int) dimLen, false);
-        for (int i = 0; i < dimLen; i++) {
-          pa.addInt(i);
-        }
+        PrimitiveArray destPA = PrimitiveArray.factory(paType, 1, false);
+        dataAddTable.addColumn(dvCount, varName, destPA, addAtts);
+        dvCount++;
       }
 
-      sourceAtts.remove("_FillValue");
-      sourceAtts.remove("missing_value");
+      tryToFindLLAT(axisSourceTable, axisAddTable);
+      ensureValidNames(dataSourceTable, dataAddTable);
 
-      axisSourceTable.addColumn(av, axisName, pa, sourceAtts);
-
-      Attributes addAtts =
-          makeReadyToUseAddVariableAttributesForDatasetsXml(
-              axisSourceTable.globalAttributes(), sourceAtts, null, axisName, true, true, true);
-      axisAddTable.addColumn(av, axisName, (PrimitiveArray) pa.clone(), addAtts);
-    }
-
-    int dvCount = 0;
-    for (ZarrArrayInfo info : arrayMap.values()) {
-      if (info == null || info.isUnsupportedCodec) continue;
-      if (axisNameSet.contains(info.name)) continue;
-      if (info.is1D() && isLikelyAxisArray(info)) continue;
-
-      String varName = info.name;
-      Attributes sourceAtts = new Attributes();
-      if (info.attributes != null) {
-        info.attributes.copyTo(sourceAtts);
-      }
-
-      PAType paType = info.paType != null ? info.paType : PAType.DOUBLE;
-      PrimitiveArray sourcePA = PrimitiveArray.factory(paType, 1, false);
-
-      dataSourceTable.addColumn(dvCount, varName, sourcePA, sourceAtts);
-
-      Attributes addAtts =
-          makeReadyToUseAddVariableAttributesForDatasetsXml(
+      Attributes globalAddAtts = axisAddTable.globalAttributes();
+      globalAddAtts.set(
+          makeReadyToUseAddGlobalAttributesForDatasetsXml(
               axisSourceTable.globalAttributes(),
-              sourceAtts,
-              null,
-              varName,
-              paType != PAType.STRING,
-              paType != PAType.STRING,
-              false);
+              "Grid",
+              zarrStorePath,
+              externalAddGlobalAttributes,
+              suggestKeywords(dataSourceTable, dataAddTable)));
 
-      PrimitiveArray destPA = PrimitiveArray.factory(paType, 1, false);
-      dataAddTable.addColumn(dvCount, varName, destPA, addAtts);
-      dvCount++;
+      String tDatasetID = suggestZarrDatasetID(datasetIDPrefix, zarrStorePath, zarrGroupName);
+
+      StringBuilder sb = new StringBuilder();
+      sb.append(
+          "<dataset type=\"EDDGridFromZarr\" datasetID=\""
+              + XML.encodeAsXML(tDatasetID)
+              + "\" active=\"true\">\n");
+      sb.append("    <reloadEveryNMinutes>" + reloadEveryNMinutes + "</reloadEveryNMinutes>\n");
+
+      if (String2.isSomething(cacheFromUrl)) {
+        sb.append("    <cacheFromUrl>" + XML.encodeAsXML(cacheFromUrl) + "</cacheFromUrl>\n");
+      }
+
+      sb.append("    <zarrStorePath>" + XML.encodeAsXML(zarrStorePath) + "</zarrStorePath>\n");
+      sb.append("    <zarrGroupName>" + XML.encodeAsXML(zarrGroupName) + "</zarrGroupName>\n");
+
+      sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
+      sb.append(writeAttsForDatasetsXml(true, globalAddAtts, "    "));
+
+      sb.append(
+          writeVariablesForDatasetsXml(
+              axisSourceTable, axisAddTable, "axisVariable", false, false));
+      sb.append(
+          writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
+
+      sb.append("</dataset>\n\n");
+
+      return sb.toString();
+    } finally {
+      holder.close();
     }
-
-    tryToFindLLAT(axisSourceTable, axisAddTable);
-    ensureValidNames(dataSourceTable, dataAddTable);
-
-    Attributes globalAddAtts = axisAddTable.globalAttributes();
-    globalAddAtts.set(
-        makeReadyToUseAddGlobalAttributesForDatasetsXml(
-            axisSourceTable.globalAttributes(),
-            "Grid",
-            zarrStorePath,
-            externalAddGlobalAttributes,
-            suggestKeywords(dataSourceTable, dataAddTable)));
-
-    String tDatasetID = suggestZarrDatasetID(datasetIDPrefix, zarrStorePath, zarrGroupName);
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(
-        "<dataset type=\"EDDGridFromZarr\" datasetID=\""
-            + XML.encodeAsXML(tDatasetID)
-            + "\" active=\"true\">\n");
-    sb.append("    <reloadEveryNMinutes>" + reloadEveryNMinutes + "</reloadEveryNMinutes>\n");
-
-    if (String2.isSomething(cacheFromUrl)) {
-      sb.append("    <cacheFromUrl>" + XML.encodeAsXML(cacheFromUrl) + "</cacheFromUrl>\n");
-    }
-
-    sb.append("    <zarrStorePath>" + XML.encodeAsXML(zarrStorePath) + "</zarrStorePath>\n");
-    sb.append("    <zarrGroupName>" + XML.encodeAsXML(zarrGroupName) + "</zarrGroupName>\n");
-
-    sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
-    sb.append(writeAttsForDatasetsXml(true, globalAddAtts, "    "));
-
-    sb.append(
-        writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
-    sb.append(
-        writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true, false));
-
-    sb.append("</dataset>\n\n");
-
-    return sb.toString();
   }
 
   /**
@@ -1403,11 +1591,53 @@ public class EDDGridFromZarr extends EDDGrid {
     public PAType paType;
     public Attributes attributes;
     public String[] dimensionNames;
+    public boolean hasExplicitDimensionNames = false;
     public boolean isUnsupportedCodec = false;
 
     public boolean is1D() {
       return shape != null && shape.length == 1;
     }
+  }
+
+  private static boolean isMissingChunkException(Throwable t) {
+    Throwable current = t;
+    while (current != null) {
+      if (current instanceof java.nio.file.NoSuchFileException
+          || current instanceof java.io.FileNotFoundException
+          || current instanceof software.amazon.awssdk.services.s3.model.NoSuchKeyException) {
+        return true;
+      }
+      if (current instanceof software.amazon.awssdk.services.s3.model.S3Exception s3e) {
+        if (s3e.statusCode() == 404) {
+          return true;
+        }
+      }
+      String msg = current.getMessage();
+      if (msg == null) msg = current.toString();
+      if (msg != null) {
+        String lowerMsg = msg.toLowerCase();
+        if (lowerMsg.contains("not found")
+            || lowerMsg.contains("404")
+            || lowerMsg.contains("nosuchkey")
+            || lowerMsg.contains("does not exist")
+            || lowerMsg.contains("missing chunk")) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
+  }
+
+  private static boolean startsWithKeys(String[] entryKeys, String[] groupKeys) {
+    if (groupKeys == null || groupKeys.length == 0 || entryKeys == null) return false;
+    if (entryKeys.length <= groupKeys.length) return false;
+    for (int i = 0; i < groupKeys.length; i++) {
+      if (!groupKeys[i].equals(entryKeys[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static boolean isCodecError(Throwable t) {
@@ -1454,13 +1684,18 @@ public class EDDGridFromZarr extends EDDGrid {
       try {
         List<String[]> entries = listable.list(groupKeys).toList();
         for (String[] entryKeys : entries) {
-          if (entryKeys.length >= 2) {
-            String lastPart = entryKeys[entryKeys.length - 1];
+          int lastIdx = entryKeys.length - 1;
+          if (lastIdx >= 1) {
+            String lastPart = entryKeys[lastIdx];
             if (".zarray".equals(lastPart) || "zarr.json".equals(lastPart)) {
-              String[] relParts = new String[entryKeys.length - 1];
-              System.arraycopy(entryKeys, 0, relParts, 0, entryKeys.length - 1);
-              String relName = String.join("/", relParts);
-              getOrOpenZarrArrayInfo(zarrGroup, relName, arrayMap);
+              int startIdx = startsWithKeys(entryKeys, groupKeys) ? groupKeys.length : 0;
+              if (lastIdx > startIdx) {
+                int relLength = lastIdx - startIdx;
+                String[] relParts = new String[relLength];
+                System.arraycopy(entryKeys, startIdx, relParts, 0, relLength);
+                String relName = String.join("/", relParts);
+                getOrOpenZarrArrayInfo(zarrGroup, relName, arrayMap);
+              }
             }
           }
         }
@@ -1615,7 +1850,8 @@ public class EDDGridFromZarr extends EDDGrid {
       }
     }
 
-    String[] dimNames = extractDimensionNames(metadata, shape.length);
+    boolean[] hasExplicit = new boolean[1];
+    String[] dimNames = extractDimensionNames(metadata, shape.length, hasExplicit);
 
     ZarrArrayInfo info = new ZarrArrayInfo();
     info.name = name;
@@ -1625,10 +1861,14 @@ public class EDDGridFromZarr extends EDDGrid {
     info.paType = paType;
     info.attributes = erddapAtts;
     info.dimensionNames = dimNames;
+    info.hasExplicitDimensionNames = hasExplicit[0];
     return info;
   }
 
-  private static String[] extractDimensionNames(ArrayMetadata metadata, int rank) {
+  private static String[] extractDimensionNames(
+      ArrayMetadata metadata, int rank, boolean[] hasExplicit) {
+    if (hasExplicit != null && hasExplicit.length > 0) hasExplicit[0] = false;
+
     // 1. Check Zarr v3 dimensionNames
     if (metadata instanceof dev.zarr.zarrjava.v3.ArrayMetadata v3Meta) {
       if (v3Meta.dimensionNames != null && v3Meta.dimensionNames.length == rank) {
@@ -1639,7 +1879,10 @@ public class EDDGridFromZarr extends EDDGrid {
             break;
           }
         }
-        if (valid) return v3Meta.dimensionNames;
+        if (valid) {
+          if (hasExplicit != null && hasExplicit.length > 0) hasExplicit[0] = true;
+          return v3Meta.dimensionNames;
+        }
       }
     }
 
@@ -1650,6 +1893,7 @@ public class EDDGridFromZarr extends EDDGrid {
         Object obj = zattrs.get("_ARRAY_DIMENSIONS");
         String[] dims = parseStringArrayObject(obj);
         if (dims != null && dims.length == rank) {
+          if (hasExplicit != null && hasExplicit.length > 0) hasExplicit[0] = true;
           return dims;
         }
       }
@@ -1716,7 +1960,10 @@ public class EDDGridFromZarr extends EDDGrid {
    * @throws Throwable if error or missing/invalid axes
    */
   protected EDVGridAxis[] buildGridAxes(
-      List<AxisVariableInfo> tAxisVariables, Map<String, ZarrArrayInfo> arrayMap) throws Throwable {
+      List<AxisVariableInfo> tAxisVariables,
+      List<DataVariableInfo> tDataVariables,
+      Map<String, ZarrArrayInfo> arrayMap)
+      throws Throwable {
 
     List<EDVGridAxis> axesList = new ArrayList<>();
 
@@ -1780,6 +2027,25 @@ public class EDDGridFromZarr extends EDDGrid {
       List<String> orderedDimNames = new ArrayList<>();
       Map<String, Long> dimLengths = new LinkedHashMap<>();
 
+      // First priority: gather dimension names from explicit data variables if present
+      if (tDataVariables != null && !tDataVariables.isEmpty()) {
+        for (DataVariableInfo dvi : tDataVariables) {
+          if (dvi == null || !String2.isSomething(dvi.sourceName())) continue;
+          ZarrArrayInfo info = getOrOpenZarrArrayInfo(dvi.sourceName(), arrayMap);
+          if (info != null && !info.isUnsupportedCodec && info.dimensionNames != null) {
+            for (int d = 0; d < info.dimensionNames.length; d++) {
+              String dimName = info.dimensionNames[d];
+              long len = (info.shape != null && d < info.shape.length) ? info.shape[d] : 0;
+              if (!dimLengths.containsKey(dimName)) {
+                orderedDimNames.add(dimName);
+                dimLengths.put(dimName, len);
+              }
+            }
+          }
+        }
+      }
+
+      // Second priority: iterate over all N-dimensional data arrays in arrayMap
       for (ZarrArrayInfo info : arrayMap.values()) {
         if (info == null || info.isUnsupportedCodec) continue;
         if (!info.is1D() && info.dimensionNames != null) {
@@ -1852,6 +2118,86 @@ public class EDDGridFromZarr extends EDDGrid {
     return axesList.toArray(new EDVGridAxis[0]);
   }
 
+  private static boolean isFallbackDimensionNames(ZarrArrayInfo info) {
+    if (info == null) return true;
+    if (!info.hasExplicitDimensionNames) return true;
+    if (info.dimensionNames == null || info.dimensionNames.length == 0) return true;
+    return false;
+  }
+
+  private static boolean isDimNameMatch(String expectedAxisName, String varDimName) {
+    if (expectedAxisName == null || varDimName == null) return false;
+    if (expectedAxisName.equals(varDimName)) return true;
+    if (expectedAxisName.endsWith("/" + varDimName)) return true;
+    String cleanAxis = expectedAxisName.substring(expectedAxisName.lastIndexOf('/') + 1);
+    String cleanVar = varDimName.substring(varDimName.lastIndexOf('/') + 1);
+    return cleanAxis.equals(cleanVar);
+  }
+
+  protected static boolean isMatchingGridDimensions(ZarrArrayInfo info, EDVGridAxis[] axes) {
+    if (info == null || info.shape == null || axes == null) return false;
+    int axisCount = axes.length;
+    if (info.shape.length != axisCount) return false;
+
+    if (isFallbackDimensionNames(info)) {
+      for (int i = 0; i < axisCount; i++) {
+        long expectedLen =
+            (axes[i] != null && axes[i].sourceValues() != null)
+                ? axes[i].sourceValues().size()
+                : -1;
+        if (expectedLen >= 0 && info.shape[i] != expectedLen) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      for (int i = 0; i < axisCount; i++) {
+        String expectedName = axes[i] != null ? axes[i].sourceName() : null;
+        if (!isDimNameMatch(expectedName, info.dimensionNames[i])) {
+          return false;
+        }
+        long expectedLen =
+            (axes[i] != null && axes[i].sourceValues() != null)
+                ? axes[i].sourceValues().size()
+                : -1;
+        if (expectedLen >= 0 && info.shape[i] != expectedLen) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  protected static boolean isMatchingGridDimensions(
+      ZarrArrayInfo info, List<String> axisNames, Map<String, Long> dimLengths) {
+    if (info == null || info.shape == null || axisNames == null) return false;
+    int axisCount = axisNames.size();
+    if (info.shape.length != axisCount) return false;
+
+    if (isFallbackDimensionNames(info)) {
+      for (int i = 0; i < axisCount; i++) {
+        String axisName = axisNames.get(i);
+        long expectedLen = dimLengths != null ? dimLengths.getOrDefault(axisName, -1L) : -1L;
+        if (expectedLen >= 0 && info.shape[i] != expectedLen) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      for (int i = 0; i < axisCount; i++) {
+        String expectedName = axisNames.get(i);
+        if (!isDimNameMatch(expectedName, info.dimensionNames[i])) {
+          return false;
+        }
+        long expectedLen = dimLengths != null ? dimLengths.getOrDefault(expectedName, -1L) : -1L;
+        if (expectedLen >= 0 && info.shape[i] != expectedLen) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
   /**
    * Builds ERDDAP EDV data variables for gridded data arrays.
    *
@@ -1885,6 +2231,12 @@ public class EDDGridFromZarr extends EDDGrid {
                   + tDataSourceName
                   + "' due to unsupported Zarr codec.");
           continue;
+        }
+        if (info != null && this.axisVariables != null && this.axisVariables.length > 0) {
+          if (!isMatchingGridDimensions(info, this.axisVariables)) {
+            throw new SimpleException(
+                "Data variable '" + tDataSourceName + "' dimensions do not match the grid axes.");
+          }
         }
 
         Attributes tDataSourceAtts = new Attributes();
@@ -1937,6 +2289,7 @@ public class EDDGridFromZarr extends EDDGrid {
         if (info == null || info.isUnsupportedCodec) continue;
         if (axisSourceNames.contains(info.name)) continue;
         if (info.is1D() && isLikelyAxisArray(info)) continue;
+        if (!isMatchingGridDimensions(info, this.axisVariables)) continue;
 
         String tDataSourceName = info.name;
         String tDataDestName = info.name;

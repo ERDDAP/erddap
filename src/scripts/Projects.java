@@ -4364,7 +4364,7 @@ String2.log("Projects.touchUrls is finished.");
      */
     public static void getCAMarCatShort() throws Exception {
         String2.log("\n*** Projects.getCAMarCatShort");
-
+        /* Legacy JDAP script commented out
         String url = "http://las.pfeg.noaa.gov/thredds/dodsC/CA_market_catch/ca_fish_grouped_short.nc";
 
         DConnect2 dConnect = new DConnect2(url, true);
@@ -4677,7 +4677,7 @@ String2.log("Projects.touchUrls is finished.");
                 tTable.saveAsFlatNc(tYearlyDir + String2.encodeFileNameSafe(tFish) + ".nc", "row", false);     
             }
         }
-
+        */
         String2.log("\n*** Projects.getCAMarCatShort successfully created");
         
     }
@@ -4688,7 +4688,7 @@ String2.log("Projects.touchUrls is finished.");
      */
     public static void getCAMarCatLong() throws Exception {
         String2.log("\n*** Projects.getCAMarCatLong");
-
+        /* Legacy JDAP script commented out
         String url = "http://las.pfeg.noaa.gov/thredds/dodsC/CA_market_catch/ca_fish_grouped.nc";
 
         DConnect2 dConnect = new DConnect2(url, true);
@@ -4952,7 +4952,7 @@ String2.log("Projects.touchUrls is finished.");
                 tTable.saveAsFlatNc(tYearlyDir + String2.encodeFileNameSafe(tFish) + ".nc", "row", false);     
             }
         }
-
+        */
         String2.log("\n*** Projects.getCAMarCatLong successfully created");
     }
 

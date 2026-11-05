@@ -106,8 +106,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
 import org.apache.http.HttpStatus;
 import org.apache.lucene.document.Document;
@@ -227,6 +225,15 @@ public class Erddap extends HttpServlet {
           String, ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>>>
       categoryInfo = new ConcurrentHashMap<>(16, 0.75f, 4);
   public long lastClearedFailedLogins = System.currentTimeMillis();
+
+  // Bounded lock stripes prevent cache stampedes without String.intern() memory leaks
+  private static final Object[] CACHE_DOWNLOAD_LOCKS = new Object[4096];
+
+  static {
+    for (int i = 0; i < CACHE_DOWNLOAD_LOCKS.length; i++) {
+      CACHE_DOWNLOAD_LOCKS[i] = new Object();
+    }
+  }
 
   /**
    * The constructor.
@@ -962,8 +969,7 @@ public class Erddap extends HttpServlet {
 
       recordRequestResponseTime(response.getStatus(), requestUrl, responseTime);
 
-      if (EDStatic.config.taskCacheClear
-          && endTime - EDStatic.lastCacheClear > EDStatic.config.cacheClearMillis) {
+      if (endTime - EDStatic.lastCacheClear > EDStatic.config.cacheClearMillis) {
         EDStatic.addTask(new Object[] {TaskThread.TASK_CLEAR_CACHE});
         // The cache isn't cleared now, but it will be soon. Set cache clear here to avoid queueing
         // multiple tasks.
@@ -1338,7 +1344,7 @@ public class Erddap extends HttpServlet {
             new StringArray(new String[] {"info", "search", "categorize", "griddap", "tabledap"});
         if (EDStatic.config.sosActive) resources.add("sos");
         if (EDStatic.config.wcsActive) resources.add("wcs");
-        if (EDStatic.config.wmsActive) resources.add("wms");
+        resources.add("wms");
         for (int r = 0; r < resources.size(); r++) {
           resourceCol.add(resources.get(r));
           urlCol.add(
@@ -1598,33 +1604,30 @@ public class Erddap extends HttpServlet {
                 + "</a>\n"
                 + "    </td>\n"
                 + "  </tr>\n");
-      if (EDStatic.config.wmsActive)
-        writer.write(
-            "  <tr>\n"
-                + "    <td><a rel=\"bookmark\" "
-                + "href=\""
-                + tErddapUrl
-                + "/wms/index.html?"
-                + EDStatic.encodedDefaultPIppQuery
-                + "\""
-                + " title=\""
-                + MessageFormat.format(
-                    EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WMS")
-                + "\">"
-                + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DATASETS, language), "WMS")
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language)
-                + "\n"
-                + "      <a rel=\"help\" href=\""
-                + tErddapUrl
-                + "/wms/documentation.html\">"
-                + MessageFormat.format(
-                    EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WMS")
-                + "</a>\n"
-                + "    </td>\n"
-                + "  </tr>\n");
+      writer.write(
+          "  <tr>\n"
+              + "    <td><a rel=\"bookmark\" "
+              + "href=\""
+              + tErddapUrl
+              + "/wms/index.html?"
+              + EDStatic.encodedDefaultPIppQuery
+              + "\""
+              + " title=\""
+              + MessageFormat.format(EDStatic.messages.get(Message.PROTOCOL_CLICK, language), "WMS")
+              + "\">"
+              + MessageFormat.format(EDStatic.messages.get(Message.INDEX_DATASETS, language), "WMS")
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language)
+              + "\n"
+              + "      <a rel=\"help\" href=\""
+              + tErddapUrl
+              + "/wms/documentation.html\">"
+              + MessageFormat.format(
+                  EDStatic.messages.get(Message.INDEX_DOCUMENTATION, language), "WMS")
+              + "</a>\n"
+              + "    </td>\n"
+              + "  </tr>\n");
       writer.write(
           """
               </table>
@@ -1676,95 +1679,108 @@ public class Erddap extends HttpServlet {
               """);
 
       // converters
-      if (EDStatic.config.convertersActive)
-        writer.write(
-            "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
-                + EDStatic.messages.get(Message.INDEX_CONVERTERS, language)
-                + "</a></strong>\n"
-                + "<br>"
-                + EDStatic.messages.get(Message.INDEX_DESCRIBE_CONVERTERS, language)
-                + "\n"
-                + "<table class=\"erd commonBGColor\">\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/oceanicAtmosphericAcronyms.html\">"
-                + EDStatic.messages.get(Message.ACRONYMS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/fipscounty.html\">"
-                + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/interpolate.html\">"
-                + EDStatic.messages.get(Message.INTERPOLATE, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/keywords.html\">"
-                + EDStatic.messages.get(Message.KEYWORDS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/time.html\">"
-                + EDStatic.messages.get(Message.TIME, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_TIME, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/units.html\">"
-                + EDStatic.messages.get(Message.UNITS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_UNITS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/color.html\">"
-                + EDStatic.messages.get(Message.CONVERT_COLORS, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/urls.html\">URLs</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_URLS, language)
-                + "</td></tr>\n"
-                + "<tr><td><a rel=\"bookmark\" href=\""
-                + tErddapUrl
-                + "/convert/oceanicAtmosphericVariableNames.html\">"
-                + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
-                + "</a></td>\n"
-                + "    <td>"
-                + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
-                + "</td></tr>\n"
-                + "</table>\n"
-                + "\n");
+      writer.write(
+          "<p><strong><a class=\"selfLink\" id=\"converters\" href=\"#converters\" rel=\"bookmark\">"
+              + EDStatic.messages.get(Message.INDEX_CONVERTERS, language)
+              + "</a></strong>\n"
+              + "<br>"
+              + EDStatic.messages.get(Message.INDEX_DESCRIBE_CONVERTERS, language)
+              + "\n"
+              + "<table class=\"erd commonBGColor\">\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/oceanicAtmosphericAcronyms.html\">"
+              + EDStatic.messages.get(Message.ACRONYMS, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/fipscounty.html\">"
+              + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/interpolate.html\">"
+              + EDStatic.messages.get(Message.INTERPOLATE, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/keywords.html\">"
+              + EDStatic.messages.get(Message.KEYWORDS, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/time.html\">"
+              + EDStatic.messages.get(Message.TIME, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_TIME, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/units.html\">"
+              + EDStatic.messages.get(Message.UNITS, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_UNITS, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/color.html\">"
+              + EDStatic.messages.get(Message.CONVERT_COLORS, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_COLORS_MESSAGE, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/urls.html\">URLs</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_URLS, language)
+              + "</td></tr>\n"
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/oceanicAtmosphericVariableNames.html\">"
+              + EDStatic.messages.get(Message.VARIABLE_NAMES, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
+              + "</td></tr>\n"
+              + "</table>\n"
+              + "\n");
 
       // metadata
-      if (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active) {
-        writer.write(
-            "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
-                + EDStatic.messages.get(Message.INDEX_METADATA, language)
-                + "</a></strong>\n"
-                + "<br>");
+
+      writer.write(
+          "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">"
+              + EDStatic.messages.get(Message.INDEX_METADATA, language)
+              + "</a></strong>\n"
+              + "<br>");
+
+      String isoLink1 =
+          "<br><a rel=\"bookmark\" "
+              + "href=\""
+              + tErddapUrl
+              + "/"
+              + EDConfig.iso19115XmlDirectory
+              + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+      String isoLink2 = // &#8209; is a non-breaking hyphen
+          "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
+              + ">ISO&nbsp;19115&#8209;2/19139"
+              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+              + "</a>";
+      if (EDStatic.config.fgdcActive) {
         String fgdcLink1 =
             "<br><a rel=\"bookmark\" "
                 + "href=\""
@@ -1777,36 +1793,19 @@ public class Erddap extends HttpServlet {
                 + ">FGDC&#8209;STD&#8209;001&#8209;1998"
                 + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
                 + "</a>";
-        String isoLink1 =
-            "<br><a rel=\"bookmark\" "
-                + "href=\""
-                + tErddapUrl
-                + "/"
-                + EDConfig.iso19115XmlDirectory
-                + "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
-        String isoLink2 = // &#8209; is a non-breaking hyphen
-            "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n"
-                + ">ISO&nbsp;19115&#8209;2/19139"
-                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-                + "</a>";
-        if (EDStatic.config.fgdcActive && EDStatic.config.iso19115Active)
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF2, language),
-                  fgdcLink1,
-                  fgdcLink2,
-                  isoLink1,
-                  isoLink2));
-        else if (EDStatic.config.fgdcActive)
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF1, language), fgdcLink1, fgdcLink2));
-        else
-          writer.write(
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2));
-        writer.write("\n\n");
+        writer.write(
+            MessageFormat.format(
+                EDStatic.messages.get(Message.INDEX_WAF2, language),
+                fgdcLink1,
+                fgdcLink2,
+                isoLink1,
+                isoLink2));
+      } else {
+        writer.write(
+            MessageFormat.format(
+                EDStatic.messages.get(Message.INDEX_WAF1, language), isoLink1, isoLink2));
       }
+      writer.write("\n\n");
 
       // REST services
       writer.write(
@@ -1832,16 +1831,14 @@ public class Erddap extends HttpServlet {
               + "    <td>"
               + EDStatic.messages.get(Message.STATUS_HTML, language)
               + "</td></tr>\n"
-              + (EDStatic.config.outOfDateDatasetsActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/outOfDateDatasets.html\">"
-                      + EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(Message.OUT_OF_DATE_HTML, language)
-                      + "</td></tr>\n"
-                  : "")
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/outOfDateDatasets.html\">"
+              + EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.OUT_OF_DATE_HTML, language)
+              + "</td></tr>\n"
               + (EDStatic.config.subscriptionSystemActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
@@ -1853,16 +1850,14 @@ public class Erddap extends HttpServlet {
                           EDStatic.messages.get(Message.SUBSCRIPTION_0_HTML, language), "<br>", " ")
                       + "</td></tr>\n"
                   : "")
-              + (EDStatic.config.slideSorterActive
-                  ? "<tr><td><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/slidesorter.html\">"
-                      + EDStatic.messages.get(Message.SLIDE_SORTER, language)
-                      + "</a></td>\n"
-                      + "    <td>"
-                      + EDStatic.messages.get(Message.SS_USE_PLAIN, language)
-                      + "</td></tr>\n"
-                  : "")
+              + "<tr><td><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/slidesorter.html\">"
+              + EDStatic.messages.get(Message.SLIDE_SORTER, language)
+              + "</a></td>\n"
+              + "    <td>"
+              + EDStatic.messages.get(Message.SS_USE_PLAIN, language)
+              + "</td></tr>\n"
               + (EDStatic.config.dataProviderFormActive
                   ? "<tr><td><a rel=\"bookmark\" href=\""
                       + tErddapUrl
@@ -5771,14 +5766,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 +
                 // "  <li>For WCS: use\n<br>" +
                 plainLinkExamples(tErddapUrl, "/wcs/index", EDStatic.encodedAllPIppQuery));
-      if (EDStatic.config.wmsActive)
-        writer.write(
-            "  <li>"
-                + EDStatic.messages.get(Message.FOR_WMS_USE, language)
-                + "\n<br>"
-                +
-                // "  <li>For WMS: use\n<br>" +
-                plainLinkExamples(tErddapUrl, "/wms/index", EDStatic.encodedAllPIppQuery));
+      writer.write(
+          "  <li>"
+              + EDStatic.messages.get(Message.FOR_WMS_USE, language)
+              + "\n<br>"
+              +
+              // "  <li>For WMS: use\n<br>" +
+              plainLinkExamples(tErddapUrl, "/wms/index", EDStatic.encodedAllPIppQuery));
 
       String restfulHTMLContinued =
           EDStatic.messages
@@ -5844,46 +5838,43 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "    <br>&nbsp;\n" +
                 "  </ul>\n"
                 */);
-      if (EDStatic.config.sosActive || EDStatic.config.wcsActive || EDStatic.config.wmsActive) {
-        writer.write(EDStatic.messages.get(Message.RESTFUL_PROTOCOLS, language) /*
+      writer.write(EDStatic.messages.get(Message.RESTFUL_PROTOCOLS, language) /*
                 "<li><a class=\"selfLink\" id=\"OtherProtocols\" href=\"#OtherProtocols\" rel=\"bookmark\"\n" +
                 ">ERDDAP's other protocols</a> also have web services that you can use.\n" +
                 "  See\n" +
                 "  <ul>\n"
                 */);
-        if (EDStatic.config.sosActive)
-          writer.write(
-              // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
-              // "/sos/documentation.html\">ERDDAP's SOS documentation</a>\n");
-              "    <li><a rel=\"help\" href=\""
-                  + tErddapUrl
-                  + "/sos/documentation.html\">"
-                  + EDStatic.messages.get(Message.SOS_DOCUMENTATION, language)
-                  + "</a>\n");
-        if (EDStatic.config.wcsActive)
-          writer.write(
-              // "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">ERDDAP's
-              // WCS documentation</a>\n");
-              "   <li><a rel=\"help\" href=\""
-                  + tErddapUrl
-                  + "/wcs/documentation.html\">"
-                  + EDStatic.messages.get(Message.WCS_DOCUMENTATION, language)
-                  + "</a>\n");
-        if (EDStatic.config.wmsActive)
-          writer.write(
-              // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
-              // "/wms/documentation.html\">ERDDAP's WMS documentation</a>\n");
-              "    <li><a rel=\"help\" href=\""
-                  + tErddapUrl
-                  + "/wms/documentation.html\">"
-                  + EDStatic.messages.get(Message.WMS_DOCUMENTATION, language)
-                  + "</a>\n");
+      if (EDStatic.config.sosActive)
         writer.write(
-            """
+            // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
+            // "/sos/documentation.html\">ERDDAP's SOS documentation</a>\n");
+            "    <li><a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/sos/documentation.html\">"
+                + EDStatic.messages.get(Message.SOS_DOCUMENTATION, language)
+                + "</a>\n");
+      if (EDStatic.config.wcsActive)
+        writer.write(
+            // "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">ERDDAP's
+            // WCS documentation</a>\n");
+            "   <li><a rel=\"help\" href=\""
+                + tErddapUrl
+                + "/wcs/documentation.html\">"
+                + EDStatic.messages.get(Message.WCS_DOCUMENTATION, language)
+                + "</a>\n");
+      writer.write(
+          // "    <li><a rel=\"help\" href=\"" + tErddapUrl +
+          // "/wms/documentation.html\">ERDDAP's WMS documentation</a>\n");
+          "    <li><a rel=\"help\" href=\""
+              + tErddapUrl
+              + "/wms/documentation.html\">"
+              + EDStatic.messages.get(Message.WMS_DOCUMENTATION, language)
+              + "</a>\n");
+      writer.write(
+          """
                     <br>&nbsp;
                     </ul>
                 """);
-      }
       String subscriptionOfferRss =
           EDStatic.messages
               .get(Message.SUBSCRIPTION_OFFER_RSS, language)
@@ -5919,54 +5910,49 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "\n"
               +
               // "<li>ERDDAP offers several converters as web pages and as web services:\n" +
-              (EDStatic.config.convertersActive
-                  ? "  <ul>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/oceanicAtmosphericAcronyms.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
-                      + "</a>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/oceanicAtmosphericVariableNames.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
-                      + "</a>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/fipscounty.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
-                      + "</a>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/keywords.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
-                      + "</a>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/time.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_TIME, language)
-                      + "</a>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/units.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_UNITS, language)
-                      + "</a>\n"
-                      + "  <li><a rel=\"bookmark\" href=\""
-                      + tErddapUrl
-                      + "/convert/urls.html#computerProgram\">"
-                      + EDStatic.messages.get(Message.CONVERT_URLS, language)
-                      + "</a>\n"
-                      + "    <br>&nbsp;\n"
-                      + "  </ul>\n"
-                  : "<br> ("
-                      + MessageFormat.format(
-                          EDStatic.messages.get(Message.DISABLED, language), "convert")
-                      + ")\n<br>&nbsp;\n"));
+              "  <ul>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/oceanicAtmosphericAcronyms.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+              + "</a>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/oceanicAtmosphericVariableNames.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
+              + "</a>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/fipscounty.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
+              + "</a>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/keywords.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
+              + "</a>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/time.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_TIME, language)
+              + "</a>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/units.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_UNITS, language)
+              + "</a>\n"
+              + "  <li><a rel=\"bookmark\" href=\""
+              + tErddapUrl
+              + "/convert/urls.html#computerProgram\">"
+              + EDStatic.messages.get(Message.CONVERT_URLS, language)
+              + "</a>\n"
+              + "    <br>&nbsp;\n"
+              + "  </ul>\n");
       String outOfDateKeepTrack =
           EDStatic.messages
               .get(Message.OUT_OF_DATE_KEEP_TRACK, language)
               .replace("&tErddapUrl;", tErddapUrl);
-      if (EDStatic.config.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack /*
+      writer.write(outOfDateKeepTrack /*
                 "<li>ERDDAP has a system to keep track of\n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/outOfDateDatasets.html\">Out-Of-Date Datasets</a>.\n" +
                 "    See the Options at the bottom of that web page.\n" +
@@ -6091,32 +6077,30 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("categorize/index.html");
       writer.write(postMed);
-      if (EDStatic.config.convertersActive) {
-        writer.write(pre);
-        writer.write("convert/index.html");
-        writer.write(postMed);
-        writer.write(pre);
-        writer.write("convert/oceanicAtmosphericAcronyms.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("convert/oceanicAtmosphericVariableNames.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("convert/fipscounty.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("convert/keywords.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("convert/time.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("convert/units.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("convert/urls.html");
-        writer.write(postHigh);
-      }
+      writer.write(pre);
+      writer.write("convert/index.html");
+      writer.write(postMed);
+      writer.write(pre);
+      writer.write("convert/oceanicAtmosphericAcronyms.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("convert/oceanicAtmosphericVariableNames.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("convert/fipscounty.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("convert/keywords.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("convert/time.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("convert/units.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("convert/urls.html");
+      writer.write(postHigh);
       // Don't include /files. We don't want search engines downloading all the files.
       writer.write(pre);
       writer.write("griddap/documentation.html");
@@ -6143,11 +6127,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write(EDConfig.fgdcXmlDirectory);
         writer.write(postLow);
       }
-      if (EDStatic.config.iso19115Active) {
-        writer.write(pre);
-        writer.write(EDConfig.iso19115XmlDirectory);
-        writer.write(postLow);
-      }
+      writer.write(pre);
+      writer.write(EDConfig.iso19115XmlDirectory);
+      writer.write(postLow);
       writer.write(pre);
       writer.write("legal.html");
       writer.write(postHigh);
@@ -6160,11 +6142,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       writer.write(pre);
       writer.write("search/index.html?" + EDStatic.encodedAllPIppQuery);
       writer.write(postHigh);
-      if (EDStatic.config.slideSorterActive) {
-        writer.write(pre);
-        writer.write("slidesorter.html");
-        writer.write(postHigh);
-      }
+      writer.write(pre);
+      writer.write("slidesorter.html");
+      writer.write(postHigh);
       if (EDStatic.config.sosActive) {
         writer.write(pre);
         writer.write("sos/documentation.html");
@@ -6204,14 +6184,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         writer.write("wcs/index.html?" + EDStatic.encodedAllPIppQuery);
         writer.write(postHigh);
       }
-      if (EDStatic.config.wmsActive) {
-        writer.write(pre);
-        writer.write("wms/documentation.html");
-        writer.write(postHigh);
-        writer.write(pre);
-        writer.write("wms/index.html?" + EDStatic.encodedAllPIppQuery);
-        writer.write(postHigh);
-      }
+      writer.write(pre);
+      writer.write("wms/documentation.html");
+      writer.write(postHigh);
+      writer.write(pre);
+      writer.write("wms/index.html?" + EDStatic.encodedAllPIppQuery);
+      writer.write(postHigh);
 
       // special links only for ERD's erddap
       if (EDStatic.config.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")
@@ -7432,32 +7410,42 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     String webDir = File2.getDirectory(fullRequestUrl); // what user sees as apparent location
     String ext = File2.getExtension(nameAndExt);
 
-    // String2.log(">> isRemote=" + String2.isRemote(localDir) + " filesInPrivateS3Bucket=" +
-    // edd.filesInPrivateS3Bucket());
     if (String2.isRemote(localDir) && !edd.filesInPrivateS3Bucket()) {
-      // remote, including public AWS S3
+      // Remote, including public AWS S3
       sendRedirect(response, localDir + nameAndExt);
 
     } else if (EDStatic.config.awsS3OutputBucketUrl != null) {
-      // need lock to ensure other thread isn't working with local file?
       if (edd.filesInPrivateS3Bucket()) {
-        String cacheDir =
-            edd.cacheDirectory()
-                + (nextPath == null ? "" : nextPath); // nextPath keeps fileNames unique
-        if (File2.isFile(cacheDir + nameAndExt)) {
-          // touch it
-          File2.touch(cacheDir + nameAndExt);
-        } else {
-          // copy to local cache
-          SSR.downloadFile(
-              localDir + nameAndExt,
-              cacheDir + nameAndExt,
-              true); // tryToUseCompression is irrelevant
+        String cacheDir = edd.cacheDirectory() + (nextPath == null ? "" : nextPath);
+        String targetCacheFile = cacheDir + nameAndExt;
+
+        // Use 4096-stripe lock on path hash to avoid String.intern() string pool pollution
+        int lockIndex = (targetCacheFile.hashCode() & 0x7fffffff) % CACHE_DOWNLOAD_LOCKS.length;
+        synchronized (CACHE_DOWNLOAD_LOCKS[lockIndex]) {
+          if (File2.isFile(targetCacheFile)) {
+            File2.touch(targetCacheFile);
+          } else {
+            String tempFile = targetCacheFile + "." + java.util.UUID.randomUUID() + ".tmp";
+            try {
+              SSR.downloadFile(
+                  localDir + nameAndExt, tempFile, true); // tryToUseCompression is irrelevant
+              Files.move(
+                  Paths.get(tempFile),
+                  Paths.get(targetCacheFile),
+                  java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                  java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } finally {
+              try {
+                Files.deleteIfExists(Paths.get(tempFile));
+              } catch (Exception e) {
+                // Ignore cleanup errors
+              }
+            }
+          }
         }
         localDir = cacheDir;
       }
-
-      // copy to awsS3OutputBucket and redirect
+      // Copy to awsS3OutputBucket and redirect
       String contentType = OutputStreamFromHttpResponse.getFileContentType(ext, ext);
       String fullAwsUrl =
           EDStatic.config.awsS3OutputBucketUrl
@@ -7465,16 +7453,18 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + "/"
               + (nextPath == null ? "" : nextPath)
               + nameAndExt;
+
       SSR.uploadFileToAwsS3(
           EDStatic.config.getS3TransferManager(), localDir + nameAndExt, fullAwsUrl, contentType);
       response.sendRedirect(fullAwsUrl);
 
     } else {
-      // local and AWS S3
+      // Local and AWS S3 streaming
       OutputStreamSource outSource =
           new OutputStreamFromHttpResponse(
               request, response, File2.getNameNoExtension(nameAndExt), ext, ext);
       OutputStream outputStream = outSource.outputStream("", File2.length(localFullName));
+
       doTransfer(
           language,
           requestNumber,
@@ -7619,7 +7609,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
         }
       }
       description = EDStatic.messages.get(Message.WCS_DESCRIPTION_HTML, language);
-    } else if (EDStatic.config.wmsActive && protocol.equals("wms")) {
+    } else if (protocol.equals("wms")) {
       StringArray tids = gridDatasetIDs();
       int ntids = tids.size();
       titles = new StringArray(ntids, false);
@@ -8871,18 +8861,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.config.wmsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "WMS"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "WMS")));
-      return;
-    }
-
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
@@ -9090,18 +9068,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.config.wmsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "WMS"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "WMS")));
-      return;
-    }
-
     try {
 
       // parse queryString  e.g., ?service=WMS&request=GetCapabilities
@@ -9198,18 +9164,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
-    if (!EDStatic.config.wmsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "WMS"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "WMS")));
-      return;
-    }
 
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String e0 =
@@ -9912,18 +9866,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String loggedInAs,
       Map<String, String> queryMap)
       throws Throwable {
-
-    if (!EDStatic.config.wmsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "WMS"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "WMS")));
-      return;
-    }
 
     String queryString = request.getQueryString(); // post "?", still encoded, may be null
     if (queryString == null) queryString = "";
@@ -10652,18 +10594,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String tDatasetID,
       Map<String, String> queryMap)
       throws Throwable {
-
-    if (!EDStatic.config.wmsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "WMS"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "WMS")));
-      return;
-    }
 
     // make sure version is unspecified (latest), 1.1.0, 1.1.1, or 1.3.0.
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
@@ -11406,19 +11336,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     if (queryString == null) queryString = "";
 
-    if (!EDStatic.config.wmsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "WMS"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "WMS")));
-      return;
-    }
-    boolean wmsClientActive = EDStatic.config.wmsClientActive;
-
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     if (!tVersion.equals("1.1.0") && !tVersion.equals("1.1.1") && !tVersion.equals("1.3.0"))
       throw new SimpleException(
@@ -11500,7 +11417,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       EDV edv = eddGrid.dataVariables()[var];
       if (edv.hasColorBarMinMax()) varNamesWCB.add(edv.destinationName());
     }
-    boolean thisWmsClientActive = wmsClientActive && varNamesWCB.size() > 0;
+    boolean thisWmsClientActive = varNamesWCB.size() > 0;
 
     double minX = gaa[loni].destinationMinDouble();
     double maxX = gaa[loni].destinationMaxDouble();
@@ -11660,16 +11577,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
               + EDStatic.youAreHere(request, language, loggedInAs, "wms", tDatasetID));
       eddGrid.writeHtmlDatasetInfo(
           request, language, loggedInAs, writer, true, true, true, true, queryString, "");
-      if (!wmsClientActive) {
-        writer.write(
-            "\n<p><span class=\"warningColor\">"
-                + MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, language),
-                    "Leaflet",
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, language), "Leaflet"))
-                + "</span>\n\n");
-      } else if (!thisWmsClientActive) {
+      if (!thisWmsClientActive) {
         writer.write(
             "\n<p><span class=\"warningColor\">"
                 + MessageFormat.format(EDStatic.messages.get(Message.NO_XXX, language), "Leaflet")
@@ -13799,17 +13707,16 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String usingCompression)
       throws Throwable {
 
-    String msg = "doTransfer " + localDir + fileNameAndExt + "\n  compression=" + usingCompression;
-
+    String fullSource = localDir + fileNameAndExt;
     long fileSize = -1;
     long first = 0;
     long last = -1;
 
-    if (!String2.isTrulyRemote(localDir + fileNameAndExt)) {
-      // it's a local file or S3 (public or private)
-      fileSize = File2.length(localDir + fileNameAndExt); // it checks isFile
+    if (!String2.isTrulyRemote(fullSource)) {
+      // Local file or S3 (public or private)
+      fileSize = File2.length(fullSource);
       if (fileSize < 0) {
-        String2.log(msg);
+        if (verbose) String2.log("doTransfer file doesn't exist: " + fullSource);
         sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
         return;
       } else {
@@ -13817,24 +13724,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       }
     }
 
-    // Is this a byte range request?    "Range: bytes=0-1023"
-    // https://en.wikipedia.org/wiki/Byte_serving
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
     String range = request.getHeader("Range");
-    msg +=
-        ", fileSize="
-            + fileSize
-            + (range == null ? "" : ", Range request=" + String2.annotatedString(range));
     String extLC = File2.getExtension(fileNameAndExt).toLowerCase();
     boolean rangeRequestAllowed =
         String2.indexOf(EDStatic.messages.extensionsNoRangeRequests, extLC) < 0;
+
     if (range != null) {
       if (!rangeRequestAllowed) {
-        String2.log(msg);
+        if (verbose) String2.log("doTransfer Range request not allowed for " + fullSource);
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "Don't try to connect to .nc or .hdf files on ERDDAP's /files/ system as if they were local files. "
+                + "Don't try to connect to .nc or .hdf files on ERDDAP's /files/ system as if they were local files. "
                 + "It is horribly inefficient and often causes other problems. Instead: "
                 + "a) Use (OPeN)DAP client software to connect to ERDDAP's DAP services for this dataset "
                 + "(which have /griddap/ or /tabledap/ in the URL). That's what DAP is for. "
@@ -13844,101 +13744,151 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "then access the data from your local copy of the file.");
       }
       if (!"identity".equals(usingCompression)) {
-        String2.log(msg);
+        if (verbose) {
+          String2.log("doTransfer Range request with non-identity compression for " + fullSource);
+        }
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "ERDDAP set Content-Encoding="
+                + "ERDDAP set Content-Encoding="
                 + usingCompression
                 + " when it should have used \"identity\".");
       }
-      Pattern p = Pattern.compile("bytes=([0-9]+)-(|[0-9]+)");
-      Matcher m = p.matcher(range);
-      if (m.matches()) {
-        first = String2.parseLong(m.group(1));
-        if (m.group(2).isEmpty()) // <audio> makes requests like this
-        last = fileSize >= 0 ? fileSize - 1 : -1;
-        else last = String2.parseLong(m.group(2));
-      } else {
-        String2.log(msg);
+
+      if (fileSize == 0) {
+        response.setHeader("Content-Range", "bytes */0");
+        throw new SimpleException(
+            EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Cannot request Range on a 0-byte file.");
+      }
+
+      String s = range.trim();
+      int dash = s.indexOf('-', 6); // Look for '-' after "bytes="
+      if (!s.regionMatches(true, 0, "bytes=", 0, 6)
+          || dash == -1
+          || s.equalsIgnoreCase("bytes=-")) {
+        if (verbose) String2.log("doTransfer invalid range format: " + range);
+        response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "The Range header must use the format: \"bytes=first-[last]\". (last is optional)");
+                + "The Range header must use the format: \"bytes=[first]-[last]\". (one bound is optional)");
       }
+
+      if (dash == 6) {
+        // Suffix range: "bytes=-500" (client wants the last 500 bytes)
+        if (fileSize < 0) {
+          if (verbose)
+            String2.log("doTransfer suffix range requested but fileSize unknown for " + fullSource);
+          response.setHeader("Content-Range", "bytes */*");
+          throw new SimpleException(
+              EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
+                  + "Suffix range requested, but file size is unknown for remote files.");
+        }
+        long suffixLen = String2.parseLong(s.substring(dash + 1));
+        if (suffixLen <= 0 || suffixLen == Long.MAX_VALUE) {
+          if (verbose) String2.log("doTransfer invalid suffix length: " + s);
+          response.setHeader("Content-Range", "bytes */" + fileSize);
+          throw new SimpleException(
+              EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + "Invalid suffix length in Range header.");
+        }
+        first = Math.max(0, fileSize - suffixLen);
+        last = fileSize - 1;
+      } else {
+        // Standard range: "bytes=0-1023" or open-ended "bytes=1024-"
+        first = String2.parseLong(s.substring(6, dash));
+        String lastStr = s.substring(dash + 1);
+        if (lastStr.isEmpty()) {
+          last = fileSize >= 0 ? fileSize - 1 : -1;
+        } else {
+          last = String2.parseLong(lastStr);
+          if (last < 0 || last == Long.MAX_VALUE) {
+            if (verbose) String2.log("doTransfer invalid last byte in range: " + s);
+            response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
+            throw new SimpleException(
+                EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
+                    + "Invalid last byte position in Range header.");
+          }
+        }
+      }
+
+      // Speculative range request: if last >= fileSize, clamp to fileSize - 1 per RFC 9110 §14.1.2
+      if (fileSize >= 0 && last >= fileSize) {
+        last = fileSize - 1;
+      }
+
       if (first < 0
           || first == Long.MAX_VALUE
-          || last == Long.MAX_VALUE
           || (last >= 0 && first > last)
-          || (fileSize >= 0 && last >= fileSize)) {
-        String2.log(msg);
+          || (fileSize >= 0 && first >= fileSize)) {
+        if (verbose) {
+          String2.log(
+              "doTransfer Range out of bounds: first="
+                  + first
+                  + ", last="
+                  + last
+                  + ", fileSize="
+                  + fileSize);
+        }
+        response.setHeader("Content-Range", "bytes */" + (fileSize >= 0 ? fileSize : "*"));
         throw new SimpleException(
             EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                + // sendErrorCode looks for this
-                "Invalid Range requested: first="
+                + "Invalid Range requested: first="
                 + first
                 + ", last="
                 + last);
       }
-      if (last < -1) {
-        if (fileSize == -1)
+
+      if (last < 0) {
+        if (fileSize < 0) {
+          response.setHeader("Content-Range", "bytes */*");
           throw new SimpleException(
               EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE
-                  + // sendErrorCode looks for this
-                  "Invalid Range requested: last byte not specified, but file size isn't known for remote files.");
-        else last = fileSize - 1;
+                  + "Invalid Range requested: last byte not specified, but file size isn't known for remote files.");
+        }
+        last = fileSize - 1;
       }
 
-      // status must be set before content is sent. Assume transfer will be successful.
-      response.setStatus(206); // 206=SC_PARTIAL_CONTENT successfully sent
-      String value =
-          "bytes "
-              + // yes, space after 'bytes'
-              first
-              + "-"
-              + last
-              + "/"
-              + (fileSize >= 0 ? "" + fileSize : "*"); // but fileSize should be known
+      response.setStatus(206); // 206 = Partial Content
+      String value = "bytes " + first + "-" + last + "/" + (fileSize >= 0 ? "" + fileSize : "*");
       response.setHeader("Content-Range", value);
-      // see
-      // https://stackoverflow.com/questions/5052635/what-is-relation-between-content-length-and-byte-ranges-in-http-1-1
       response.setContentLengthLong(1 + last - first);
-      // response.setHeader("Content-Length", "" + (1 + last - first));
-      msg += ", set Content-Range=" + value;
+
     } else {
-      // not a range request
-
-      // offer to Accept-ranges if fileType is okay (not .nc, ...) and fileSize is known
-      if (rangeRequestAllowed && fileSize >= 0) response.setHeader("Accept-ranges", "bytes");
-
-      // Only set Content-Length if usingCompression = identity
-      //  Was: DON'T SET Content-Length!
-      // See comments re: hasRangeRequest in OutputStreamFromHttpResponse.
+      // Not a range request
+      if (rangeRequestAllowed && fileSize >= 0) {
+        response.setHeader("Accept-ranges", "bytes");
+      }
       if (fileSize >= 0 && "identity".equals(usingCompression)) {
-        // response.setHeader("Content-Length", "" + fileSize);
         response.setContentLengthLong(fileSize);
-        msg += ", set Content-Length=" + fileSize;
       }
     }
-    if (verbose) String2.log(msg);
 
-    // it's good that result is boolean: for security, don't return localDir name in error message
+    if (verbose) {
+      String2.log(
+          "doTransfer "
+              + fullSource
+              + "\n  compression="
+              + usingCompression
+              + ", fileSize="
+              + fileSize
+              + (range == null ? "" : ", Range request=" + String2.annotatedString(range))
+              + ", serving bytes "
+              + first
+              + "-"
+              + last);
+    }
+
     try (outputStream) {
-      // SSR.copy handles file or public or private AWS source (by routing data through ERDDAP), and
-      // file or URL destination
-      boolean ok =
-          SSR.copy(
-              localDir + fileNameAndExt, outputStream, first, last, true); // handleS3ViaSDK=true
+      boolean ok = SSR.copy(fullSource, outputStream, first, last, true);
       if (!ok) {
-        if (!verbose) String2.log(msg); // if wasn't logged above
+        if (!verbose) {
+          String2.log(
+              "doTransfer failed for " + fullSource + " (bytes " + first + "-" + last + ")");
+        }
         throw new SimpleException(
             (range == null ? "" : EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE)
-                + // sendErrorCode looks for this
-                String2.ERROR
+                + String2.ERROR
                 + " during transfer.");
       }
     }
-    // downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
   }
 
   /**
@@ -14186,22 +14136,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
-    if (!EDStatic.config.outOfDateDatasetsActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.DISABLED, 0),
-                  EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, 0)),
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.DISABLED, language),
-                  EDStatic.messages.get(Message.OUT_OF_DATE_DATASETS, language))));
-      return;
-    }
 
     // constants
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
@@ -14455,20 +14389,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
-    // first thing
-    if (!EDStatic.config.slideSorterActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "SlideSorter"),
-              MessageFormat.format(
-                  EDStatic.messages.get(Message.DISABLED, language), "SlideSorter")));
-      return;
-    }
 
     // FUTURE: when submit(), identify the slide acted upon
     // and move it to forefront (zlevel=highest).
@@ -16210,12 +16130,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     protocols.add(ANY);
     protocols.add("griddap");
     protocols.add("tabledap");
-    if (EDStatic.config.wmsActive) {
-      protocols.add("WMS");
-      protocolTooltip.append(
-          "\n<p><strong>WMS</strong> - "
-              + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language));
-    }
+    protocols.add("WMS");
+    protocolTooltip.append(
+        "\n<p><strong>WMS</strong> - "
+            + EDStatic.messages.get(Message.WMS_DESCRIPTION_HTML, language));
     if (EDStatic.config.wcsActive) {
       protocols.add("WCS");
       protocolTooltip.append(
@@ -18065,36 +17983,34 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           }
 
           // jsonld
-          if (EDStatic.config.jsonldActive) { // && isSchemaDotOrgEnabled()){
-            try {
-              writer.flush(); // so content above is sent to user ASAP while this content is created
-              String roles[] = EDStatic.getRoles(loggedInAs);
-              ArrayList<EDD> datasets = new ArrayList<>();
-              for (int i = 0; i < tIDs.size(); i++) {
-                String tId = tIDs.get(i);
-                boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
-                if (isAllDatasets) continue;
-                EDD edd = gridDatasetHashMap.get(tId);
-                if (edd == null) edd = tableDatasetHashMap.get(tId);
-                if (edd == null) // if just deleted
+          try {
+            writer.flush(); // so content above is sent to user ASAP while this content is created
+            String roles[] = EDStatic.getRoles(loggedInAs);
+            ArrayList<EDD> datasets = new ArrayList<>();
+            for (int i = 0; i < tIDs.size(); i++) {
+              String tId = tIDs.get(i);
+              boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
+              if (isAllDatasets) continue;
+              EDD edd = gridDatasetHashMap.get(tId);
+              if (edd == null) edd = tableDatasetHashMap.get(tId);
+              if (edd == null) // if just deleted
+              continue;
+              boolean isAccessible = edd.isAccessibleTo(roles);
+              boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
+              if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible)
                 continue;
-                boolean isAccessible = edd.isAccessibleTo(roles);
-                boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
-                if (!EDStatic.config.listPrivateDatasets && !isAccessible && !graphsAccessible)
-                  continue;
-                datasets.add(edd);
-              }
-              // javascript version:
-              // writer.write(EDStatic.theSchemaDotOrgDataCatalog(datasets.toArray(new
-              // EDD[datasets.size()])));
-              // java version:
-              theSchemaDotOrgDataCatalog(language, writer, datasets.toArray(new EDD[0]));
-            } catch (Exception e) {
-              EDStatic.rethrowClientAbortException(e); // first thing in catch{}
-              String2.log(
-                  "Caught ERROR while writing jsonld for all datasets:\n"
-                      + MustBe.throwableToString(e));
+              datasets.add(edd);
             }
+            // javascript version:
+            // writer.write(EDStatic.theSchemaDotOrgDataCatalog(datasets.toArray(new
+            // EDD[datasets.size()])));
+            // java version:
+            theSchemaDotOrgDataCatalog(language, writer, datasets.toArray(new EDD[0]));
+          } catch (Exception e) {
+            EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+            String2.log(
+                "Caught ERROR while writing jsonld for all datasets:\n"
+                    + MustBe.throwableToString(e));
           }
 
           writer.write("</div>\n");
@@ -18430,23 +18346,21 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + "</a>.\n");
 
         // jsonld
-        if (EDStatic.config.jsonldActive) { // javascript: && EDStatic.isSchemaDotOrgEnabled()) {
-          try {
-            String tId = parts[0];
-            boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
-            if (!isAllDatasets) {
-              // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
-              // java version:
-              theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
-            }
-          } catch (Exception e) {
-            EDStatic.rethrowClientAbortException(e); // first thing in catch{}
-            String2.log(
-                "Caught ERROR while writing jsonld for "
-                    + edd.datasetID()
-                    + ":\n"
-                    + MustBe.throwableToString(e));
+        try {
+          String tId = parts[0];
+          boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
+          if (!isAllDatasets) {
+            // javascript version: writer.write(EDStatic.theSchemaDotOrgDataset(edd));
+            // java version:
+            theSchemaDotOrgDataset(request, loggedInAs, language, writer, edd);
           }
+        } catch (Exception e) {
+          EDStatic.rethrowClientAbortException(e); // first thing in catch{}
+          String2.log(
+              "Caught ERROR while writing jsonld for "
+                  + edd.datasetID()
+                  + ":\n"
+                  + MustBe.throwableToString(e));
         }
 
         writer.write("</div>\n");
@@ -20194,19 +20108,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
-
     String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
     String requestUrl = request.getRequestURI(); // post EDStatic.config.baseUrl, pre "?"
     String endOfRequestUrl =
@@ -20561,19 +20462,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
-
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultCode = "06053";
@@ -20844,19 +20732,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
 
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
@@ -21137,19 +21012,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
 
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
@@ -21445,19 +21307,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
-
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String defaultCF = "";
@@ -21746,19 +21595,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString,
       int pft)
       throws Throwable {
-
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
 
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
@@ -22853,19 +22689,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
-
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     // defaultIsoTime, defaultN and defaultUnits are also used in messages.xml convertTimeService
@@ -23334,19 +23157,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
-
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
     String tStandardizeUdunits = queryMap.get("STANDARDIZE_UDUNITS");
@@ -23618,18 +23428,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String queryString)
       throws Throwable {
 
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
-
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false);
 
     String queryValue = queryMap.getOrDefault("value", "");
@@ -23832,19 +23630,6 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       String endOfRequest,
       String queryString)
       throws Throwable {
-
-    // first thing
-    if (!EDStatic.config.convertersActive) {
-      sendResourceNotFoundError(
-          requestNumber,
-          request,
-          response,
-          EDStatic.bilingual(
-              language,
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, 0), "convert"),
-              MessageFormat.format(EDStatic.messages.get(Message.DISABLED, language), "convert")));
-      return;
-    }
 
     // parse the queryString
     Map<String, String> queryMap = EDD.userQueryHashMap(queryString, false); // true=lowercase keys
@@ -24572,13 +24357,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Make A Graph", magCol);
     if (EDStatic.config.sosActive) table.addColumn("sos", sosCol);
     if (EDStatic.config.wcsActive) table.addColumn("wcs", wcsCol);
-    if (EDStatic.config.wmsActive) table.addColumn("wms", wmsCol);
+    table.addColumn("wms", wmsCol);
     if (EDStatic.config.filesActive) table.addColumn("files", filesCol);
     if (EDStatic.config.authentication.length() > 0) table.addColumn("Accessible", accessCol);
     int sortOn = table.addColumn("Title", titleCol);
     table.addColumn("Summary", summaryCol);
     if (EDStatic.config.fgdcActive) table.addColumn("FGDC", fgdcCol);
-    if (EDStatic.config.iso19115Active) table.addColumn("ISO 19115", iso19115Col);
+    table.addColumn("ISO 19115", iso19115Col);
     table.addColumn("Info", infoCol);
     table.addColumn("Background Info", backgroundCol);
     table.addColumn("RSS", rssCol);
@@ -24720,7 +24505,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Make<br>A<br>Graph", magCol);
     if (EDStatic.config.sosActive) table.addColumn("S<br>O<br>S", sosCol);
     if (EDStatic.config.wcsActive) table.addColumn("W<br>C<br>S", wcsCol);
-    if (EDStatic.config.wmsActive) table.addColumn("W<br>M<br>S", wmsCol);
+    table.addColumn("W<br>M<br>S", wmsCol);
     if (EDStatic.config.filesActive) table.addColumn("Source<br>Data<br>Files", filesCol);
     String accessTip =
         EDStatic.messages.get(Message.DT_ACCESSIBLE, language)
@@ -24760,13 +24545,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     table.addColumn("Title", titleCol);
     int sortOn = table.addColumn("Plain Title", plainTitleCol);
     table.addColumn("Sum-<br>mary", summaryCol);
-    table.addColumn(
-        (EDStatic.config.fgdcActive ? "FGDC,<br>" : "")
-            + (EDStatic.config.iso19115Active ? "ISO,<br>" : "")
-            + (EDStatic.config.fgdcActive || EDStatic.config.iso19115Active
-                ? "Metadata"
-                : "Meta-<br>data"),
-        infoCol);
+    table.addColumn((EDStatic.config.fgdcActive ? "FGDC,<br>" : "") + "ISO,<br>Metadata", infoCol);
     table.addColumn("Back-<br>ground<br>Info", backgroundCol);
     table.addColumn("RSS", rssCol);
     if (EDStatic.config.subscriptionSystemActive) table.addColumn("E<br>mail", emailCol);
@@ -24931,7 +24710,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                   +
                   // iso
                   (edd.accessibleViaISO19115().length() > 0
-                      ? (EDStatic.config.iso19115Active ? "&nbsp;&nbsp;&nbsp;&nbsp;" : "")
+                      ? "&nbsp;&nbsp;&nbsp;&nbsp;"
                       : "&nbsp;<a rel=\"chapter\" "
                           + "href=\""
                           + tErddapUrl

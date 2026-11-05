@@ -675,8 +675,7 @@ public class EDDTableFromSOS extends EDDTable {
     if (verbose) String2.log("  quickRestartFile exists=" + quickRestartFileExists);
     // to test, set this to true in test method, not here.
     boolean testQuickRestart = false;
-    if (quickRestartFileExists
-        && (testQuickRestart || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()))) {
+    if (quickRestartFileExists && (testQuickRestart || EDStatic.initialLoadDatasets())) {
       // use the quickRestartFile
       // Note that if this fails (any reason, e.g., damaged quickRestartFile)
       //  the dataset will reload at next majorLoadDatasets,

@@ -867,9 +867,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         String qrName = quickRestartFullFileName(tDatasetID);
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
-            && File2.isFile(qrName)) {
+        if (EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
 
           // quickRestart
           // set creationTimeMillis to time of previous creation, so next time
@@ -948,9 +946,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         String qrName = quickRestartFullFileName(tDatasetID);
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
-            && File2.isFile(qrName)) {
+        if (EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
 
           // quickRestart
           // set creationTimeMillis to time of previous creation, so next time
@@ -1031,9 +1027,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
         String fileName = "data.tsv";
         long tCreationTime = System.currentTimeMillis(); // used below
 
-        if (EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
-            && File2.isFile(fileDir + fileName)) {
+        if (EDStatic.initialLoadDatasets() && File2.isFile(fileDir + fileName)) {
 
           // quickRestart
           // set creationTimeMillis to time of previous creation, so next time
@@ -1708,9 +1702,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
 
     // doQuickRestart?
     boolean doQuickRestart =
-        fileTable.nRows() > 0
-            && (testQuickRestart
-                || (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets()));
+        fileTable.nRows() > 0 && (testQuickRestart || EDStatic.initialLoadDatasets());
     if (verbose) String2.log("doQuickRestart=" + doQuickRestart);
 
     if (doQuickRestart) {
@@ -3585,9 +3577,7 @@ public abstract class EDDTableFromFiles extends EDDTable implements WatchUpdateH
       }
 
       // after changes all in place
-      if (EDStatic.config.updateSubsRssOnFileChanges) {
-        Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
-      }
+      Erddap.tryToDoActions(datasetID(), this, "", changed(snapshot));
     }
 
     if (verbose)
