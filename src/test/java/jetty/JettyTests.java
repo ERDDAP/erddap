@@ -7960,12 +7960,32 @@ class JettyTests extends WireMockLifecycle {
     {
       "@type": "Dataset",
       "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridCompressedData_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
       "sameAs": "http://localhost:8080/erddap/info/zarr_griddTypes/index.html"
     },
     {
       "@type": "Dataset",
       "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_griddTypes_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
       "sameAs": "http://localhost:8080/erddap/info/zarr_gridFillValues/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridFillValues_ZarrJava/index.html"
+    },
+    {
+      "@type": "Dataset",
+      "name": "Data from a local source.",
+      "sameAs": "http://localhost:8080/erddap/info/zarr_gridTestData_ZarrJava/index.html"
     },
     {
       "@type": "Dataset",
@@ -8445,8 +8465,7 @@ class JettyTests extends WireMockLifecycle {
   ]
 }
 </script>
-            """;
-    ;
+""";
     po = Math.max(0, results.indexOf(expected.substring(0, 30)));
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
