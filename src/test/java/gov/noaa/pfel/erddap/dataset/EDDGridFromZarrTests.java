@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import testDataset.EDDTestDataset;
 import testDataset.Initialization;
@@ -148,6 +149,7 @@ class EDDGridFromZarrTests {
               store.resolve("temperature"),
               mb ->
                   mb.withShape(2, 2, 2)
+                      .withChunkShape(2, 2, 2)
                       .withDataType(float64)
                       .withDimensionNames("time", "latitude", "longitude"),
               true);
@@ -211,6 +213,7 @@ class EDDGridFromZarrTests {
               store.resolve("temperature"),
               mb ->
                   mb.withShape(4, 2, 2)
+                      .withChunkShape(2, 2, 2)
                       .withDataType(float64)
                       .withDimensionNames("time", "latitude", "longitude"),
               true)
@@ -1507,6 +1510,7 @@ class EDDGridFromZarrTests {
               store.resolve("temperature"),
               mb ->
                   mb.withShape(2, 2, 2)
+                      .withChunkShape(2, 2, 2)
                       .withDataType(float64)
                       .withDimensionNames("time", "latitude", "longitude"),
               true);
@@ -1572,6 +1576,7 @@ class EDDGridFromZarrTests {
               store.resolve("temperature"),
               mb ->
                   mb.withShape(4, 2, 2)
+                      .withChunkShape(2, 2, 2)
                       .withDataType(float64)
                       .withDimensionNames("time", "latitude", "longitude"),
               true);
@@ -1632,6 +1637,7 @@ class EDDGridFromZarrTests {
               store.resolve("temperature"),
               mb ->
                   mb.withShape(6, 2, 2)
+                      .withChunkShape(2, 2, 2)
                       .withDataType(float64)
                       .withDimensionNames("time", "latitude", "longitude"),
               true)
@@ -1706,6 +1712,7 @@ class EDDGridFromZarrTests {
               store.resolve("temperature"),
               mb ->
                   mb.withShape(2, 2, 2)
+                      .withChunkShape(2, 2, 2)
                       .withDataType(float64)
                       .withDimensionNames("time", "latitude", "longitude"),
               true);
@@ -1769,6 +1776,501 @@ class EDDGridFromZarrTests {
           2,
           dataset.axisVariables()[0].sourceValues().size(),
           "Axis length should remain unchanged when update is deferred.");
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testDataVariableDimensionValidation() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_dim_validation_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("lat"),
+              mb -> mb.withShape(3).withDataType(float64).withDimensionNames("lat"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {10.0, 20.0, 30.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("lon"),
+              mb -> mb.withShape(4).withDataType(float64).withDimensionNames("lon"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE,
+                  new int[] {4},
+                  new double[] {100.0, 110.0, 120.0, 130.0}));
+
+      dev.zarr.zarrjava.v3.Array validGrid =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("valid_grid"),
+              mb -> mb.withShape(3, 4).withDataType(float64).withDimensionNames("lat", "lon"),
+              true);
+      dev.zarr.zarrjava.core.Attributes validAtts = new dev.zarr.zarrjava.core.Attributes();
+      validAtts.set("ioos_category", "Temperature");
+      validGrid.setAttributes(validAtts);
+      validGrid.write(ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {3, 4}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("mismatched_rank"),
+              mb -> mb.withShape(3).withDataType(float64).withDimensionNames("lat"),
+              true)
+          .write(ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {3}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("mismatched_dims"),
+              mb -> mb.withShape(4, 3).withDataType(float64).withDimensionNames("lon", "lat"),
+              true)
+          .write(ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {4, 3}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Test Dataset");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      List<AxisVariableInfo> axisVars = new ArrayList<>();
+      axisVars.add(new AxisVariableInfo("lat", "lat", new LocalizedAttributes(), null));
+      axisVars.add(new AxisVariableInfo("lon", "lon", new LocalizedAttributes(), null));
+
+      // 1. Auto-discovery must exclude mismatched arrays
+      EDDGridFromZarr autoDataset =
+          new EDDGridFromZarr(
+              "zarr_auto_dim_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              axisVars,
+              new ArrayList<>(),
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      assertEquals(1, autoDataset.dataVariables().length);
+      assertEquals("valid_grid", autoDataset.dataVariables()[0].destinationName());
+
+      // 2. Explicit XML specification must fail-fast with SimpleException on mismatched arrays
+      List<DataVariableInfo> invalidDataVars = new ArrayList<>();
+      invalidDataVars.add(
+          new DataVariableInfo(
+              "mismatched_rank", "mismatched_rank", new LocalizedAttributes(), "double"));
+
+      assertThrows(
+          Throwable.class,
+          () -> {
+            try {
+              new EDDGridFromZarr(
+                  "zarr_explicit_dim_fail_id",
+                  null,
+                  null,
+                  true,
+                  new StringArray(),
+                  null,
+                  null,
+                  null,
+                  null,
+                  addGlobalAtts,
+                  axisVars,
+                  invalidDataVars,
+                  10080,
+                  0,
+                  tempDir.toString(),
+                  "",
+                  -1,
+                  -1,
+                  true);
+            } catch (Throwable t) {
+              throw t;
+            }
+          });
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testLowUpdateStaticVariableDeadlockPrevention() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_lowupdate_deadlock_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.v3.Array timeArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes tAtts = new dev.zarr.zarrjava.core.Attributes();
+      tAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeArr.setAttributes(tAtts);
+      timeArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes tempAttrs = new dev.zarr.zarrjava.core.Attributes();
+      tempAttrs.set("ioos_category", "Temperature");
+      tempArr.setAttributes(tempAttrs);
+      tempArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {15.0, 16.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("topography"),
+              mb -> mb.withShape(1).withDataType(float64).withDimensionNames("depth"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {1}, new double[] {-50.0}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Test Dataset");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      List<AxisVariableInfo> axisVars = new ArrayList<>();
+      axisVars.add(new AxisVariableInfo("time", "time", new LocalizedAttributes(), null));
+
+      List<DataVariableInfo> dataVars = new ArrayList<>();
+      dataVars.add(
+          new DataVariableInfo("temperature", "temperature", new LocalizedAttributes(), "double"));
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_static_deadlock_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              axisVars,
+              dataVars,
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      // Expand time and temperature to 4
+      dev.zarr.zarrjava.v3.Array timeArrUp =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(4).withDataType(float64).withDimensionNames("time"),
+              true);
+      timeArrUp.setAttributes(tAtts);
+      timeArrUp.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {4},
+              new double[] {1000.0, 2000.0, 3000.0, 4000.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArrUp =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb -> mb.withShape(4).withDataType(float64).withDimensionNames("time"),
+              true);
+      tempArrUp.setAttributes(tempAttrs);
+      tempArrUp.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {4}, new double[] {15.0, 16.0, 17.0, 18.0}));
+
+      // Topography remains static with shape 1, but lacks the outer axis 'time'.
+      // lowUpdate must succeed and NOT be deferred!
+      boolean updated = dataset.lowUpdate(0, "testStaticVarUpdate", System.currentTimeMillis());
+      assertTrue(updated, "lowUpdate should succeed when static variables lack outer axis");
+      assertEquals(4, dataset.axisVariables()[0].sourceValues().size());
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testSubgroupPathResolutionInParseZarrMetadata() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_subgroup_path_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group rootGroup = dev.zarr.zarrjava.v3.Group.create(store.resolve());
+      dev.zarr.zarrjava.v3.Group modelsGroup =
+          dev.zarr.zarrjava.v3.Group.create(store.resolve("models"));
+      dev.zarr.zarrjava.v3.Group subGroup =
+          dev.zarr.zarrjava.v3.Group.create(store.resolve("models", "gfs"));
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("models", "gfs", "time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("models", "gfs", "temperature"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true)
+          .write(
+              ucar.ma2.Array.factory(
+                  ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {20.0, 22.0}));
+
+      Map<String, EDDGridFromZarr.ZarrArrayInfo> arrayMap =
+          EDDGridFromZarr.parseZarrMetadata(subGroup);
+
+      assertNotNull(arrayMap);
+      assertTrue(
+          arrayMap.containsKey("temperature"),
+          "ArrayMap should contain relative key 'temperature'");
+      assertTrue(arrayMap.containsKey("time"), "ArrayMap should contain relative key 'time'");
+      assertFalse(
+          arrayMap.containsKey("models/gfs/models/gfs/temperature"),
+          "ArrayMap must not contain duplicated path prefixes");
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void testRethrowNetworkExceptionsInGetSourceDataFromFile() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_rethrow_network_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.v3.Array timeArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes timeAtts = new dev.zarr.zarrjava.core.Attributes();
+      timeAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeArray.setAttributes(timeAtts);
+      timeArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      dev.zarr.zarrjava.v3.Array tempArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes tempAtts = new dev.zarr.zarrjava.core.Attributes();
+      tempAtts.set("ioos_category", "Temperature");
+      tempArray.setAttributes(tempAtts);
+      tempArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {15.0, 16.0}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "Rethrow Network Exception Test");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      List<AxisVariableInfo> axisVars = new ArrayList<>();
+      axisVars.add(new AxisVariableInfo("time", "time", new LocalizedAttributes(), null));
+
+      LocalizedAttributes tempLocAtts = new LocalizedAttributes();
+      tempLocAtts.set(0, "ioos_category", "Temperature");
+
+      List<DataVariableInfo> dataVars = new ArrayList<>();
+      dataVars.add(new DataVariableInfo("temperature", "temperature", tempLocAtts, "double"));
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_rethrow_network_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              axisVars,
+              dataVars,
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      // Create a directory where the chunk file should be: reading a directory as a file throws an
+      // IOException
+      Path chunkPath = tempDir.resolve("temperature").resolve("c").resolve("0");
+      if (Files.exists(chunkPath)) {
+        Files.delete(chunkPath);
+      }
+      Files.createDirectory(chunkPath);
+
+      // getSourceDataFromFile should rethrow the IOException rather than swallowing it into
+      // null/NaN
+      assertThrows(
+          Throwable.class,
+          () ->
+              dataset.getSourceDataFromFile(
+                  dataset.dataVariables()[0], new int[] {0}, new int[] {1}, new int[] {0}));
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
+
+  @Test
+  void test64BitIntegerPrecisionInGetSourceDataFromFile() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_64bit_precision_test");
+
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+      dev.zarr.zarrjava.v3.DataType int64 = dev.zarr.zarrjava.v3.DataType.INT64;
+      dev.zarr.zarrjava.v3.DataType uint64 = dev.zarr.zarrjava.v3.DataType.UINT64;
+
+      dev.zarr.zarrjava.v3.Array timeArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb -> mb.withShape(2).withDataType(float64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes timeAtts = new dev.zarr.zarrjava.core.Attributes();
+      timeAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+      timeArray.setAttributes(timeAtts);
+      timeArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1000.0, 2000.0}));
+
+      long largeLong1 = 9007199254740993L;
+      long largeLong2 = 9007199254740995L;
+      dev.zarr.zarrjava.v3.Array longArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("long_var"),
+              mb -> mb.withShape(2).withDataType(int64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes longAtts = new dev.zarr.zarrjava.core.Attributes();
+      longAtts.set("ioos_category", "Identifier");
+      longArray.setAttributes(longAtts);
+      longArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.LONG, new int[] {2}, new long[] {largeLong1, largeLong2}));
+
+      long largeULong1 = 0xFFFFFFFFFFFFFFFCL;
+      long largeULong2 = 9007199254740993L;
+      dev.zarr.zarrjava.v3.Array ulongArray =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("ulong_var"),
+              mb -> mb.withShape(2).withDataType(uint64).withDimensionNames("time"),
+              true);
+      dev.zarr.zarrjava.core.Attributes ulongAtts = new dev.zarr.zarrjava.core.Attributes();
+      ulongAtts.set("ioos_category", "Identifier");
+      ulongArray.setAttributes(ulongAtts);
+      ulongArray.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.LONG, new int[] {2}, new long[] {largeULong1, largeULong2}));
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "title", "64-bit Integer Precision Test");
+      addGlobalAtts.set(0, "summary", "Test Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+
+      List<AxisVariableInfo> axisVars = new ArrayList<>();
+      axisVars.add(new AxisVariableInfo("time", "time", new LocalizedAttributes(), null));
+
+      LocalizedAttributes longLocAtts = new LocalizedAttributes();
+      longLocAtts.set(0, "ioos_category", "Identifier");
+      LocalizedAttributes ulongLocAtts = new LocalizedAttributes();
+      ulongLocAtts.set(0, "ioos_category", "Identifier");
+      ulongLocAtts.set(0, "_FillValue", "18446744073709551615");
+
+      List<DataVariableInfo> dataVars = new ArrayList<>();
+      dataVars.add(new DataVariableInfo("long_var", "long_var", longLocAtts, "long"));
+      dataVars.add(new DataVariableInfo("ulong_var", "ulong_var", ulongLocAtts, "ulong"));
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_64bit_precision_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              axisVars,
+              dataVars,
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      com.cohort.array.PrimitiveArray longPA =
+          dataset.getSourceDataFromFile(
+              dataset.dataVariables()[0], new int[] {0}, new int[] {1}, new int[] {1});
+      assertEquals(PAType.LONG, longPA.elementType());
+      assertEquals(largeLong1, longPA.getLong(0));
+      assertEquals(largeLong2, longPA.getLong(1));
+
+      com.cohort.array.PrimitiveArray ulongPA =
+          dataset.getSourceDataFromFile(
+              dataset.dataVariables()[1], new int[] {0}, new int[] {1}, new int[] {1});
+      assertEquals(PAType.ULONG, ulongPA.elementType());
+      assertEquals("18446744073709551612", ulongPA.getString(0));
+      assertEquals(new java.math.BigInteger("18446744073709551612"), ulongPA.getULong(0));
+      assertEquals("9007199254740993", ulongPA.getString(1));
+      assertEquals(new java.math.BigInteger("9007199254740993"), ulongPA.getULong(1));
 
     } finally {
       com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
