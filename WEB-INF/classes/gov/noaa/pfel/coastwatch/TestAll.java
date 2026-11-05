@@ -15,13 +15,7 @@ import gov.noaa.pfel.erddap.*;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
-import org.apache.commons.logging.impl.*;
 import org.json.JSONObject;
-import ucar.ma2.*;
-import ucar.nc2.*;
-// import ucar.nc2.dods.*;
-import ucar.nc2.dataset.*;
-import ucar.nc2.util.*;
 
 /**
  * This is a very important class -- main() calls all of the unit tests relevant to CWBrowser and
@@ -49,8 +43,6 @@ public class TestAll {
     String2.setupCommonsLogging(-1);
 
     // set log file to <bigParentDir>/logs/TestAll.out
-    EDStatic.config.quickRestart =
-        false; // also, this forces EDStatic instantiation when running TestAll
     String2.setupLog(
         true,
         false, // output to system.out and a file:

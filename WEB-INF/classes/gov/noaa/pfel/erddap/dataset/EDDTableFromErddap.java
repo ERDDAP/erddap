@@ -254,8 +254,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     Table sourceTable = new Table();
     sourceGlobalAttributes = sourceTable.globalAttributes();
     boolean qrMode =
-        EDStatic.config.quickRestart
-            && EDStatic.initialLoadDatasets()
+        EDStatic.initialLoadDatasets()
             && File2.isFile(
                 quickRestartFullFileName()); // goofy: name is .nc but contents are NCCSV
     if (qrMode) {

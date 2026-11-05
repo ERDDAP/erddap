@@ -231,23 +231,15 @@ public class EDConfig {
   public boolean usePrometheusMetrics = true;
   @FeatureFlag public final boolean listPrivateDatasets;
   @FeatureFlag public final boolean subscriptionSystemActive;
-  @FeatureFlag public final boolean convertersActive;
-  @FeatureFlag public final boolean slideSorterActive;
   @FeatureFlag public final boolean fgdcActive;
-  @FeatureFlag public final boolean iso19115Active;
-  @FeatureFlag public final boolean jsonldActive;
   @FeatureFlag public final boolean geoServicesRestActive;
   @FeatureFlag public final boolean filesActive;
   @FeatureFlag public final boolean defaultAccessibleViaFiles;
   @FeatureFlag public final boolean dataProviderFormActive;
-  @FeatureFlag public final boolean outOfDateDatasetsActive;
   @FeatureFlag public final boolean politicalBoundariesActive;
-  @FeatureFlag public final boolean wmsClientActive;
   @FeatureFlag public final boolean enableMqttBroker;
   @FeatureFlag public boolean sosActive;
   @FeatureFlag public final boolean wcsActive;
-  @FeatureFlag public final boolean wmsActive;
-  @FeatureFlag public boolean quickRestart;
   @FeatureFlag public final boolean subscribeToRemoteErddapDataset;
   @FeatureFlag public boolean showLoadErrorsOnStatusPage = DEFAULT_showLoadErrorsOnStatusPage;
 
@@ -274,7 +266,6 @@ public class EDConfig {
   @FeatureFlag public boolean useSaxParser;
   @FeatureFlag public boolean publishMqttNotif;
   @FeatureFlag public boolean enableEnvParsing;
-  @FeatureFlag public boolean updateSubsRssOnFileChanges;
   @FeatureFlag public boolean enableCors;
   @FeatureFlag public boolean useSisISO19115 = false;
   @FeatureFlag public boolean useSisISO19139 = false;
@@ -291,8 +282,6 @@ public class EDConfig {
   @FeatureFlag public boolean verifyHostNameErddapUrl = true;
   public java.util.Set<String> allowedHosts =
       java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
-  @FeatureFlag public boolean taskCacheClear = true;
-  @FeatureFlag public boolean useNcMetadataForFileTable = true;
 
   public EDConfig(String webInfParentDirectory) throws Exception {
     fullPaletteDirectory = webInfParentDirectory + "WEB-INF/cptfiles/";
@@ -473,8 +462,6 @@ public class EDConfig {
     }
     variableNameCategoryAttributeIndex = String2.indexOf(categoryAttributes, "variableName");
 
-    String wmsActiveString = getSetupEVString(setup, ev, "wmsActive", "");
-    wmsActive = !String2.isSomething(wmsActiveString) || String2.parseBoolean(wmsActiveString);
     wmsSampleDatasetID = getSetupEVString(setup, ev, "wmsSampleDatasetID", wmsSampleDatasetID);
     wmsSampleVariable = getSetupEVString(setup, ev, "wmsSampleVariable", wmsSampleVariable);
     wmsSampleBBox110 = getSetupEVString(setup, ev, "wmsSampleBBox110", wmsSampleBBox110);
@@ -561,8 +548,6 @@ public class EDConfig {
     units_standard = getSetupEVString(setup, ev, "units_standard", "UDUNITS");
 
     fgdcActive = getSetupEVBoolean(setup, ev, "fgdcActive", true);
-    iso19115Active = getSetupEVBoolean(setup, ev, "iso19115Active", true);
-    jsonldActive = getSetupEVBoolean(setup, ev, "jsonldActive", true);
     // until geoServicesRest is finished, it is always inactive
     geoServicesRestActive =
         false; // getSetupEVBoolean(setup, ev,          "geoServicesRestActive",      false);
@@ -571,9 +556,7 @@ public class EDConfig {
         getSetupEVBoolean(
             setup, ev, "defaultAccessibleViaFiles", false); // false matches historical behavior
     dataProviderFormActive = getSetupEVBoolean(setup, ev, "dataProviderFormActive", true);
-    outOfDateDatasetsActive = getSetupEVBoolean(setup, ev, "outOfDateDatasetsActive", true);
     politicalBoundariesActive = getSetupEVBoolean(setup, ev, "politicalBoundariesActive", true);
-    wmsClientActive = getSetupEVBoolean(setup, ev, "wmsClientActive", true);
     enableMqttBroker = getSetupEVBoolean(setup, ev, "enableMqttBroker", false);
 
     // until SOS is finished, it is always inactive
@@ -643,8 +626,6 @@ public class EDConfig {
         getSetupEVInt(setup, ev, "cacheClearMinutes", DEFAULT_cacheMinutes / 4) * 60000L;
     requestCacheMillis =
         getSetupEVInt(setup, ev, "requestCacheMinutes", DEFAULT_cacheMinutes / 15) * 60000L;
-    taskCacheClear = getSetupEVBoolean(setup, ev, "taskCacheClear", true);
-    useNcMetadataForFileTable = getSetupEVBoolean(setup, ev, "useNcMetadataForFileTable", true);
     lowMemCacheGbLimit = getSetupEVInt(setup, ev, "lowMemCacheGbLimit", DEFAULT_lowMemCacheGbLimit);
     loadDatasetsMinMillis =
         Math.max(
@@ -665,18 +646,15 @@ public class EDConfig {
 
     lowResLogoImageFile =
         getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
-    quickRestart = getSetupEVBoolean(setup, ev, "quickRestart", true);
     passwordEncoding = getSetupEVString(setup, ev, "passwordEncoding", "UEPSHA256");
     searchEngine = getSetupEVString(setup, ev, "searchEngine", "original");
 
     subscribeToRemoteErddapDataset =
         getSetupEVBoolean(setup, ev, "subscribeToRemoteErddapDataset", true);
     subscriptionSystemActive = getSetupEVBoolean(setup, ev, "subscriptionSystemActive", true);
-    convertersActive = getSetupEVBoolean(setup, ev, "convertersActive", true);
     useSaxParser = getSetupEVBoolean(setup, ev, "useSaxParser", false);
     publishMqttNotif = getSetupEVBoolean(setup, ev, "publishMqttNotif", false);
     enableEnvParsing = getSetupEVBoolean(setup, ev, "enableEnvParsing", true);
-    updateSubsRssOnFileChanges = getSetupEVBoolean(setup, ev, "updateSubsRssOnFileChanges", true);
     enableCors = getSetupEVBoolean(setup, ev, "enableCors", false);
     corsAllowHeaders =
         getSetupEVString(setup, ev, "corsAllowHeaders", CorsResponseFilter.DEFAULT_ALLOW_HEADERS);
@@ -724,7 +702,6 @@ public class EDConfig {
     if (baseHttpsDomain != null && !baseHttpsDomain.isEmpty()) {
       allowedHosts.add(baseHttpsDomain);
     }
-    slideSorterActive = getSetupEVBoolean(setup, ev, "slideSorterActive", true);
     variablesMustHaveIoosCategory =
         getSetupEVBoolean(setup, ev, "variablesMustHaveIoosCategory", true);
     warName = getSetupEVString(setup, ev, "warName", "erddap");

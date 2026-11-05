@@ -473,7 +473,7 @@ public class EDDTableFromFileNames extends EDDTable {
         from == fromRemoteFiles) {
       String qrName = quickRestartFullFileName();
 
-      if (EDStatic.config.quickRestart && EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
+      if (EDStatic.initialLoadDatasets() && File2.isFile(qrName)) {
 
         // try to do quickRestart
         // set creationTimeMillis to time of previous creation, so next time

@@ -12,6 +12,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -2074,6 +2075,9 @@ public class File2 {
     }
   }
 
+  // 64 KB aligns with Linux page cache readahead and TCP socket buffers
+  private static final int COPY_BUFFER_SIZE = 65536;
+
   /** A variant that copies the entire source. */
   public static boolean copy(String source, String destination) {
     return copy(source, destination, 0, -1);
@@ -2091,10 +2095,8 @@ public class File2 {
    * @return true if successful. If not successful, the destination file won't exist.
    */
   public static boolean copy(String source, String destination, long first, long last) {
-
     if (source.equals(destination)) return false;
 
-    // Ensure target directory exists
     try {
       File dir = new File(getDirectory(destination));
       if (!dir.isDirectory()) dir.mkdirs();
@@ -2107,30 +2109,56 @@ public class File2 {
     String destBro[] = String2.parseAwsS3Url(destination);
 
     // Fast-path zero-copy OS kernel transfer for uncompressed local files
-    if (sourceBro == null && destBro == null && !isDecompressible(getExtension(source))) {
+    if (sourceBro == null
+        && destBro == null
+        && !isDecompressible(getExtension(source))
+        && File2.isFile(source)) {
       Path sourcePath = Paths.get(source);
       Path destPath = Paths.get(destination);
 
-      try (FileChannel srcChannel = FileChannel.open(sourcePath, StandardOpenOption.READ);
-          FileChannel destChannel =
-              FileChannel.open(
-                  destPath,
-                  StandardOpenOption.CREATE,
-                  StandardOpenOption.WRITE,
-                  StandardOpenOption.TRUNCATE_EXISTING)) {
-
+      try (FileChannel srcChannel = FileChannel.open(sourcePath, StandardOpenOption.READ)) {
         long fileSize = srcChannel.size();
-        long start = Math.max(0, first);
-        long count = (last < 0) ? (fileSize - start) : (last - start + 1);
-        if (count < 0) count = 0;
 
-        long transferred = 0;
-        while (transferred < count) {
-          long bytes = srcChannel.transferTo(start + transferred, count - transferred, destChannel);
-          if (bytes <= 0) break;
-          transferred += bytes;
+        // Range boundary validation
+        if (fileSize == 0 && first == 0) {
+          Files.write(destPath, new byte[0]);
+          return true; // Legitimate 0-byte file copy (creates or truncates)
         }
-        return true;
+        if (first > fileSize || (fileSize > 0 && first >= fileSize)) {
+          return false; // Out-of-bounds start position; destination file must not exist
+        }
+
+        long start = Math.max(0, first);
+        long maxAvailable = Math.max(0, fileSize - start);
+        long count = (last < 0) ? maxAvailable : Math.min(last - start + 1, maxAvailable);
+        if (count <= 0) return false;
+
+        try (FileChannel destChannel =
+            FileChannel.open(
+                destPath,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING)) {
+
+          long transferred = 0;
+          long chunkSize = 32 * 1024 * 1024L; // 32 MB chunks
+          while (transferred < count) {
+            long bytesToTransfer = Math.min(count - transferred, chunkSize);
+            long bytes = srcChannel.transferTo(start + transferred, bytesToTransfer, destChannel);
+            if (bytes <= 0) {
+              throw new IOException(
+                  "Incomplete transfer: transferTo returned "
+                      + bytes
+                      + " after "
+                      + transferred
+                      + " of "
+                      + count
+                      + " bytes.");
+            }
+            transferred += bytes;
+          }
+          return true;
+        }
       } catch (Exception e) {
         String2.log(String2.ERROR + " in File2.copy (FileChannel) source=" + source + "\n" + e);
         delete(destination);
@@ -2139,21 +2167,15 @@ public class File2 {
     }
 
     // Fallback for S3 URLs or compressed streams
-    OutputStream out = null;
     boolean success = false;
-    try {
-      out = new BufferedOutputStream(Files.newOutputStream(Paths.get(destination)));
+    try (OutputStream out =
+        new BufferedOutputStream(Files.newOutputStream(Paths.get(destination)))) {
       success = copy(source, out, first, last);
     } catch (Exception e) {
       String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + e);
     }
-    try {
-      if (out != null) out.close();
-    } catch (Exception e) {
-    }
 
     if (!success) delete(destination);
-
     return success;
   }
 
@@ -2172,12 +2194,13 @@ public class File2 {
    * @return true if successful.
    */
   public static boolean copy(String source, OutputStream out, long first, long last) {
-
-    try (InputStream in = getBufferedInputStream(source)) {
-      // not getDecompressedBufferedInputStream(). Read file as is.
+    // Avoid double buffering on local files: FileInputStream is used directly
+    // since copy(InputStream, OutputStream) already manages a 64 KB buffer.
+    try (InputStream in =
+        File2.isFile(source) ? new FileInputStream(source) : getBufferedInputStream(source)) {
       return copy(in, out, first, last);
     } catch (Exception e) {
-      String2.log(MustBe.throwable(String2.ERROR + " in File2.copy.", e));
+      String2.log(MustBe.throwable(String2.ERROR + " in File2.copy for " + source, e));
       return false;
     }
   }
@@ -2197,23 +2220,30 @@ public class File2 {
    * @return true if successful.
    */
   public static boolean copy(InputStream in, OutputStream out, long first, long last) {
+    if (first < 0 || (last >= 0 && first > last)) {
+      return false;
+    }
+    byte[] buffer = new byte[COPY_BUFFER_SIZE];
+    long remain = (last < 0) ? Long.MAX_VALUE : (1 + last - first);
 
-    int bufferSize = 32768;
-    byte buffer[] = new byte[bufferSize];
-    long remain = last < 0 ? Long.MAX_VALUE : 1 + last - first;
     try {
-      skipFully(in, first);
-      int nRead;
-      while ((nRead = in.read(buffer, 0, (int) Math.min(remain, bufferSize)))
-          >= 0) { // 0 shouldn't happen. -1=end of file
+      if (first > 0) {
+        skipFully(in, first);
+      }
+
+      while (remain > 0) {
+        int bytesToRead = (int) Math.min(remain, COPY_BUFFER_SIZE);
+        int nRead = in.read(buffer, 0, bytesToRead);
+        if (nRead < 0) {
+          if (last >= 0) throw new IOException("Unexpected end-of-file.");
+          break; // Natural EOF for open-ended requests
+        }
+
         out.write(buffer, 0, nRead);
         remain -= nRead;
-        // String2.log(">> nRead=" + nRead + " remain=" + remain);
-        if (remain == 0) break;
       }
-      out.flush(); // always flush
-      if (last >= 0 && nRead == -1) throw new IOException("Unexpected end-of-file.");
-      // String2.log(">> found eof");
+
+      out.flush();
       return true;
     } catch (Exception e) {
       String2.log(
@@ -2232,26 +2262,16 @@ public class File2 {
   }
 
   /**
-   * This fully skips the specified number of bytes from the inputstream (unlike InputStream.skip,
-   * which may not skip all of the bytes).
+   * This fully skips the specified number of bytes from the inputstream.
    *
    * @param inputStream Best if buffered.
    * @param nToSkip the number of bytes to be read
    * @throws IOException if trouble
    */
   public static void skipFully(InputStream inputStream, long nToSkip) throws IOException {
-
-    long remain = nToSkip;
-    int zeroCount = 0; // consecutive
-    while (remain > 0) {
-      long skipped = inputStream.skip(remain); // may not skip all requested
-      if (skipped == 0) {
-        if (++zeroCount == 3) throw new IOException("Unable to skip within the inputStream.");
-      } else {
-        zeroCount = 0;
-        remain -= skipped;
-      }
-    }
+    if (nToSkip <= 0) return;
+    // Uses OpenJDK's robust implementation (falls back to read() if skip() returns 0)
+    inputStream.skipNBytes(nToSkip);
   }
 
   /**

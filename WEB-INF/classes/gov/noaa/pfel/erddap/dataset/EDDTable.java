@@ -6962,18 +6962,16 @@ public abstract class EDDTable extends EDD {
             + "</a>\n"
             + "      (e.g., <kbd>2002-08-03T12:30:00Z</kbd>, but some time variables in some datasets include\n"
             + "      milliseconds, e.g., <kbd>2002-08-03T12:30:00.123Z</kbd>).\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>ERDDAP has a utility to\n"
-                    + "        <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "        a Numeric Time to/from a String Time</a>.\n"
-                    + "      <br>See also:\n"
-                    + "        <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "        ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "      <br>ERDDAP has a utility to\n"
+            + "        <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "        a Numeric Time to/from a String Time</a>.\n"
+            + "      <br>See also:\n"
+            + "        <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "        ERDDAP Deals with Time</a>.\n"
             + "    <li>tabledap extends the OPeNDAP standard to allow you to specify time values in the\n"
             + "      ISO 8601 date/time format (<kbd><i>YYYY-MM-DD</i>T<i>hh:mm:ss.SSSZ</i></kbd>, where Z is 'Z' or a &plusmn;hh\n"
             + "      or &plusmn;hh:mm offset from the Zulu/GMT time zone. If you omit Z and the offset, the\n"
@@ -7005,18 +7003,16 @@ public abstract class EDDTable extends EDD {
             + "      And this is consistent with some other places in ERDDAP that try to repair\n"
             + "      invalid input when the intention is clear, instead of just returning an error\n"
             + "      message.)\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>ERDDAP has a utility to\n"
-                    + "        <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html\">Convert\n"
-                    + "        a Numeric Time to/from a String Time</a>.\n"
-                    + "      <br>See also:\n"
-                    + "        <a rel=\"help\" href=\""
-                    + tErddapUrl
-                    + "/convert/time.html#erddap\">How\n"
-                    + "        ERDDAP Deals with Time</a>.\n"
-                : "")
+            + "      <br>ERDDAP has a utility to\n"
+            + "        <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/time.html\">Convert\n"
+            + "        a Numeric Time to/from a String Time</a>.\n"
+            + "      <br>See also:\n"
+            + "        <a rel=\"help\" href=\""
+            + tErddapUrl
+            + "/convert/time.html#erddap\">How\n"
+            + "        ERDDAP Deals with Time</a>.\n"
             + "    <li><a class=\"selfLink\" id=\"now\" href=\"#now\" rel=\"bookmark\">tabledap</a>\n"
             + "      extends the OPeNDAP standard to allow you to specify constraints for\n"
             + "      time and timestamp variables relative to <kbd>now</kbd>. The constraint can be simply,\n"
@@ -7350,12 +7346,10 @@ public abstract class EDDTable extends EDD {
             + "      <br>On this ERDDAP, the default for most/all datasets is "
             + EDStatic.config.units_standard
             + ".\n"
-            + (EDStatic.config.convertersActive
-                ? "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\""
-                    + tErddapUrl
-                    + "/convert/units.html\"\n"
-                    + "      >units converter</a>.\n"
-                : "")
+            + "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\""
+            + tErddapUrl
+            + "/convert/units.html\"\n"
+            + "      >units converter</a>.\n"
             + "      <br>&nbsp;\n"
             + "    </ul>\n"
             +
@@ -12854,16 +12848,13 @@ public abstract class EDDTable extends EDD {
         tAccessibleViaSubset = EDStatic.messages.get(Message.SUBSET_NOT_SET_UP, 0);
 
       if ((className.equals("EDDTableFromDapSequence") || className.equals("EDDTableFromErddap"))
-          && EDStatic.config.quickRestart
           && EDStatic.initialLoadDatasets()
           && File2.isFile(quickRestartFullFileName())) {
 
         // don't delete subset and distinct files  (to reuse them)
         if (verbose) String2.log("  quickRestart: reusing subset and distinct files");
 
-      } else if ((this instanceof EDDTableFromFiles)
-          && EDStatic.config.quickRestart
-          && EDStatic.initialLoadDatasets()) {
+      } else if ((this instanceof EDDTableFromFiles) && EDStatic.initialLoadDatasets()) {
 
         // 2022-07-26 don't delete subset and distinct files  (to reuse them)
         // !! It would be better if this ensured that subset.nc has same variables as
@@ -13166,21 +13157,12 @@ public abstract class EDDTable extends EDD {
   @Override
   public String accessibleViaWMS() {
     if (accessibleViaWMS == null)
-      if (!EDStatic.config.wmsActive)
-        accessibleViaWMS =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
-                    "WMS", // language=0 here because only 1 value of accessibleVia...
-                    MessageFormat.format(
-                        EDStatic.messages.get(Message.NO_XXX_NOT_ACTIVE, 0), "WMS")));
-      else
-        accessibleViaWMS =
-            String2.canonical(
-                MessageFormat.format(
-                    EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
-                    "WMS",
-                    EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
+      accessibleViaWMS =
+          String2.canonical(
+              MessageFormat.format(
+                  EDStatic.messages.get(Message.NO_XXX_BECAUSE, 0),
+                  "WMS",
+                  EDStatic.messages.get(Message.NO_XXX_ITS_TABULAR, 0)));
     return accessibleViaWMS;
   }
 

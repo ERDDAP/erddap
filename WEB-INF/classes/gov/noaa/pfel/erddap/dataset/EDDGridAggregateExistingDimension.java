@@ -793,8 +793,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     if (sa.length == 0) throw new RuntimeException("ERROR: No matching URLs were found.");
 
     if (sa.length == 1)
-      return EDDGridFromDap.generateDatasetsXml(
-          sa[0], null, null, null, tReloadEveryNMinutes, null);
+      return EDDGridFromDap.generateDatasetsXml(sa[0], null, tReloadEveryNMinutes, null);
 
     // multiple URLs, so aggregate them
     // outer EDDGridAggregateExistingDimension
@@ -805,8 +804,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             + "\n");
 
     // first child -- fully defined
-    sb.append(
-        EDDGridFromDap.generateDatasetsXml(sa[0], null, null, null, tReloadEveryNMinutes, null));
+    sb.append(EDDGridFromDap.generateDatasetsXml(sa[0], null, tReloadEveryNMinutes, null));
 
     // other children
     // for (int i = 1; i < sa.length; i++)

@@ -5,67 +5,29 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.ByteArray;
-import com.cohort.array.DoubleArray;
-import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
-import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
-import com.cohort.array.UIntArray;
-import com.cohort.array.UShortArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
-import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 import com.cohort.util.XML;
-import gov.noaa.pfel.coastwatch.util.SSR;
-import java.io.ByteArrayOutputStream;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.EnumSet;
 import java.util.List;
-import opendap.dap.Attribute;
-import opendap.dap.AttributeTable;
-import opendap.dap.BaseType;
-import opendap.dap.BaseTypePrimitiveVector;
-import opendap.dap.BooleanPrimitiveVector;
-import opendap.dap.BytePrimitiveVector;
-import opendap.dap.DAS;
-import opendap.dap.DArray;
-import opendap.dap.DArrayDimension;
-import opendap.dap.DByte;
-import opendap.dap.DConnect2;
-import opendap.dap.DDS;
-import opendap.dap.DFloat32;
-import opendap.dap.DFloat64;
-import opendap.dap.DGrid;
-import opendap.dap.DInt16;
-import opendap.dap.DInt32;
-import opendap.dap.DString;
-import opendap.dap.DUInt16;
-import opendap.dap.DUInt32;
-import opendap.dap.DVector;
-import opendap.dap.DataDDS;
-import opendap.dap.Float32PrimitiveVector;
-import opendap.dap.Float64PrimitiveVector;
-import opendap.dap.Int16PrimitiveVector;
-import opendap.dap.Int32PrimitiveVector;
-import opendap.dap.PrimitiveVector;
-import opendap.dap.UInt16PrimitiveVector;
-import opendap.dap.UInt32PrimitiveVector;
+import thredds.client.catalog.ServiceType;
 import ucar.ma2.Array;
-import ucar.ma2.ArrayObject;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -103,273 +65,6 @@ public class OpendapHelper {
   public static final int DEFAULT_TIMEOUT = 120000; // 2 minutes in millis
 
   /**
-   * This converts a das to a string.
-   *
-   * @param das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @return the string form of the das
-   */
-  public static String getDasString(DAS das) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    das.print(baos);
-    return baos.toString(StandardCharsets.UTF_8);
-  }
-
-  /**
-   * This converts a dds to a string.
-   *
-   * @param dds from dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @return the string form of the dds
-   */
-  public static String getDdsString(DDS dds) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    dds.print(baos);
-    return baos.toString(StandardCharsets.UTF_8);
-  }
-
-  /**
-   * This sets attributes for a variable from the das. See the more commonly used
-   * getOpendapAttributes.
-   *
-   * @param das the das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param variableName the name of the desired variable (use "GLOBAL" for global attributes).
-   *     Composite names, e.g., MOC1.temperature, are allowed.
-   * @return the desired attributeTable (or null if not found)
-   */
-  public static AttributeTable getAttributeTable(DAS das, String variableName) {
-    if (variableName.equals("GLOBAL")) {
-      // find the GLOBAL attributes
-      // this assumes that GLOBAL is in the name (I've see GLOBAL and NC_GLOBAL)
-      java.util.Enumeration<String> names = das.getNames();
-      while (names.hasMoreElements()) {
-        String s = names.nextElement();
-        if (s.contains("GLOBAL")) {
-          return das.getAttributeTableN(s);
-        }
-      }
-      return null;
-    }
-
-    AttributeTable at = das.getAttributeTableN(variableName);
-    if (at != null) return at;
-
-    // is it in a parent attribute table?   (MOC1.temperature may be in MOC1's attributeTable)
-    String sa[] = String2.split(variableName, '.');
-    if (sa.length == 1) return null;
-    for (int i = 0; i < sa.length; i++) {
-      if (i == 0) {
-        at = das.getAttributeTableN(sa[i]);
-      } else {
-        Attribute a = at.getAttribute(sa[i]);
-        if (a == null) {
-          // String2.log("getAttributeTable: attribute #" + i + "=" + sa[i] + " is null.");
-          return null;
-        }
-        if (a.isContainer()) {
-          // String2.log("getAttributeTable: attribute #" + i + "=" + sa[i] +
-          //    " type=" + a.getType() + " is not CONTAINER.");
-          return null;
-        }
-        at = a.getContainerN();
-      }
-      // String2.log("getAttributeTable: attTable #" + i + "=" + sa[i] + " is " + (at == null?
-      // "null." : "not null."));
-      if (at == null) return null;
-    }
-    return at;
-  }
-
-  /**
-   * This sets attributes for a variable from the das. See javadocs for the other
-   * getOpendapAttributes().
-   *
-   * @param das the das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param variableName the name of the desired variable (use "GLOBAL" for global attributes)
-   * @param attributes the Attributes to which attributes will be added
-   * @throws Exception if trouble. No attributeTable for variableName is not an error; it just
-   *     doesn't change 'attributes'.
-   */
-  public static void getAttributes(DAS das, String variableName, Attributes attributes) {
-
-    // get the attributeTable
-    AttributeTable attributeTable = getAttributeTable(das, variableName);
-    if (attributeTable == null) {
-      if (verbose) String2.log("  No attributeTable for " + variableName + ".");
-      return;
-    }
-    getAttributes(attributeTable, attributes);
-    if (verbose)
-      String2.log(
-          "  attributeTable for " + variableName + " has " + attributes.size() + " attribute(s).");
-  }
-
-  /**
-   * This sets attributes from the information in the attributeTable.
-   *
-   * <p>Currently this converts url, UNKNOWN, and unknown attributes to Strings.
-   *
-   * @param attributeTable It isn't an error if this is null; but nothing is done.
-   * @param attributes the Attributes to which attributes will be added
-   * @throws Exception if trouble.
-   */
-  public static void getAttributes(AttributeTable attributeTable, Attributes attributes) {
-
-    if (attributeTable == null) return;
-
-    // get the attributes
-    java.util.Enumeration<String> names = attributeTable.getNames();
-    while (names.hasMoreElements()) {
-      String name = names.nextElement();
-      Attribute attribute = attributeTable.getAttribute(name);
-      if (attribute.isContainer()) {
-        // process an attribute that isContainer by flattening it (name_subname=...)
-        // http://dm1.caricoos.org/thredds/dodsC/content/wrf_archive/wrfout_d01_2009-09-25_12_00_00.nc.das
-        // this works recursively, so should handle containers of containers of ...
-        Attributes tAttributes = new Attributes();
-        getAttributes(attribute.getContainerN(), tAttributes);
-        String tNames[] = tAttributes.getNames();
-        String startName = name.trim() + "_";
-        for (String tName : tNames)
-          attributes.add(startName + tName.trim(), tAttributes.get(tName));
-
-      } else {
-        // process a simple attribute
-        List<String> sar = new ArrayList<>();
-        Iterator<String> elems = attribute.getValuesIterator();
-        while (elems.hasNext()) {
-          sar.add(elems.next());
-        }
-
-        // remove enclosing quotes from strings
-        for (int i = 0; i < sar.size(); i++) {
-          int sariLength = sar.get(i).length();
-          if (sariLength >= 2
-              && sar.get(i).charAt(0) == '"'
-              && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
-        }
-        StringArray sa = new StringArray(sar.toArray());
-
-        // store values in the appropriate type of PrimitiveArray
-        PrimitiveArray pa = null;
-        int type = attribute.getType();
-        if (type == Attribute.FLOAT32) pa = new FloatArray();
-        else if (type == Attribute.FLOAT64) pa = new DoubleArray();
-        else if (type == Attribute.INT32) pa = new IntArray();
-        else if (type == Attribute.UINT32) pa = new UIntArray();
-        else if (type == Attribute.INT16) pa = new ShortArray();
-        else if (type == Attribute.UINT16) pa = new UShortArray();
-        else if (type == Attribute.BYTE) pa = new ByteArray();
-        // ignore STRING, URL, UNKNOWN, etc. (keep as StringArray)
-
-        // move the sa data into pa
-        if (pa == null) {
-          // pa will be the StringArray
-          pa = sa;
-          // trim first part of first string and end of last string
-          if (sa.size() == 1) {
-            sa.set(0, sa.get(0).trim());
-          } else if (sa.size() > 1) {
-            sa.set(0, String2.trimStart(sa.get(0)));
-            sa.set(sa.size() - 1, String2.trimEnd(sa.get(sa.size() - 1)));
-          }
-
-        } else {
-          // convert to other data type
-          pa.append(sa);
-        }
-
-        // store name,pa in attributes
-        attributes.set(name.trim(), pa);
-      }
-    }
-    attributes.fromNccsvStrings();
-
-    // String2.log("\n>> OpendapHelper.getAttributes pre\n" + attributes.toString());
-    // 2020-09-01 in nc3 files, if variables has _Unsigned=true, convert some signed attributes to
-    // unsigned
-    // String2.log(">> getVariableAttributes var=" + variable.getFullName() + " _Unsigned=" +
-    // attributes.getString("_Unsigned"));
-    // leave attribute in so caller can tell if _Unsigned.
-    if ("true".equals(attributes.getString("_Unsigned"))) {
-      attributes.convertSomeSignedToUnsigned();
-      // String2.log("\n>> OpendapHelper.getAttributes post\n" + attributes.toString());
-    }
-  }
-
-  /**
-   * This gets the values for one of the attributes for one of the variables from the DAS. But for
-   * more than 2 calls to this, it is more efficient to use getAttributesFromOpendap. This won't
-   * throw an exception.
-   *
-   * @param das the das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param variableName e.g. "lat". Use "GLOBAL" for global attributes (even though they are called
-   *     different things in different files).
-   * @param attributeName e.g., "actual_range"
-   * @return the values associated with the attribute (array.length = 0 if not found) (e.g.,
-   *     {"even"} or {"0.", "360."}).
-   */
-  public static String[] getAttributeValues(DAS das, String variableName, String attributeName) {
-    try {
-      AttributeTable at = getAttributeTable(das, variableName);
-      if (at == null) {
-        String2.log(
-            "NOTE: OpendapHelper.getAttributeValues:\n"
-                + "  attributeTable not found for var="
-                + variableName);
-        return new String[] {};
-      }
-
-      Attribute attribute = at.getAttribute(attributeName);
-      if (attribute == null) {
-        String2.log(
-            "NOTE: OpendapHelper.getAttributeValues:\n"
-                + "  attribute not found for var="
-                + variableName
-                + " attributeName="
-                + attributeName);
-        return new String[] {};
-      }
-
-      List<String> sar = new ArrayList<>();
-      Iterator<String> elems = attribute.getValuesIterator();
-      while (elems.hasNext()) {
-        sar.add(elems.next());
-      }
-      // remove enclosing quotes from strings
-      for (int i = 0; i < sar.size(); i++) {
-        int sariLength = sar.get(i).length();
-        if (sariLength >= 2
-            && sar.get(i).charAt(0) == '"'
-            && sar.get(i).charAt(sariLength - 1) == '"') sar.set(i, String2.fromJson(sar.get(i)));
-      }
-      return String2.toStringArray(sar.toArray());
-    } catch (Exception e) {
-      String2.log(
-          "WARNING: OpendapHelper.getAttributeValues(\nvarName="
-              + variableName
-              + " attributeName="
-              + attributeName
-              + "):"
-              + MustBe.throwableToString(e));
-      return new String[] {};
-    }
-  }
-
-  /**
-   * This gets the first value for the one of the attributes for one of the variables from the DAS.
-   *
-   * @param das the das from dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT)
-   * @param variableName e.g. "time". Use "GLOBAL" for global attributes (even though they are
-   *     called different things in different files).
-   * @param attributeName e.g., "units"
-   * @return the first value value associated with the attribute, represented as a String (or null
-   *     if not found) e.g., "seconds since 1970-01-01"
-   */
-  public static String getAttributeValue(DAS das, String variableName, String attributeName) {
-    String[] values = getAttributeValues(das, variableName, attributeName);
-    return values.length == 0 ? null : values[0];
-  }
-
-  /**
    * Given start, stride, stop, this returns the actual number of points that will be found.
    *
    * @param start
@@ -383,186 +78,6 @@ public class OpendapHelper {
     if (stride < 1) throw new RuntimeException("stride=" + stride + " must be greater than 0");
 
     return 1 + (stop - start) / stride;
-  }
-
-  /**
-   * Get the PrimitiveVector from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For a portion of a DGrid, use, for example,
-   *     "?ssta.ssta[23:1:23][642:1:742][339:1:439]". This should be already percent encoded as
-   *     needed.
-   * @return a PrimitiveVector with the data from the DArray returned by the query
-   * @throws Exception if trouble
-   */
-  public static PrimitiveVector getPrimitiveVector(DConnect2 dConnect, String query)
-      throws Exception {
-    long time = System.currentTimeMillis();
-    DataDDS dataDds = dConnect.getData(query, null);
-    BaseType bt =
-        (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
-    // bt.printVal(System.out, " ");
-    DArray da = (DArray) bt;
-    if (verbose)
-      String2.log(
-          "    OpendapHelper.getPrimitiveVector("
-              + query
-              + ") done. TIME="
-              + (System.currentTimeMillis() - time)
-              + "ms");
-    return da.getPrimitiveVector();
-  }
-
-  /**
-   * Get the PrimitiveArrays from the first var from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For an entire dimension of a grid, use, for example, "?ssta.lat".
-   *     For a portion of a DGrid, use, for example, "?ssta[23:1:23][642:1:742][339:1:439]", which
-   *     returns 4 PrimitiveArrays: #0=main data, #1=dimension0, #2=dimension1, #3=dimension2. This
-   *     should already percent encoded as needed.
-   * @return an array of PrimitiveArrays with the requested data from the first var in the query
-   * @throws Exception if trouble
-   */
-  public static PrimitiveArray[] getPrimitiveArrays(DConnect2 dConnect, String query)
-      throws Exception {
-    try {
-      long time = System.currentTimeMillis();
-      StringBuilder sb = new StringBuilder(query);
-      String2.replaceAll(sb, "[", "%5B");
-      String2.replaceAll(sb, "]", "%5D");
-      query = sb.toString();
-      if (verbose)
-        String2.log(
-            "    OpendapHelper.getPrimitiveArrays " + query
-            // + "\n" + MustBe.stackTrace()
-            );
-      DataDDS dataDds = dConnect.getData(query, null);
-      if (verbose)
-        String2.log(
-            "    OpendapHelper.getPrimitiveArrays done. TIME="
-                + (System.currentTimeMillis() - time)
-                + "ms");
-      BaseType bt =
-          (BaseType) dataDds.getVariables().nextElement(); // first element is always main array
-      return getPrimitiveArrays(bt);
-    } catch (Exception e) {
-      throw new RuntimeException(
-          String2.ERROR + " in getPrimitiveArrays for query=" + query + "\n" + e.getMessage());
-    }
-  }
-
-  /**
-   * Get the PrimitiveArrays from a BaseType.
-   *
-   * @param baseType
-   * @return an array of PrimitiveArrays with the data from the baseType
-   * @throws Exception if trouble
-   */
-  public static PrimitiveArray[] getPrimitiveArrays(BaseType baseType) throws Exception {
-    // String2.log(">>    baseType=" + baseType.getTypeName());
-    if (baseType instanceof DGrid dgrid) {
-      ArrayList<DArray> al = new ArrayList<>();
-      Enumeration<BaseType> e = dgrid.getVariables();
-      while (e.hasMoreElements()) al.add((DArray) e.nextElement());
-      PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
-      for (int i = 0; i < al.size(); i++)
-        paAr[i] = getPrimitiveArray(((DArray) al.get(i)).getPrimitiveVector());
-      return paAr;
-    } else if (baseType instanceof DArray da) {
-      return new PrimitiveArray[] {getPrimitiveArray(da.getPrimitiveVector())};
-    } else if (baseType instanceof DVector) {
-      return new PrimitiveArray[] {getPrimitiveArray(baseType.newPrimitiveVector())};
-    } else if (baseType instanceof DFloat64 dfloat64) {
-      return new PrimitiveArray[] {new DoubleArray(new double[] {dfloat64.getValue()})};
-    } else if (baseType instanceof DFloat32 dfloat32) {
-      return new PrimitiveArray[] {new FloatArray(new float[] {dfloat32.getValue()})};
-    } else if (baseType instanceof DUInt32 duint32) {
-      return new PrimitiveArray[] {new UIntArray(new int[] {duint32.getValue()})};
-    } else if (baseType instanceof DInt32 dint32) {
-      return new PrimitiveArray[] {new IntArray(new int[] {dint32.getValue()})};
-    } else if (baseType instanceof DUInt16 duint16) {
-      return new PrimitiveArray[] {new UShortArray(new short[] {duint16.getValue()})};
-    } else if (baseType instanceof DInt16 dint16) {
-      return new PrimitiveArray[] {new ShortArray(new short[] {dint16.getValue()})};
-    } else if (baseType instanceof DByte dbyte) {
-      return new PrimitiveArray[] {new ByteArray(new byte[] {dbyte.getValue()})};
-    } else if (baseType instanceof DString dstring) {
-      // String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
-      return new PrimitiveArray[] {new StringArray(new String[] {dstring.getValue()})};
-    } else {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      baseType.printVal(baos, " ");
-      throw new SimpleException(String2.ERROR + ": Unrecogized baseType:" + baos);
-    }
-  }
-
-  /**
-   * Get a PrimitiveArray result from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For a portion of a DGrid, use, for example,
-   *     "?ssta.ssta[23:1:23][642:1:742][339:1:439]". This should be already percentEncoded as
-   *     needed.
-   * @return a PrimitiveArray with the data from the DArray returned by the query
-   * @throws Exception if trouble
-   */
-  public static PrimitiveArray getPrimitiveArray(DConnect2 dConnect, String query)
-      throws Exception {
-    return getPrimitiveArray(getPrimitiveVector(dConnect, query));
-  }
-
-  /**
-   * Get a PrimitiveArray result from an opendap query.
-   *
-   * @param dConnect
-   * @param query For an entire variable that is a DArray, use, for example, "?lat", or for a
-   *     portion: "?lat[0:1:5]". For a portion of a DGrid, use, for example,
-   *     "?ssta.ssta[23:1:23][642:1:742][339:1:439]". This should be already percent encoded as
-   *     needed.
-   * @return a double[] with the data from the DArray returned by the query
-   * @throws Exception if trouble
-   */
-  public static double[] getDoubleArray(DConnect2 dConnect, String query) throws Exception {
-    return getDoubleArray(getPrimitiveVector(dConnect, query));
-  }
-
-  /**
-   * This converts a PrimitiveVector to a PrimitiveArray.
-   *
-   * @param pv
-   * @return the corresponding PrimitiveArray
-   * @throws Exception if trouble (e.g., pv is null)
-   */
-  public static PrimitiveArray getPrimitiveArray(PrimitiveVector pv) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-
-    // new method
-    Object intSto = pv.getInternalStorage();
-    // String2.log("pv internalStorage=" + intSto);
-    if (intSto instanceof BaseType[] bta) {
-      int n = bta.length;
-      if (n > 0 && bta[0] instanceof DString) {
-        // String2.log("  pv internalStorage is BaseType[] of DString.");
-        String sa[] = new String[n];
-        for (int i = 0; i < n; i++) sa[i] = ((DString) bta[i]).getValue();
-        intSto = sa;
-      }
-    }
-    PrimitiveArray pa = PrimitiveArray.factory(intSto);
-    if (pv.getLength() > pa.size()) {
-      String2.log(
-          "\n!!!OpendapHelper.getPrimitiveArray pvLength="
-              + pv.getLength()
-              + " > paSize="
-              + pa.size()
-              + "\n");
-      pa.removeRange(pv.getLength(), pa.size());
-    }
-    return pa;
   }
 
   /* This variant fo getAtomicType assumes strictDapMode=true. */
@@ -761,123 +276,6 @@ public class OpendapHelper {
   }
 
   /**
-   * This converts a numeric primitiveVector to double[].
-   *
-   * @param pv
-   * @return the corresponding double[]
-   * @throws Exception if trouble
-   */
-  public static double[] getDoubleArray(PrimitiveVector pv) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    int n = pv.getLength();
-    double da[] = new double[n];
-    if (pv instanceof Float32PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = Math2.niceDouble(tpv.getValue(i), 7);
-    } else if (pv instanceof Float64PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof BytePrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv
-        instanceof
-        UInt16PrimitiveVector tpv) { // uint16 is instanceof int16! so must test uint16 first
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof Int16PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv
-        instanceof
-        UInt32PrimitiveVector tpv) { // uint32 is instanceof int32! so must test uint32 first
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else if (pv instanceof Int32PrimitiveVector tpv) {
-      for (int i = 0; i < n; i++) da[i] = tpv.getValue(i);
-    } else {
-      throw new Exception(String2.ERROR + ": The PrimitiveVector is not numeric (" + pv + ").");
-    }
-    return da;
-  }
-
-  /**
-   * This returns the PrimitiveArray elementPAType of a BaseType.
-   *
-   * @param pv
-   * @return the PrimitiveArray elementPAType of this BaseType. This treats all Bytes as signed (it
-   *     doesn't look at _Unsigned attribute).
-   * @throws Exception if trouble
-   */
-  public static PAType getElementPAType(BaseType bt) throws Exception {
-    return getElementPAType(bt.newPrimitiveVector()); // a new PV of suitable type for the BaseType
-  }
-
-  /**
-   * This returns the PrimitiveArray elementPAType of a PrimitiveVector.
-   *
-   * @param pv
-   * @return the PrimitiveArray elementPAType of this BaseType. This treats all Bytes as signed (it
-   *     doesn't look at _Unsigned attribute).
-   * @throws Exception if trouble
-   */
-  public static PAType getElementPAType(PrimitiveVector pv) throws Exception {
-    Test.ensureNotNull(pv, "pv is null");
-    // String2.pressEnterToContinue(">> OpendapHelper.getElementPAType(" + pv.toString());
-    if (pv instanceof Float32PrimitiveVector) return PAType.FLOAT;
-    if (pv instanceof Float64PrimitiveVector) return PAType.DOUBLE;
-    if (pv instanceof BytePrimitiveVector)
-      return PAType
-          .BYTE; // technically should be UByte, but ERDDAP and TDS traditionally treat DAP bytes as
-    // signed
-    if (pv instanceof UInt16PrimitiveVector)
-      return PAType.USHORT; // UInt16 is instanceof Int16! so must test uint16 first
-    if (pv instanceof UInt32PrimitiveVector)
-      return PAType.UINT; // UInt32 is instanceof Int32! so must test uint32 first
-    if (pv instanceof Int16PrimitiveVector) return PAType.SHORT;
-    if (pv instanceof Int32PrimitiveVector) return PAType.INT;
-    if (pv instanceof BaseTypePrimitiveVector) return PAType.STRING; // ???
-    if (pv instanceof BooleanPrimitiveVector) return PAType.BOOLEAN;
-    throw new Exception(String2.ERROR + ": Unknown PrimitiveVector (" + pv + ").");
-  }
-
-  /**
-   * This tests if baseType is an instanceof a scalar (DBoolean, DByte, DFloat32, DFloat64, DInt16,
-   * DInt32, DString) and multidimensional (DGrid, DArray) variable.
-   *
-   * @param baseType
-   * @return true or false
-   */
-  public static boolean instanceofScalarOrMultiDimVar(BaseType baseType) {
-    return baseType instanceof DGrid
-        || baseType instanceof DArray
-        || baseType instanceof DString
-        || baseType instanceof DByte
-        || baseType instanceof DInt16
-        || baseType instanceof DUInt16
-        || baseType instanceof DInt32
-        || baseType instanceof DUInt32
-        || baseType instanceof DFloat32
-        || baseType instanceof DFloat64;
-  }
-
-  /**
-   * This finds all scalar (DBoolean, DByte, DFloat32, DFloat64, DInt16, DUInt16, DInt32, DUInt32,
-   * DString) and multidimensional (DGrid, DArray) variables. This won't find DVectors, DLists,
-   * DStructures or DSequences.
-   *
-   * <p>Currently, this won't find variables in a sequence.
-   *
-   * @param dds
-   * @return String varNames[]
-   * @throws Exception if trouble
-   */
-  public static String[] findAllScalarOrMultiDimVars(DDS dds) throws Exception {
-
-    Enumeration<BaseType> en = dds.getVariables();
-    StringArray varNames = new StringArray(); // vars with same dimNames
-    while (en.hasMoreElements()) {
-      BaseType baseType = en.nextElement();
-      if (instanceofScalarOrMultiDimVar(baseType)) varNames.add(baseType.getClearName());
-    }
-    return varNames.toArray();
-  }
-
-  /**
    * Get all of the data from allScalarOrMultiDimVars in an Opendap dataset and save in .nc file.
    *
    * @param dapUrl the base DAP URL
@@ -894,34 +292,29 @@ public class OpendapHelper {
     // delete any existing file
     File2.delete(fullFileName);
 
-    // get dConnect.  If this fails, no clean up needed.
-    try (DConnect2 dConnect = new DConnect2(dapUrl, true)) {
-      DAS das;
-      DDS dds;
-      try {
-        das = dConnect.getDAS();
-      } catch (Throwable t) {
-        throw new SimpleException(
-            "Error while getting DAS from " + dapUrl + ".das .\n" + t.getMessage(), t);
-      }
-      try {
-        if (debug)
-          String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(dapUrl + ".dds")));
-        dds = dConnect.getDDS();
-      } catch (Throwable t) {
-        throw new SimpleException(
-            "Error while getting DDS from " + dapUrl + ".dds .\n" + t.getMessage(), t);
+    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, dapUrl);
+    try (NetcdfDataset dataset =
+        NetcdfDatasets.openDataset(
+            durl, EnumSet.noneOf(NetcdfDataset.Enhance.class), -1, null, null)) {
+
+      // find all variables excluding structures/sequences
+      List<Variable> srcVars = new ArrayList<>();
+      for (Variable v : dataset.getVariables()) {
+        if (v.isMemberOfStructure()
+            || v.getDataType() == DataType.STRUCTURE
+            || v.getDataType() == DataType.SEQUENCE) {
+          continue;
+        }
+        srcVars.add(v);
       }
 
-      // find all vars
-      String varNames[] = findAllScalarOrMultiDimVars(dds);
-      int nVars = varNames.length;
+      int nVars = srcVars.size();
       if (nVars == 0) throw new RuntimeException(beginError + "No variables found!");
 
       // If procedure fails half way through, there won't be a half-finished file.
       int randomInt = Math2.random(Integer.MAX_VALUE);
 
-      // *** make ncOut.    If createNew fails, no clean up needed.
+      // *** make ncOut. If createNew fails, no clean up needed.
       File2.makeDirectory(File2.getDirectory(fullFileName));
       boolean nc3Mode = true;
       NetcdfFormatWriter ncWriter = null;
@@ -935,139 +328,62 @@ public class OpendapHelper {
         StringArray dimNames = new StringArray();
         IntArray dimSizes = new IntArray();
         ArrayList<Dimension> dims = new ArrayList<>(); // ucar.nc2.Dimension
-        int[][] varShape = new int[nVars][];
         boolean[] isString = new boolean[nVars]; // all false
         Variable.Builder<?>[] newVars = new Variable.Builder[nVars];
+
         for (int v = 0; v < nVars; v++) {
-
-          BaseType baseType = dds.getVariable(varNames[v]);
+          Variable srcVar = srcVars.get(v);
+          String varName = srcVar.getShortName();
           if (debug)
-            String2.log(
-                "\ncreate varName=" + varNames[v] + " has typeName=" + baseType.getTypeName());
+            String2.log("\ncreate varName=" + varName + " has dataType=" + srcVar.getDataType());
+
           Attributes varAtts = new Attributes();
-          getAttributes(das, varNames[v], varAtts);
+          NcHelper.getVariableAttributes(srcVar, varAtts);
           if (debug) String2.log(varAtts.toString());
-          PAType tPAType = null;
-          if (baseType instanceof DGrid dGrid) {
-            int nDims = dGrid.elementCount(true) - 1;
-            ArrayList<Dimension> tDims = new ArrayList<>();
-            varShape[v] = new int[nDims];
-            for (int d = 0; d < nDims; d++) {
-              BaseType dimBaseType = dGrid.getVar(d + 1);
-              String dimName = dimBaseType.getClearName();
-              if (debug)
-                String2.log("  dimName=" + dimName + " has typeName=" + dimBaseType.getTypeName());
-              DArrayDimension dim = ((DArray) dimBaseType).getFirstDimension();
-              int dimSize = dim.getSize();
-              int which = dimNames.indexOf(dimName);
-              if (which < 0) {
-                // create it and store it
-                which = dimNames.size();
-                dimNames.add(dimName);
-                dimSizes.add(dimSize);
-                Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
-                dims.add(tDim);
-              }
-              tDims.add(dims.get(which));
-              varShape[v][d] = dimSize;
+
+          PAType tPAType = NcHelper.getElementPAType(srcVar);
+          boolean isStr = srcVar.getDataType() == DataType.STRING || tPAType == PAType.STRING;
+
+          List<Dimension> srcDims = srcVar.getDimensions();
+          ArrayList<Dimension> tDims = new ArrayList<>();
+
+          if (isStr && srcDims.isEmpty()) {
+            // String scalar variable
+            String dimName = "string1";
+            int dimSize = 1;
+            int which = dimNames.indexOf(dimName);
+            if (which < 0) {
+              which = dimNames.size();
+              dimNames.add(dimName);
+              dimSizes.add(dimSize);
+              Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
+              dims.add(tDim);
             }
-
-            PrimitiveVector pv = ((DArray) dGrid.getVar(0)).getPrimitiveVector(); // has no data
-            tPAType = getElementPAType(pv);
-            if (debug) String2.log("  DGrid pv=" + pv.toString() + " tPAType=" + tPAType);
-            if (tPAType == PAType.STRING) {
-              // make String variable
-              isString[v] = true;
-              int strlen = varAtts.getInt("DODS_strlen");
-              if (strlen <= 0 || strlen == Integer.MAX_VALUE) // netcdf-java doesn't like 0
-              strlen = 255;
-              newVars[v] = NcHelper.addNc3StringVariable(rootGroup, varNames[v], tDims, strlen);
-            } else {
-
-              // make numeric variable
-              newVars[v] =
-                  NcHelper.addVariable(
-                      rootGroup, varNames[v], NcHelper.getNc3DataType(tPAType), tDims);
-            }
-
-          } else if (baseType instanceof DArray dArray) {
-            // dArray is usually 1 dim, but may be multidimensional
-            // 2021-01-08 I think this is now incorrect with netcdf-java 5.4.1
-            // I think there is no need to add extra dim here since NcHelper.addNc3StringVariable
-            // handles that.
-            int nDims = dArray.numDimensions();
-            ArrayList<Dimension> tDims = new ArrayList<>();
-            varShape[v] = new int[nDims];
-            for (int d = 0; d < nDims; d++) { // 0..
-              DArrayDimension dim = dArray.getDimension(d);
-              String dimName = dim.getClearName();
-              int dimSize = dim.getSize();
-              int which = dimNames.indexOf(dimName);
-              if (which < 0) {
-                // create it and store it
-                which = dimNames.size();
-                dimNames.add(dimName);
-                dimSizes.add(dimSize);
-                Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
-                dims.add(tDim);
-              }
-              tDims.add(dims.get(which));
-              varShape[v][d] = dimSize;
-            }
-
-            PrimitiveVector pv = dArray.getPrimitiveVector(); // has no data
-            tPAType = getElementPAType(pv);
-            if (debug) String2.log("  DArray pv=" + pv.toString() + " tPAType=" + tPAType);
-            if (tPAType == PAType.STRING) {
-              // make String variable
-              isString[v] = true;
-              int strlen = varAtts.getInt("DODS_strlen");
-              if (strlen <= 0 || strlen == Integer.MAX_VALUE) strlen = 255;
-              newVars[v] = NcHelper.addNc3StringVariable(rootGroup, varNames[v], tDims, strlen);
-            } else {
-              // make numeric variable
-              newVars[v] =
-                  NcHelper.addVariable(
-                      rootGroup, varNames[v], NcHelper.getNc3DataType(tPAType), tDims);
-            }
-
+            tDims.add(dims.get(which));
           } else {
-            // it's a scalar variable
-            PrimitiveVector pv = baseType.newPrimitiveVector(); // has no data
-            tPAType = getElementPAType(pv);
-            if (debug) String2.log("  scalar pv=" + pv.toString() + " tPAType=" + tPAType);
-
-            if (tPAType == PAType.STRING) {
-              // make String scalar variable
-              isString[v] = true;
-              if (debug) String2.log("  isString=true");
-              int strlen = varAtts.getInt("DODS_strlen");
-              if (strlen <= 0 || strlen == Integer.MAX_VALUE) strlen = 255;
-
-              String dimName = "string1";
-              int dimSize = 1;
+            for (Dimension dim : srcDims) {
+              String dimName = dim.getShortName();
+              int dimSize = dim.getLength();
               int which = dimNames.indexOf(dimName);
               if (which < 0) {
-                // create it and store it
                 which = dimNames.size();
                 dimNames.add(dimName);
                 dimSizes.add(dimSize);
                 Dimension tDim = NcHelper.addDimension(rootGroup, dimName, dimSize);
                 dims.add(tDim);
               }
-              ArrayList<Dimension> tDims = new ArrayList<>();
               tDims.add(dims.get(which));
-              varShape[v] = new int[1];
-              varShape[v][0] = dimSize;
-              newVars[v] = NcHelper.addNc3StringVariable(rootGroup, varNames[v], tDims, strlen);
-
-            } else {
-              // make numeric scalar variable
-              varShape[v] = new int[0];
-              newVars[v] =
-                  NcHelper.addVariable(
-                      rootGroup, varNames[v], NcHelper.getNc3DataType(tPAType), new ArrayList<>());
             }
+          }
+
+          if (isStr) {
+            isString[v] = true;
+            int strlen = varAtts.getInt("DODS_strlen");
+            if (strlen <= 0 || strlen == Integer.MAX_VALUE) strlen = 255;
+            newVars[v] = NcHelper.addNc3StringVariable(rootGroup, varName, tDims, strlen);
+          } else {
+            newVars[v] =
+                NcHelper.addVariable(rootGroup, varName, NcHelper.getNc3DataType(tPAType), tDims);
           }
 
           // write data variable attributes in ncOut
@@ -1076,7 +392,7 @@ public class OpendapHelper {
 
         // write global attributes in ncOut
         Attributes gAtts = new Attributes();
-        getAttributes(das, "GLOBAL", gAtts);
+        NcHelper.getGroupAttributes(dataset.getRootGroup(), gAtts);
         NcHelper.setAttributes(nc3Mode, rootGroup, gAtts);
 
         // leave "define" mode in ncOut
@@ -1085,34 +401,20 @@ public class OpendapHelper {
         // read and write the variables
         for (int v = 0; v < nVars; v++) {
           long vTime = System.currentTimeMillis();
-          if (debug) String2.log("write v#" + v + "=" + varNames[v]);
+          Variable srcVar = srcVars.get(v);
+          String varName = srcVar.getShortName();
+          if (debug) String2.log("write v#" + v + "=" + varName);
 
-          // DGrid, DArray, scalar: read it, write it
-          PrimitiveArray pas[] = getPrimitiveArrays(dConnect, "?" + varNames[v]); // + projection);
-          pas[0].trimToSize(); // so underlying array is exact size
-          if (debug)
-            String2.log(
-                "  pas[0].size="
-                    + pas[0].size()
-                    + (pas[0].size() > 0 ? " #0=" + pas[0].getString(0) : ""));
-          Variable newVar =
-              ncWriter.findVariable(
-                  newVars[v].getFullName()); // because newVars are Variable.Builder's
+          Array array = srcVar.read();
+          Variable newVar = ncWriter.findVariable(newVars[v].getFullName());
+
           if (isString[v]) {
-            // String variable
-            int n = pas[0].size();
-            // ArrayString.D1 doesn't work below. Why not?
-            ArrayObject.D1 ta = (ArrayObject.D1) Array.factory(DataType.STRING, new int[] {n});
-            for (int i = 0; i < n; i++) ta.set(i, pas[0].getString(i));
-            ncWriter.writeStringDataToChar(newVar, ta);
+            if (array.getRank() == 0) {
+              array = array.reshape(new int[] {1});
+            }
+            ncWriter.writeStringDataToChar(newVar, array);
           } else {
-            // non-String variable
-            ncWriter.write(
-                newVar,
-                Array.factory(
-                    NcHelper.getNc3DataType(pas[0].elementType()),
-                    varShape[v],
-                    pas[0].toObjectArray()));
+            ncWriter.write(newVar, array);
           }
 
           if (verbose)
@@ -1120,7 +422,7 @@ public class OpendapHelper {
                 "  v#"
                     + v
                     + "="
-                    + varNames[v]
+                    + varName
                     + " finished. time="
                     + Calendar2.elapsedTimeString(System.currentTimeMillis() - vTime));
         }
@@ -1138,7 +440,6 @@ public class OpendapHelper {
               "  OpendapHelper.allDapToNc finished.  TIME="
                   + Calendar2.elapsedTimeString(System.currentTimeMillis() - time)
                   + "\n");
-        // String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
       } catch (Throwable t) {
         String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
