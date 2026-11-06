@@ -34,14 +34,9 @@ import gov.noaa.pfel.erddap.variable.EDVLon;
 import gov.noaa.pfel.erddap.variable.EDVTime;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
-import thredds.client.catalog.ServiceType;
 import ucar.nc2.Variable;
-import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDataset.Enhance;
-import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class represents a table of data from an opendap sequence source.
@@ -392,9 +387,7 @@ public class EDDTableFromDapSequence extends EDDTable {
       }
     } else {
       // Fetch from NetcdfDataset
-      DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, localSourceUrl);
-      try (NetcdfDataset dataset =
-          NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+      try (NetcdfDataset dataset = NcHelper.openDapDataset(localSourceUrl)) {
         sourceGlobalAttributes = new Attributes();
         NcHelper.getGroupAttributes(dataset.getRootGroup(), sourceGlobalAttributes);
 
@@ -779,7 +772,7 @@ public class EDDTableFromDapSequence extends EDDTable {
       // String outerSequenceName, String innerSequenceName, boolean sortColumnsByName)
       throws Throwable {
 
-    tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); // http: to https:
+    tLocalSourceUrl = NcHelper.updateDapUrl(tLocalSourceUrl);
     String2.log(
         "EDDTableFromDapSequence.generateDatasetsXml"
             + "\ntLocalSourceUrl="
@@ -803,9 +796,7 @@ public class EDDTableFromDapSequence extends EDDTable {
     int nOuterVars = 0; // so outerVars are first in dataAddTable
     Attributes gridMappingAtts = null;
 
-    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, tLocalSourceUrl);
-    try (NetcdfDataset dataset =
-        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+    try (NetcdfDataset dataset = NcHelper.openDapDataset(tLocalSourceUrl)) {
 
       // get source global attributes
       NcHelper.getGroupAttributes(dataset.getRootGroup(), dataSourceTable.globalAttributes());

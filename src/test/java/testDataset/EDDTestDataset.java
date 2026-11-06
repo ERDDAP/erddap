@@ -45319,19 +45319,28 @@ public class EDDTestDataset {
       <dataset type="EDDGridFromDap" datasetID="ucar_d4ts_test01" active="true">
           <reloadEveryNMinutes>10080</reloadEveryNMinutes>
           <updateEveryNMillis>10000</updateEveryNMillis>
-          <defaultDataQuery>i32[0:1]</defaultDataQuery>
-          <sourceUrl>dap4:http://test.opendap.org/opendap/hyrax/tutorials/20220812010000-OSISAF-L3C_GHRSST-SSTsubskin-GOES16-ssteqc_goes16_20220812_010000-v02.0-fv01.0.nc</sourceUrl>
+          <defaultDataQuery>t[0:1]</defaultDataQuery>
+          <sourceUrl>dap4:http://remotetest.unidata.ucar.edu/d4ts/testfiles/test_one_vararray.nc</sourceUrl>
           <addAttributes>
               <att name="title">D4TS Test 01 Dataset</att>
+              <att name="summary">D4TS Test 01 Dataset summary.</att>
+              <att name="institution">UCAR</att>
+              <att name="infoUrl">https://remotetest.unidata.ucar.edu/d4ts/</att>
           </addAttributes>
           <axisVariable>
-              <sourceName>d1</sourceName>
-              <destinationName>d1</destinationName>
+              <sourceName>d2</sourceName>
+              <destinationName>d2</destinationName>
+              <addAttributes>
+                  <att name="ioos_category">Unknown</att>
+              </addAttributes>
           </axisVariable>
           <dataVariable>
-              <sourceName>i32</sourceName>
-              <destinationName>i32</destinationName>
+              <sourceName>t</sourceName>
+              <destinationName>t</destinationName>
               <dataType>int</dataType>
+              <addAttributes>
+                  <att name="ioos_category">Unknown</att>
+              </addAttributes>
           </dataVariable>
       </dataset>
       """;

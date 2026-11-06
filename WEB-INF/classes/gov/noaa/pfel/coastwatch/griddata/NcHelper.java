@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import thredds.client.catalog.ServiceType;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayBoolean;
 import ucar.ma2.ArrayByte;
@@ -59,6 +61,9 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 import ucar.nc2.Structure;
 import ucar.nc2.Variable;
+import ucar.nc2.dataset.DatasetUrl;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDataset.Enhance;
 import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.write.Ncdump;
 import ucar.nc2.write.NetcdfFormatWriter;
@@ -854,6 +859,69 @@ public class NcHelper {
         ? NetcdfDatasets.openDataset(fullName)
         : // 's' is the new API
         NetcdfFiles.open(fullName); // 's' is the new API
+  }
+
+  /**
+   * Creates a DatasetUrl configured for either DAP2 (ServiceType.OPENDAP) or DAP4
+   * (ServiceType.DAP4).
+   *
+   * @param url the source URL or location
+   * @return a DatasetUrl with the correct ServiceType and cleaned protocol/fragment
+   */
+  public static DatasetUrl getDapDatasetUrl(String url) throws Exception {
+    if (url.startsWith("dap4:") || url.startsWith("dap4://") || url.endsWith("#dap4")) {
+      String cleanUrl = url;
+      if (cleanUrl.startsWith("dap4://")) {
+        // Strip dap4:// and map to standard http/https transport
+        cleanUrl =
+            (cleanUrl.contains(":443") || cleanUrl.contains("https"))
+                ? "https://" + cleanUrl.substring(7)
+                : "http://" + cleanUrl.substring(7);
+      } else if (cleanUrl.startsWith("dap4:")) {
+        cleanUrl = cleanUrl.substring(5);
+      }
+
+      if (cleanUrl.endsWith("#dap4")) {
+        cleanUrl = cleanUrl.substring(0, cleanUrl.length() - 5);
+      }
+
+      // Appending #dap4 ensures DapProtocol.isDap4URI recognizes the URI while
+      // preserving plaintext HTTP on port 80.
+      String dap4Url = cleanUrl + "#dap4";
+      return DatasetUrl.create(ServiceType.DAP4, dap4Url);
+    } else if (url.startsWith("http://")
+        || url.startsWith("https://")
+        || url.startsWith("dods:")
+        || url.startsWith("dods://")) {
+      return DatasetUrl.create(ServiceType.OPENDAP, url);
+    } else {
+      // Local file paths (e.g. /C:/.../test.nc or relative paths)
+      return DatasetUrl.findDatasetUrl(url);
+    }
+  }
+
+  /**
+   * Opens a remote DAP dataset (supporting both DAP2 and DAP4) with no enhancement.
+   *
+   * @param url the source URL
+   * @return the opened NetcdfDataset
+   * @throws Exception if trouble
+   */
+  public static NetcdfDataset openDapDataset(String url) throws Exception {
+    DatasetUrl durl = getDapDatasetUrl(url);
+    return NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null);
+  }
+
+  /** Helper to run EDStatic.updateUrls while preserving dap4:// or dap4: schemes. */
+  public static String updateDapUrl(String url) {
+    if (url == null) return null;
+    if (url.startsWith("dap4://")) {
+      return "dap4://" + gov.noaa.pfel.erddap.util.EDStatic.updateUrls(url.substring(7));
+    } else if (url.startsWith("dap4:")) {
+      return "dap4:" + gov.noaa.pfel.erddap.util.EDStatic.updateUrls(url.substring(5));
+    } else {
+      return gov.noaa.pfel.erddap.util.EDStatic.updateUrls(url);
+    }
   }
 
   /**

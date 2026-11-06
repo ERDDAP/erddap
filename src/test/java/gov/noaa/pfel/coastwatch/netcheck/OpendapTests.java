@@ -1,7 +1,9 @@
-package gov.noaa.pfel.coastwatch.griddata;
+package gov.noaa.pfel.coastwatch.netcheck;
 
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import org.junit.jupiter.api.BeforeAll;
 import tags.TagDisabledIncompleteTest;
