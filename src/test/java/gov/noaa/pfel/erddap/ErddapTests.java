@@ -1287,4 +1287,319 @@ class ErddapTests {
     Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
     Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
   }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/fipscounty.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert a FIPS County Code"), "Missing Convert FIPS County title");
+    Test.ensureTrue(result.contains("convert/fipscounty.html"), "Missing form action");
+    Test.ensureTrue(result.contains("name=\"getCounty\""), "Missing getCounty form");
+    Test.ensureTrue(result.contains("name=\"getCode\""), "Missing getCode form");
+    Test.ensureTrue(result.contains("value=\"Convert\""), "Missing Convert button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyWithCodeQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyWithCodeQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/fipscounty.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/convert/".length(),
+        "code=06053");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("06053 = CA, Monterey"), "Missing converted county result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyWithCountyQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyWithCountyQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/fipscounty.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/convert/".length(),
+        "county=CA%2C+Monterey");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("CA, Monterey = 06053"), "Missing converted code result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyErrorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyErrorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/fipscounty.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/convert/".length(),
+        "code=99999");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/fipscounty.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert FIPS County"), "Missing Convert FIPS County title in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/fipscounty.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_FIPS_COUNTY, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French FIPS converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertFipsCountyXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertFipsCountyXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/fipscounty.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/fipscounty.html",
+        "/erddap/convert/".length(),
+        "code=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E%22");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in code input value");
+    Test.ensureTrue(
+        result.contains(
+            com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>\"")),
+        "Attribute not escaped with XML.encodeAsHTMLAttribute");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/keywords.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert a CF Standard Name"), "Missing Convert Keywords title");
+    Test.ensureTrue(result.contains("convert/keywords.html"), "Missing form action");
+    Test.ensureTrue(result.contains("name=\"getGCMD\""), "Missing getGCMD form");
+    Test.ensureTrue(result.contains("name=\"getCF\""), "Missing getCF form");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsWithCfQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsWithCfQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/keywords.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/convert/".length(),
+        "cf=air_density");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("air_density ="), "Missing converted CF result");
+    Test.ensureTrue(
+        result.contains(
+            "Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure"),
+        "Missing GCMD keyword match");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsWithGcmdQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsWithGcmdQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/keywords.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/convert/".length(),
+        "gcmd=Earth+Science+%3E+Atmosphere+%3E+Atmospheric+Pressure+%3E+Static+Pressure");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("air_density"), "Missing converted CF standard name");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsErrorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsErrorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/keywords.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/convert/".length(),
+        "cf=invalid_standard_name");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/keywords.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert Keywords"), "Missing Convert Keywords title in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/keywords.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_KEYWORDS, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French keywords converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertKeywordsXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertKeywordsXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/keywords.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/keywords.html",
+        "/erddap/convert/".length(),
+        "cf=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E%22");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in cf input value");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
 }
