@@ -25,16 +25,11 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 import java.io.File;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import thredds.client.catalog.ServiceType;
 import ucar.ma2.DataType;
 import ucar.nc2.Variable;
-import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDataset.Enhance;
-import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class downloads data from a Hyrax data server with lots of files into .nc files in the
@@ -560,9 +555,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     // and a parallel table to hold the addAttributes
     Table dataSourceTable = new Table();
     Table dataAddTable = new Table();
-    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, oneFileDapUrl);
-    try (NetcdfDataset dataset =
-        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+    try (NetcdfDataset dataset = NcHelper.openDapDataset(oneFileDapUrl)) {
 
       // get source global attributes
       NcHelper.getGroupAttributes(dataset.getRootGroup(), dataSourceTable.globalAttributes());

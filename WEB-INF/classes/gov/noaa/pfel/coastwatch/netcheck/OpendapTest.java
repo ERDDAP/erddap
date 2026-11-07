@@ -8,7 +8,6 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import gov.noaa.pfel.coastwatch.griddata.Opendap;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
