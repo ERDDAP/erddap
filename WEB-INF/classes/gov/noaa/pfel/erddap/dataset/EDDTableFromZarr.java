@@ -42,6 +42,7 @@ import gov.noaa.pfel.erddap.variable.EDVLat;
 import gov.noaa.pfel.erddap.variable.EDVLon;
 import gov.noaa.pfel.erddap.variable.EDVTime;
 import gov.noaa.pfel.erddap.variable.EDVTimeStamp;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -78,6 +79,7 @@ public class EDDTableFromZarr extends EDDTable {
   private volatile long numRows = -1;
   private volatile Map<String, ZarrArrayInfo> zarrArrayInfoMap;
   private final ReentrantReadWriteLock zarrLock = new ReentrantReadWriteLock();
+  private volatile long lastStoreModified = 0;
 
   /**
    * Static factory method to construct an EDDTableFromZarr dataset from an XML configuration.
@@ -374,6 +376,7 @@ public class EDDTableFromZarr extends EDDTable {
     // 5. Discover metadata, parse DSG structure, and initialize dataVariables
     Map<String, ZarrArrayInfo> arrayMap = parseZarrMetadata();
     this.zarrArrayInfoMap = arrayMap;
+    this.lastStoreModified = getStoreLastModified(this.zarrStorePath);
     dataVariables = buildTableVariables(tDataVariables, arrayMap);
     detectAndSetCdmDataType(arrayMap);
 
@@ -560,7 +563,10 @@ public class EDDTableFromZarr extends EDDTable {
           for (int d = 0; d < info.dimensionNames.length; d++) {
             String dimName = info.dimensionNames[d];
             long dimSize = d < info.shape.length ? info.shape[d] : 0;
-            dimToSizeMap.putIfAbsent(dimName, dimSize);
+            long prevDimSize = dimToSizeMap.getOrDefault(dimName, 0L);
+            if (dimSize > prevDimSize) {
+              dimToSizeMap.put(dimName, dimSize);
+            }
             dimFrequencyMap.put(dimName, dimFrequencyMap.getOrDefault(dimName, 0) + 1);
           }
         }
@@ -1990,6 +1996,9 @@ public class EDDTableFromZarr extends EDDTable {
           createZarrStore(this.zarrStorePath, this.cacheFromUrl, this.awsRegion, this.awsEndpoint);
       Group freshGroup = openZarrGroup(freshStore, this.zarrGroupName);
       Map<String, ZarrArrayInfo> freshArrayMap = parseZarrMetadata(freshGroup);
+      long currentStoreModified = getStoreLastModified(this.zarrStorePath);
+      boolean storeTimeChanged =
+          (currentStoreModified > 0 && currentStoreModified != this.lastStoreModified);
 
       String targetRowDimName = this.rowDimensionName;
       long newNumRowsL = -1;
@@ -2004,7 +2013,10 @@ public class EDDTableFromZarr extends EDDTable {
           for (int d = 0; d < info.dimensionNames.length; d++) {
             String dimName = info.dimensionNames[d];
             long dimSize = d < info.shape.length ? info.shape[d] : 0;
-            dimToSizeMap.putIfAbsent(dimName, dimSize);
+            long prev = dimToSizeMap.getOrDefault(dimName, 0L);
+            if (dimSize > prev || !dimToSizeMap.containsKey(dimName)) {
+              dimToSizeMap.put(dimName, dimSize);
+            }
             dimFrequencyMap.put(dimName, dimFrequencyMap.getOrDefault(dimName, 0) + 1);
           }
         }
@@ -2063,29 +2075,29 @@ public class EDDTableFromZarr extends EDDTable {
         }
       }
 
-      if (newNumRowsL <= 0) {
-        if (reallyVerbose) {
-          String2.log(
-              msg
-                  + "EDDTableFromZarr.lowUpdate: Could not determine valid row count from fresh store.");
-        }
-        return false;
-      }
-
-      if (newNumRowsL <= this.numRows) {
-        if (reallyVerbose) {
-          String2.log(
-              msg
-                  + "EDDTableFromZarr.lowUpdate: No change to row count (newNumRows="
-                  + newNumRowsL
-                  + " <= currentNumRows="
-                  + this.numRows
-                  + ").");
-        }
+      if (newNumRowsL < 0) {
+        String2.log(
+            msg
+                + "EDDTableFromZarr.lowUpdate: Could not determine valid row count from fresh store.");
         return false;
       }
 
       long newNumRows = newNumRowsL;
+      boolean rowCountChanged = (newNumRows != this.numRows);
+      // Stage global attributes outside writeLock
+      Attributes freshSourceGlobalAtts = new Attributes();
+      if (freshGroup.metadata() != null && freshGroup.metadata().attributes() != null) {
+        populateAttributesFromZarr(freshGroup.metadata().attributes(), freshSourceGlobalAtts);
+      }
+      boolean attributesChanged = !freshSourceGlobalAtts.equals(this.sourceGlobalAttributes);
+      if (!rowCountChanged && !storeTimeChanged && !attributesChanged) {
+        String2.log(
+            msg
+                + "EDDTableFromZarr.lowUpdate: No change to row count or store timestamps (numRows="
+                + this.numRows
+                + ").");
+        return false;
+      }
 
       // 2. Column Synchronization Check
       if (dataVariables != null) {
@@ -2098,7 +2110,20 @@ public class EDDTableFromZarr extends EDDTable {
           if (info.is1D()) {
             if (info.shape != null && info.shape.length > 0) {
               long colLen = info.shape[0];
-              if (colLen < newNumRows) {
+              if (newNumRows < this.numRows) {
+                if (colLen != newNumRows) {
+                  String2.log(
+                      msg
+                          + " Column ["
+                          + sName
+                          + "] row count ("
+                          + colLen
+                          + ") does not match truncated row count ("
+                          + newNumRows
+                          + "). Deferring update.");
+                  return false;
+                }
+              } else if (colLen < newNumRows) {
                 String2.log(
                     msg
                         + " Column ["
@@ -2119,7 +2144,20 @@ public class EDDTableFromZarr extends EDDTable {
                   && info.shape[0] != this.numRows) {
                 colLen = info.shape[1];
               }
-              if (colLen < newNumRows) {
+              if (newNumRows < this.numRows) {
+                if (colLen != newNumRows) {
+                  String2.log(
+                      msg
+                          + " Column ["
+                          + sName
+                          + "] row count ("
+                          + colLen
+                          + ") does not match truncated row count ("
+                          + newNumRows
+                          + "). Deferring update.");
+                  return false;
+                }
+              } else if (colLen < newNumRows) {
                 String2.log(
                     msg
                         + " Column ["
@@ -2141,7 +2179,7 @@ public class EDDTableFromZarr extends EDDTable {
       double newTimeEndSec = Double.NaN;
       double timeStartSec = Double.NaN;
 
-      if (timeIndex >= 0 && timeIndex < dataVariables.length) {
+      if (newNumRows > 0 && timeIndex >= 0 && timeIndex < dataVariables.length) {
         EDV timeEdv = dataVariables[timeIndex];
         if (timeEdv != null) {
           String sName = timeEdv.sourceName();
@@ -2150,11 +2188,19 @@ public class EDDTableFromZarr extends EDDTable {
             timeInfo = getOrOpenZarrArrayInfo(freshGroup, sName, freshArrayMap);
           }
           if (timeInfo != null && timeInfo.array != null) {
-            PrimitiveArray timePa =
+            // Read row 0 for timeStartSec
+            PrimitiveArray timeStartPa =
+                readChunkDataForVar(sName, timeInfo.array, timeInfo, timeEdv, 0, 1, true);
+            if (timeStartPa != null && timeStartPa.size() > 0) {
+              timeStartSec = timeStartPa.getDouble(0);
+            }
+
+            // Read row newNumRows - 1 for newTimeEndSec
+            PrimitiveArray timeEndPa =
                 readChunkDataForVar(
                     sName, timeInfo.array, timeInfo, timeEdv, newNumRows - 1, 1, true);
-            if (timePa != null && timePa.size() > 0) {
-              newTimeEndSec = timePa.getDouble(0);
+            if (timeEndPa != null && timeEndPa.size() > 0) {
+              newTimeEndSec = timeEndPa.getDouble(0);
               if (!Double.isNaN(newTimeEndSec)) {
                 newTimeEndIso = Calendar2.epochSecondsToIsoStringTZ(newTimeEndSec);
               }
@@ -2162,6 +2208,17 @@ public class EDDTableFromZarr extends EDDTable {
           }
         }
       }
+
+      LocalizedAttributes freshCombinedGlobalAtts =
+          new LocalizedAttributes(addGlobalAttributes, freshSourceGlobalAtts);
+      String tLicense = freshCombinedGlobalAtts.getString(language, "license");
+      if (tLicense != null) {
+        freshCombinedGlobalAtts.set(
+            language,
+            "license",
+            String2.replaceAll(tLicense, "[standard]", EDStatic.messages.standardLicense));
+      }
+      freshCombinedGlobalAtts.removeValue("\"null\"");
 
       Store oldStore = null;
       zarrLock.writeLock().lock();
@@ -2171,21 +2228,47 @@ public class EDDTableFromZarr extends EDDTable {
         this.zarrGroup = freshGroup;
         this.zarrArrayInfoMap = freshArrayMap;
         this.numRows = newNumRows;
+        this.lastStoreModified =
+            currentStoreModified > 0 ? currentStoreModified : System.currentTimeMillis();
         if (String2.isSomething(targetRowDimName)) {
           this.rowDimensionName = targetRowDimName;
         }
 
-        if (newTimeEndIso != null) {
-          combinedGlobalAttributes.set(language, "time_coverage_end", newTimeEndIso);
-          String timeStartStr = combinedGlobalAttributes.getString(language, "time_coverage_start");
-          if (timeStartStr != null) {
-            timeStartSec = Calendar2.isoStringToEpochSeconds(timeStartStr);
-            if (!Double.isNaN(timeStartSec)
-                && !Double.isNaN(newTimeEndSec)
-                && newTimeEndSec >= timeStartSec) {
-              long durationIntSec = Math.round(newTimeEndSec - timeStartSec);
-              combinedGlobalAttributes.set(
-                  language, "time_coverage_duration", "PT" + durationIntSec + "S");
+        this.sourceGlobalAttributes = freshSourceGlobalAtts;
+        this.combinedGlobalAttributes = freshCombinedGlobalAtts;
+        detectAndSetCdmDataType(freshArrayMap);
+
+        if (newNumRows == 0) {
+          this.combinedGlobalAttributes.remove("time_coverage_start");
+          this.combinedGlobalAttributes.remove("time_coverage_end");
+          this.combinedGlobalAttributes.remove("time_coverage_duration");
+        } else {
+          if (!Double.isNaN(timeStartSec)) {
+            this.combinedGlobalAttributes.set(
+                language, "time_coverage_start", Calendar2.epochSecondsToIsoStringTZ(timeStartSec));
+          }
+          if (newTimeEndIso != null) {
+            this.combinedGlobalAttributes.set(language, "time_coverage_end", newTimeEndIso);
+          }
+          if (!Double.isNaN(timeStartSec)
+              && !Double.isNaN(newTimeEndSec)
+              && newTimeEndSec >= timeStartSec) {
+            long durationIntSec = Math.round(newTimeEndSec - timeStartSec);
+            this.combinedGlobalAttributes.set(
+                language, "time_coverage_duration", "PT" + durationIntSec + "S");
+          }
+        }
+
+        // Refresh variable attributes under writeLock
+        if (dataVariables != null) {
+          for (EDV edv : dataVariables) {
+            if (edv == null || !String2.isSomething(edv.sourceName())) continue;
+            ZarrArrayInfo vInfo = freshArrayMap.get(edv.sourceName());
+            if (vInfo == null) {
+              vInfo = getOrOpenZarrArrayInfo(freshGroup, edv.sourceName(), freshArrayMap);
+            }
+            if (vInfo != null && vInfo.attributes != null) {
+              edv.setSourceAttributes(new Attributes(vInfo.attributes), language);
             }
           }
         }
@@ -2362,6 +2445,51 @@ public class EDDTableFromZarr extends EDDTable {
       }
     }
     return suggested;
+  }
+
+  /** Helper method to determine the last modified timestamp of a Zarr store. */
+  private static long getStoreLastModified(String storePath) {
+    if (storePath == null) return 0;
+    try {
+      if (storePath.startsWith("http://")
+          || storePath.startsWith("https://")
+          || storePath.startsWith("s3://")
+          || storePath.startsWith("s3a://")) {
+        String base = storePath.endsWith("/") ? storePath : storePath + "/";
+        long mod = File2.getLastModified(base + "zarr.json");
+        if (mod > 0) return mod;
+        mod = File2.getLastModified(base + ".zmetadata");
+        if (mod > 0) return mod;
+        mod = File2.getLastModified(base + ".zgroup");
+        if (mod > 0) return mod;
+        mod = File2.getLastModified(base + ".zattrs");
+        if (mod > 0) return mod;
+        return 0;
+      }
+      File file = new File(storePath);
+      if (!file.exists()) return 0;
+      if (file.isFile()) return file.lastModified();
+      return getMaxModifiedRecursive(file);
+    } catch (Throwable t) {
+      return 0;
+    }
+  }
+
+  private static long getMaxModifiedRecursive(File dir) {
+    long max = dir.lastModified();
+    File[] children = dir.listFiles();
+    if (children != null) {
+      for (File child : children) {
+        if (child.isDirectory()) {
+          long childMax = getMaxModifiedRecursive(child);
+          if (childMax > max) max = childMax;
+        } else {
+          long childMod = child.lastModified();
+          if (childMod > max) max = childMod;
+        }
+      }
+    }
+    return max;
   }
 
   /**

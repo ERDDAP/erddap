@@ -1680,4 +1680,218 @@ class EDDTableFromZarrTests {
       File2.deleteAllFiles(tempDir.toString(), true, true);
     }
   }
+
+  @Test
+  void testLowUpdateTruncationAndInPlaceModification() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_table_trunc_inplace_test");
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.core.Attributes timeZattrs = new dev.zarr.zarrjava.core.Attributes();
+      timeZattrs.set("units", "seconds since 1970-01-01T00:00:00Z");
+
+      dev.zarr.zarrjava.v3.Array timeArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(5).withChunkShape(2).withDataType(float64).withDimensionNames("obs"),
+              true);
+      timeArr.setAttributes(timeZattrs);
+      timeArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {5},
+              new double[] {1000.0, 2000.0, 3000.0, 4000.0, 5000.0}));
+
+      dev.zarr.zarrjava.core.Attributes tempZattrs = new dev.zarr.zarrjava.core.Attributes();
+      tempZattrs.set("units", "degree_C");
+
+      dev.zarr.zarrjava.v3.Array tempArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(5).withChunkShape(2).withDataType(float64).withDimensionNames("obs"),
+              true);
+      tempArr.setAttributes(tempZattrs);
+      tempArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {5},
+              new double[] {10.0, 20.0, 30.0, 40.0, 50.0}));
+
+      dev.zarr.zarrjava.core.Attributes globalAtts = new dev.zarr.zarrjava.core.Attributes();
+      globalAtts.set("title", "Initial Table Dataset");
+      dev.zarr.zarrjava.v3.Group group = dev.zarr.zarrjava.v3.Group.open(store.resolve());
+      group.setAttributes(globalAtts);
+
+      LocalizedAttributes globalAttsLoc = new LocalizedAttributes();
+      globalAttsLoc.set(0, "summary", "Test Table Summary");
+      globalAttsLoc.set(0, "institution", "NOAA");
+      globalAttsLoc.set(0, "infoUrl", "https://example.org");
+      globalAttsLoc.set(0, "cdm_data_type", "Other");
+      globalAttsLoc.set(0, "time_coverage_start", "1970-01-01T00:16:40Z");
+      globalAttsLoc.set(0, "time_coverage_end", "1970-01-01T01:23:20Z");
+
+      List<DataVariableInfo> dataVars = new ArrayList<>();
+      dataVars.add(new DataVariableInfo("time", "time", new LocalizedAttributes(), "double"));
+      dataVars.add(
+          new DataVariableInfo("temperature", "temperature", new LocalizedAttributes(), "double"));
+
+      EDDTableFromZarr dataset =
+          new EDDTableFromZarr(
+              "zarr_table_trunc_inplace_id",
+              null,
+              null,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              globalAttsLoc,
+              dataVars,
+              10080,
+              tempDir.toString(),
+              "",
+              "obs",
+              -1,
+              null,
+              null);
+
+      assertEquals(5, dataset.numRows());
+      assertEquals(
+          "1970-01-01T01:23:20Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+
+      // 1. No-op call without changes should return false
+      boolean updatedNoOp = dataset.lowUpdate(0, "testNoOp", System.currentTimeMillis());
+      assertFalse(updatedNoOp, "lowUpdate should return false on unmodified store");
+
+      // 2. Truncate from 5 rows to 3 rows
+      Thread.sleep(50);
+      dev.zarr.zarrjava.v3.Array timeTrunc =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(3).withChunkShape(2).withDataType(float64).withDimensionNames("obs"),
+              true);
+      timeTrunc.setAttributes(timeZattrs);
+      timeTrunc.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {1000.0, 2000.0, 3000.0}));
+
+      dev.zarr.zarrjava.v3.Array tempTrunc =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(3).withChunkShape(2).withDataType(float64).withDimensionNames("obs"),
+              true);
+      tempTrunc.setAttributes(tempZattrs);
+      tempTrunc.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {10.0, 20.0, 30.0}));
+
+      boolean truncated = dataset.lowUpdate(0, "testTruncation", System.currentTimeMillis());
+      assertTrue(truncated, "lowUpdate should return true after truncation");
+      assertEquals(3, dataset.numRows());
+      assertEquals(
+          "1970-01-01T00:50:00Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+
+      TableWriterAllWithMetadata tw1 =
+          new TableWriterAllWithMetadata(0, dataset, "", dataset.cacheDirectory(), "trunc1.twawm");
+      dataset.getDataForDapQuery(0, null, "", "temperature", tw1);
+      Table resTable = tw1.cumulativeTable();
+      assertEquals(3, resTable.nRows());
+      assertEquals(30.0, resTable.getColumn(0).getDouble(2), 1e-6);
+
+      // 3. In-place modification: Overwrite chunk 0 without changing row count
+      Thread.sleep(50);
+      timeTrunc.write(
+          new long[] {0},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {1500.0, 2500.0}));
+      tempTrunc.write(
+          new long[] {0},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {99.0, 88.0}));
+
+      globalAtts.set("title", "Modified Table Dataset");
+      group.setAttributes(globalAtts);
+
+      // Also modify tempZattrs by setting custom_att and removing old comment
+      tempZattrs.set("custom_att", "new_value");
+      tempTrunc.setAttributes(tempZattrs);
+
+      boolean inPlaceUpdated = dataset.lowUpdate(0, "testInPlace", System.currentTimeMillis());
+      assertTrue(inPlaceUpdated, "lowUpdate should return true after in-place modification");
+      assertEquals(3, dataset.numRows());
+      assertEquals(
+          "Modified Table Dataset", dataset.combinedGlobalAttributes().getString(0, "title"));
+      assertEquals(
+          "1970-01-01T00:25:00Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_start"));
+      assertEquals(
+          "1970-01-01T00:50:00Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+      assertEquals(
+          "PT1500S", dataset.combinedGlobalAttributes().getString(0, "time_coverage_duration"));
+      assertEquals(
+          "new_value", dataset.dataVariables()[1].combinedAttributes().getString(0, "custom_att"));
+
+      TableWriterAllWithMetadata tw2 =
+          new TableWriterAllWithMetadata(0, dataset, "", dataset.cacheDirectory(), "trunc2.twawm");
+      dataset.getDataForDapQuery(0, null, "", "temperature", tw2);
+      Table resTable2 = tw2.cumulativeTable();
+      assertEquals(3, resTable2.nRows());
+      assertEquals(99.0, resTable2.getColumn(0).getDouble(0), 1e-6);
+      assertEquals(88.0, resTable2.getColumn(0).getDouble(1), 1e-6);
+      assertEquals(30.0, resTable2.getColumn(0).getDouble(2), 1e-6);
+
+      // 4. Zero-row truncation: Truncate to 0 rows
+      Thread.sleep(50);
+      dev.zarr.zarrjava.v3.Array timeZero =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(0).withChunkShape(2).withDataType(float64).withDimensionNames("obs"),
+              true);
+      timeZero.setAttributes(timeZattrs);
+
+      dev.zarr.zarrjava.v3.Array tempZero =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(0).withChunkShape(2).withDataType(float64).withDimensionNames("obs"),
+              true);
+      tempZero.setAttributes(tempZattrs);
+
+      boolean zeroUpdated = dataset.lowUpdate(0, "testZeroRows", System.currentTimeMillis());
+      assertTrue(zeroUpdated, "lowUpdate should return true after truncation to 0 rows");
+      assertEquals(0, dataset.numRows());
+      assertNull(dataset.combinedGlobalAttributes().getString(0, "time_coverage_start"));
+      assertNull(dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+      assertNull(dataset.combinedGlobalAttributes().getString(0, "time_coverage_duration"));
+
+      // 5. Querying 0-row truncated table should cleanly throw SimpleException (0 rows matched) via
+      // TableWriterAll
+      TableWriterAllWithMetadata twZero =
+          new TableWriterAllWithMetadata(
+              0, dataset, "", dataset.cacheDirectory(), "zero_query.twawm");
+      SimpleException se =
+          assertThrows(
+              SimpleException.class,
+              () -> dataset.getDataForDapQuery(0, null, "", "temperature", twZero));
+      assertTrue(se.getMessage().contains("no matching results"), "Should indicate 0 rows matched");
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
 }
