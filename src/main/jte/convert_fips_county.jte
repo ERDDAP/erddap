@@ -1,7 +1,6 @@
 @import gov.noaa.pfel.erddap.jte.YouAreHere
 @import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
-@import com.cohort.util.String2
 @import com.cohort.util.XML
 @import jakarta.servlet.http.HttpServletRequest
 @import java.text.MessageFormat
@@ -36,6 +35,8 @@
 <div class="standard_width">
     <h2>${TemplateHelper.getMessage(Message.CONVERT_FIPS_COUNTY, language)}</h2>
     $unsafe{TemplateHelper.getMessage(Message.CONVERT_FIPS_COUNTY_INTRO, language)}
+
+    @template.components.noscript()
 
     <form method="GET" action="${tErddapUrl}/convert/fipscounty.html" name="getCounty">
         $unsafe{MessageFormat.format(

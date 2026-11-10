@@ -1306,6 +1306,10 @@ class ErddapTests {
     String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert a FIPS County Code"), "Missing Convert FIPS County title");
+    Test.ensureTrue(result.contains("<noscript>"), "Missing noscript tag in FIPS County page");
+    Test.ensureTrue(
+        result.contains("requires that JavaScript be enabled"),
+        "Missing noscript message in FIPS County page");
     Test.ensureTrue(result.contains("convert/fipscounty.html"), "Missing form action");
     Test.ensureTrue(result.contains("name=\"getCounty\""), "Missing getCounty form");
     Test.ensureTrue(result.contains("name=\"getCode\""), "Missing getCode form");
@@ -1464,6 +1468,10 @@ class ErddapTests {
     String result = ctx.getOutput();
     Test.ensureTrue(
         result.contains("Convert a CF Standard Name"), "Missing Convert Keywords title");
+    Test.ensureTrue(result.contains("<noscript>"), "Missing noscript tag in Keywords page");
+    Test.ensureTrue(
+        result.contains("requires that JavaScript be enabled"),
+        "Missing noscript message in Keywords page");
     Test.ensureTrue(result.contains("convert/keywords.html"), "Missing form action");
     Test.ensureTrue(result.contains("name=\"getGCMD\""), "Missing getGCMD form");
     Test.ensureTrue(result.contains("name=\"getCF\""), "Missing getCF form");

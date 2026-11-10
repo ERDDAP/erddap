@@ -21272,7 +21272,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             answerCounty.length() > 0
                 ? answerCounty
                 : queryCounty.length() > 0 ? queryCounty : defaultCounty;
-        String options[] = fipsTable.getColumn(1).toStringArray();
+        String[] options = fipsTable.getColumn(1).toStringArray();
         String countySelectHtml =
             widgets.select(
                 "county",
@@ -21375,7 +21375,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             answerCounty.length() > 0
                 ? answerCounty
                 : queryCounty.length() > 0 ? queryCounty : defaultCounty;
-        String options[] = fipsTable.getColumn(1).toStringArray();
+        String[] options = fipsTable.getColumn(1).toStringArray();
         writer.write(
             "<br>"
                 + widgets.beginForm("getCode", "GET", tErddapUrl + "/convert/fipscounty.html", "")
@@ -22107,26 +22107,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // process queryGCMD
     String tError = null;
+    String[] cfMatches = null;
+    String[] gcmdMatches = null;
     if (toCF) {
       // process cf=,   a toCF query
-      String ansar[] = CfToFromGcmd.gcmdToCf(queryGCMD);
-      if (ansar.length == 0) {
+      cfMatches = CfToFromGcmd.gcmdToCf(queryGCMD);
+      if (cfMatches.length == 0) {
         tError = "gcmd=\"" + queryGCMD + "\" has no corresponding CF Standard Names.";
       } else {
         // success
         answerGCMD = queryGCMD;
-        answerCF = String2.toNewlineString(ansar);
+        answerCF = String2.toNewlineString(cfMatches);
       }
 
     } else if (toGCMD) {
       // process gcmd=,   a toGCMD query
-      String ansar[] = CfToFromGcmd.cfToGcmd(queryCF);
-      if (ansar.length == 0) {
+      gcmdMatches = CfToFromGcmd.cfToGcmd(queryCF);
+      if (gcmdMatches.length == 0) {
         tError = "cf=\"" + queryCF + "\" has no corresponding GCMD Science Keywords.";
       } else {
         // success
         answerCF = queryCF;
-        answerGCMD = String2.toNewlineString(ansar);
+        answerGCMD = String2.toNewlineString(gcmdMatches);
       }
 
     } else {
@@ -22214,13 +22216,13 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 String2.indexOf(CfToFromGcmd.gcmdKeywords, selectedGCMD),
                 "onchange=\"this.form.submit();\"");
 
-        String ansarGcmd[] = toGCMD ? CfToFromGcmd.cfToGcmd(queryCF) : null;
         List<String> answerGcmdList =
-            toGCMD && tError == null && ansarGcmd != null ? Arrays.asList(ansarGcmd) : List.of();
+            toGCMD && tError == null && gcmdMatches != null
+                ? Arrays.asList(gcmdMatches)
+                : List.of();
 
-        String ansarCf[] = toCF ? CfToFromGcmd.gcmdToCf(queryGCMD) : null;
         List<String> answerCfList =
-            toCF && tError == null && ansarCf != null ? Arrays.asList(ansarCf) : List.of();
+            toCF && tError == null && cfMatches != null ? Arrays.asList(cfMatches) : List.of();
 
         params.put("cfSelectHtml", cfSelectHtml);
         params.put("toGCMD", toGCMD);
