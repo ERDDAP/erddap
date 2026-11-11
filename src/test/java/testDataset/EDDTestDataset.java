@@ -45651,4 +45651,114 @@ public class EDDTestDataset {
 </dataset>
 """;
   }
+
+  public static EDD getUcarD4tsTest01() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_ucarD4tsTest01());
+  }
+
+  private static String xmlFragment_ucarD4tsTest01() {
+    return """
+      <dataset type="EDDGridFromDap" datasetID="ucar_d4ts_test01" active="true">
+          <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+          <updateEveryNMillis>10000</updateEveryNMillis>
+          <defaultDataQuery>t[0:1]</defaultDataQuery>
+          <sourceUrl>dap4:http://remotetest.unidata.ucar.edu/d4ts/testfiles/test_one_vararray.nc</sourceUrl>
+          <addAttributes>
+              <att name="title">D4TS Test 01 Dataset</att>
+              <att name="summary">D4TS Test 01 Dataset summary.</att>
+              <att name="institution">UCAR</att>
+              <att name="infoUrl">https://remotetest.unidata.ucar.edu/d4ts/</att>
+          </addAttributes>
+          <axisVariable>
+              <sourceName>d2</sourceName>
+              <destinationName>d2</destinationName>
+              <addAttributes>
+                  <att name="ioos_category">Unknown</att>
+              </addAttributes>
+          </axisVariable>
+          <dataVariable>
+              <sourceName>t</sourceName>
+              <destinationName>t</destinationName>
+              <dataType>int</dataType>
+              <addAttributes>
+                  <att name="ioos_category">Unknown</att>
+              </addAttributes>
+          </dataVariable>
+      </dataset>
+      """;
+  }
+
+  public static EDD getosisafGhrsstDap4() throws Throwable {
+    return EDD.oneFromXmlFragment(null, xmlFragment_osisafGhrsstDap4());
+  }
+
+  private static String xmlFragment_osisafGhrsstDap4() {
+    return "<dataset type=\"EDDGridFromDap\" datasetID=\"osisaf_l3c_ghrsst_goes16_dap4\" active=\"true\">\n"
+        + "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
+        + "    <updateEveryNMillis>10000</updateEveryNMillis>\n"
+        + "    <onChange></onChange>\n"
+        + "    <defaultDataQuery>sea_surface_temperature[0][0:10][0:10]</defaultDataQuery>\n"
+        + "    <defaultGraphQuery>sea_surface_temperature[0][:][:]&amp;.draw=surface&amp;.colorBar=Rainbow|C|Linear|270|305|</defaultGraphQuery>\n"
+        + "    <sourceUrl>dap4:http://test.opendap.org/opendap/hyrax/tutorials/20220812010000-OSISAF-L3C_GHRSST-SSTsubskin-GOES16-ssteqc_goes16_20220812_010000-v02.0-fv01.0.nc</sourceUrl>\n"
+        + "    <addAttributes>\n"
+        + "        <att name=\"cdm_data_type\">Grid</att>\n"
+        + "        <att name=\"Conventions\">CF-1.7, ACDD-1.3</att>\n"
+        + "        <att name=\"infoUrl\">https://test.opendap.org/opendap/hyrax/tutorials/</att>\n"
+        + "        <att name=\"institution\">OSI-SAF / EUMETSAT</att>\n"
+        + "        <att name=\"keywords\">atmosphere, atmospheric, goes16, ghrsst, l3c, ocean, oceanography, quality_level, sea, sea_surface_subskin_temperature, sst, subskin, temperature, wind, wind_speed</att>\n"
+        + "        <att name=\"summary\">OSI SAF GHRSST L3C Subskin Sea Surface Temperature from GOES-16 retrieved via test.opendap.org DAP4 endpoint.</att>\n"
+        + "        <att name=\"title\">GHRSST L3C GOES16 Subskin SST (test.opendap.org DAP4 Test)</att>\n"
+        + "    </addAttributes>\n"
+        + "    <axisVariable>\n"
+        + "        <sourceName>time</sourceName>\n"
+        + "        <destinationName>time</destinationName>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"units\">seconds since 1981-01-01T00:00:00Z</att>\n"
+        + "        </addAttributes>\n"
+        + "    </axisVariable>\n"
+        + "    <axisVariable>\n"
+        + "        <sourceName>lat</sourceName>\n"
+        + "        <destinationName>latitude</destinationName>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"units\">degrees_north</att>\n"
+        + "        </addAttributes>\n"
+        + "    </axisVariable>\n"
+        + "    <axisVariable>\n"
+        + "        <sourceName>lon</sourceName>\n"
+        + "        <destinationName>longitude</destinationName>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"units\">degrees_east</att>\n"
+        + "        </addAttributes>\n"
+        + "    </axisVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>sea_surface_temperature</sourceName>\n"
+        + "        <destinationName>sea_surface_temperature</destinationName>\n"
+        + "        <dataType>short</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Temperature</att>\n"
+        + "            <att name=\"long_name\">sea surface subskin temperature</att>\n"
+        + "            <att name=\"units\">kelvin</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>wind_speed</sourceName>\n"
+        + "        <destinationName>wind_speed</destinationName>\n"
+        + "        <dataType>short</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Wind</att>\n"
+        + "            <att name=\"long_name\">10m wind speed</att>\n"
+        + "            <att name=\"units\">m s-1</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "    <dataVariable>\n"
+        + "        <sourceName>quality_level</sourceName>\n"
+        + "        <destinationName>quality_level</destinationName>\n"
+        + "        <dataType>byte</dataType>\n"
+        + "        <addAttributes>\n"
+        + "            <att name=\"ioos_category\">Quality</att>\n"
+        + "            <att name=\"long_name\">quality level of SST pixel</att>\n"
+        + "        </addAttributes>\n"
+        + "    </dataVariable>\n"
+        + "</dataset>\n";
+  }
 }

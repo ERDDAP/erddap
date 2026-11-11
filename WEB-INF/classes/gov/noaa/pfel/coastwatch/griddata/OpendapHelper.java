@@ -17,17 +17,13 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
-import thredds.client.catalog.ServiceType;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.Variable;
-import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -292,10 +288,7 @@ public class OpendapHelper {
     // delete any existing file
     File2.delete(fullFileName);
 
-    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, dapUrl);
-    try (NetcdfDataset dataset =
-        NetcdfDatasets.openDataset(
-            durl, EnumSet.noneOf(NetcdfDataset.Enhance.class), -1, null, null)) {
+    try (NetcdfDataset dataset = NcHelper.openDapDataset(dapUrl)) {
 
       // find all variables excluding structures/sequences
       List<Variable> srcVars = new ArrayList<>();

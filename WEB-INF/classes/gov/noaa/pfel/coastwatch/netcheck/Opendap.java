@@ -2,7 +2,7 @@
  * Opendap.java Copyright 2005, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package gov.noaa.pfel.coastwatch.griddata;
+package gov.noaa.pfel.coastwatch.netcheck;
 
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
@@ -15,6 +15,9 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.TimePeriods;
+import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+import gov.noaa.pfel.coastwatch.griddata.Grid;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -27,7 +30,6 @@ import ucar.ma2.Section;
 import ucar.nc2.Dimension;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDatasets;
 
 /** This class holds information about an OPeNDAP grid data set for one time period. */
 public class Opendap {
@@ -518,7 +520,7 @@ public class Opendap {
     if (minY > maxY)
       Test.error(errorInMethod + "minY (" + minY + ") must be <= maxY (" + maxY + ").");
 
-    try (NetcdfDataset ncd = NetcdfDatasets.openDataset(url)) {
+    try (NetcdfDataset ncd = NcHelper.openDapDataset(url)) {
       // getMinX and getMaxX are minX and maxX adjusted to be appropriate for the data
       // originalDesiredLonIncrement (e.g. .1 degrees) used to calculate new, larger desireNWide if
       // 360 degrees
@@ -966,7 +968,7 @@ public class Opendap {
   public Grid makeGrid(int minIndex[], int maxIndex[], int stride[]) throws Exception {
 
     long startTime = System.currentTimeMillis();
-    try (NetcdfDataset ncd = NetcdfDatasets.openDataset(url)) {
+    try (NetcdfDataset ncd = NcHelper.openDapDataset(url)) {
       minLonInNewFile = getLon(minIndex[gridLonDimension]);
       maxLonInNewFile = getLon(maxIndex[gridLonDimension]);
       minLatInNewFile = getLat(minIndex[gridLatDimension]);

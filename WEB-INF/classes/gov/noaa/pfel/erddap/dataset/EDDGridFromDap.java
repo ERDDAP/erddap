@@ -36,7 +36,6 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,10 +50,7 @@ import thredds.client.catalog.ThreddsMetadata.Source;
 import thredds.client.catalog.ThreddsMetadata.Vocab;
 import thredds.client.catalog.builder.CatalogBuilder;
 import ucar.nc2.Variable;
-import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDataset.Enhance;
-import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class represents a grid dataset from an opendap DAP source.
@@ -243,11 +239,6 @@ public class EDDGridFromDap extends EDDGrid {
    * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
    * @throws Throwable if trouble
    */
-  public static NetcdfDataset openDataset(String url) throws Exception {
-    DatasetUrl durl = DatasetUrl.create(thredds.client.catalog.ServiceType.OPENDAP, url);
-    return NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null);
-  }
-
   public EDDGridFromDap(
       String tDatasetID,
       String tAccessibleTo,
@@ -441,7 +432,7 @@ public class EDDGridFromDap extends EDDGrid {
       ensureValid();
 
     } else {
-      try (NetcdfDataset dataset = openDataset(localSourceUrl)) {
+      try (NetcdfDataset dataset = NcHelper.openDapDataset(localSourceUrl)) {
         // get global attributes
         sourceGlobalAttributes = new Attributes();
         NcHelper.getGroupAttributes(dataset.getRootGroup(), sourceGlobalAttributes);
@@ -718,7 +709,7 @@ public class EDDGridFromDap extends EDDGrid {
   @Override
   public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
-    try (NetcdfDataset dataset = openDataset(localSourceUrl)) {
+    try (NetcdfDataset dataset = NcHelper.openDapDataset(localSourceUrl)) {
       Variable variable = dataset.findVariable(dataVariables[0].sourceName());
       if (variable == null) {
         String2.log(
@@ -1088,7 +1079,7 @@ public class EDDGridFromDap extends EDDGrid {
       int language, Table tDirTable, Table tFileTable, EDV tDataVariables[], IntArray tConstraints)
       throws Throwable {
 
-    try (NetcdfDataset dataset = openDataset(localSourceUrl)) {
+    try (NetcdfDataset dataset = NcHelper.openDapDataset(localSourceUrl)) {
       PrimitiveArray results[] = new PrimitiveArray[axisVariables.length + tDataVariables.length];
       for (int dv = 0; dv < tDataVariables.length; dv++) {
         // get the data
@@ -1199,7 +1190,7 @@ public class EDDGridFromDap extends EDDGrid {
       Attributes externalAddGlobalAttributes)
       throws Throwable {
 
-    tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); // http: to https:
+    tLocalSourceUrl = NcHelper.updateDapUrl(tLocalSourceUrl);
     String2.log(
         "\n*** EDDGridFromDap.generateDatasetsXml"
             + "\ntLocalSourceUrl="
@@ -1217,7 +1208,7 @@ public class EDDGridFromDap extends EDDGrid {
       tLocalSourceUrl = tLocalSourceUrl.substring(0, tLocalSourceUrl.length() - 5);
 
     long getDasDdsTime = System.currentTimeMillis();
-    try (NetcdfDataset dataset = openDataset(tLocalSourceUrl)) {
+    try (NetcdfDataset dataset = NcHelper.openDapDataset(tLocalSourceUrl)) {
       String2.log(
           "getDasDds succeeded. time=" + (System.currentTimeMillis() - getDasDdsTime) + "ms");
 

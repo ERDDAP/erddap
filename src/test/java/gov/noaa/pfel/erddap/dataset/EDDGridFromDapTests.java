@@ -11442,4 +11442,100 @@ class EDDGridFromDapTests extends WireMockLifecycle {
         ".*(oceanwatch\\.pfeg\\.noaa\\.gov|coastwatch/viirs-ocr/).*", // negativePathRegex
         -1); // -1 uses suggestReloadEveryNMinutes
   }
+
+  @org.junit.jupiter.api.Test
+  void testUcarD4tsTest01() throws Throwable {
+    String tDatasetID = "ucar_d4ts_test01";
+    EDDGrid edd = (EDDGrid) EDDTestDataset.getUcarD4tsTest01();
+
+    // Verify dataset metadata and variables
+    Test.ensureEqual(edd.datasetID(), tDatasetID, "datasetID");
+    Test.ensureEqual(edd.title(0), "D4TS Test 01 Dataset", "title");
+    Test.ensureEqual(edd.axisVariableDestinationNames(), new String[] {"d2"}, "axisVariableNames");
+    Test.ensureEqual(edd.dataVariableDestinationNames(), new String[] {"t"}, "dataVariableNames");
+
+    // Query data over DAP4 and verify CSV serialization
+    String tName =
+        edd.makeNewFileForDapQuery(
+            0,
+            null,
+            null,
+            "t[0:1]",
+            EDStatic.config.fullTestCacheDirectory,
+            edd.className() + "_" + tDatasetID,
+            ".csv");
+    String results = File2.directReadFrom88591File(EDStatic.config.fullTestCacheDirectory + tName);
+
+    Test.ensureEqual(
+        """
+        d2,t
+        count,
+        0,17
+        1,37
+        """,
+        results,
+        "CSV data check, results:\n" + results);
+  }
+
+  @org.junit.jupiter.api.Test
+  void testOsisafGhrsstDap4() throws Throwable {
+    String url =
+        "dap4:http://test.opendap.org/opendap/hyrax/tutorials/20220812010000-OSISAF-L3C_GHRSST-SSTsubskin-GOES16-ssteqc_goes16_20220812_010000-v02.0-fv01.0.nc";
+
+    // Test openDataset directly to verify DAP4 DMR protocol resolution against Hyrax reference
+    // server
+    try (NetcdfDataset ncd = NcHelper.openDapDataset(url)) {
+      Test.ensureNotNull(ncd, "NetcdfDataset from Hyrax DAP4 should not be null");
+
+      // Verify coordinate axis variables exist in DMR
+      Test.ensureNotNull(ncd.findVariable("time"), "Variable 'time' should exist");
+      Test.ensureNotNull(ncd.findVariable("lat"), "Variable 'lat' should exist");
+      Test.ensureNotNull(ncd.findVariable("lon"), "Variable 'lon' should exist");
+
+      // Verify primary data variables exist in DMR
+      Variable sst = ncd.findVariable("sea_surface_temperature");
+      Test.ensureNotNull(sst, "Variable 'sea_surface_temperature' should exist");
+      Test.ensureNotNull(ncd.findVariable("wind_speed"), "Variable 'wind_speed' should exist");
+      Test.ensureNotNull(
+          ncd.findVariable("quality_level"), "Variable 'quality_level' should exist");
+
+      // Verify DMR variable attributes
+      Attributes sstAtts = new Attributes();
+      NcHelper.getVariableAttributes(sst, sstAtts);
+      Test.ensureEqual(sstAtts.getString("units"), "kelvin", "sst units");
+      Test.ensureEqual(
+          sstAtts.getString("standard_name"),
+          "sea_surface_subskin_temperature",
+          "sst standard_name");
+
+      // Verify DMR global attributes
+      Attributes globalAtts = new Attributes();
+      NcHelper.getGroupAttributes(ncd.getRootGroup(), globalAtts);
+      Test.ensureEqual(
+          globalAtts.getString("NC_GLOBAL.title"), "Sea Surface Temperature", "global title");
+      Test.ensureEqual(globalAtts.getString("NC_GLOBAL.institution"), "OSISAF", "institution");
+    }
+
+    // Note: NetCDF-Java 5.x DeChunkedInputStream has an upstream bug where Hyrax chunk
+    // termination flags (0x05) cause 'Malformed chunked source' when reading array payload data.
+    // D4TS (testUcarD4tsTest01) verifies full data slicing and CSV serialization over DAP4.
+  }
+
+  @org.junit.jupiter.api.Test
+  void testGenerateDatasetsXmlRetainsDap4() throws Throwable {
+    String d4tsUrl = "dap4://remotetest.unidata.ucar.edu/d4ts/testfiles/test_one_vararray.nc";
+    String xml = EDDGridFromDap.generateDatasetsXml(d4tsUrl, null, -1, null);
+    Test.ensureTrue(
+        xml.contains(
+            "<sourceUrl>dap4://remotetest.unidata.ucar.edu/d4ts/testfiles/test_one_vararray.nc</sourceUrl>"),
+        "generateDatasetsXml should retain dap4:// prefix:\n" + xml);
+
+    String d4tsHttpUrl =
+        "dap4:http://remotetest.unidata.ucar.edu/d4ts/testfiles/test_one_vararray.nc";
+    String xml2 = EDDGridFromDap.generateDatasetsXml(d4tsHttpUrl, null, -1, null);
+    Test.ensureTrue(
+        xml2.contains(
+            "<sourceUrl>dap4:http://remotetest.unidata.ucar.edu/d4ts/testfiles/test_one_vararray.nc</sourceUrl>"),
+        "generateDatasetsXml should retain dap4:http:// prefix:\n" + xml2);
+  }
 }

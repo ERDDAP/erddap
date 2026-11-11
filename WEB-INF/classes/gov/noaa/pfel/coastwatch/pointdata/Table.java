@@ -77,7 +77,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -111,7 +110,6 @@ import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Types.MessageTypeBuilder;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-import thredds.client.catalog.ServiceType;
 import ucar.ma2.ArraySequence;
 import ucar.ma2.ArrayStructure;
 import ucar.ma2.DataType;
@@ -122,10 +120,7 @@ import ucar.nc2.Dimension;
 import ucar.nc2.Group;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
-import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDataset.Enhance;
-import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 /**
@@ -10208,9 +10203,7 @@ public class Table {
     long time = System.currentTimeMillis();
     clear();
 
-    DatasetUrl durl = DatasetUrl.create(ServiceType.OPENDAP, url);
-    try (NetcdfDataset ncd =
-        NetcdfDatasets.openDataset(durl, EnumSet.noneOf(Enhance.class), -1, null, null)) {
+    try (NetcdfDataset ncd = NcHelper.openDapDataset(url)) {
       Attributes rawGlobalAtts = new Attributes();
       NcHelper.getGroupAttributes(ncd.getRootGroup(), rawGlobalAtts);
       for (String name : rawGlobalAtts.getNames()) {
