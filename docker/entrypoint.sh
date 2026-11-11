@@ -47,6 +47,7 @@ if [ "$1" = 'start-tomcat.sh' ] || [ "$1" = 'catalina.sh' ]; then
          ${CATALINA_HOME}/work
     find ${CATALINA_HOME}/webapps/erddap -type d -exec chown $USER_ID:$GROUP_ID {} +
     find ${CATALINA_HOME}/webapps/erddap -type f -name '*.sh' -exec chown $USER_ID:$GROUP_ID {} +
+    find ${CATALINA_HOME}/webapps/erddap/images -exec chown $USER_ID:$GROUP_ID {} +
     find ${CATALINA_HOME}/conf -type d -exec chmod 755 {} +
     find ${CATALINA_HOME}/conf -type f -exec chmod 400 {} +
 
