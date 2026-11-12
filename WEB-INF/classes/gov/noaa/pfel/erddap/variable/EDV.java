@@ -1798,6 +1798,112 @@ public class EDV {
    *
    * @return the raw attributes from the source.
    */
+  /**
+   * Updates sourceAttributes and recomputes combinedAttributes for this variable.
+   *
+   * @param newSourceAtts the new source Attributes
+   * @param language the language index (usually 0)
+   */
+  public void setSourceAttributes(Attributes newSourceAtts, int language) {
+    if (newSourceAtts == null) return;
+    this.ucumUnits = null;
+    this.sliderCsvValues = null;
+    this.sourceAttributes = new Attributes(newSourceAtts);
+    this.combinedAttributes = new LocalizedAttributes(this.addAttributes, this.sourceAttributes);
+
+    this.units = combinedAttributes.getString(language, "units");
+    this.scaleFactor = combinedAttributes.getDouble(language, "scale_factor");
+    this.addOffset = combinedAttributes.getDouble(language, "add_offset");
+    if (Double.isNaN(scaleFactor) && !Double.isNaN(addOffset)) {
+      scaleFactor = 1;
+    }
+    if (!Double.isNaN(scaleFactor) && Double.isNaN(addOffset)) {
+      addOffset = 0;
+    }
+    this.scaleAddOffset = !Double.isNaN(scaleFactor);
+    if (scaleAddOffset && (scaleFactor == 0 || Double.isInfinite(scaleFactor))) {
+      scaleFactor = Double.NaN;
+      addOffset = Double.NaN;
+      scaleAddOffset = false;
+    }
+    if (scaleAddOffset && Double.isInfinite(addOffset)) {
+      scaleFactor = Double.NaN;
+      addOffset = Double.NaN;
+      scaleAddOffset = false;
+    }
+    if (scaleAddOffset && scaleFactor == 1 && addOffset == 0) {
+      scaleAddOffset = false;
+    }
+
+    this.longName = combinedAttributes.getString(language, "long_name");
+    if (this.longName == null) {
+      this.longName = destinationName;
+      combinedAttributes.set(language, "long_name", this.longName);
+    }
+
+    setMissingAndFillValues(language);
+
+    try {
+      extractAndSetActualRange(language);
+    } catch (Throwable t) {
+      // ignore range setting errors if actual_range is missing/invalid
+    }
+  }
+
+  /**
+   * Helper method to refresh missing_value and _FillValue fields from combinedAttributes.
+   *
+   * @param language the language index
+   */
+  public void setMissingAndFillValues(int language) {
+    // Reset defaults before parsing so removed attributes do not persist
+    stringMissingValue = "";
+    sourceMissingValue = Double.NaN;
+    destinationMissingValue = Double.NaN;
+    stringFillValue = "";
+    sourceFillValue = Double.NaN;
+    destinationFillValue = Double.NaN;
+
+    PrimitiveArray pa = combinedAttributes.get(language, "missing_value");
+    if (pa != null) {
+      stringMissingValue = pa.getString(0);
+      sourceMissingValue = sourceIsUnsigned ? pa.getUnsignedDouble(0) : pa.getNiceDouble(0);
+      destinationMissingValue =
+          scaleAddOffset ? sourceMissingValue * scaleFactor + addOffset : sourceMissingValue;
+      if (destinationDataPAType == PAType.STRING || destinationDataPAType == PAType.CHAR) {
+        stringMissingValue =
+            String2.canonical(stringMissingValue == null ? "" : stringMissingValue);
+        combinedAttributes.remove("missing_value");
+      } else {
+        stringMissingValue = "";
+        PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataPAType, 1, false);
+        pa2.addDouble(destinationMissingValue);
+        combinedAttributes.set(language, "missing_value", pa2);
+      }
+    }
+
+    pa = combinedAttributes.get(language, "_FillValue");
+    if (pa != null) {
+      stringFillValue = pa.getString(0);
+      sourceFillValue = sourceIsUnsigned ? pa.getUnsignedDouble(0) : pa.getNiceDouble(0);
+      destinationFillValue =
+          scaleAddOffset ? sourceFillValue * scaleFactor + addOffset : sourceFillValue;
+      if (destinationDataPAType == PAType.STRING || destinationDataPAType == PAType.CHAR) {
+        stringFillValue = String2.canonical(stringFillValue == null ? "" : stringFillValue);
+        combinedAttributes.remove("_FillValue");
+      } else {
+        stringFillValue = "";
+        PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataPAType, 1, false);
+        pa2.addDouble(destinationFillValue);
+        combinedAttributes.set(language, "_FillValue", pa2);
+      }
+    }
+    safeDestinationMissingValue =
+        Double.isNaN(destinationFillValue) ? destinationMissingValue : destinationFillValue;
+    safeStringMissingValue =
+        String2.isSomething(stringFillValue) ? stringFillValue : stringMissingValue;
+  }
+
   public Attributes sourceAttributes() {
     return sourceAttributes;
   }

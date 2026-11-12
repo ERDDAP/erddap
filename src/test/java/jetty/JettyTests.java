@@ -8465,7 +8465,7 @@ class JettyTests extends WireMockLifecycle {
   ]
 }
 </script>
-""";
+                """;
     po = Math.max(0, results.indexOf(expected.substring(0, 30)));
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);

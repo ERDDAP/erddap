@@ -2276,4 +2276,287 @@ class EDDGridFromZarrTests {
       com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
     }
   }
+
+  @Test
+  void testLowUpdateTruncationAndInPlaceModification() throws Throwable {
+    Initialization.edStatic();
+    Path tempDir = Files.createTempDirectory("zarr_grid_trunc_inplace_test");
+    try {
+      dev.zarr.zarrjava.store.FilesystemStore store =
+          new dev.zarr.zarrjava.store.FilesystemStore(tempDir);
+      dev.zarr.zarrjava.v3.Group.create(store.resolve());
+
+      dev.zarr.zarrjava.v3.DataType float64 = dev.zarr.zarrjava.v3.DataType.FLOAT64;
+
+      dev.zarr.zarrjava.core.Attributes timeAtts = new dev.zarr.zarrjava.core.Attributes();
+      timeAtts.set("units", "seconds since 1970-01-01T00:00:00Z");
+
+      dev.zarr.zarrjava.v3.Array timeArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(5)
+                      .withChunkShape(5)
+                      .withDataType(float64)
+                      .withDimensionNames("time"),
+              true);
+      timeArr.setAttributes(timeAtts);
+      timeArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {5},
+              new double[] {1000.0, 2000.0, 3000.0, 4000.0, 5000.0}));
+
+      dev.zarr.zarrjava.core.Attributes latAtts = new dev.zarr.zarrjava.core.Attributes();
+      latAtts.set("units", "degrees_north");
+      dev.zarr.zarrjava.v3.Array latArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("latitude"),
+              mb ->
+                  mb.withShape(2)
+                      .withChunkShape(2)
+                      .withDataType(float64)
+                      .withDimensionNames("latitude"),
+              true);
+      latArr.setAttributes(latAtts);
+      latArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {10.0, 20.0}));
+
+      dev.zarr.zarrjava.core.Attributes lonAtts = new dev.zarr.zarrjava.core.Attributes();
+      lonAtts.set("units", "degrees_east");
+      dev.zarr.zarrjava.v3.Array lonArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("longitude"),
+              mb ->
+                  mb.withShape(2)
+                      .withChunkShape(2)
+                      .withDataType(float64)
+                      .withDimensionNames("longitude"),
+              true);
+      lonArr.setAttributes(lonAtts);
+      lonArr.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {2}, new double[] {100.0, 110.0}));
+
+      dev.zarr.zarrjava.core.Attributes tempAtts = new dev.zarr.zarrjava.core.Attributes();
+      tempAtts.set("units", "degree_C");
+      dev.zarr.zarrjava.v3.Array tempArr =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(5, 2, 2)
+                      .withChunkShape(1, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true);
+      tempAtts.set("ioos_category", "Temperature");
+      tempArr.setAttributes(tempAtts);
+
+      double[] initTempData = new double[20];
+      for (int i = 0; i < 20; i++) initTempData[i] = 10.0 + i;
+      tempArr.write(
+          ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {5, 2, 2}, initTempData));
+
+      dev.zarr.zarrjava.core.Attributes globalAtts = new dev.zarr.zarrjava.core.Attributes();
+      globalAtts.set("title", "Initial Grid Dataset");
+      dev.zarr.zarrjava.v3.Group group = dev.zarr.zarrjava.v3.Group.open(store.resolve());
+      group.setAttributes(globalAtts);
+
+      LocalizedAttributes addGlobalAtts = new LocalizedAttributes();
+      addGlobalAtts.set(0, "summary", "Test Grid Summary");
+      addGlobalAtts.set(0, "institution", "NOAA");
+      addGlobalAtts.set(0, "infoUrl", "https://example.org");
+      addGlobalAtts.set(0, "cdm_data_type", "Grid");
+
+      List<AxisVariableInfo> axisVars = new ArrayList<>();
+      axisVars.add(new AxisVariableInfo("time", "time", new LocalizedAttributes(), null));
+      axisVars.add(new AxisVariableInfo("latitude", "latitude", new LocalizedAttributes(), null));
+      axisVars.add(new AxisVariableInfo("longitude", "longitude", new LocalizedAttributes(), null));
+
+      LocalizedAttributes tempLocAtts = new LocalizedAttributes();
+      tempLocAtts.set(0, "ioos_category", "Temperature");
+
+      List<DataVariableInfo> dataVars = new ArrayList<>();
+      dataVars.add(new DataVariableInfo("temperature", "temperature", tempLocAtts, "double"));
+
+      EDDGridFromZarr dataset =
+          new EDDGridFromZarr(
+              "zarr_grid_trunc_inplace_id",
+              null,
+              null,
+              true,
+              new StringArray(),
+              null,
+              null,
+              null,
+              null,
+              addGlobalAtts,
+              axisVars,
+              dataVars,
+              10080,
+              0,
+              tempDir.toString(),
+              "",
+              -1,
+              -1,
+              true);
+
+      assertEquals(5, dataset.axisVariables()[0].sourceValues().size());
+      assertEquals(
+          "1970-01-01T00:16:40Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_start"));
+      assertEquals(
+          "1970-01-01T01:23:20Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+
+      // 1. Unmodified store returns false
+      boolean updatedNoOp = dataset.lowUpdate(0, "testNoOp", System.currentTimeMillis());
+      assertFalse(updatedNoOp, "lowUpdate should return false on unmodified grid store");
+
+      // 2. Truncate outer axis from 5 to 3
+      Thread.sleep(50);
+      dev.zarr.zarrjava.v3.Array timeTrunc =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(3)
+                      .withChunkShape(3)
+                      .withDataType(float64)
+                      .withDimensionNames("time"),
+              true);
+      timeTrunc.setAttributes(timeAtts);
+      timeTrunc.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE, new int[] {3}, new double[] {1000.0, 2000.0, 3000.0}));
+
+      dev.zarr.zarrjava.v3.Array tempTrunc =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("temperature"),
+              mb ->
+                  mb.withShape(3, 2, 2)
+                      .withChunkShape(1, 2, 2)
+                      .withDataType(float64)
+                      .withDimensionNames("time", "latitude", "longitude"),
+              true);
+      tempTrunc.setAttributes(tempAtts);
+      double[] truncTempData = new double[12];
+      for (int i = 0; i < 12; i++) truncTempData[i] = 10.0 + i;
+      tempTrunc.write(
+          ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {3, 2, 2}, truncTempData));
+
+      boolean truncated = dataset.lowUpdate(0, "testTruncation", System.currentTimeMillis());
+      assertTrue(truncated, "lowUpdate should return true after outer axis truncation");
+      assertEquals(
+          3, dataset.axisVariables()[0].sourceValues().size(), "Outer axis length should be 3");
+
+      // Assert time_coverage_end matches coordinate index 2 (3000 epoch seconds =
+      // 1970-01-01T00:50:00Z)
+      String timeEnd = dataset.combinedGlobalAttributes().getString(0, "time_coverage_end");
+      assertNotNull(timeEnd);
+      assertEquals("1970-01-01T00:50:00Z", timeEnd);
+
+      // Assert DAP query for slice index 2 succeeds
+      com.cohort.array.PrimitiveArray slice2 =
+          dataset.getSourceDataFromFile(
+              dataset.dataVariables()[0],
+              new int[] {2, 0, 0},
+              new int[] {1, 1, 1},
+              new int[] {2, 0, 0});
+      assertNotNull(slice2);
+      assertEquals(1, slice2.size());
+      assertEquals(18.0, slice2.getDouble(0), 1e-6);
+
+      // Assert querying slice index 3 throws an invalid slice bounds exception
+      assertThrows(
+          Throwable.class,
+          () -> {
+            dataset.getSourceDataFromFile(
+                dataset.dataVariables()[0],
+                new int[] {3, 0, 0},
+                new int[] {1, 1, 1},
+                new int[] {3, 0, 0});
+          },
+          "Querying slice index 3 after truncation to 3 should throw out of bounds");
+
+      // 3. In-place modification: Overwrite chunk 0 coordinate and data values
+      Thread.sleep(50);
+      timeTrunc.write(
+          new long[] {0},
+          ucar.ma2.Array.factory(ucar.ma2.DataType.DOUBLE, new int[] {1}, new double[] {1200.0}));
+      tempTrunc.write(
+          new long[] {0, 0, 0},
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {1, 2, 2},
+              new double[] {99.0, 98.0, 97.0, 96.0}));
+
+      globalAtts.set("title", "Modified Grid Dataset");
+      group.setAttributes(globalAtts);
+
+      tempAtts.set("grid_custom_att", "grid_new_val");
+      tempTrunc.setAttributes(tempAtts);
+
+      boolean inPlaceUpdated = dataset.lowUpdate(0, "testInPlace", System.currentTimeMillis());
+      assertTrue(inPlaceUpdated, "lowUpdate should return true after in-place modification");
+      assertEquals(3, dataset.axisVariables()[0].sourceValues().size());
+      assertEquals(
+          "Modified Grid Dataset", dataset.combinedGlobalAttributes().getString(0, "title"));
+      assertEquals(
+          "1970-01-01T00:20:00Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_start"));
+      assertEquals(
+          "1970-01-01T00:50:00Z",
+          dataset.combinedGlobalAttributes().getString(0, "time_coverage_end"));
+      assertEquals(
+          "PT1800S", dataset.combinedGlobalAttributes().getString(0, "time_coverage_duration"));
+      assertEquals(
+          "grid_new_val",
+          dataset.dataVariables()[0].combinedAttributes().getString(0, "grid_custom_att"));
+
+      com.cohort.array.PrimitiveArray modSlice0 =
+          dataset.getSourceDataFromFile(
+              dataset.dataVariables()[0],
+              new int[] {0, 0, 0},
+              new int[] {1, 1, 1},
+              new int[] {0, 0, 0});
+      assertNotNull(modSlice0);
+      assertEquals(99.0, modSlice0.getDouble(0), 1e-6);
+
+      // 4. Non-monotonic coordinates protection: write non-monotonic values and ensure lowUpdate
+      // safely catches and rejects
+      Thread.sleep(50);
+      timeTrunc.write(
+          ucar.ma2.Array.factory(
+              ucar.ma2.DataType.DOUBLE,
+              new int[] {3},
+              new double[] {2000.0, 1000.0, 3000.0})); // non-monotonic!
+
+      boolean nonMonotonicHandled =
+          dataset.lowUpdate(0, "testNonMonotonic", System.currentTimeMillis());
+      assertFalse(
+          nonMonotonicHandled,
+          "lowUpdate should gracefully defer and return false on non-monotonic coordinates");
+
+      // 5. Grid outer axis cannot be 0 slices
+      Thread.sleep(50);
+      dev.zarr.zarrjava.v3.Array timeZero =
+          dev.zarr.zarrjava.v3.Array.create(
+              store.resolve("time"),
+              mb ->
+                  mb.withShape(0)
+                      .withChunkShape(1)
+                      .withDataType(float64)
+                      .withDimensionNames("time"),
+              true);
+      timeZero.setAttributes(timeAtts);
+
+      boolean zeroSlicesRejected =
+          dataset.lowUpdate(0, "testZeroSlices", System.currentTimeMillis());
+      assertFalse(zeroSlicesRejected, "lowUpdate should reject outer axis length < 1");
+
+    } finally {
+      com.cohort.util.File2.deleteAllFiles(tempDir.toString(), true, true);
+    }
+  }
 }
