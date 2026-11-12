@@ -1610,4 +1610,356 @@ class ErddapTests {
         !result.contains("<script>alert(1)</script>"), "Reflected XSS in cf input value");
     Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
   }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericAcronyms.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert a Common Oceanic/Atmospheric Acronym to/from a Full Name"),
+        "Missing Convert Oceanic/Atmospheric Acronyms title");
+    Test.ensureTrue(result.contains("<noscript>"), "Missing noscript tag in Acronyms page");
+    Test.ensureTrue(
+        result.contains("requires that JavaScript be enabled"),
+        "Missing noscript message in Acronyms page");
+    Test.ensureTrue(
+        result.contains("convert/oceanicAtmosphericAcronyms.html"), "Missing form action");
+    Test.ensureTrue(result.contains("name=\"getFullName\""), "Missing getFullName form");
+    Test.ensureTrue(result.contains("name=\"getAcronym\""), "Missing getAcronym form");
+    Test.ensureTrue(result.contains("value=\"Convert\""), "Missing Convert button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsWithAcronymQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsWithAcronymQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericAcronyms.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/convert/".length(),
+        "acronym=NOAA");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("NOAA = National Oceanic and Atmospheric Administration"),
+        "Missing converted acronym result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsWithFullNameQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsWithFullNameQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericAcronyms.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/convert/".length(),
+        "fullName=National+Oceanic+and+Atmospheric+Administration");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("National Oceanic and Atmospheric Administration = NOAA"),
+        "Missing converted full name result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsErrorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsErrorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericAcronyms.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/convert/".length(),
+        "acronym=INVALIDXYZ");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericAcronyms.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert Oceanic/Atmospheric Acronyms"),
+        "Missing Convert Oceanic/Atmospheric Acronyms title in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/fr/convert/oceanicAtmosphericAcronyms.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_OA_ACRONYMS_TO_FROM, frenchLang);
+    Test.ensureTrue(result.contains(expectedFrenchMsg), "Missing French acronyms converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAAcronymsXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAAcronymsXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericAcronyms.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericAcronyms.html",
+        "/erddap/convert/".length(),
+        "acronym=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E%22");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in acronym input value");
+    Test.ensureTrue(
+        result.contains(
+            com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>\"")),
+        "Attribute not escaped with XML.encodeAsHTMLAttribute");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericVariableNames.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert a Common Oceanic/Atmospheric Variable Name to/from a Full Name"),
+        "Missing Convert Oceanic/Atmospheric Variable Names title");
+    Test.ensureTrue(result.contains("<noscript>"), "Missing noscript tag in Variable Names page");
+    Test.ensureTrue(
+        result.contains("requires that JavaScript be enabled"),
+        "Missing noscript message in Variable Names page");
+    Test.ensureTrue(
+        result.contains("convert/oceanicAtmosphericVariableNames.html"), "Missing form action");
+    Test.ensureTrue(result.contains("name=\"getFullName\""), "Missing getFullName form");
+    Test.ensureTrue(result.contains("name=\"getVariableName\""), "Missing getVariableName form");
+    Test.ensureTrue(result.contains("value=\"Convert\""), "Missing Convert button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesWithVariableNameQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesWithVariableNameQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericVariableNames.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/convert/".length(),
+        "variableName=sst");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("sst = Sea Surface Temperature"), "Missing converted variable name result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesWithFullNameQueryJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesWithFullNameQueryJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericVariableNames.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/convert/".length(),
+        "fullName=Sea+Surface+Temperature");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Sea Surface Temperature = sst"), "Missing converted full name result");
+    Test.ensureTrue(result.contains("class=\"successColor\""), "Missing successColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesErrorJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesErrorJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericVariableNames.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/convert/".length(),
+        "variableName=INVALIDXYZ");
+    String result = ctx.getOutput();
+    Test.ensureTrue(result.contains("class=\"warningColor\""), "Missing warningColor class");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericVariableNames.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Convert Oceanic/Atmospheric Variable Names"),
+        "Missing Convert Oceanic/Atmospheric Variable Names title in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/fr/convert/oceanicAtmosphericVariableNames.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM,
+            frenchLang);
+    Test.ensureTrue(
+        result.contains(expectedFrenchMsg), "Missing French variable names converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertOAVariableNamesXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertOAVariableNamesXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx =
+        createMockWebContext("/erddap/convert/oceanicAtmosphericVariableNames.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/oceanicAtmosphericVariableNames.html",
+        "/erddap/convert/".length(),
+        "variableName=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E%22");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in variableName input value");
+    Test.ensureTrue(
+        result.contains(
+            com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>\"")),
+        "Attribute not escaped with XML.encodeAsHTMLAttribute");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
 }
