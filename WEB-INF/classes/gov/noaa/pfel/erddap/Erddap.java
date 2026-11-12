@@ -21249,144 +21249,198 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert FIPS County",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">"
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "FIPS County") +
-              // The content in the parenthese requires sepcial handling, because simply calling
-              // youAreHere(language, String, String, String)
-              // will create an invalid URL in the page title. Similar for several other tags
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY_INTRO, language)
-              + "\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/fipscounty.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
 
-      // Convert from Code to County
-      writer.write(
-          HtmlWidgets.ifJavaScriptDisabled
-              + "\n"
-              + widgets.beginForm("getCounty", "GET", tErddapUrl + "/convert/fipscounty.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_A_COUNTY_NAME, language),
-                  "</strong>\n"
-                      + widgets.textField(
-                          "code",
-                          codeTooltip,
-                          6,
-                          10,
-                          answerCode.length() > 0
-                              ? answerCode
-                              : queryCode.length() > 0 ? queryCode : defaultCode,
-                          "")
-                      + "\n<strong>")
-              + "\n&nbsp;&nbsp;"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
-                  "")
-              + "\n");
+        String selectedCounty =
+            answerCounty.length() > 0
+                ? answerCounty
+                : queryCounty.length() > 0 ? queryCounty : defaultCounty;
+        String[] options = fipsTable.getColumn(1).toStringArray();
+        String countySelectHtml =
+            widgets.select(
+                "county",
+                countyTooltip,
+                1,
+                options,
+                String2.indexOf(options, selectedCounty),
+                "onchange=\"this.form.submit();\"");
 
-      if (toCounty) {
-        writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerCode)
-                    + " = "
-                    + XML.encodeAsHTML(answerCounty)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        String codeValue =
+            answerCode.length() > 0 ? answerCode : queryCode.length() > 0 ? queryCode : defaultCode;
+
+        params.put("codeValue", codeValue);
+        params.put("codeTooltip", codeTooltip);
+        params.put("toCounty", toCounty);
+        params.put("answerCode", answerCode);
+        params.put("answerCounty", answerCounty);
+
+        params.put("countySelectHtml", countySelectHtml);
+        params.put("toCode", toCode);
+
+        params.put("fipsFileTypes", plainLinkExamples(tErddapUrl, "/convert/fipscounty", ""));
+        params.put("tError", tError);
+
+        engine.render("convert_fips_county.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
-        writer.write("<br>&nbsp;\n");
-      }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // Convert from County to Code
-      String selectedCounty =
-          answerCounty.length() > 0
-              ? answerCounty
-              : queryCounty.length() > 0 ? queryCounty : defaultCounty;
-      String options[] = fipsTable.getColumn(1).toStringArray();
-      writer.write(
-          "<br>"
-              + widgets.beginForm("getCode", "GET", tErddapUrl + "/convert/fipscounty.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_A_FIPS_CODE, language),
-                  "</strong>\n"
-                      + widgets.select(
-                          "county",
-                          countyTooltip,
-                          1,
-                          options,
-                          String2.indexOf(options, selectedCounty),
-                          "onchange=\"this.form.submit();\"")
-                      + "\n<strong>")
-              + "\n&nbsp;&nbsp;"
-              +
-              // widgets.button("submit", null, "", EDStatic.messages.get(Message.CONVERT,
-              // language), "") +
-              "\n");
-
-      if (toCode) {
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerCounty)
-                    + " = "
-                    + XML.encodeAsHTML(answerCode)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
+            "<div class=\"standard_width\">"
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert", "FIPS County") +
+                // The content in the parenthese requires sepcial handling, because simply calling
+                // youAreHere(language, String, String, String)
+                // will create an invalid URL in the page title. Similar for several other tags
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.FIPS_COUNTY_CODES, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY_INTRO, language)
+                + "\n");
+
+        // Convert from Code to County
+        writer.write(
+            HtmlWidgets.ifJavaScriptDisabled
+                + "\n"
+                + widgets.beginForm("getCounty", "GET", tErddapUrl + "/convert/fipscounty.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_A_COUNTY_NAME, language),
+                    "</strong>\n"
+                        + widgets.textField(
+                            "code",
+                            codeTooltip,
+                            6,
+                            10,
+                            answerCode.length() > 0
+                                ? answerCode
+                                : queryCode.length() > 0 ? queryCode : defaultCode,
+                            "")
+                        + "\n<strong>")
+                + "\n&nbsp;&nbsp;"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
+                    "")
+                + "\n");
+
+        if (toCounty) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerCode)
+                      + " = "
+                      + XML.encodeAsHTML(answerCounty)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // Convert from County to Code
+        String selectedCounty =
+            answerCounty.length() > 0
+                ? answerCounty
+                : queryCounty.length() > 0 ? queryCounty : defaultCounty;
+        String[] options = fipsTable.getColumn(1).toStringArray();
+        writer.write(
+            "<br>"
+                + widgets.beginForm("getCode", "GET", tErddapUrl + "/convert/fipscounty.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_A_FIPS_CODE, language),
+                    "</strong>\n"
+                        + widgets.select(
+                            "county",
+                            countyTooltip,
+                            1,
+                            options,
+                            String2.indexOf(options, selectedCounty),
+                            "onchange=\"this.form.submit();\"")
+                        + "\n<strong>")
+                + "\n&nbsp;&nbsp;"
+                +
+                // widgets.button("submit", null, "", EDStatic.messages.get(Message.CONVERT,
+                // language), "") +
+                "\n");
+
+        if (toCode) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerCounty)
+                      + " = "
+                      + XML.encodeAsHTML(answerCode)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // reset the form
+        writer.write(
+            "<p><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/fipscounty.html\">"
+                + EDStatic.messages.get(Message.RESET_THE_FORM, language)
+                + "</a>\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
+                + "\n");
+
+        // get the entire list
+        writer.write(
+            "<p>Or, view/download the entire FIPS county list in these file types:"
+                + "  <br>"
+                + plainLinkExamples(tErddapUrl, "/convert/fipscounty", ""));
+
+        // notes
+        writer.write(EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY_NOTES, language));
+
+        // Info about .txt fips service option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY_SERVICE, language),
+                    tErddapUrl)
+                + "\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // reset the form
-      writer.write(
-          "<p><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/fipscounty.html\">"
-              + EDStatic.messages.get(Message.RESET_THE_FORM, language)
-              + "</a>\n"
-              + "<p>"
-              + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
-              + "\n");
-
-      // get the entire list
-      writer.write(
-          "<p>Or, view/download the entire FIPS county list in these file types:"
-              + "  <br>"
-              + plainLinkExamples(tErddapUrl, "/convert/fipscounty", ""));
-
-      // notes
-      writer.write(EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY_NOTES, language));
-
-      // Info about .txt fips service option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_FIPS_COUNTY_SERVICE, language), tErddapUrl)
-              + "\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -22053,26 +22107,28 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 
     // process queryGCMD
     String tError = null;
+    String[] cfMatches = null;
+    String[] gcmdMatches = null;
     if (toCF) {
       // process cf=,   a toCF query
-      String ansar[] = CfToFromGcmd.gcmdToCf(queryGCMD);
-      if (ansar.length == 0) {
+      cfMatches = CfToFromGcmd.gcmdToCf(queryGCMD);
+      if (cfMatches.length == 0) {
         tError = "gcmd=\"" + queryGCMD + "\" has no corresponding CF Standard Names.";
       } else {
         // success
         answerGCMD = queryGCMD;
-        answerCF = String2.toNewlineString(ansar);
+        answerCF = String2.toNewlineString(cfMatches);
       }
 
     } else if (toGCMD) {
       // process gcmd=,   a toGCMD query
-      String ansar[] = CfToFromGcmd.cfToGcmd(queryCF);
-      if (ansar.length == 0) {
+      gcmdMatches = CfToFromGcmd.cfToGcmd(queryCF);
+      if (gcmdMatches.length == 0) {
         tError = "cf=\"" + queryCF + "\" has no corresponding GCMD Science Keywords.";
       } else {
         // success
         answerCF = queryCF;
-        answerGCMD = String2.toNewlineString(ansar);
+        answerGCMD = String2.toNewlineString(gcmdMatches);
       }
 
     } else {
@@ -22121,157 +22177,230 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert Keywords",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">"
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "keywords") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.KEYWORDS, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_KEYWORDS_INTRO, language)
-              + "\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.KEYWORDS, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/keywords.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
 
-      // Convert from CF to GCMD
-      String selectedCF = queryCF.length() > 0 ? queryCF : defaultCF;
-      writer.write(
-          HtmlWidgets.ifJavaScriptDisabled
-              + "\n"
-              + widgets.beginForm("getGCMD", "GET", tErddapUrl + "/convert/keywords.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_GCMD, language),
-                  "</strong>\n<br>"
-                      + widgets.select(
-                          "cf",
-                          EDStatic.messages.get(Message.CONVERT_KEYWORDS_CF_TOOLTIP, language),
-                          1,
-                          CfToFromGcmd.cfNames,
-                          String2.indexOf(CfToFromGcmd.cfNames, selectedCF),
-                          "onchange=\"this.form.submit();\"")
-                      + "\n<br><strong>")
-              +
-              // widgets.button("submit", null, "", "Convert", "") +
-              "\n");
+        String selectedCF = queryCF.length() > 0 ? queryCF : defaultCF;
+        String cfSelectHtml =
+            widgets.select(
+                "cf",
+                EDStatic.messages.get(Message.CONVERT_KEYWORDS_CF_TOOLTIP, language),
+                1,
+                CfToFromGcmd.cfNames,
+                String2.indexOf(CfToFromGcmd.cfNames, selectedCF),
+                "onchange=\"this.form.submit();\"");
 
-      if (toGCMD) {
-        String tAnswerGCMD = String2.replaceAll(answerGCMD, ">", "&gt;");
-        tAnswerGCMD = String2.replaceAll(tAnswerGCMD, "\n", "\n<br>");
-        writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + answerCF
-                    + " =<br>"
-                    + tAnswerGCMD
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        String selectedGCMD = queryGCMD.length() > 0 ? queryGCMD : defaultGCMD;
+        String gcmdSelectHtml =
+            widgets.select(
+                "gcmd",
+                EDStatic.messages.get(Message.CONVERT_KEYWORDS_GCMD_TOOLTIP, language),
+                1,
+                CfToFromGcmd.gcmdKeywords,
+                String2.indexOf(CfToFromGcmd.gcmdKeywords, selectedGCMD),
+                "onchange=\"this.form.submit();\"");
+
+        List<String> answerGcmdList =
+            toGCMD && tError == null && gcmdMatches != null
+                ? Arrays.asList(gcmdMatches)
+                : List.of();
+
+        List<String> answerCfList =
+            toCF && tError == null && cfMatches != null ? Arrays.asList(cfMatches) : List.of();
+
+        params.put("cfSelectHtml", cfSelectHtml);
+        params.put("toGCMD", toGCMD);
+        params.put("answerCF", answerCF);
+        params.put("answerGcmdList", answerGcmdList);
+
+        params.put("gcmdSelectHtml", gcmdSelectHtml);
+        params.put("toCF", toCF);
+        params.put("answerGCMD", answerGCMD);
+        params.put("answerCfList", answerCfList);
+
+        params.put(
+            "cfToGcmdFileTypes", plainLinkExamples(tErddapUrl, "/convert/keywordsCfToGcmd", ""));
+        params.put("cfFileTypes", plainLinkExamples(tErddapUrl, "/convert/keywordsCf", ""));
+        params.put("gcmdFileTypes", plainLinkExamples(tErddapUrl, "/convert/keywordsGcmd", ""));
+        params.put("externalLinkHtml", EDStatic.messages.externalLinkHtml(language, tErddapUrl));
+        params.put("tError", tError);
+
+        engine.render("convert_keywords.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
-        writer.write("<br>&nbsp;\n");
-      }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // Convert from GCMD to CF
-      String selectedGCMD = queryGCMD.length() > 0 ? queryGCMD : defaultGCMD;
-      writer.write(
-          "<br>"
-              + widgets.beginForm("getCF", "GET", tErddapUrl + "/convert/keywords.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_CF_STANDARD_NAMES, language),
-                  "</strong>\n<br>"
-                      + widgets.select(
-                          "gcmd",
-                          EDStatic.messages.get(Message.CONVERT_KEYWORDS_GCMD_TOOLTIP, language),
-                          1,
-                          CfToFromGcmd.gcmdKeywords,
-                          String2.indexOf(CfToFromGcmd.gcmdKeywords, selectedGCMD),
-                          "onchange=\"this.form.submit();\"")
-                      + "\n<br><strong>")
-              +
-              // widgets.button("submit", null, "", "Convert", "") +
-              "\n");
-
-      if (toCF) {
-        String tAnswerCF = String2.replaceAll(answerCF, "\n", "\n<br>");
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + answerGCMD
-                    + " =<br>"
-                    + tAnswerCF
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
+            "<div class=\"standard_width\">"
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert", "keywords") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.KEYWORDS, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_KEYWORDS, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_KEYWORDS_INTRO, language)
+                + "\n");
+
+        // Convert from CF to GCMD
+        String selectedCF = queryCF.length() > 0 ? queryCF : defaultCF;
+        writer.write(
+            HtmlWidgets.ifJavaScriptDisabled
+                + "\n"
+                + widgets.beginForm("getGCMD", "GET", tErddapUrl + "/convert/keywords.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_GCMD, language),
+                    "</strong>\n<br>"
+                        + widgets.select(
+                            "cf",
+                            EDStatic.messages.get(Message.CONVERT_KEYWORDS_CF_TOOLTIP, language),
+                            1,
+                            CfToFromGcmd.cfNames,
+                            String2.indexOf(CfToFromGcmd.cfNames, selectedCF),
+                            "onchange=\"this.form.submit();\"")
+                        + "\n<br><strong>")
+                +
+                // widgets.button("submit", null, "", "Convert", "") +
+                "\n");
+
+        if (toGCMD) {
+          String tAnswerGCMD = String2.replaceAll(answerGCMD, ">", "&gt;");
+          tAnswerGCMD = String2.replaceAll(tAnswerGCMD, "\n", "\n<br>");
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + answerCF
+                      + " =<br>"
+                      + tAnswerGCMD
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // Convert from GCMD to CF
+        String selectedGCMD = queryGCMD.length() > 0 ? queryGCMD : defaultGCMD;
+        writer.write(
+            "<br>"
+                + widgets.beginForm("getCF", "GET", tErddapUrl + "/convert/keywords.html", "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_CF_STANDARD_NAMES, language),
+                    "</strong>\n<br>"
+                        + widgets.select(
+                            "gcmd",
+                            EDStatic.messages.get(Message.CONVERT_KEYWORDS_GCMD_TOOLTIP, language),
+                            1,
+                            CfToFromGcmd.gcmdKeywords,
+                            String2.indexOf(CfToFromGcmd.gcmdKeywords, selectedGCMD),
+                            "onchange=\"this.form.submit();\"")
+                        + "\n<br><strong>")
+                +
+                // widgets.button("submit", null, "", "Convert", "") +
+                "\n");
+
+        if (toCF) {
+          String tAnswerCF = String2.replaceAll(answerCF, "\n", "\n<br>");
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + answerGCMD
+                      + " =<br>"
+                      + tAnswerCF
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // reset the form
+        writer.write(
+            "<p><strong>Other Options</strong>\n"
+                + "<ul>\n"
+                + "<li><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/keywords.html\">"
+                + EDStatic.messages.get(Message.RESET_THE_FORM, language)
+                + "</a>\n"
+                + "  <br>&nbsp;\n"
+                + "<li>"
+                + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
+                + "\n"
+                + "  <br>&nbsp;\n"
+                +
+
+                // get the entire CF or GCMD list
+                "<li>View/download a file which has all of the CF to GCMD conversion information:"
+                + "  <br>"
+                + plainLinkExamples(tErddapUrl, "/convert/keywordsCfToGcmd", "")
+                + "  <br>The GCMD to CF conversion information can be derived from this."
+                + "  <br>&nbsp;\n"
+                + "<li>View/download the entire CF Standard Names list in these file types:"
+                + "  <br>"
+                + plainLinkExamples(tErddapUrl, "/convert/keywordsCf", "")
+                + "  <br>Source: <a rel=\"bookmark\""
+                + " href=\"https://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html\">Version"
+                + " 18, dated 22 July 2011"
+                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                + "</a>.\n"
+                + "  <br>&nbsp;\n"
+                + "<li>View/download the entire GCMD Science Keywords list in these file types:"
+                + "  <br>"
+                + plainLinkExamples(tErddapUrl, "/convert/keywordsGcmd", "")
+                + "  <br>Source: <a rel=\"bookmark\""
+                + " href=\"https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access\">the"
+                + " version dated 2008-02-05"
+                + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
+                + "</a>.\n"
+                + "    The requested citation is<kbd>\n"
+                + "  <br>Olsen, L.M., G. Major, K. Shein, J. Scialdone, R. Vogel, S. Leicester,\n"
+                + "  <br>H. Weir, S. Ritz, T. Stevens, M. Meaux, C.Solomon, R. Bilodeau,\n"
+                + "  <br>M. Holland, T. Northcutt, R. A. Restrepo, 2007 . NASA/Global Change\n"
+                + "  <br>Master Directory (GCMD) Earth Science Keywords. Version 6.0.0.0.0 </kbd>\n"
+                + "</ul>\n"
+                + "\n");
+
+        // notes
+        writer.write(EDStatic.messages.get(Message.CONVERT_KEYWORDS_NOTES, language));
+
+        // Info about .txt time service option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_KEYWORDS_SERVICE, language), tErddapUrl)
+                + "\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // reset the form
-      writer.write(
-          "<p><strong>Other Options</strong>\n"
-              + "<ul>\n"
-              + "<li><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/keywords.html\">"
-              + EDStatic.messages.get(Message.RESET_THE_FORM, language)
-              + "</a>\n"
-              + "  <br>&nbsp;\n"
-              + "<li>"
-              + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
-              + "\n"
-              + "  <br>&nbsp;\n"
-              +
-
-              // get the entire CF or GCMD list
-              "<li>View/download a file which has all of the CF to GCMD conversion information:"
-              + "  <br>"
-              + plainLinkExamples(tErddapUrl, "/convert/keywordsCfToGcmd", "")
-              + "  <br>The GCMD to CF conversion information can be derived from this."
-              + "  <br>&nbsp;\n"
-              + "<li>View/download the entire CF Standard Names list in these file types:"
-              + "  <br>"
-              + plainLinkExamples(tErddapUrl, "/convert/keywordsCf", "")
-              + "  <br>Source: <a rel=\"bookmark\" href=\"https://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html\">Version 18, dated 22 July 2011"
-              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-              + "</a>.\n"
-              + "  <br>&nbsp;\n"
-              + "<li>View/download the entire GCMD Science Keywords list in these file types:"
-              + "  <br>"
-              + plainLinkExamples(tErddapUrl, "/convert/keywordsGcmd", "")
-              + "  <br>Source: <a rel=\"bookmark\" href=\"https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access\">the version dated 2008-02-05"
-              + EDStatic.messages.externalLinkHtml(language, tErddapUrl)
-              + "</a>.\n"
-              + "    The requested citation is<kbd>\n"
-              + "  <br>Olsen, L.M., G. Major, K. Shein, J. Scialdone, R. Vogel, S. Leicester,\n"
-              + "  <br>H. Weir, S. Ritz, T. Stevens, M. Meaux, C.Solomon, R. Bilodeau,\n"
-              + "  <br>M. Holland, T. Northcutt, R. A. Restrepo, 2007 . NASA/Global Change\n"
-              + "  <br>Master Directory (GCMD) Earth Science Keywords. Version 6.0.0.0.0 </kbd>\n"
-              + "</ul>\n"
-              + "\n");
-
-      // notes
-      writer.write(EDStatic.messages.get(Message.CONVERT_KEYWORDS_NOTES, language));
-
-      // Info about .txt time service option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_KEYWORDS_SERVICE, language), tErddapUrl)
-              + "\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -24828,7 +24957,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "convert/urls.html",
                 "convert/color.html",
                 "convert/time.html",
-                "convert/units.html")
+                "convert/units.html",
+                "convert/fipscounty.html",
+                "convert/keywords.html")
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
