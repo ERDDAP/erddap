@@ -41,7 +41,7 @@
     <form method="GET" action="${tErddapUrl}/convert/fipscounty.html" name="getCounty">
         $unsafe{MessageFormat.format(
             TemplateHelper.getMessage(Message.CONVERT_TO_A_COUNTY_NAME, language),
-            "</strong>\n<input type=\"text\" name=\"code\" value=\"" + XML.encodeAsHTMLAttribute(codeValue) + "\" size=\"10\" maxlength=\"15\" title=\"" + XML.encodeAsHTMLAttribute(codeTooltip) + "\">\n<strong>"
+            "</strong>\n<input type=\"text\" name=\"code\" value=\"" + XML.encodeAsHTMLAttribute(codeValue) + "\" size=\"6\" maxlength=\"10\" title=\"" + XML.encodeAsHTMLAttribute(codeTooltip) + "\">\n<strong>"
         )}
         &nbsp;&nbsp;
         <button type="submit" value="Convert">
