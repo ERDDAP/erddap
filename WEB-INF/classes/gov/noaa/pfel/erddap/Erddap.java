@@ -21596,142 +21596,208 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert Oceanic/Atmospheric Acronyms",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">"
-              +
-              // read coments in doConverFipsCounty
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "Oceanic/Atmospheric
-              // Acronyms") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_INTRO, language)
-              + "\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/oceanicAtmosphericAcronyms.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
 
-      // Convert from Acronym to FullName
-      writer.write(
-          HtmlWidgets.ifJavaScriptDisabled
-              + "\n"
-              + widgets.beginForm(
-                  "getFullName", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_A_FULL_NAME, language),
-                  "</strong>\n"
-                      + widgets.textField(
-                          "acronym",
-                          acronymTooltip,
-                          20,
-                          40,
-                          answerAcronym.length() > 0
-                              ? answerAcronym
-                              : queryAcronym.length() > 0 ? queryAcronym : defaultAcronym,
-                          "")
-                      + "\n<strong>")
-              + "\n&nbsp;&nbsp;"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
-                  "")
-              + "\n");
+        String selectedFullName =
+            answerFullName.length() > 0
+                ? answerFullName
+                : queryFullName.length() > 0 ? queryFullName : defaultFullName;
+        String[] options = fullNameSA.toStringArray();
+        Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
+        String fullNameSelectHtml =
+            widgets.select(
+                "fullName",
+                fullNameTooltip,
+                1,
+                options,
+                String2.indexOf(options, selectedFullName),
+                "onchange=\"this.form.submit();\"");
 
-      if (toFullName) {
-        writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerAcronym)
-                    + " = "
-                    + XML.encodeAsHTML(answerFullName)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        String acronymValue =
+            answerAcronym.length() > 0
+                ? answerAcronym
+                : queryAcronym.length() > 0 ? queryAcronym : defaultAcronym;
+
+        params.put("acronymValue", acronymValue);
+        params.put("acronymTooltip", acronymTooltip);
+        params.put("toFullName", toFullName);
+        params.put("answerAcronym", answerAcronym);
+        params.put("answerFullName", answerFullName);
+
+        params.put("fullNameSelectHtml", fullNameSelectHtml);
+        params.put("toAcronym", toAcronym);
+
+        params.put(
+            "acronymFileTypes",
+            plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericAcronyms", ""));
+        params.put("tError", tError);
+
+        engine.render("convert_oceanic_atmospheric_acronyms.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
-        writer.write("<br>&nbsp;\n");
-      }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // Convert from FullName to Acronym
-      String selectedFullName =
-          answerFullName.length() > 0
-              ? answerFullName
-              : queryFullName.length() > 0 ? queryFullName : defaultFullName;
-      String options[] = fullNameSA.toStringArray();
-      Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
-      writer.write(
-          "<br>"
-              + widgets.beginForm(
-                  "getAcronym", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_AN_ACRONYM, language),
-                  "<br></strong>\n"
-                      + widgets.select(
-                          "fullName",
-                          fullNameTooltip,
-                          1,
-                          options,
-                          String2.indexOf(options, selectedFullName),
-                          "onchange=\"this.form.submit();\"")
-                      + "\n<br><strong>")
-              + "\n");
-
-      if (toAcronym) {
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerFullName)
-                    + " = "
-                    + XML.encodeAsHTML(answerAcronym)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
+            "<div class=\"standard_width\">"
+                +
+                // read coments in doConverFipsCounty
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert",
+                // "Oceanic/Atmospheric
+                // Acronyms") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_TO_FROM, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_INTRO, language)
+                + "\n");
+
+        // Convert from Acronym to FullName
+        writer.write(
+            HtmlWidgets.ifJavaScriptDisabled
+                + "\n"
+                + widgets.beginForm(
+                    "getFullName",
+                    "GET",
+                    tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html",
+                    "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_A_FULL_NAME, language),
+                    "</strong>\n"
+                        + widgets.textField(
+                            "acronym",
+                            acronymTooltip,
+                            20,
+                            40,
+                            answerAcronym.length() > 0
+                                ? answerAcronym
+                                : queryAcronym.length() > 0 ? queryAcronym : defaultAcronym,
+                            "")
+                        + "\n<strong>")
+                + "\n&nbsp;&nbsp;"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
+                    "")
+                + "\n");
+
+        if (toFullName) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerAcronym)
+                      + " = "
+                      + XML.encodeAsHTML(answerFullName)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // Convert from FullName to Acronym
+        String selectedFullName =
+            answerFullName.length() > 0
+                ? answerFullName
+                : queryFullName.length() > 0 ? queryFullName : defaultFullName;
+        String[] options = fullNameSA.toStringArray();
+        Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
+        writer.write(
+            "<br>"
+                + widgets.beginForm(
+                    "getAcronym",
+                    "GET",
+                    tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html",
+                    "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_AN_ACRONYM, language),
+                    "<br></strong>\n"
+                        + widgets.select(
+                            "fullName",
+                            fullNameTooltip,
+                            1,
+                            options,
+                            String2.indexOf(options, selectedFullName),
+                            "onchange=\"this.form.submit();\"")
+                        + "\n<br><strong>")
+                + "\n");
+
+        if (toAcronym) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerFullName)
+                      + " = "
+                      + XML.encodeAsHTML(answerAcronym)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // reset the form
+        writer.write(
+            "<p><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/oceanicAtmosphericAcronyms.html\">"
+                + EDStatic.messages.get(Message.RESET_THE_FORM, language)
+                + "</a>\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
+                + "\n");
+
+        // get the entire list
+        writer.write(
+            "<p>Or, view/download the entire oceanic/atmospheric acronyms list in these file types:"
+                + "  <br>"
+                + plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericAcronyms", ""));
+
+        // notes
+        writer.write(EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_NOTES, language));
+
+        // Info about .txt fips service option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_SERVICE, language),
+                    tErddapUrl)
+                + "\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // reset the form
-      writer.write(
-          "<p><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/oceanicAtmosphericAcronyms.html\">"
-              + EDStatic.messages.get(Message.RESET_THE_FORM, language)
-              + "</a>\n"
-              + "<p>"
-              + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
-              + "\n");
-
-      // get the entire list
-      writer.write(
-          "<p>Or, view/download the entire oceanic/atmospheric acronyms list in these file types:"
-              + "  <br>"
-              + plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericAcronyms", ""));
-
-      // notes
-      writer.write(EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_NOTES, language));
-
-      // Info about .txt fips service option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_OA_ACRONYMS_SERVICE, language), tErddapUrl)
-              + "\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -21890,157 +21956,217 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             "Convert Oceanic/Atmospheric Variable Names",
             out);
     try {
-      writer.write(
-          "<div class=\"standard_width\">"
-              +
-              // see comments in doConvertFIPSCounty
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "Oceanic/Atmospheric
-              // Variable
-              // Names") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
-              + "</h2>\n"
-              + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_INTRO, language)
-              + "\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/oceanicAtmosphericVariableNames.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
 
-      // Convert from VariableName to FullName
-      writer.write(
-          HtmlWidgets.ifJavaScriptDisabled
-              + "\n"
-              + widgets.beginForm(
-                  "getFullName",
-                  "GET",
-                  tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
-                  "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_FULL_NAME, language),
-                  "</strong>\n"
-                      + widgets.textField(
-                          "variableName",
-                          variableNameTooltip,
-                          20,
-                          40,
-                          answerVariableName.length() > 0
-                              ? answerVariableName
-                              : queryVariableName.length() > 0
-                                  ? queryVariableName
-                                  : defaultVariableName,
-                          "")
-                      + "\n<strong>")
-              + "\n&nbsp;&nbsp;"
-              + widgets.htmlButton(
-                  "submit",
-                  null,
-                  "Convert",
-                  "",
-                  "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
-                  "")
-              + "\n");
+        String selectedFullName =
+            answerFullName.length() > 0
+                ? answerFullName
+                : queryFullName.length() > 0 ? queryFullName : defaultFullName;
+        String[] options = fullNameSA.toStringArray();
+        Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
+        String fullNameSelectHtml =
+            widgets.select(
+                "fullName",
+                fullNameTooltip,
+                1,
+                options,
+                String2.indexOf(options, selectedFullName),
+                "onchange=\"this.form.submit();\"");
 
-      if (toFullName) {
-        writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerVariableName)
-                    + " = "
-                    + XML.encodeAsHTML(answerFullName)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        String variableNameValue =
+            answerVariableName.length() > 0
+                ? answerVariableName
+                : queryVariableName.length() > 0 ? queryVariableName : defaultVariableName;
+
+        params.put("variableNameValue", variableNameValue);
+        params.put("variableNameTooltip", variableNameTooltip);
+        params.put("toFullName", toFullName);
+        params.put("answerVariableName", answerVariableName);
+        params.put("answerFullName", answerFullName);
+
+        params.put("fullNameSelectHtml", fullNameSelectHtml);
+        params.put("toVariableName", toVariableName);
+
+        params.put(
+            "variableNameFileTypes",
+            plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericVariableNames", ""));
+        params.put("tError", tError);
+
+        engine.render(
+            "convert_oceanic_atmospheric_variable_names.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       } else {
-        writer.write("<br>&nbsp;\n");
-      }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // Convert from FullName to VariableName
-      String selectedFullName =
-          answerFullName.length() > 0
-              ? answerFullName
-              : queryFullName.length() > 0 ? queryFullName : defaultFullName;
-      String options[] = fullNameSA.toStringArray();
-      Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
-      writer.write(
-          "<br>&nbsp;\n"
-              + // necessary for the blank line before start of form (not <p>)
-              widgets.beginForm(
-                  "getVariableName",
-                  "GET",
-                  tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
-                  "")
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_TO_VARIABLE_NAME, language),
-                  "</strong>\n"
-                      + widgets.select(
-                          "fullName",
-                          fullNameTooltip,
-                          1,
-                          options,
-                          String2.indexOf(options, selectedFullName),
-                          "onchange=\"this.form.submit();\"")
-                      + "\n<strong>")
-              + "\n&nbsp;&nbsp;"
-              +
-              // widgets.button("submit", null, "", EDStatic.messages.get(Message.CONVERT,
-              // language), "") +
-              "\n");
-
-      if (toVariableName) {
         writer.write(
-            tError == null
-                ? "<br><span class=\"successColor\">"
-                    + XML.encodeAsHTML(answerFullName)
-                    + " = "
-                    + XML.encodeAsHTML(answerVariableName)
-                    + "</span>\n"
-                : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
-      } else {
-        writer.write("<br>&nbsp;\n");
+            "<div class=\"standard_width\">"
+                +
+                // see comments in doConvertFIPSCounty
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert",
+                // "Oceanic/Atmospheric
+                // Variable
+                // Names") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_TO_FROM, language)
+                + "</h2>\n"
+                + EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_INTRO, language)
+                + "\n");
+
+        // Convert from VariableName to FullName
+        writer.write(
+            HtmlWidgets.ifJavaScriptDisabled
+                + "\n"
+                + widgets.beginForm(
+                    "getFullName",
+                    "GET",
+                    tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
+                    "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_FULL_NAME, language),
+                    "</strong>\n"
+                        + widgets.textField(
+                            "variableName",
+                            variableNameTooltip,
+                            20,
+                            40,
+                            answerVariableName.length() > 0
+                                ? answerVariableName
+                                : queryVariableName.length() > 0
+                                    ? queryVariableName
+                                    : defaultVariableName,
+                            "")
+                        + "\n<strong>")
+                + "\n&nbsp;&nbsp;"
+                + widgets.htmlButton(
+                    "submit",
+                    null,
+                    "Convert",
+                    "",
+                    "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
+                    "")
+                + "\n");
+
+        if (toFullName) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerVariableName)
+                      + " = "
+                      + XML.encodeAsHTML(answerFullName)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // Convert from FullName to VariableName
+        String selectedFullName =
+            answerFullName.length() > 0
+                ? answerFullName
+                : queryFullName.length() > 0 ? queryFullName : defaultFullName;
+        String[] options = fullNameSA.toStringArray();
+        Arrays.sort(options, String2.STRING_COMPARATOR_IGNORE_CASE);
+        writer.write(
+            "<br>&nbsp;\n"
+                + // necessary for the blank line before start of form (not <p>)
+                widgets.beginForm(
+                    "getVariableName",
+                    "GET",
+                    tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html",
+                    "")
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_TO_VARIABLE_NAME, language),
+                    "</strong>\n"
+                        + widgets.select(
+                            "fullName",
+                            fullNameTooltip,
+                            1,
+                            options,
+                            String2.indexOf(options, selectedFullName),
+                            "onchange=\"this.form.submit();\"")
+                        + "\n<strong>")
+                + "\n&nbsp;&nbsp;"
+                +
+                // widgets.button("submit", null, "", EDStatic.messages.get(Message.CONVERT,
+                // language), "") +
+                "\n");
+
+        if (toVariableName) {
+          writer.write(
+              tError == null
+                  ? "<br><span class=\"successColor\">"
+                      + XML.encodeAsHTML(answerFullName)
+                      + " = "
+                      + XML.encodeAsHTML(answerVariableName)
+                      + "</span>\n"
+                  : "<br><span class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</span>\n");
+        } else {
+          writer.write("<br>&nbsp;\n");
+        }
+
+        writer.write(widgets.endForm() + "\n");
+
+        // reset the form
+        writer.write(
+            "<p><a rel=\"bookmark\" href=\""
+                + tErddapUrl
+                + "/convert/oceanicAtmosphericVariableNames.html\">"
+                + EDStatic.messages.get(Message.RESET_THE_FORM, language)
+                + "</a>\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
+                + "\n");
+
+        // get the entire list
+        writer.write(
+            "<p>Or, view/download the entire oceanic/atmospheric variable names list in these file types:"
+                + "  <br>"
+                + plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericVariableNames", ""));
+
+        // notes
+        writer.write(EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_NOTES, language));
+
+        // Info about .txt service option
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_SERVICE, language),
+                    tErddapUrl)
+                + "\n");
+
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
       }
-
-      writer.write(widgets.endForm() + "\n");
-
-      // reset the form
-      writer.write(
-          "<p><a rel=\"bookmark\" href=\""
-              + tErddapUrl
-              + "/convert/oceanicAtmosphericVariableNames.html\">"
-              + EDStatic.messages.get(Message.RESET_THE_FORM, language)
-              + "</a>\n"
-              + "<p>"
-              + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
-              + "\n");
-
-      // get the entire list
-      writer.write(
-          "<p>Or, view/download the entire oceanic/atmospheric variable names list in these file types:"
-              + "  <br>"
-              + plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericVariableNames", ""));
-
-      // notes
-      writer.write(EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_NOTES, language));
-
-      // Info about .txt service option
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_OA_VARIABLE_NAMES_SERVICE, language),
-                  tErddapUrl)
-              + "\n");
-
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -24959,7 +25085,9 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "convert/time.html",
                 "convert/units.html",
                 "convert/fipscounty.html",
-                "convert/keywords.html")
+                "convert/keywords.html",
+                "convert/oceanicAtmosphericAcronyms.html",
+                "convert/oceanicAtmosphericVariableNames.html")
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
