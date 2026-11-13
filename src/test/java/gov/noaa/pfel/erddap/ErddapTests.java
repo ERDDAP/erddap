@@ -1962,4 +1962,109 @@ class ErddapTests {
         "Attribute not escaped with XML.encodeAsHTMLAttribute");
     Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
   }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertInterpolateJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertInterpolateJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/interpolate.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/interpolate.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Interpolate Values From Gridded Dataset Values"),
+        "Missing Convert Interpolate title");
+    Test.ensureTrue(result.contains("<noscript>"), "Missing noscript tag in Interpolate page");
+    Test.ensureTrue(
+        result.contains("requires that JavaScript be enabled"),
+        "Missing noscript message in Interpolate page");
+    Test.ensureTrue(result.contains("convert/interpolate.html"), "Missing form action");
+    Test.ensureTrue(
+        result.contains("name=\"TimeLatLonTable\""), "Missing TimeLatLonTable textarea");
+    Test.ensureTrue(result.contains("name=\"requestCSV\""), "Missing requestCSV input");
+    Test.ensureTrue(result.contains("value=\"Convert\""), "Missing Convert button");
+    Test.ensureTrue(result.contains("name=\"comma\""), "Missing comma button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertInterpolateLegacy() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertInterpolateLegacy()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/interpolate.html", false);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/interpolate.html",
+        "/erddap/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        result.contains("Interpolate Values From Gridded Dataset Values"),
+        "Missing Convert Interpolate title in legacy");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertInterpolateMultiLanguage() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertInterpolateMultiLanguage()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/fr/convert/interpolate.html", true);
+
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    erddap.doConvert(
+        frenchLang,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/interpolate.html",
+        "/erddap/fr/convert/".length(),
+        "");
+    String result = ctx.getOutput();
+    String expectedFrenchMsg =
+        gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+            gov.noaa.pfel.erddap.util.EDMessages.Message.CONVERT_INTERPOLATE, frenchLang);
+    Test.ensureTrue(
+        result.contains(expectedFrenchMsg), "Missing French interpolate converter title");
+    Test.ensureTrue(result.contains("/fr/convert/"), "Missing French language in URLs");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testDoConvertInterpolateXssProtectionJte() throws Throwable {
+    String2.log("\n*** ErddapTests.testDoConvertInterpolateXssProtectionJte()");
+    Erddap erddap = new Erddap();
+    MockWebContext ctx = createMockWebContext("/erddap/convert/interpolate.html", true);
+
+    erddap.doConvert(
+        0,
+        1,
+        ctx.request(),
+        ctx.response(),
+        null,
+        "convert/interpolate.html",
+        "/erddap/convert/".length(),
+        "requestCSV=%22%3E%3Cscript%3Ealert(1)%3C%2Fscript%3E%22");
+    String result = ctx.getOutput();
+    Test.ensureTrue(
+        !result.contains("<script>alert(1)</script>"), "Reflected XSS in requestCSV input value");
+    Test.ensureTrue(
+        result.contains(
+            com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>\"")),
+        "Attribute not escaped with XML.encodeAsHTMLAttribute");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
 }
