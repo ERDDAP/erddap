@@ -22538,7 +22538,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
   }
 
   // other possible algorithms: https://en.wikipedia.org/wiki/Multivariate_interpolation
-  static final String INTERPOLATE_ALGORITHMS[] =
+  static final String[] INTERPOLATE_ALGORITHMS =
       new String[] {
         "Nearest",
         "Bilinear",
@@ -22651,179 +22651,278 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
           String2.isSomething(EDStatic.convertInterpolateRequestCSVExample)
               ? EDStatic.convertInterpolateRequestCSVExample
               : defaultIDVarExample;
-      String idVarList[] =
+      String[] idVarList =
           EDStatic.convertInterpolateDatasetIDVariableList.length == 0
               ? new String[] {"jplMURSST41/analysed_sst"}
               : EDStatic.convertInterpolateDatasetIDVariableList;
 
-      String datasetIDVarOptions[] = new String[idVarList.length + 1];
+      String[] datasetIDVarOptions = new String[idVarList.length + 1];
       datasetIDVarOptions[0] = "";
       System.arraycopy(idVarList, 0, datasetIDVarOptions, 1, idVarList.length);
 
-      String algorithmOptions[] = new String[INTERPOLATE_ALGORITHMS.length + 1];
+      String[] algorithmOptions = new String[INTERPOLATE_ALGORITHMS.length + 1];
       algorithmOptions[0] = "";
       for (int i = 0; i < INTERPOLATE_ALGORITHMS.length; i++)
         algorithmOptions[i + 1] = "/" + INTERPOLATE_ALGORITHMS[i];
 
-      String nearbyOptions[] = new String[] {"", "/1", "/4", "/16", "/36", "/8", "/64", "/216"};
-
-      writer.write(
-          "<div class=\"standard_width\">\n"
-              +
-              // EDStatic.youAreHere(request, language, loggedInAs, "convert", "Interpolate") +
-              ("\n<h1 class=\"nowrap\">"
-                  + EDStatic.erddapHref(language, EDStatic.erddapUrl(request, loggedInAs, language))
-                  + "\n &gt; <a rel=\"contents\" "
-                  + "href=\""
-                  + XML.encodeAsHTMLAttribute(
-                      EDStatic.protocolUrl(
-                          EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
-                  + "\">"
-                  + EDStatic.messages.get(Message.CONVERT, language)
-                  + "</a>"
-                  + "\n &gt; "
-                  + EDStatic.messages.get(Message.INTERPOLATE, language)
-                  + "</h1>\n")
-              + "<h2>"
-              + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
-              + "</h2>\n"
-              + MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_INTERPOLATE_INTRO, language),
-                  idVarExample));
-
-      // convert
+      String[] nearbyOptions = new String[] {"", "/1", "/4", "/16", "/36", "/8", "/64", "/216"};
       String tableCSV = "tableCSV";
       String formName = "f1"; // hard coded in a few places below
-      writer.write(
-          "\n"
-              + "<p>"
-              + widgets.beginForm(formName, "GET", tErddapUrl + "/convert/interpolate.html", "")
-              + widgets.beginTable("class=\"compact\"")
-              + "<tr><td>"
-              + EDStatic.messages.get(Message.CONVERT_INTERPOLATE_TLL_TABLE, language)
-              + EDStatic.htmlTooltipImage(
-                  request,
-                  language,
-                  loggedInAs,
-                  EDStatic.messages.get(Message.CONVERT_INTERPOLATE_TLL_TABLE_HELP, language))
-              + "</td>\n"
-              +
-              // default maxHttpHeaderSize (in server.xml) is 4096 bytes
-              "<td><textarea name=\"TimeLatLonTable\" cols=\"66\" rows=\"6\" maxlength=\"4000\" wrap=\"soft\">"
-              + // "hard" adds newline char for wordwrap places (hopefully irrelevant)
-              XML.encodeAsHTML(tTLLTable.length() > 0 ? tableCSV : sampleTLL)
-              + "</textarea>"
-              + "</td></tr>\n"
-              + "<tr><td>"
-              + EDStatic.messages.get(Message.CONVERT_INTERPOLATE_DATASET_ID_VARIABLE, language)
-              + EDStatic.htmlTooltipImage(
-                  request,
-                  language,
-                  loggedInAs,
-                  MessageFormat.format(
-                      EDStatic.messages.get(
-                          Message.CONVERT_INTERPOLATE_DATASET_ID_VARIABLE_HELP, language),
-                      idVarExample))
-              + "</td>\n"
-              + "<td class=\"N\">"
-              + widgets.textField(
-                  "requestCSV",
-                  "", // tooltip,
-                  64,
-                  500,
-                  idVarExample,
-                  "")
-              + // other
-              "</td></tr>\n"
-              + "<tr><td>&nbsp;&nbsp;&nbsp;"
-              + EDStatic.messages.get(Message.OPTIONS, language)
-              + ":"
-              + "</td>\n"
-              + "<td class=\"N\">&nbsp;&nbsp;&nbsp;"
-              + widgets.select(
-                  "datasetIDVarOptions",
-                  "If you select one of these datasetID/variable options,"
-                      + "<br>it will be appended to the Request CSV above.",
-                  1,
-                  datasetIDVarOptions,
-                  0,
-                  "onChange=\"document."
-                      + formName
-                      + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"")
-              + "\n"
-              + widgets.select(
-                  "algorithmOptions",
-                  "If you select one of these algorithm options,"
-                      + "<br>it will be appended to the Request CSV above.",
-                  1,
-                  algorithmOptions,
-                  0,
-                  "onChange=\"document."
-                      + formName
-                      + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"")
-              + "\n"
-              + widgets.select(
-                  "nearbyOptions",
-                  "If you select one of these 'nearby' options,"
-                      + "<br>it will be appended to the Request CSV above."
-                      + "<br>Note that options 1, 4, 16, and 36 are 2D (lat lon) options,"
-                      + "<br>while options 8, 64 and 216 are 3D (lat lon time) options.",
-                  1,
-                  nearbyOptions,
-                  0,
-                  "onChange=\"document."
-                      + formName
-                      + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"")
-              + "\n"
-              + widgets.htmlButton(
-                  "button",
-                  "comma",
-                  "", // value
-                  "If you click this button, a comma will be appended to the Request CSV above.",
-                  ",", // htmlLabel
-                  "onclick=\"document." + formName + ".requestCSV.value+=',';\"")
-              + // other
-              "\n"
-              + "</td></tr>\n"
-              + "<tr><td>"
-              + EDStatic.messages.get(Message.EDD_FILE_TYPE, language)
-              + "</td>\n"
-              + "<td>"
-              + widgets.select("fileType", "", 1, plainFileTypes, 1, "")
-              + "</td></tr>\n"
-              + "<tr><td>"
-              + widgets.htmlButton(
-                  "button",
-                  null,
-                  "Convert",
-                  EDStatic.messages.get(Message.CLICK_TO_SUBMIT, language),
-                  "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
-                  "onclick=\"var d = document;\n"
-                      + "window.location='"
-                      + tErddapUrl
-                      + "/convert/interpolate' + "
-                      + "d.f1.fileType.options[d.f1.fileType.selectedIndex].text + "
-                      + "'?TimeLatLonTable=' + encodeURIComponent(d.f1.TimeLatLonTable.value) + "
-                      + "'&requestCSV=' + encodeURIComponent(d.f1.requestCSV.value);\"")
-              + // \" is end of onclick
-              "</td><td></td></tr>\n"
-              + widgets.endTable()
-              + widgets.endForm()
-              + "\n");
 
-      writer.write(
-          "<br>&nbsp;\n" + "<p>" + EDStatic.messages.get(Message.CONVERT_BYPASS, language) + "\n");
+      if (useHtmlTemplates(request)) {
+        YouAreHere youAreHere =
+            EDStatic.getYouAreHere(
+                request,
+                language,
+                loggedInAs,
+                List.of(
+                    EDStatic.messages.get(Message.CONVERT, language),
+                    EDStatic.messages.get(Message.INTERPOLATE, language)),
+                List.of(tErddapUrl + "/convert/index.html"));
+        TemplateEngine engine = getTemplateEngine();
+        Map<String, Object> params = new HashMap<>();
+        params.put("endOfRequest", "convert/interpolate.html");
+        params.put("tErddapUrl", tErddapUrl);
+        params.put("language", language);
+        params.put("youAreHere", youAreHere);
+        params.put("loggedInAs", Objects.requireNonNullElse(loggedInAs, ""));
+        params.put("request", request);
+        params.put("idVarExample", idVarExample);
+        params.put(
+            "tllTableHelpTooltip",
+            EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                EDStatic.messages.get(Message.CONVERT_INTERPOLATE_TLL_TABLE_HELP, language)));
+        params.put("tllTableText", tTLLTable.length() > 0 ? tableCSV : sampleTLL);
+        params.put(
+            "datasetIdVarHelpTooltip",
+            EDStatic.htmlTooltipImage(
+                request,
+                language,
+                loggedInAs,
+                MessageFormat.format(
+                    EDStatic.messages.get(
+                        Message.CONVERT_INTERPOLATE_DATASET_ID_VARIABLE_HELP, language),
+                    idVarExample)));
+        params.put("requestCsvValue", tRequestCSV.length() > 0 ? tRequestCSV : idVarExample);
+        params.put(
+            "datasetIDVarOptionsSelectHtml",
+            widgets.select(
+                "datasetIDVarOptions",
+                "If you select one of these datasetID/variable options,"
+                    + "<br>it will be appended to the Request CSV above.",
+                1,
+                datasetIDVarOptions,
+                0,
+                "onChange=\"document."
+                    + formName
+                    + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\""));
+        params.put(
+            "algorithmOptionsSelectHtml",
+            widgets.select(
+                "algorithmOptions",
+                "If you select one of these algorithm options,"
+                    + "<br>it will be appended to the Request CSV above.",
+                1,
+                algorithmOptions,
+                0,
+                "onChange=\"document."
+                    + formName
+                    + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\""));
+        params.put(
+            "nearbyOptionsSelectHtml",
+            widgets.select(
+                "nearbyOptions",
+                "If you select one of these 'nearby' options,"
+                    + "<br>it will be appended to the Request CSV above."
+                    + "<br>Note that options 1, 4, 16, and 36 are 2D (lat lon) options,"
+                    + "<br>while options 8, 64 and 216 are 3D (lat lon time) options.",
+                1,
+                nearbyOptions,
+                0,
+                "onChange=\"document."
+                    + formName
+                    + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\""));
+        params.put("fileTypeSelectHtml", widgets.select("fileType", "", 1, plainFileTypes, 1, ""));
+        params.put(
+            "serviceDocumentation",
+            MessageFormat.format(
+                EDStatic.messages.get(Message.CONVERT_INTERPOLATE_SERVICE, language),
+                """
+                <pre><a rel="help" \
+                href="https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4"\
+                >https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=
+                time%2Clatitude%2Clongitude%0A
+                2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A
+                2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A
+                2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A
+                2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A
+                &amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4</a>\s
+                </pre>"""));
+        engine.render("convert_interpolate.jte", params, new WriterOutput(writer));
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      } else {
+        writer.write(
+            "<div class=\"standard_width\">\n"
+                +
+                // EDStatic.youAreHere(request, language, loggedInAs, "convert", "Interpolate") +
+                ("\n<h1 class=\"nowrap\">"
+                    + EDStatic.erddapHref(
+                        language, EDStatic.erddapUrl(request, loggedInAs, language))
+                    + "\n &gt; <a rel=\"contents\" "
+                    + "href=\""
+                    + XML.encodeAsHTMLAttribute(
+                        EDStatic.protocolUrl(
+                            EDStatic.erddapUrl(request, loggedInAs, language), "convert"))
+                    + "\">"
+                    + EDStatic.messages.get(Message.CONVERT, language)
+                    + "</a>"
+                    + "\n &gt; "
+                    + EDStatic.messages.get(Message.INTERPOLATE, language)
+                    + "</h1>\n")
+                + "<h2>"
+                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE, language)
+                + "</h2>\n"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_INTERPOLATE_INTRO, language),
+                    idVarExample));
 
-      // notes
-      writer.write(
-          "<p>" + EDStatic.messages.get(Message.CONVERT_INTERPOLATE_NOTES, language) + "\n");
+        // convert
+        writer.write(
+            "\n"
+                + "<p>"
+                + widgets.beginForm(formName, "GET", tErddapUrl + "/convert/interpolate.html", "")
+                + widgets.beginTable("class=\"compact\"")
+                + "<tr><td>"
+                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE_TLL_TABLE, language)
+                + EDStatic.htmlTooltipImage(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.CONVERT_INTERPOLATE_TLL_TABLE_HELP, language))
+                + "</td>\n"
+                +
+                // default maxHttpHeaderSize (in server.xml) is 4096 bytes
+                "<td><textarea name=\"TimeLatLonTable\" cols=\"66\" rows=\"6\" maxlength=\"4000\" wrap=\"soft\">"
+                + // "hard" adds newline char for wordwrap places (hopefully irrelevant)
+                XML.encodeAsHTML(tTLLTable.length() > 0 ? tableCSV : sampleTLL)
+                + "</textarea>"
+                + "</td></tr>\n"
+                + "<tr><td>"
+                + EDStatic.messages.get(Message.CONVERT_INTERPOLATE_DATASET_ID_VARIABLE, language)
+                + EDStatic.htmlTooltipImage(
+                    request,
+                    language,
+                    loggedInAs,
+                    MessageFormat.format(
+                        EDStatic.messages.get(
+                            Message.CONVERT_INTERPOLATE_DATASET_ID_VARIABLE_HELP, language),
+                        idVarExample))
+                + "</td>\n"
+                + "<td class=\"N\">"
+                + widgets.textField(
+                    "requestCSV",
+                    "", // tooltip,
+                    64,
+                    500,
+                    idVarExample,
+                    "")
+                + // other
+                "</td></tr>\n"
+                + "<tr><td>&nbsp;&nbsp;&nbsp;"
+                + EDStatic.messages.get(Message.OPTIONS, language)
+                + ":"
+                + "</td>\n"
+                + "<td class=\"N\">&nbsp;&nbsp;&nbsp;"
+                + widgets.select(
+                    "datasetIDVarOptions",
+                    "If you select one of these datasetID/variable options,"
+                        + "<br>it will be appended to the Request CSV above.",
+                    1,
+                    datasetIDVarOptions,
+                    0,
+                    "onChange=\"document."
+                        + formName
+                        + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"")
+                + "\n"
+                + widgets.select(
+                    "algorithmOptions",
+                    "If you select one of these algorithm options,"
+                        + "<br>it will be appended to the Request CSV above.",
+                    1,
+                    algorithmOptions,
+                    0,
+                    "onChange=\"document."
+                        + formName
+                        + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"")
+                + "\n"
+                + widgets.select(
+                    "nearbyOptions",
+                    "If you select one of these 'nearby' options,"
+                        + "<br>it will be appended to the Request CSV above."
+                        + "<br>Note that options 1, 4, 16, and 36 are 2D (lat lon) options,"
+                        + "<br>while options 8, 64 and 216 are 3D (lat lon time) options.",
+                    1,
+                    nearbyOptions,
+                    0,
+                    "onChange=\"document."
+                        + formName
+                        + ".requestCSV.value+=this.options[this.selectedIndex].text; this.selectedIndex=-1;\"")
+                + "\n"
+                + widgets.htmlButton(
+                    "button",
+                    "comma",
+                    "", // value
+                    "If you click this button, a comma will be appended to the Request CSV above.",
+                    ",", // htmlLabel
+                    "onclick=\"document." + formName + ".requestCSV.value+=',';\"")
+                + // other
+                "\n"
+                + "</td></tr>\n"
+                + "<tr><td>"
+                + EDStatic.messages.get(Message.EDD_FILE_TYPE, language)
+                + "</td>\n"
+                + "<td>"
+                + widgets.select("fileType", "", 1, plainFileTypes, 1, "")
+                + "</td></tr>\n"
+                + "<tr><td>"
+                + widgets.htmlButton(
+                    "button",
+                    null,
+                    "Convert",
+                    EDStatic.messages.get(Message.CLICK_TO_SUBMIT, language),
+                    "<strong>" + EDStatic.messages.get(Message.CONVERT, language) + "</strong>",
+                    "onclick=\"var d = document;\n"
+                        + "window.location='"
+                        + tErddapUrl
+                        + "/convert/interpolate' + "
+                        + "d.f1.fileType.options[d.f1.fileType.selectedIndex].text + "
+                        + "'?TimeLatLonTable=' + encodeURIComponent(d.f1.TimeLatLonTable.value) + "
+                        + "'&requestCSV=' + encodeURIComponent(d.f1.requestCSV.value);\"")
+                + // \" is end of onclick
+                "</td><td></td></tr>\n"
+                + widgets.endTable()
+                + widgets.endForm()
+                + "\n");
 
-      // Info about service / plainFileType option.
-      // Safest to just point to jplMURSST41 at coastwatch ERDDAP.
-      writer.write(
-          MessageFormat.format(
-                  EDStatic.messages.get(Message.CONVERT_INTERPOLATE_SERVICE, language),
-                  """
+        writer.write(
+            "<br>&nbsp;\n"
+                + "<p>"
+                + EDStatic.messages.get(Message.CONVERT_BYPASS, language)
+                + "\n");
+
+        // notes
+        writer.write(
+            "<p>" + EDStatic.messages.get(Message.CONVERT_INTERPOLATE_NOTES, language) + "\n");
+
+        // Info about service / plainFileType option.
+        // Safest to just point to jplMURSST41 at coastwatch ERDDAP.
+        writer.write(
+            MessageFormat.format(
+                    EDStatic.messages.get(Message.CONVERT_INTERPOLATE_SERVICE, language),
+                    """
                           <pre><a rel="help" \
                           href="https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4"\
                           >https://coastwatch.pfeg.noaa.gov/erddap/convert/interpolate.htmlTable?TimeLatLonTable=
@@ -22834,11 +22933,12 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                           2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A
                           &amp;requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4</a>\s
                           </pre>""")
-              + "\n");
-      writer.write('\n');
+                + "\n");
+        writer.write('\n');
 
-      writer.write("</div>\n");
-      endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+        writer.write("</div>\n");
+        endHtmlWriter(request, language, out, writer, tErddapUrl, loggedInAs, false);
+      }
 
     } catch (Throwable t) {
       EDStatic.rethrowClientAbortException(t); // first thing in catch{}
@@ -25087,7 +25187,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 "convert/fipscounty.html",
                 "convert/keywords.html",
                 "convert/oceanicAtmosphericAcronyms.html",
-                "convert/oceanicAtmosphericVariableNames.html")
+                "convert/oceanicAtmosphericVariableNames.html",
+                "convert/interpolate.html")
             .contains(endOfRequest);
 
     if (endOfRequest.contains("categorize/")) {
