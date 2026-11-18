@@ -2108,6 +2108,20 @@ class ErddapTests {
                   gov.noaa.pfel.erddap.util.EDMessages.Message.DAS_TITLE, frenchLang)),
           "Missing French DAS title");
     }
+
+    // Test HTML escaping / XSS safety in dasContent
+    java.io.StringWriter swXss = new java.io.StringWriter();
+    params.put("language", 0);
+    params.put(
+        "dasContent",
+        "Attributes {\n NC_GLOBAL {\n  String comment \"<script>alert(1)</script>\";\n }\n}");
+    engine.render("components/das_section.jte", params, new WriterOutput(swXss));
+    String resXss = swXss.toString();
+    Test.ensureTrue(
+        !resXss.contains("<script>alert(1)</script>"), "dasContent should escape HTML tags");
+    Test.ensureTrue(
+        resXss.contains("&lt;script&gt;alert(1)&lt;/script&gt;"),
+        "dasContent missing escaped script tag");
   }
 
   @org.junit.jupiter.api.Test
