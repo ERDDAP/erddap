@@ -60,6 +60,7 @@ import gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException;
 import gov.noaa.pfel.erddap.filetypes.NcoJsonFiles;
 import gov.noaa.pfel.erddap.filetypes.TransparentPngFiles;
 import gov.noaa.pfel.erddap.handlers.SaxParsingContext;
+import gov.noaa.pfel.erddap.search.HybridSearchEngine;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
 import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
@@ -15023,6 +15024,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // get the 'searchFor' value
       searchFor = request.getParameter("searchFor");
       searchFor = searchFor == null ? "" : searchFor.trim();
+      String searchMode = parseSearchMode(request);
 
       // ensure query has simplistically valid page= itemsPerPage=
       if (!Arrays.equals(
@@ -15036,7 +15038,10 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                 + EDStatic.passThroughPIppQuery(request)
                 + (searchFor.length() == 0
                     ? ""
-                    : "&searchFor=" + SSR.minimalPercentEncode(searchFor)));
+                    : "&searchFor=" + SSR.minimalPercentEncode(searchFor))
+                + (searchMode.isEmpty()
+                    ? ""
+                    : "&searchMode=" + SSR.minimalPercentEncode(searchMode)));
         return;
       }
 
@@ -15079,7 +15084,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
       // do the search (also, it ensures user has right to know dataset exists)
       // (result may be size=0)
       StringArray datasetIDs =
-          getSearchDatasetIDs(language, loggedInAs, allDatasetIDs(), searchFor);
+          getSearchDatasetIDs(language, loggedInAs, allDatasetIDs(), searchFor, searchMode);
       int nMatches = datasetIDs.size();
 
       // calculate Page ItemsPerPage (part of: full text search)
@@ -15155,13 +15160,36 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                         + requestUrl
                         + EDStatic.questionQuery(request.getQueryString()));
 
+            boolean isExactMode =
+                "exact".equalsIgnoreCase(searchMode)
+                    || (searchMode.isEmpty() && !EDStatic.config.useHybridSearch);
+            String toggleMode = isExactMode ? "hybrid" : "exact";
+            String toggleLabel =
+                isExactMode ? "Switch to fuzzy/semantic search" : "Switch to exact match";
+            String baseSwitchUrl =
+                EDStatic.baseUrl(request, loggedInAs)
+                    + requestUrl
+                    + "?page=1&itemsPerPage="
+                    + itemsPerPage
+                    + "&searchFor="
+                    + SSR.minimalPercentEncode(searchFor)
+                    + "&searchMode="
+                    + toggleMode;
+            String modeToggleHtml =
+                " &mdash; <a href=\""
+                    + XML.encodeAsHTMLAttribute(baseSwitchUrl)
+                    + "\">"
+                    + toggleLabel
+                    + "</a>";
             writer.write(
                 nMatchingHtml
                     + "\n"
                     + "<span class=\"N\">("
                     + EDStatic.messages.get(Message.OR_REFINE_SEARCH_WITH, language)
                     + getAdvancedSearchLink(request, language, loggedInAs, queryString)
-                    + ")</span>\n"
+                    + ")"
+                    + modeToggleHtml
+                    + "</span>\n"
                     + "<br>&nbsp;\n"); // necessary for the blank line before the table (not <p>)
 
             table.saveAsHtmlTable(
@@ -15969,6 +15997,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     // parameters are "" if unused (not null)
     String searchFor = request.getParameter("searchFor");
     searchFor = searchFor == null ? "" : searchFor.trim();
+    String searchMode = parseSearchMode(request);
 
     // ensure query has page=
     // (different from similar places because there may be many other params)
@@ -16248,6 +16277,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
                     searchFor,
                     "")
                 + "\n");
+
+        boolean exactChecked =
+            "exact".equalsIgnoreCase(searchMode)
+                || ((searchMode == null || searchMode.isEmpty())
+                    && !EDStatic.config.useHybridSearch);
+        writer.write(
+            "&nbsp;&nbsp;"
+                + widgets.checkbox(
+                    "searchMode",
+                    "Disable fuzzy and semantic expansion; require exact substring matches.",
+                    exactChecked,
+                    "exact",
+                    "Exact match only",
+                    ""));
 
         // categorize
         // a table with a row for each attribute
@@ -16656,7 +16699,8 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (searchFor.length() > 0) {
       // do the full text search (sorts best to worst match)
       if (matchingDatasetIDs == null) matchingDatasetIDs = allDatasetIDs();
-      matchingDatasetIDs = getSearchDatasetIDs(language, loggedInAs, matchingDatasetIDs, searchFor);
+      matchingDatasetIDs =
+          getSearchDatasetIDs(language, loggedInAs, matchingDatasetIDs, searchFor, searchMode);
 
     } else {
       // sortByTitle
@@ -16901,6 +16945,19 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             request, language, loggedInAs, tDatasetIDs, sortByTitle, fileTypeName);
   }
 
+  private static String parseSearchMode(HttpServletRequest request) {
+    String mode = request.getParameter("searchMode");
+    if (mode != null && !mode.isBlank()) {
+      return mode.trim();
+    }
+    // HtmlWidgets.checkbox("searchMode", ...) emits "previous_searchMode";
+    // if it is present without "searchMode", the user explicitly unchecked the box.
+    if (request.getParameter("previous_searchMode") != null) {
+      return "hybrid";
+    }
+    return "";
+  }
+
   /**
    * This finds the datasets that match a searchFor string.
    *
@@ -16925,6 +16982,17 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
    */
   public StringArray getSearchDatasetIDs(
       int language, String loggedInAs, StringArray tDatasetIDs, String searchFor) throws Throwable {
+    return getSearchDatasetIDs(
+        language,
+        loggedInAs,
+        tDatasetIDs,
+        searchFor,
+        EDStatic.config.useHybridSearch ? "hybrid" : "exact");
+  }
+
+  public StringArray getSearchDatasetIDs(
+      int language, String loggedInAs, StringArray tDatasetIDs, String searchFor, String searchMode)
+      throws Throwable {
 
     // *** respond to search request
     StringArray searchWords = StringArray.wordsAndQuotedPhrases(searchFor.toLowerCase());
@@ -16934,6 +17002,31 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (nSearchWords == 0 || (nSearchWords == 1 && searchWords.get(0).equals("all")))
       return sortByTitle(
           language, loggedInAs, tDatasetIDs, true); // search: this is a metadata request
+
+    String effectiveMode =
+        (searchMode == null || searchMode.isBlank())
+            ? (EDStatic.config.useHybridSearch ? "hybrid" : "exact")
+            : searchMode.trim().toLowerCase();
+
+    if (!"exact".equals(effectiveMode)
+        && gov.noaa.pfel.erddap.search.HybridSearchEngine.isReady()) {
+      String roles[] = EDStatic.getRoles(loggedInAs);
+      long tTime = System.currentTimeMillis();
+      StringArray hybridIDs =
+          gov.noaa.pfel.erddap.search.HybridSearchEngine.search(
+              language, roles, tDatasetIDs, searchFor, gridDatasetHashMap, tableDatasetHashMap);
+      if (verbose) {
+        String2.log(
+            "Erddap.search(hybrid) nWords="
+                + nSearchWords
+                + " nMatches="
+                + hybridIDs.size()
+                + " totalTime="
+                + (System.currentTimeMillis() - tTime)
+                + "ms");
+      }
+      return hybridIDs;
+    }
 
     // gather the matching datasets
     Table table = new Table();
@@ -24025,6 +24118,20 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
             EDStatic.messages.get(Message.SEARCH_CLICK_TIP, language),
             EDStatic.messages.get(Message.SEARCH_BUTTON, language),
             ""));
+    String reqSearchMode = parseSearchMode(request);
+    boolean exactChecked =
+        "exact".equalsIgnoreCase(reqSearchMode)
+            || ((reqSearchMode == null || reqSearchMode.isEmpty())
+                && !EDStatic.config.useHybridSearch);
+    sb.append(
+        "&nbsp;&nbsp;"
+            + widgets.checkbox(
+                "searchMode",
+                "Disable fuzzy and semantic expansion; require exact substring matches.",
+                exactChecked,
+                "exact",
+                "Exact match only",
+                ""));
     widgets.htmlTooltips = true;
     sb.append("\n");
     sb.append(widgets.endForm());
@@ -25060,6 +25167,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (System.currentTimeMillis() - context.getLastLuceneUpdate()
         > 5 * Calendar2.MILLIS_PER_MINUTE) {
       updateLucene(context.getChangedDatasetIDs());
+      HybridSearchEngine.rebuild(gridDatasetHashMap, tableDatasetHashMap);
       context.setLastLuceneUpdate(System.currentTimeMillis());
     }
 

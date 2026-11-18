@@ -229,7 +229,7 @@ public class EDConfig {
   public String deploymentInfo;
   // Booleans
   public boolean usePrometheusMetrics = true;
-  @FeatureFlag public final boolean listPrivateDatasets;
+  @FeatureFlag public boolean listPrivateDatasets;
   @FeatureFlag public final boolean subscriptionSystemActive;
   @FeatureFlag public final boolean fgdcActive;
   @FeatureFlag public final boolean geoServicesRestActive;
@@ -249,6 +249,8 @@ public class EDConfig {
       // be
       // used
       useLuceneSearchEngine;
+
+  @FeatureFlag public boolean useHybridSearch = true;
 
   public final String mqttServerHost;
   public final int mqttServerPort;
@@ -648,6 +650,7 @@ public class EDConfig {
         getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile", errorInMethod);
     passwordEncoding = getSetupEVString(setup, ev, "passwordEncoding", "UEPSHA256");
     searchEngine = getSetupEVString(setup, ev, "searchEngine", "original");
+    useHybridSearch = getSetupEVBoolean(setup, ev, "useHybridSearch", true);
 
     subscribeToRemoteErddapDataset =
         getSetupEVBoolean(setup, ev, "subscribeToRemoteErddapDataset", true);
