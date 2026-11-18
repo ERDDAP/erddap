@@ -409,7 +409,7 @@ class EDDGridLon0360Tests {
     expected =
         "longitude {\n"
             + "    String _CoordinateAxisType \"Lon\";\n"
-            + "    Float64 actual_range 228.4086, 244.32899808000002;\n"
+            + "    Float64 actual_range 228.302, 244.487;\n"
             + "    String axis \"X\";\n"
             + "    String comment \"Longitude values are the centers of the grid cells\";\n"
             + "    String coverage_content_type \"coordinate\";\n"
@@ -426,9 +426,7 @@ class EDDGridLon0360Tests {
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
-    expected =
-        "Float64 geospatial_lon_max 244.32899808000002;\n"
-            + "    Float64 geospatial_lon_min 228.4086;";
+    expected = "Float64 geospatial_lon_max 244.487;\n" + "    Float64 geospatial_lon_min 228.302;";
     po = results.indexOf("Float64 geospatial_lon_max");
     Test.ensureEqual(
         results.substring(po, po + expected.length()), expected, "results=\n" + results);
