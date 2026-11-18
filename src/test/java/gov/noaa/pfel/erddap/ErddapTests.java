@@ -10,6 +10,9 @@ import static org.mockito.Mockito.when;
 
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
+import gg.jte.output.WriterOutput;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
@@ -2066,5 +2069,275 @@ class ErddapTests {
             com.cohort.util.XML.encodeAsHTMLAttribute("\"><script>alert(1)</script>\"")),
         "Attribute not escaped with XML.encodeAsHTMLAttribute");
     Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteDasSection() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteDasSection()");
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    // Test English
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("language", 0);
+    params.put("dasContent", "Attributes {\n NC_GLOBAL {\n  String title \"Test Title\";\n }\n}");
+    engine.render("components/das_section.jte", params, new WriterOutput(sw));
+    String result = sw.toString();
+    Test.ensureTrue(result.contains("<hr>"), "Missing <hr> in DAS section");
+    Test.ensureTrue(result.contains("id=\"DAS\""), "Missing id=DAS anchor");
+    Test.ensureTrue(result.contains("href=\"#DAS\""), "Missing href=#DAS bookmark link");
+    Test.ensureTrue(
+        result.contains("<pre style=\"white-space:pre-wrap;\">"), "Missing preformatted block");
+    Test.ensureTrue(result.contains("String title \"Test Title\";"), "Missing DAS content");
+    Test.ensureTrue(
+        result.contains(
+            gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                gov.noaa.pfel.erddap.util.EDMessages.Message.DAS_TITLE, 0)),
+        "Missing English DAS title");
+
+    // Test French localization
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    if (frenchLang >= 0) {
+      java.io.StringWriter swFr = new java.io.StringWriter();
+      params.put("language", frenchLang);
+      engine.render("components/das_section.jte", params, new WriterOutput(swFr));
+      String resFr = swFr.toString();
+      Test.ensureTrue(
+          resFr.contains(
+              gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                  gov.noaa.pfel.erddap.util.EDMessages.Message.DAS_TITLE, frenchLang)),
+          "Missing French DAS title");
+    }
+
+    // Test HTML escaping / XSS safety in dasContent
+    java.io.StringWriter swXss = new java.io.StringWriter();
+    params.put("language", 0);
+    params.put(
+        "dasContent",
+        "Attributes {\n NC_GLOBAL {\n  String comment \"<script>alert(1)</script>\";\n }\n}");
+    engine.render("components/das_section.jte", params, new WriterOutput(swXss));
+    String resXss = swXss.toString();
+    Test.ensureTrue(
+        !resXss.contains("<script>alert(1)</script>"), "dasContent should escape HTML tags");
+    Test.ensureTrue(
+        resXss.contains("&lt;script&gt;alert(1)&lt;/script&gt;"),
+        "dasContent missing escaped script tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteDapInstructions() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteDapInstructions()");
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    // Test tabledap instructions
+    java.io.StringWriter swTable = new java.io.StringWriter();
+    java.util.Map<String, Object> paramsTable = new java.util.HashMap<>();
+    paramsTable.put("protocol", "tabledap");
+    paramsTable.put("language", 0);
+    paramsTable.put("tErddapUrl", "https://erddap.example.org/erddap");
+    paramsTable.put("dapBase", "https://erddap.example.org/erddap/tabledap/");
+    paramsTable.put(
+        "exampleHref", "https://erddap.example.org/erddap/tabledap/erdGlobecBottle.htmlTable?time");
+    paramsTable.put(
+        "exampleText", "https://erddap.example.org/erddap/tabledap/erdGlobecBottle.htmlTable?time");
+    paramsTable.put(
+        "queryExplanationHtml",
+        "Thus, the query is often a comma-separated list of desired variable names.");
+    paramsTable.put("longDapDescription", "<p>Tabledap allows you to request a data subset.</p>");
+    engine.render("components/dap_instructions.jte", paramsTable, new WriterOutput(swTable));
+    String resTable = swTable.toString();
+    Test.ensureTrue(resTable.contains("Using tabledap"), "Missing Using tabledap title");
+    Test.ensureTrue(
+        resTable.contains("Tabledap request URLs must be in the form"),
+        "Missing tabledap URL form notice");
+    Test.ensureTrue(
+        resTable.contains("href=\"https://erddap.example.org/erddap/tabledap/documentation.html\""),
+        "Missing tabledap documentation link");
+    Test.ensureTrue(
+        resTable.contains("Tabledap allows you to request a data subset."),
+        "Missing long description");
+
+    // Test griddap instructions
+    java.io.StringWriter swGrid = new java.io.StringWriter();
+    java.util.Map<String, Object> paramsGrid = new java.util.HashMap<>();
+    paramsGrid.put("protocol", "griddap");
+    paramsGrid.put("language", 0);
+    paramsGrid.put("tErddapUrl", "https://erddap.example.org/erddap");
+    paramsGrid.put("dapBase", "https://erddap.example.org/erddap/griddap/");
+    paramsGrid.put(
+        "exampleHref",
+        "https://erddap.example.org/erddap/griddap/jplMURSST41.htmlTable?analysed_sst");
+    paramsGrid.put(
+        "exampleText",
+        "https://erddap.example.org/erddap/griddap/jplMURSST41.htmlTable?analysed_sst");
+    paramsGrid.put(
+        "queryExplanationHtml",
+        "Thus, the query is often a data variable name followed by [(start):stride:(stop)].");
+    paramsGrid.put("longDapDescription", "<p>Griddap allows you to request a grid subset.</p>");
+    engine.render("components/dap_instructions.jte", paramsGrid, new WriterOutput(swGrid));
+    String resGrid = swGrid.toString();
+    Test.ensureTrue(resGrid.contains("Using griddap"), "Missing Using griddap title");
+    Test.ensureTrue(
+        resGrid.contains("griddap request URLs must be in the form"),
+        "Missing griddap URL form notice");
+    Test.ensureTrue(
+        resGrid.contains("href=\"https://erddap.example.org/erddap/griddap/documentation.html\""),
+        "Missing griddap documentation link");
+
+    // Test French localization
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    if (frenchLang >= 0) {
+      java.io.StringWriter swTableFr = new java.io.StringWriter();
+      paramsTable.put("language", frenchLang);
+      engine.render("components/dap_instructions.jte", paramsTable, new WriterOutput(swTableFr));
+      String resTableFr = swTableFr.toString();
+      Test.ensureTrue(
+          resTableFr.contains(
+              gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                  gov.noaa.pfel.erddap.util.EDMessages.Message.USING_TABLEDAP, frenchLang)),
+          "Missing French tabledap instructions title");
+
+      java.io.StringWriter swGridFr = new java.io.StringWriter();
+      paramsGrid.put("language", frenchLang);
+      engine.render("components/dap_instructions.jte", paramsGrid, new WriterOutput(swGridFr));
+      String resGridFr = swGridFr.toString();
+      Test.ensureTrue(
+          resGridFr.contains(
+              gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                  gov.noaa.pfel.erddap.util.EDMessages.Message.USING_GRIDDAP, frenchLang)),
+          "Missing French griddap instructions title");
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteFileTypeSelector() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteFileTypeSelector()");
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    // Test default .htmlTable selected
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("tErddapUrl", "https://erddap.example.org/erddap");
+    params.put("protocol", "tabledap");
+    params.put("language", 0);
+    params.put(
+        "fileTypeDescriptions",
+        java.util.List.of(
+            ".htmlTable - View a standard HTML table in your browser.",
+            ".csv - Download a comma-separated values text file.",
+            ".nc - Download a NetCDF file."));
+    params.put("defaultFileTypeOption", ".htmlTable");
+    engine.render("components/file_type_selector.jte", params, new WriterOutput(sw));
+    String result = sw.toString();
+    Test.ensureTrue(result.contains("File type:"), "Missing File type label");
+    Test.ensureTrue(
+        result.contains(
+            "href=\"https://erddap.example.org/erddap/tabledap/documentation.html#fileType\""),
+        "Missing fileType documentation link");
+    Test.ensureTrue(
+        result.contains("<select name=\"fileType\" size=\"1\""),
+        "Missing select element with name fileType");
+    Test.ensureTrue(
+        result.contains(
+            "value=\".htmlTable - View a standard HTML table in your browser.\" selected"),
+        "Default option .htmlTable should be selected");
+    Test.ensureTrue(
+        result.contains("value=\".csv - Download a comma-separated values text file.\""),
+        "Missing .csv option");
+
+    // Test alternative .csv selection
+    java.io.StringWriter swCsv = new java.io.StringWriter();
+    params.put("defaultFileTypeOption", ".csv");
+    engine.render("components/file_type_selector.jte", params, new WriterOutput(swCsv));
+    String resCsv = swCsv.toString();
+    Test.ensureTrue(
+        resCsv.contains("value=\".csv - Download a comma-separated values text file.\" selected"),
+        "Option .csv should be selected");
+
+    // Test French localization
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    if (frenchLang >= 0) {
+      java.io.StringWriter swFr = new java.io.StringWriter();
+      params.put("language", frenchLang);
+      engine.render("components/file_type_selector.jte", params, new WriterOutput(swFr));
+      String resFr = swFr.toString();
+      Test.ensureTrue(
+          resFr.contains(
+              gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                  gov.noaa.pfel.erddap.util.EDMessages.Message.EDD_FILE_TYPE, frenchLang)),
+          "Missing French File type label");
+      Test.ensureTrue(
+          resFr.contains(
+              gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                  gov.noaa.pfel.erddap.util.EDMessages.Message.MORE_INFORMATION, frenchLang)),
+          "Missing French More Information label");
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteFormActions() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteFormActions()");
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    // Test tabledap in English
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("protocol", "tabledap");
+    params.put("tErddapUrl", "https://erddap.example.org/erddap");
+    params.put("language", 0);
+    params.put("loggedInAs", "");
+    params.put("request", null);
+    params.put("javaScript", "updateUrl();");
+    engine.render("components/form_actions.jte", params, new WriterOutput(sw));
+    String result = sw.toString();
+    Test.ensureTrue(
+        result.contains("type=\"button\" name=\"getUrl\""), "Missing getUrl button input");
+    Test.ensureTrue(result.contains("type=\"text\" name=\"tUrl\""), "Missing tUrl text input");
+    Test.ensureTrue(result.contains("maxlength=\"1000\""), "Missing maxlength 1000 on tUrl");
+    Test.ensureTrue(
+        result.contains("Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form"),
+        "Missing doc bypass text");
+    Test.ensureTrue(
+        result.contains("title=\"tabledap documentation\""), "Missing tabledap doc title");
+    Test.ensureTrue(
+        result.contains("href=\"https://erddap.example.org/erddap/tabledap/documentation.html\""),
+        "Missing tabledap doc href");
+    Test.ensureTrue(result.contains("type=\"button\" name=\"submit1\""), "Missing submit1 button");
+    Test.ensureTrue(
+        result.contains("onclick=\"updateUrl();\""), "Missing onclick on getUrl button");
+    Test.ensureTrue(
+        result.contains("onclick=\"updateUrl();if (result.length > 0) window.location=result;\""),
+        "Missing onclick on submit1 button");
+    Test.ensureTrue(
+        result.contains("(Please be patient. It may take a while to get the data.)"),
+        "Missing patient data notice");
+    Test.ensureTrue(result.contains("QuestionMark.png"), "Missing tooltip QuestionMark.png image");
+
+    // Test griddap actions
+    java.io.StringWriter swGrid = new java.io.StringWriter();
+    params.put("protocol", "griddap");
+    engine.render("components/form_actions.jte", params, new WriterOutput(swGrid));
+    String resGrid = swGrid.toString();
+    Test.ensureTrue(
+        resGrid.contains("title=\"griddap documentation\""), "Missing griddap doc title");
+    Test.ensureTrue(
+        resGrid.contains("href=\"https://erddap.example.org/erddap/griddap/documentation.html\""),
+        "Missing griddap doc href");
+
+    // Test French localization
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    if (frenchLang >= 0) {
+      java.io.StringWriter swFr = new java.io.StringWriter();
+      params.put("language", frenchLang);
+      engine.render("components/form_actions.jte", params, new WriterOutput(swFr));
+      String resFr = swFr.toString();
+      Test.ensureTrue(
+          resFr.contains(
+              gov.noaa.pfel.erddap.util.EDStatic.messages.get(
+                  gov.noaa.pfel.erddap.util.EDMessages.Message.SUBMIT, frenchLang)),
+          "Missing French Submit label");
+      Test.ensureTrue(resFr.contains("Soumettre"), "Missing French Soumettre button text");
+      Test.ensureTrue(resFr.contains("Génér"), "Missing French Génér text");
+    }
   }
 }
