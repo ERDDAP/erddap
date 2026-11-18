@@ -29,6 +29,8 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 import com.google.common.collect.ImmutableList;
+import gg.jte.TemplateEngine;
+import gg.jte.output.WriterOutput;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.GraphDataLayer;
@@ -41,6 +43,9 @@ import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.dataset.metadata.MetadataBuilder;
 import gov.noaa.pfel.erddap.filetypes.DapRequestInfo;
 import gov.noaa.pfel.erddap.filetypes.FileTypeInterface;
+import gov.noaa.pfel.erddap.jte.TabledapVariable;
+import gov.noaa.pfel.erddap.jte.TemplateHelper;
+import gov.noaa.pfel.erddap.jte.YouAreHere;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -58,6 +63,7 @@ import jakarta.xml.bind.JAXBException;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -2968,6 +2974,10 @@ public abstract class EDDTable extends EDD {
         OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
         Writer writer = File2.getBufferedWriterUtf8(out);
         try {
+          if (EDStatic.config.useHtmlTemplates) {
+            renderTabledapFormJte(request, language, loggedInAs, userDapQuery, table, writer);
+            return;
+          }
           writer.write(
               EDStatic.startHeadHtml(
                   language,
@@ -4822,6 +4832,443 @@ public abstract class EDDTable extends EDD {
   } // end of saveAsNcCF2
 
   /**
+   * Render the tabledap Data Access Form using JTE templates.
+   *
+   * @param request the request
+   * @param language the index of the selected language
+   * @param loggedInAs the name of the logged in user
+   * @param userDapQuery the query string from the user
+   * @param table the empty destination table with metadata
+   * @param writer the destination writer
+   * @throws Throwable if trouble
+   */
+  public void renderTabledapFormJte(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String userDapQuery,
+      Table table,
+      Writer writer)
+      throws Throwable {
+
+    String tErddapUrl = EDStatic.erddapUrl(request, loggedInAs, language);
+    if (userDapQuery == null) userDapQuery = "";
+    userDapQuery = userDapQuery.trim();
+
+    StringWriter datasetInfoSw = new StringWriter();
+    writeHtmlDatasetInfo(
+        request, language, loggedInAs, datasetInfoSw, true, false, true, true, userDapQuery, "");
+    String datasetInfoHtml = datasetInfoSw.toString();
+
+    if (userDapQuery.length() == 0) userDapQuery = defaultDataQuery();
+
+    HtmlWidgets widgets =
+        new HtmlWidgets(true, EDStatic.imageDirUrl(request, loggedInAs, language));
+
+    String[] queryParts = Table.getDapQueryParts(userDapQuery);
+    StringArray resultsVariables = new StringArray();
+    StringArray constraintVariables = new StringArray();
+    StringArray constraintOps = new StringArray();
+    StringArray constraintValues = new StringArray();
+    try {
+      parseUserDapQuery(
+          language,
+          userDapQuery,
+          resultsVariables,
+          constraintVariables,
+          constraintOps,
+          constraintValues,
+          true,
+          false);
+    } catch (Throwable t) {
+      EDStatic.rethrowClientAbortException(t);
+      String2.log(MustBe.throwableToString(t));
+      userDapQuery = "";
+    }
+
+    String[][] distinctOptions = null;
+    if (accessibleViaSubset().length() == 0)
+      distinctOptions = distinctOptionsTable(language, loggedInAs);
+
+    String formName = "form1";
+    int nDv = dataVariables.length;
+    StringBuilder checkAll = new StringBuilder();
+    StringBuilder uncheckAll = new StringBuilder();
+    for (int dv = 0; dv < nDv; dv++) {
+      checkAll.append(formName).append(".varch").append(dv).append(".checked=true;");
+      uncheckAll.append(formName).append(".varch").append(dv).append(".checked=false;");
+    }
+
+    String[] sliderFromNames = new String[nDv];
+    String[] sliderToNames = new String[nDv];
+    int[] sliderNThumbs = new int[nDv];
+    String[] sliderUserValuesCsvs = new String[nDv];
+    int[] sliderInitFromPositions = new int[nDv];
+    int[] sliderInitToPositions = new int[nDv];
+    Table tMinMaxTable = minMaxTable;
+
+    List<TabledapVariable> variables = new ArrayList<>(nDv);
+
+    for (int dv = 0; dv < nDv; dv++) {
+      EDV edv = dataVariables[dv];
+      double tMax = edv.destinationMaxDouble();
+      boolean isTime = dv == timeIndex;
+      boolean isTimeStamp = edv instanceof EDVTimeStamp;
+      boolean isChar = edv.destinationDataPAType() == PAType.CHAR;
+      boolean isString = edv.destinationDataPAType() == PAType.STRING;
+      DateTimeFormatter tTime_precision =
+          isTimeStamp ? ((EDVTimeStamp) edv).time_precision() : null;
+
+      String extra = edv.units();
+      if (isTimeStamp) extra = "UTC";
+      if (extra == null) extra = "";
+      if (showLongName(edv.destinationName(), edv.longName(), extra, 30))
+        extra = edv.longName() + (extra.length() == 0 ? "" : ", " + extra);
+      if (extra.length() > 0) extra = " (" + extra + ")";
+
+      String labelHtml =
+          XML.encodeAsHTML(edv.destinationName() + extra)
+              + " "
+              + EDStatic.htmlTooltipImageEDV(request, language, loggedInAs, edv);
+
+      boolean isChecked =
+          userDapQuery.length() == 0 || (resultsVariables.indexOf(edv.destinationName()) >= 0);
+
+      String[] tOp = {">=", "<="};
+      double[] tValD = {Double.NaN, Double.NaN};
+      String[] tValS = {null, null};
+      if (userDapQuery.length() > 0) {
+        boolean done0 = false;
+        for (int con = 0; con < 2; con++) {
+          int tConi = constraintVariables.indexOf(edv.destinationName());
+          if (tConi >= 0) {
+            String cOp = constraintOps.get(tConi);
+            int putIn = cOp.startsWith("<") || done0 ? 1 : 0;
+            if (putIn == 0) done0 = true;
+            tOp[putIn] = cOp;
+            tValS[putIn] = constraintValues.get(tConi);
+            tValD[putIn] = String2.parseDouble(tValS[putIn]);
+            if (isTimeStamp) {
+              tValS[putIn] =
+                  Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tValD[putIn], "");
+            }
+            constraintVariables.remove(tConi);
+            constraintOps.remove(tConi);
+            constraintValues.remove(tConi);
+          }
+        }
+      } else {
+        if (isTime) {
+          if (Double.isFinite(tMax)) {
+            tValD[1] = tMax;
+            tValS[1] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tMax, "");
+          }
+          tValD[0] = Calendar2.backNDays(7, tMax);
+          tValS[0] = Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, tValD[0], "");
+        }
+      }
+
+      String valueWidgetName = "val" + dv + "_";
+      String tTooltip =
+          isTimeStamp
+              ? EDStatic.messages.get(Message.EDD_TABLE_TIME_CONSTRAINT_TOOLTIP, language)
+              : isString || isChar
+                  ? EDStatic.messages.get(Message.EDD_TABLE_STRING_CONSTRAINT_TOOLTIP, language)
+                  : EDStatic.messages.get(Message.EDD_TABLE_NUMERIC_CONSTRAINT_TOOLTIP, language);
+      if (edv.destinationMinString().length() > 0)
+        tTooltip +=
+            "<br>&nbsp;<br>"
+                + MessageFormat.format(
+                    EDStatic.messages.get(Message.RANGES_FROM_TO, language),
+                    edv.destinationName(),
+                    edv.destinationMinString(),
+                    edv.destinationMaxString().length() > 0 ? edv.destinationMaxString() : "(?)");
+
+      String val0 = tValS[0];
+      if (val0 == null) {
+        val0 = "";
+      } else if (tOp[0].equals(PrimitiveArray.REGEX_OP) || isChar || isString) {
+        val0 = String2.toJson(val0);
+      }
+
+      String val1 = tValS[1];
+      if (val1 == null) {
+        val1 = "";
+      } else if (tOp[1].equals(PrimitiveArray.REGEX_OP) || isChar || isString) {
+        val1 = String2.toJson(val1);
+      }
+
+      int whichDTCol =
+          distinctOptions == null ? -1 : String2.indexOf(subsetVariables, edv.destinationName());
+      boolean hasDistinct = whichDTCol >= 0;
+      String[] disOptions = null;
+      int disSelected = 0;
+      String minStr = "";
+      String maxStr = "";
+      if (hasDistinct) {
+        disOptions = distinctOptions[whichDTCol];
+        String tVal0 = tValS[0];
+        if (tVal0 == null) {
+          tVal0 = "";
+        } else if (isChar || isString) {
+          tVal0 = String2.replaceAll(String2.toJson(tVal0), '\u00A0', ' ');
+        }
+        int tWhich = String2.indexOf(disOptions, tVal0);
+        disSelected = Math.max(0, tWhich);
+      } else {
+        minStr = edv.destinationMinString();
+        maxStr = edv.destinationMaxString();
+        if (tMinMaxTable != null
+            && tMinMaxTable.nRows() >= 2
+            && edv.destinationDataPAType() == PAType.STRING) {
+          minStr = tMinMaxTable.getStringData(dv, 0);
+          maxStr = tMinMaxTable.getStringData(dv, 1);
+          if (minStr == null) minStr = "";
+          if (maxStr == null) maxStr = "";
+          if (minStr.length() > 20) minStr = minStr.substring(0, 18) + "...";
+          if (maxStr.length() > 20) maxStr = maxStr.substring(0, 18) + "...";
+          minStr = String2.toJson(minStr, 65536, true);
+          maxStr = String2.toJson(maxStr, 65536, true);
+        }
+      }
+
+      boolean hasSlider =
+          !((dv != lonIndex && dv != latIndex && dv != altIndex && dv != depthIndex && !isTime)
+              || !Double.isFinite(edv.destinationMinDouble())
+              || (!Double.isFinite(edv.destinationMaxDouble()) && !isTime));
+
+      String sliderHtml = "";
+      if (hasSlider) {
+        sliderNThumbs[dv] = 2;
+        sliderFromNames[dv] = formName + "." + valueWidgetName + "0";
+        sliderToNames[dv] = formName + "." + valueWidgetName + "1";
+        sliderUserValuesCsvs[dv] =
+            whichDTCol >= 0
+                ? EDV.getSliderCSVFromDistinctOptions(distinctOptions[whichDTCol])
+                : edv.sliderCsvValues();
+        sliderInitFromPositions[dv] = edv.closestSliderPosition(tValD[0]);
+        sliderInitToPositions[dv] = edv.closestSliderPosition(tValD[1]);
+        if (sliderInitFromPositions[dv] == -1) sliderInitFromPositions[dv] = 0;
+        if (sliderInitToPositions[dv] == -1) sliderInitToPositions[dv] = EDV.SLIDER_PIXELS - 1;
+        sliderHtml = widgets.spacer(10, 1, "") + widgets.dualSlider(dv, EDV.SLIDER_PIXELS - 1, "");
+      } else {
+        sliderNThumbs[dv] = 0;
+        sliderFromNames[dv] = "";
+        sliderToNames[dv] = "";
+        sliderUserValuesCsvs[dv] = "";
+        sliderInitFromPositions[dv] = 0;
+        sliderInitToPositions[dv] = 0;
+      }
+
+      variables.add(
+          new TabledapVariable(
+              dv,
+              edv.destinationName(),
+              labelHtml,
+              isChecked,
+              tOp[0],
+              val0,
+              tOp[1],
+              val1,
+              tTooltip,
+              hasDistinct,
+              disOptions,
+              disSelected,
+              minStr,
+              maxStr,
+              hasSlider,
+              sliderHtml));
+    }
+
+    String addVariablesWhereHtml = "";
+    if (addVariablesWhereAttNames != null) {
+      StringWriter avwSw = new StringWriter();
+      avwSw.write(widgets.beginTable("class=\"compact nowrap\""));
+      for (int attNamei = 1; attNamei < addVariablesWhereAttNames.size(); attNamei++) {
+        String attName = addVariablesWhereAttNames.get(attNamei);
+        String startsWith = "addVariablesWhere(\"" + attName + "\",";
+        String sStartsWith = String2.stringStartsWith(queryParts, startsWith);
+        int attValuei = 0;
+        if (sStartsWith != null && sStartsWith.endsWith("\")")) {
+          String[] avwAr =
+              StringArray.arrayFromCSV(sStartsWith.substring(18, sStartsWith.length() - 1));
+          if (avwAr.length == 2) {
+            String attValue = avwAr[1];
+            attValuei = Math.max(0, addVariablesWhereAttValues.get(attNamei).indexOf(attValue));
+          }
+        }
+        avwSw.write(
+            "<tr>\n<td>Add variables where "
+                + XML.encodeAsHTML(attName)
+                + widgets.hidden("avwan" + attNamei, attName)
+                + "<td>&nbsp;=&nbsp;"
+                + widgets.select(
+                    "avwav" + attNamei,
+                    EDStatic.messages.get(Message.ADD_VAR_WHERE_ATT_VALUE, language),
+                    1,
+                    addVariablesWhereAttValues.get(attNamei).toArray(),
+                    attValuei,
+                    "")
+                + "\n"
+                + EDStatic.htmlTooltipImage(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.ADD_VAR_WHERE, language))
+                + "</tr>\n");
+      }
+      avwSw.write(widgets.endTable());
+      addVariablesWhereHtml = avwSw.toString();
+    }
+
+    int nOrderByComboBox = 5;
+    StringWriter fnSw = new StringWriter();
+    writeFunctionHtml(
+        request, language, loggedInAs, queryParts, fnSw, widgets, formName, nOrderByComboBox);
+    String functionHtml = fnSw.toString();
+
+    List<EDDFileTypeInfo> availableFileTypes = EDD.getFileTypeOptions(false, FileCategory.BOTH);
+    List<String> fileTypeDescriptions =
+        availableFileTypes.stream()
+            .map(
+                fileTypeInfo ->
+                    fileTypeInfo.getFileTypeName()
+                        + " - "
+                        + fileTypeInfo.getTableDescription(language))
+            .toList();
+
+    String javaScript =
+        "var result = \"\";\n"
+            + "try {\n"
+            + "  var d = document;\n"
+            + "  var rv = [];\n"
+            + "  var q2 = \"\";\n"
+            + "  for (var dv = 0; dv < "
+            + nDv
+            + "; dv++) {\n"
+            + "    var tVar = eval(\"d."
+            + formName
+            + ".varch\" + dv);\n"
+            + "    if (tVar.checked) rv.push(tVar.value);\n"
+            + "    var tOp  = eval(\"d."
+            + formName
+            + ".op\"  + dv + \"_0\");\n"
+            + "    var tVal = eval(\"d."
+            + formName
+            + ".val\" + dv + \"_0\");\n"
+            + "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "    tOp  = eval(\"d."
+            + formName
+            + ".op\"  + dv + \"_1\");\n"
+            + "    tVal = eval(\"d."
+            + formName
+            + ".val\" + dv + \"_1\");\n"
+            + "    if (tVal.value.length > 0) q2 += \"\\x26\" + tVar.value + tOp.value + percentEncode(tVal.value);\n"
+            + "  }\n"
+            + (addVariablesWhereAttNames == null
+                ? ""
+                : "  for (var avi = 1; avi < "
+                    + addVariablesWhereAttNames.size()
+                    + "; avi++) {\n"
+                    + "    var avwanv = eval(\"d."
+                    + formName
+                    + ".avwan\" + avi + \".value\");\n"
+                    + "    var avwavv = eval(\"d."
+                    + formName
+                    + ".avwav\" + avi + \".value\");\n"
+                    + "    if (avwanv.length > 0 && avwavv.length > 0)\n"
+                    + "      q2 += \"\\x26addVariablesWhere(%22\" + percentEncode(avwanv) + \"%22%2C%22\" + percentEncode(avwavv) + \"%22)\";\n"
+                    + "  }\n")
+            + functionJavaScript(formName, nOrderByComboBox)
+            + "  var ft = d."
+            + formName
+            + ".fileType.value;\n"
+            + "  result = \""
+            + tErddapUrl
+            + "/tabledap/"
+            + datasetID
+            + "\" + ft.substring(0, ft.indexOf(\" - \")) + \"?\" + percentEncode(rv.toString()) + q2;\n"
+            + "} catch (e) {alert(e);}\n"
+            + "d."
+            + formName
+            + ".tUrl.value = result;\n";
+
+    String sliderScriptHtml =
+        widgets.sliderScript(
+            sliderFromNames,
+            sliderToNames,
+            sliderNThumbs,
+            sliderUserValuesCsvs,
+            sliderInitFromPositions,
+            sliderInitToPositions,
+            EDV.SLIDER_PIXELS - 1);
+
+    StringWriter dasSw = new StringWriter();
+    table.writeDAS(dasSw, SEQUENCE_NAME, true);
+    String dasContent = dasSw.toString();
+
+    String dapBase = EDStatic.messages.EDDTableErddapUrlExample + dapProtocol + "/";
+    String datasetBase = dapBase + EDStatic.messages.EDDTableIdExample;
+    String exampleHref = datasetBase + ".htmlTable?" + EDStatic.messages.EDDTableDataTimeExampleHA;
+    String exampleText = datasetBase + ".htmlTable?" + EDStatic.messages.EDDTableDataTimeExampleHE;
+    String queryExplanationHtml =
+        "<br>Thus, the query is often a comma-separated list of desired variable names,\n"
+            + "   followed by a collection of\n"
+            + "  constraints (e.g., <kbd><i>variable</i>&lt;<i>value</i></kbd>),\n"
+            + "  each preceded by '&amp;' (which is interpreted as \"AND\").\n";
+    String longDapDesc = longDapDescription(language, tErddapUrl);
+
+    String htmlHelp =
+        "<div class=\"standard_max_width\">"
+            + EDStatic.messages.get(Message.DAF_TABLE_TOOLTIP, language)
+            + "<p>"
+            + EDStatic.messages.get(Message.EDD_TABLE_DOWNLOAD_DATA_TOOLTIP, language)
+            + "</ol>\n"
+            + EDStatic.messages.get(Message.DAF_TABLE_BYPASS_TOOLTIP, language)
+            + "</div>";
+    String tooltipImg = EDStatic.htmlTooltipImage(request, language, loggedInAs, htmlHelp);
+    YouAreHere youAreHere =
+        EDStatic.getYouAreHere(
+            request,
+            language,
+            loggedInAs,
+            List.of(dapProtocol, EDStatic.messages.get(Message.DAF, language)),
+            List.of(EDStatic.protocolUrl(tErddapUrl, dapProtocol)),
+            tooltipImg);
+
+    TemplateEngine engine = TemplateHelper.getTemplateEngine();
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("youAreHere", youAreHere);
+    params.put("language", language);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("loggedInAs", loggedInAs);
+    params.put("endOfRequest", "tabledap/" + datasetID + ".html");
+    params.put("request", request);
+    params.put("datasetInfoHtml", datasetInfoHtml);
+    params.put("formName", formName);
+    params.put("variables", variables);
+    params.put("operators", OPERATORS);
+    params.put("hasDistinctOptions", distinctOptions != null);
+    params.put("checkAllJs", checkAll.toString());
+    params.put("uncheckAllJs", uncheckAll.toString());
+    params.put("addVariablesWhereHtml", addVariablesWhereHtml);
+    params.put("functionHtml", functionHtml);
+    params.put("fileTypeDescriptions", fileTypeDescriptions);
+    params.put("defaultFileTypeOption", defaultFileTypeOption);
+    params.put("javaScript", javaScript);
+    params.put("sliderScriptHtml", sliderScriptHtml);
+    params.put("dasContent", dasContent);
+    params.put("dapBase", dapBase);
+    params.put("exampleHref", exampleHref);
+    params.put("exampleText", exampleText);
+    params.put("queryExplanationHtml", queryExplanationHtml);
+    params.put("longDapDescription", longDapDesc);
+
+    engine.render("tabledap_form.jte", params, new WriterOutput(writer));
+    writer.flush();
+  }
+
+  /**
    * This writes an HTML form requesting info from this dataset (like the OPeNDAP Data Access Forms,
    * DAF).
    *
@@ -5328,7 +5775,7 @@ public abstract class EDDTable extends EDD {
         String sStartsWith = String2.stringStartsWith(queryParts, startsWith);
         int attValuei = 0;
         if (sStartsWith != null && sStartsWith.endsWith("\")")) {
-          String avwAr[] =
+          String[] avwAr =
               StringArray.arrayFromCSV(sStartsWith.substring(18, sStartsWith.length() - 1));
           if (avwAr.length == 2) {
             String attValue = avwAr[1];

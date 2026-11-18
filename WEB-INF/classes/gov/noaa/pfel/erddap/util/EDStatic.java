@@ -1374,11 +1374,33 @@ public class EDStatic {
       String loggedInAs,
       List<String> breadcrumbs,
       List<String> breadcrumbUrls) {
+    return getYouAreHere(request, language, loggedInAs, breadcrumbs, breadcrumbUrls, null);
+  }
+
+  /**
+   * Create a YouAreHere model for JTE rendering with optional help tooltip HTML.
+   *
+   * @param request the request
+   * @param language the index of the selected language
+   * @param loggedInAs the logged in user
+   * @param breadcrumbs the breadcrumb labels
+   * @param breadcrumbUrls the breadcrumb URLs
+   * @param htmlHelp optional tooltip image or help HTML appended to the breadcrumb header
+   * @return a YouAreHere model for JTE rendering
+   */
+  public static YouAreHere getYouAreHere(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      List<String> breadcrumbs,
+      List<String> breadcrumbUrls,
+      String htmlHelp) {
     return new YouAreHere(
         erddapUrl(request, loggedInAs, language),
         EDStatic.messages.get(Message.CLICK_ERDDAP, language),
         breadcrumbs,
-        breadcrumbUrls);
+        breadcrumbUrls,
+        htmlHelp);
   }
 
   /**
