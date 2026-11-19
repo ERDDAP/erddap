@@ -15,6 +15,7 @@ import java.io.DataInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,6 +27,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Zero-dependency in-memory hybrid search engine (Fuzzy BM25 + dense vector cosine similarity fused
@@ -39,6 +44,7 @@ public class HybridSearchEngine {
   private static final double BM25_K1 = 1.2;
   private static final double BM25_B = 0.75;
   private static final double RRF_K = 60.0;
+  private static final long DEFAULT_REBUILD_DEBOUNCE_MILLIS = 1500L;
 
   private static volatile IndexSnapshot currentSnapshot = null;
   private static final ConcurrentHashMap<String, CachedVector> vectorCache =
@@ -48,12 +54,46 @@ public class HybridSearchEngine {
   private static volatile DomainLexicon domainLexicon = null;
   private static final Object lexiconLock = new Object();
 
+  private static final Object scheduleLock = new Object();
+  private static ScheduledExecutorService rebuildExecutor = null;
+  private static ScheduledFuture<?> pendingRebuildTask = null;
+  private static volatile Map<String, EDDGrid> pendingGridDatasets = null;
+  private static volatile Map<String, EDDTable> pendingTableDatasets = null;
+
+  private static final ThreadLocal<QueryScratch> queryScratch =
+      ThreadLocal.withInitial(QueryScratch::new);
+
+  private static final class QueryScratch {
+    double[] bm25 = new double[0];
+    double[] vec = new double[0];
+    double[] rrf = new double[0];
+    final BitSet eligible = new BitSet();
+    final BitSet candidates = new BitSet();
+
+    void prepare(int nDocs) {
+      if (bm25.length < nDocs) {
+        int cap = Math.max(nDocs, bm25.length * 2);
+        bm25 = new double[cap];
+        vec = new double[cap];
+        rrf = new double[cap];
+      } else {
+        Arrays.fill(bm25, 0, nDocs, 0.0);
+        Arrays.fill(vec, 0, nDocs, 0.0);
+        Arrays.fill(rrf, 0, nDocs, 0.0);
+      }
+      eligible.clear();
+      candidates.clear();
+    }
+  }
+
   private static final class CachedVector {
-    final int metadataHash;
+    final long hashHigh;
+    final long hashLow;
     final float[] unitVector;
 
-    CachedVector(int metadataHash, float[] unitVector) {
-      this.metadataHash = metadataHash;
+    CachedVector(long hashHigh, long hashLow, float[] unitVector) {
+      this.hashHigh = hashHigh;
+      this.hashLow = hashLow;
       this.unitVector = unitVector;
     }
   }
@@ -74,7 +114,9 @@ public class HybridSearchEngine {
     final String[] defaultTitles;
     final Map<String, Integer> idToDocIndex;
     final Map<String, PostingList> postings;
-    final String[][] vocabByLength;
+    final String[][] vocabByLength; // sorted lexicographically within each length bucket
+    final int[][]
+        vocabMasksByLength; // 32-bit character presence bitmasks parallel to vocabByLength
     final float[] docLengths;
     final float avgDocLength;
     final float[] flatVectors; // [numDocs * dim], L2-normalized
@@ -87,6 +129,7 @@ public class HybridSearchEngine {
         Map<String, Integer> idToDocIndex,
         Map<String, PostingList> postings,
         String[][] vocabByLength,
+        int[][] vocabMasksByLength,
         float[] docLengths,
         float avgDocLength,
         float[] flatVectors,
@@ -97,6 +140,7 @@ public class HybridSearchEngine {
       this.idToDocIndex = idToDocIndex;
       this.postings = postings;
       this.vocabByLength = vocabByLength;
+      this.vocabMasksByLength = vocabMasksByLength;
       this.docLengths = docLengths;
       this.avgDocLength = avgDocLength;
       this.flatVectors = flatVectors;
@@ -113,11 +157,86 @@ public class HybridSearchEngine {
   }
 
   /**
-   * Rebuilds the immutable in-memory search snapshot from the currently active grid and table
-   * datasets and atomically swaps it into place. Safe to call after LoadDatasets or tryToUnload.
+   * Schedules a coalesced background rebuild after {@link #DEFAULT_REBUILD_DEBOUNCE_MILLIS}. Safe
+   * to call in tight loops (such as batch unloads in {@code LoadDatasets.tryToUnload}); rapid calls
+   * collapse into a single rebuild once the burst settles.
+   */
+  public static void scheduleRebuild(
+      Map<String, EDDGrid> gridDatasets, Map<String, EDDTable> tableDatasets) {
+    scheduleRebuild(gridDatasets, tableDatasets, DEFAULT_REBUILD_DEBOUNCE_MILLIS);
+  }
+
+  static void scheduleRebuild(
+      Map<String, EDDGrid> gridDatasets, Map<String, EDDTable> tableDatasets, long delayMillis) {
+    synchronized (scheduleLock) {
+      pendingGridDatasets = gridDatasets;
+      pendingTableDatasets = tableDatasets;
+      if (rebuildExecutor == null || rebuildExecutor.isShutdown()) {
+        rebuildExecutor =
+            Executors.newSingleThreadScheduledExecutor(
+                r -> {
+                  Thread t = new Thread(r, "erddap-hybrid-search-rebuilder");
+                  t.setDaemon(true);
+                  return t;
+                });
+      }
+      if (pendingRebuildTask != null && !pendingRebuildTask.isDone()) {
+        pendingRebuildTask.cancel(false);
+      }
+      pendingRebuildTask =
+          rebuildExecutor.schedule(
+              () -> {
+                Map<String, EDDGrid> g;
+                Map<String, EDDTable> tb;
+                synchronized (scheduleLock) {
+                  g = pendingGridDatasets;
+                  tb = pendingTableDatasets;
+                  pendingRebuildTask = null;
+                }
+                if (g != null && tb != null) {
+                  try {
+                    rebuild(g, tb);
+                  } catch (Throwable t) {
+                    String2.log("WARNING: Debounced HybridSearchEngine.rebuild failed: " + t);
+                  }
+                }
+              },
+              Math.max(0L, delayMillis),
+              TimeUnit.MILLISECONDS);
+    }
+  }
+
+  /** Shuts down the background rebuild scheduler (called during {@code EDStatic.destroy}). */
+  public static void shutdown() {
+    synchronized (scheduleLock) {
+      if (pendingRebuildTask != null) {
+        pendingRebuildTask.cancel(false);
+        pendingRebuildTask = null;
+      }
+      pendingGridDatasets = null;
+      pendingTableDatasets = null;
+      if (rebuildExecutor != null) {
+        rebuildExecutor.shutdownNow();
+        rebuildExecutor = null;
+      }
+    }
+  }
+
+  /**
+   * Rebuilds the immutable in-memory search snapshot synchronously from the currently active grid
+   * and table datasets and atomically swaps it into place. Cancels any pending debounced rebuild.
    */
   public static synchronized void rebuild(
       Map<String, EDDGrid> gridDatasets, Map<String, EDDTable> tableDatasets) {
+    synchronized (scheduleLock) {
+      if (pendingRebuildTask != null && !pendingRebuildTask.isDone()) {
+        pendingRebuildTask.cancel(false);
+      }
+      pendingRebuildTask = null;
+      pendingGridDatasets = null;
+      pendingTableDatasets = null;
+    }
+
     long t0 = System.currentTimeMillis();
     StaticEmbeddingModel model = getOrLoadModel();
     DomainLexicon lexicon = getOrLoadLexicon();
@@ -230,16 +349,20 @@ public class HybridSearchEngine {
       docLengths[docIdx] = Math.max(1.0f, docLen);
       totalDocLen += docLengths[docIdx];
 
-      // Incremental embedding cache lookup
+      // 128-bit collision-resistant incremental embedding cache lookup
       String semStr = semanticText.toString();
-      int metaHash = semStr.hashCode();
+      long hashHigh = fnv1a64High(semStr);
+      long hashLow = fnv1a64Low(semStr);
       CachedVector cached = vectorCache.get(id);
       float[] vec;
-      if (cached != null && cached.metadataHash == metaHash && cached.unitVector.length == dim) {
+      if (cached != null
+          && cached.hashHigh == hashHigh
+          && cached.hashLow == hashLow
+          && cached.unitVector.length == dim) {
         vec = cached.unitVector;
       } else {
         vec = model.embed(semStr);
-        vectorCache.put(id, new CachedVector(metaHash, vec));
+        vectorCache.put(id, new CachedVector(hashHigh, hashLow, vec));
       }
       System.arraycopy(vec, 0, flatVectors, docIdx * dim, dim);
     }
@@ -247,7 +370,7 @@ public class HybridSearchEngine {
     // Evict removed datasets from vector cache
     vectorCache.keySet().retainAll(activeIDs);
 
-    // Finalize compact primitive postings and length-bucketed vocabulary
+    // Finalize compact primitive postings and sorted length-bucketed vocabulary + bitmasks
     Map<String, PostingList> postings =
         new HashMap<>(Math.max(16, (int) (termDocLists.size() * 1.4f)));
     int maxLen = 0;
@@ -277,9 +400,21 @@ public class HybridSearchEngine {
     }
 
     String[][] vocabByLength = new String[buckets.length][];
+    int[][] vocabMasksByLength = new int[buckets.length][];
     for (int len = 0; len < buckets.length; len++) {
-      vocabByLength[len] =
-          buckets[len] == null ? new String[0] : buckets[len].toArray(new String[0]);
+      if (buckets[len] == null) {
+        vocabByLength[len] = new String[0];
+        vocabMasksByLength[len] = new int[0];
+      } else {
+        String[] sorted = buckets[len].toArray(new String[0]);
+        Arrays.sort(sorted);
+        int[] masks = new int[sorted.length];
+        for (int i = 0; i < sorted.length; i++) {
+          masks[i] = computeCharMask(sorted[i]);
+        }
+        vocabByLength[len] = sorted;
+        vocabMasksByLength[len] = masks;
+      }
     }
 
     float avgDocLen = nDocs > 0 ? (float) (totalDocLen / nDocs) : 1.0f;
@@ -291,6 +426,7 @@ public class HybridSearchEngine {
             idToDocIndex,
             postings,
             vocabByLength,
+            vocabMasksByLength,
             docLengths,
             avgDocLen,
             flatVectors,
@@ -354,7 +490,9 @@ public class HybridSearchEngine {
     }
 
     int nDocs = snap.datasetIDs.length;
-    BitSet eligible = new BitSet(nDocs);
+    QueryScratch scratch = queryScratch.get();
+    scratch.prepare(nDocs);
+    BitSet eligible = scratch.eligible;
     for (int i = 0; i < candidateIDs.size(); i++) {
       Integer idx = snap.idToDocIndex.get(candidateIDs.get(i));
       if (idx != null) eligible.set(idx);
@@ -381,28 +519,47 @@ public class HybridSearchEngine {
       return filtered;
     }
 
-    // 1. Lexical + Prefix/Substring + Fuzzy BM25 Scoring
-    double[] bm25Scores = new double[nDocs];
+    // 1. Lexical + O(log V) Prefix + Bitmask-Pruned Substring/Fuzzy BM25 Scoring
+    double[] bm25Scores = scratch.bm25;
 
     for (String qTok : positiveTokens) {
+      int qLen = qTok.length();
+      int qMask = computeCharMask(qTok);
+
       PostingList exactPl = snap.postings.get(qTok);
       if (exactPl != null) {
         accumulateBm25(
             bm25Scores, eligible, exactPl, nDocs, snap.docLengths, snap.avgDocLength, 1.0);
       }
 
-      // Prefix & substring expansion (e.g., "precip" -> "precipitation", "sal" -> "salinity")
-      if (qTok.length() >= 3) {
-        for (int len = qTok.length(); len < snap.vocabByLength.length; len++) {
-          for (String cand : snap.vocabByLength[len]) {
-            if (cand.equals(qTok)) continue;
-            if (cand.startsWith(qTok)) {
-              PostingList pl = snap.postings.get(cand);
-              if (pl != null) {
-                accumulateBm25(
-                    bm25Scores, eligible, pl, nDocs, snap.docLengths, snap.avgDocLength, 0.85);
-              }
-            } else if (qTok.length() >= 4 && cand.contains(qTok)) {
+      // O(log V) binary-search prefix expansion (e.g., "precip" -> "precipitation")
+      if (qLen >= 3) {
+        for (int len = qLen + 1; len < snap.vocabByLength.length; len++) {
+          String[] bucket = snap.vocabByLength[len];
+          if (bucket.length == 0) continue;
+          int pos = Arrays.binarySearch(bucket, qTok);
+          if (pos < 0) pos = -pos - 1;
+          while (pos < bucket.length && bucket[pos].startsWith(qTok)) {
+            PostingList pl = snap.postings.get(bucket[pos]);
+            if (pl != null) {
+              accumulateBm25(
+                  bm25Scores, eligible, pl, nDocs, snap.docLengths, snap.avgDocLength, 0.85);
+            }
+            pos++;
+          }
+        }
+      }
+
+      // Bitmask-pruned interior substring expansion (e.g., "salin" -> "desalination")
+      if (qLen >= 4) {
+        for (int len = qLen + 1; len < snap.vocabByLength.length; len++) {
+          String[] bucket = snap.vocabByLength[len];
+          int[] masks = snap.vocabMasksByLength[len];
+          for (int i = 0; i < bucket.length; i++) {
+            if ((masks[i] & qMask) != qMask) continue;
+            String cand = bucket[i];
+            if (cand.startsWith(qTok)) continue;
+            if (cand.contains(qTok)) {
               PostingList pl = snap.postings.get(cand);
               if (pl != null) {
                 accumulateBm25(
@@ -413,15 +570,23 @@ public class HybridSearchEngine {
         }
       }
 
-      // Edit-distance fuzzy expansion for typos (e.g., "chlorophyl" -> "chlorophyll")
-      if (qTok.length() >= 4) {
-        int maxDist = qTok.length() >= 7 ? 2 : 1;
-        int minLen = Math.max(3, qTok.length() - maxDist);
-        int maxLen = Math.min(snap.vocabByLength.length - 1, qTok.length() + maxDist);
+      // Bitmask-pruned Damerau-Levenshtein fuzzy expansion for typos (e.g., "chlorophyl")
+      if (qLen >= 4) {
+        int maxDist = qLen >= 7 ? 2 : 1;
+        int minLen = Math.max(3, qLen - maxDist);
+        int maxLen = Math.min(snap.vocabByLength.length - 1, qLen + maxDist);
         for (int len = minLen; len <= maxLen; len++) {
-          for (String cand : snap.vocabByLength[len]) {
+          String[] bucket = snap.vocabByLength[len];
+          int[] masks = snap.vocabMasksByLength[len];
+          for (int i = 0; i < bucket.length; i++) {
+            int cMask = masks[i];
+            if (Integer.bitCount(qMask & ~cMask) > maxDist
+                || Integer.bitCount(cMask & ~qMask) > maxDist) {
+              continue;
+            }
+            String cand = bucket[i];
             if (cand.equals(qTok) || cand.startsWith(qTok)) continue;
-            if (qTok.length() >= 4 && cand.contains(qTok)) continue;
+            if (len > qLen && cand.contains(qTok)) continue;
             int dist = boundedDamerauLevenshtein(qTok, cand, maxDist);
             if (dist > 0 && dist <= maxDist) {
               PostingList pl = snap.postings.get(cand);
@@ -447,7 +612,7 @@ public class HybridSearchEngine {
     float[] qVec = model.embed(semanticQuery.toString());
     int dim = snap.dim;
     float[] flat = snap.flatVectors;
-    double[] vecScores = new double[nDocs];
+    double[] vecScores = scratch.vec;
 
     for (int docIdx = eligible.nextSetBit(0);
         docIdx >= 0;
@@ -473,8 +638,8 @@ public class HybridSearchEngine {
     lexRanked.sort((a, b) -> Double.compare(bm25Scores[b], bm25Scores[a]));
     vecRanked.sort((a, b) -> Double.compare(vecScores[b], vecScores[a]));
 
-    double[] rrfScores = new double[nDocs];
-    BitSet candidates = new BitSet(nDocs);
+    double[] rrfScores = scratch.rrf;
+    BitSet candidates = scratch.candidates;
 
     // Keep ALL lexical/prefix/fuzzy matches (no top-500 truncation)
     for (int r = 0; r < lexRanked.size(); r++) {
@@ -564,6 +729,42 @@ public class HybridSearchEngine {
       out.add(snap.datasetIDs[docIdx]);
     }
     return out;
+  }
+
+  private static int computeCharMask(String s) {
+    int mask = 0;
+    int n = s.length();
+    for (int i = 0; i < n; i++) {
+      char c = s.charAt(i);
+      if (c >= 'a' && c <= 'z') {
+        mask |= (1 << (c - 'a'));
+      } else if (c >= '0' && c <= '9') {
+        mask |= (1 << (26 + ((c - '0') % 5)));
+      } else {
+        mask |= (1 << 31);
+      }
+    }
+    return mask;
+  }
+
+  private static long fnv1a64High(String s) {
+    long h = 0xcbf29ce484222325L;
+    int n = s.length();
+    for (int i = 0; i < n; i++) {
+      h ^= s.charAt(i);
+      h *= 0x100000001b3L;
+    }
+    return h;
+  }
+
+  private static long fnv1a64Low(String s) {
+    long h = 0x84222325cbf29ce4L;
+    int n = s.length();
+    for (int i = n - 1; i >= 0; i--) {
+      h ^= (s.charAt(i) * 31L + i);
+      h *= 0x100000001b3L;
+    }
+    return h;
   }
 
   private static boolean matchesStrictConstraints(

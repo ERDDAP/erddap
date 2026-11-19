@@ -364,6 +364,53 @@ class HybridSearchEngineTests {
         "Expected variable abbreviation 'slp' -> 'Sea Level Pressure' match, got: " + slpResults);
   }
 
+  @Test
+  void scheduleRebuildCoalescesBurstsAndUpdatesSnapshot() throws Throwable {
+    // Rapidly schedule multiple updates; they should coalesce into a single async rebuild
+    for (int i = 0; i < 5; i++) {
+      String id = "burstDataset_" + i;
+      tableDatasets.put(
+          id,
+          new StubTableDataset(
+              id,
+              "Burst Bathymetry Dataset " + i,
+              "Sea floor depth multibeam survey.",
+              "NOAA",
+              new VarSpec[] {new VarSpec("depth", "Sea Floor Depth", "sea_floor_depth")},
+              null));
+      HybridSearchEngine.scheduleRebuild(gridDatasets, tableDatasets, 60L);
+    }
+
+    // Wait briefly for the 60ms debounced task to execute
+    long deadline = System.currentTimeMillis() + 2000L;
+    while (System.currentTimeMillis() < deadline
+        && !toList(searchHybrid("bathymetry", null)).contains("burstDataset_4")) {
+      Thread.sleep(20L);
+    }
+
+    List<String> results = toList(searchHybrid("bathymetry", null));
+    assertTrue(results.contains("burstDataset_0"));
+    assertTrue(results.contains("burstDataset_4"));
+  }
+
+  @Test
+  void metadataChangeInvalidates128BitVectorCache() throws Throwable {
+    // Replace ncepPrecipDaily with completely different metadata under the same datasetID
+    tableDatasets.put(
+        "ncepPrecipDaily",
+        new StubTableDataset(
+            "ncepPrecipDaily",
+            "Global Bathymetry and Seafloor Topography",
+            "High-resolution ocean depth and submarine terrain.",
+            "NOAA NCEI",
+            new VarSpec[] {new VarSpec("elevation", "Sea Floor Depth", "sea_floor_depth")},
+            null));
+    HybridSearchEngine.rebuild(gridDatasets, tableDatasets);
+
+    List<String> depthResults = toList(searchHybrid("bathymetry", null));
+    assertTrue(depthResults.contains("ncepPrecipDaily"));
+  }
+
   // --- Helpers & Lightweight Test Fixture ---
 
   private StringArray allCandidateIDs() {

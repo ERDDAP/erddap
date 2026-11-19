@@ -2718,6 +2718,10 @@ public class EDStatic {
       } catch (Throwable t) {
       }
       luceneIndexWriter = null;
+      try {
+        gov.noaa.pfel.erddap.search.HybridSearchEngine.shutdown();
+      } catch (Throwable t) {
+      }
 
       if (touchThread != null) {
         touchThread.interrupt();

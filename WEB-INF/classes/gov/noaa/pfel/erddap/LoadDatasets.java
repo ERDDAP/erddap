@@ -1754,7 +1754,7 @@ public class LoadDatasets extends Thread {
     changedDatasetIDs.add(tId);
     if (needToUpdateLucene) {
       erddap.updateLucene(changedDatasetIDs);
-      HybridSearchEngine.rebuild(erddap.gridDatasetHashMap, erddap.tableDatasetHashMap);
+      HybridSearchEngine.scheduleRebuild(erddap.gridDatasetHashMap, erddap.tableDatasetHashMap);
     }
     // do dataset actions so subscribers know it is gone
     Erddap.tryToDoActions(

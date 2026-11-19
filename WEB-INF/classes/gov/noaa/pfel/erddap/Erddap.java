@@ -25167,7 +25167,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
     if (System.currentTimeMillis() - context.getLastLuceneUpdate()
         > 5 * Calendar2.MILLIS_PER_MINUTE) {
       updateLucene(context.getChangedDatasetIDs());
-      HybridSearchEngine.rebuild(gridDatasetHashMap, tableDatasetHashMap);
+      HybridSearchEngine.scheduleRebuild(gridDatasetHashMap, tableDatasetHashMap);
       context.setLastLuceneUpdate(System.currentTimeMillis());
     }
 
