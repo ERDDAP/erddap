@@ -5715,7 +5715,7 @@ class JettyTests extends WireMockLifecycle {
       "information.html",
       "opensearch1.1/index.html",
       "rest.html",
-      "search/index.html?page=1&itemsPerPage=1000&searchFor=sst",
+      "search/index.html?page=1&itemsPerPage=1000&searchFor=sst&searchMode=exact",
       "slidesorter.html",
       "subscriptions/index.html",
       "subscriptions/add.html",
@@ -6012,7 +6012,7 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl
                 + "/search/index.json?"
                 + EDStatic.defaultPIppQuery
-                + "&searchFor=tao+pmel+sst");
+                + "&searchFor=tao+pmel+sst&searchMode=exact");
     expected =
         "{\n"
             + "  \"table\": {\n"
@@ -6106,7 +6106,7 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl
                 + "/search/index.json?"
                 + EDStatic.defaultPIppQuery
-                + "&searchFor=tao+pmel+sst&.jsonp=fnName");
+                + "&searchFor=tao+pmel+sst&.jsonp=fnName&searchMode=exact");
     expected =
         "fnName({\n"
             + "  \"table\": {\n"
@@ -6167,7 +6167,7 @@ class JettyTests extends WireMockLifecycle {
                         + EDStatic.erddapUrl
                         + "/search/index.json?"
                         + EDStatic.defaultPIppQuery
-                        + "&searchFor=tao+pmel&.jsonp=fnName\"",
+                        + "&searchFor=tao+pmel&searchMode=exact&.jsonp=fnName\"",
                     120)
                 .toArray());
     po = results.indexOf("HTTP");
@@ -6192,7 +6192,7 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl
                 + "/search/index.jsonlCSV1?"
                 + EDStatic.defaultPIppQuery
-                + "&searchFor=tao+pmel");
+                + "&searchFor=tao+pmel&searchMode=exact");
     expected =
         "[\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", \"wms\", \"files\", \"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"]\n"
             + "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"This dataset has monthly Position data from the\\n"
@@ -6299,7 +6299,7 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl
                 + "/search/index.jsonlCSV?"
                 + EDStatic.defaultPIppQuery
-                + "&searchFor=tao+pmel");
+                + "&searchFor=tao+pmel&searchMode=exact");
     expected =
         "[\"\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"\", \"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"This dataset has monthly Position data from the\\n"
             + "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n"
@@ -6405,7 +6405,7 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl
                 + "/search/index.jsonlKVP?"
                 + EDStatic.defaultPIppQuery
-                + "&searchFor=tao+pmel");
+                + "&searchFor=tao+pmel&searchMode=exact");
     expected =
         "{\"griddap\":\"\", \"Subset\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.subset\", \"tabledap\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos\", \"Make A Graph\":\"http://localhost:8080/erddap/tabledap/pmelTaoMonPos.graph\", \"wms\":\"\", \"files\":\"http://localhost:8080/erddap/files/pmelTaoMonPos/\", \"Title\":\"TAO/TRITON, RAMA, and PIRATA Buoys, Monthly, 1980-present, Position\", \"Summary\":\"This dataset has monthly Position data from the\\n"
             + "TAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\n"
@@ -6510,7 +6510,7 @@ class JettyTests extends WireMockLifecycle {
             EDStatic.erddapUrl
                 + "/search/index.tsv?"
                 + EDStatic.defaultPIppQuery
-                + "&searchFor=tao+pmel");
+                + "&searchFor=tao+pmel&searchMode=exact");
     Test.ensureTrue(
         results.indexOf(
                 "\t\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\t")
@@ -14974,12 +14974,12 @@ netcdf EDDTableFromNcFiles_Data.nc {
       Test.ensureTrue(results.indexOf(expected) >= 0, "i=" + i + " results=\n" + results);
       count = String2.countAll(results, "NOAA PMEL");
       Test.ensureEqual(
-          count, 4, "results=\n" + results + "i=" + i); // one in help, plus one per dataset
+          count, 6, "results=\n" + results + "i=" + i); // one in help, plus one per dataset
 
       results = SSR.getUrlResponseStringUnchanged(csvUrl + query);
       Test.ensureTrue(results.indexOf(expected) >= 0, "i=" + i + " results=\n" + results);
       count = String2.countAll(results, "NOAA PMEL");
-      Test.ensureEqual(count, 2, "results=\n" + results + "i=" + i); // one per dataset
+      Test.ensureEqual(count, 3, "results=\n" + results + "i=" + i); // one per dataset
     }
 
     // query with no matches: valid for .html but error for .csv: protocol

@@ -11,6 +11,7 @@ import gov.noaa.pfel.erddap.dataset.TableWriter;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.util.ArrayList;
 import java.util.List;
@@ -409,6 +410,62 @@ class HybridSearchEngineTests {
 
     List<String> depthResults = toList(searchHybrid("bathymetry", null));
     assertTrue(depthResults.contains("ncepPrecipDaily"));
+  }
+
+  @Test
+  void sparseLanguageOverlaysOnlyAllocatedWhenMetadataIsLocalized() throws Throwable {
+    int frLang = TranslateMessages.getIndexForLanguageCode("fr");
+    int deLang = TranslateMessages.getIndexForLanguageCode("de");
+
+    // In setUp(), all datasets only have default-language metadata, so overlays must be null
+    assertFalse(HybridSearchEngine.hasLanguageOverlay(frLang));
+    assertFalse(HybridSearchEngine.hasLanguageOverlay(deLang));
+
+    // Add a dataset with French localized title, summary, and variable long_name
+    StubTableDataset frenchBuoy =
+        new StubTableDataset(
+            "ifremerBoueeFr",
+            "Coastal Ocean Temperature Buoy",
+            "Hourly sea surface temperature measurements.",
+            "IFREMER",
+            new VarSpec[] {
+              new VarSpec("temp_mer", "Sea Water Temperature", "sea_water_temperature")
+            },
+            null);
+    frenchBuoy.combinedGlobalAttributes().set(frLang, "title", "Bouée Océanographique Côtière");
+    frenchBuoy
+        .combinedGlobalAttributes()
+        .set(frLang, "summary", "Mesures horaires de température de surface de la mer.");
+    frenchBuoy
+        .dataVariables()[0]
+        .combinedAttributes()
+        .set(frLang, "long_name", "Température de l'eau de mer");
+
+    tableDatasets.put("ifremerBoueeFr", frenchBuoy);
+    HybridSearchEngine.rebuild(gridDatasets, tableDatasets);
+
+    // French overlay is created (for just the 1 localized dataset); German remains null
+    assertTrue(HybridSearchEngine.hasLanguageOverlay(frLang));
+    assertFalse(HybridSearchEngine.hasLanguageOverlay(deLang));
+
+    // French query (including accented fuzzy typo "océanografique") finds the localized dataset
+    List<String> frResults =
+        toList(
+            HybridSearchEngine.search(
+                frLang,
+                null,
+                allCandidateIDs(),
+                "bouée océanografique",
+                gridDatasets,
+                tableDatasets));
+    assertTrue(frResults.contains("ifremerBoueeFr"));
+
+    // Untranslated English datasets still match when searching in French UI mode
+    List<String> fallbackEnResults =
+        toList(
+            HybridSearchEngine.search(
+                frLang, null, allCandidateIDs(), "salinity", gridDatasets, tableDatasets));
+    assertTrue(fallbackEnResults.contains("argoSalinityProfile"));
   }
 
   // --- Helpers & Lightweight Test Fixture ---

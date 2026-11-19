@@ -9,6 +9,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.util.CfToFromGcmd;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.TranslateMessages;
 import gov.noaa.pfel.erddap.variable.EDV;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -25,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -34,7 +36,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Zero-dependency in-memory hybrid search engine (Fuzzy BM25 + dense vector cosine similarity fused
- * via Reciprocal Rank Fusion) for ERDDAP dataset discovery.
+ * via Reciprocal Rank Fusion) for ERDDAP dataset discovery, with sparse per-language overlays for
+ * localized dataset metadata.
  */
 public class HybridSearchEngine {
 
@@ -108,43 +111,78 @@ public class HybridSearchEngine {
     }
   }
 
+  private static final class VocabIndex {
+    final Map<String, PostingList> postings;
+    final String[][] vocabByLength; // sorted lexicographically within each length bucket
+    final int[][]
+        vocabMasksByLength; // 32-bit character presence bitmasks parallel to vocabByLength
+
+    VocabIndex(
+        Map<String, PostingList> postings, String[][] vocabByLength, int[][] vocabMasksByLength) {
+      this.postings = postings;
+      this.vocabByLength = vocabByLength;
+      this.vocabMasksByLength = vocabMasksByLength;
+    }
+  }
+
+  /**
+   * Sparse per-language index storing only datasets that actually override default-language
+   * metadata for a given language index.
+   */
+  private static final class LanguageOverlay {
+    final int[]
+        docIndices; // sorted ascending global docIdx values for datasets localized in this lang
+    final String[] localizedTitles; // parallel to docIndices
+    final float[] flatVectors; // [docIndices.length * dim], L2-normalized
+    final VocabIndex vocabIndex;
+
+    LanguageOverlay(
+        int[] docIndices, String[] localizedTitles, float[] flatVectors, VocabIndex vocabIndex) {
+      this.docIndices = docIndices;
+      this.localizedTitles = localizedTitles;
+      this.flatVectors = flatVectors;
+      this.vocabIndex = vocabIndex;
+    }
+
+    int findLocalIndex(int globalDocIdx) {
+      return Arrays.binarySearch(docIndices, globalDocIdx);
+    }
+  }
+
   private static final class IndexSnapshot {
     final String[] datasetIDs;
     final String[] lowerDatasetIDs;
     final String[] defaultTitles;
     final Map<String, Integer> idToDocIndex;
-    final Map<String, PostingList> postings;
-    final String[][] vocabByLength; // sorted lexicographically within each length bucket
-    final int[][]
-        vocabMasksByLength; // 32-bit character presence bitmasks parallel to vocabByLength
+    final VocabIndex defaultVocab;
     final float[] docLengths;
     final float avgDocLength;
     final float[] flatVectors; // [numDocs * dim], L2-normalized
     final int dim;
+    final LanguageOverlay[]
+        langOverlays; // sparse; null entries for languages with no localized data
 
     IndexSnapshot(
         String[] datasetIDs,
         String[] lowerDatasetIDs,
         String[] defaultTitles,
         Map<String, Integer> idToDocIndex,
-        Map<String, PostingList> postings,
-        String[][] vocabByLength,
-        int[][] vocabMasksByLength,
+        VocabIndex defaultVocab,
         float[] docLengths,
         float avgDocLength,
         float[] flatVectors,
-        int dim) {
+        int dim,
+        LanguageOverlay[] langOverlays) {
       this.datasetIDs = datasetIDs;
       this.lowerDatasetIDs = lowerDatasetIDs;
       this.defaultTitles = defaultTitles;
       this.idToDocIndex = idToDocIndex;
-      this.postings = postings;
-      this.vocabByLength = vocabByLength;
-      this.vocabMasksByLength = vocabMasksByLength;
+      this.defaultVocab = defaultVocab;
       this.docLengths = docLengths;
       this.avgDocLength = avgDocLength;
       this.flatVectors = flatVectors;
       this.dim = dim;
+      this.langOverlays = langOverlays;
     }
   }
 
@@ -154,6 +192,14 @@ public class HybridSearchEngine {
 
   static boolean isUsingExternalEmbeddings() {
     return getOrLoadModel().isExternalModel;
+  }
+
+  static boolean hasLanguageOverlay(int language) {
+    IndexSnapshot snap = currentSnapshot;
+    return snap != null
+        && language >= 0
+        && language < snap.langOverlays.length
+        && snap.langOverlays[language] != null;
   }
 
   /**
@@ -256,59 +302,84 @@ public class HybridSearchEngine {
 
     Map<String, List<Integer>> termDocLists = new HashMap<>();
     Map<String, List<Float>> termTfLists = new HashMap<>();
-    Set<String> activeIDs = new HashSet<>(Math.max(16, (int) (nDocs * 1.4f)));
+    Set<String> activeCacheKeys = new HashSet<>(Math.max(16, (int) (nDocs * 1.6f)));
+
+    int defaultLang = EDMessages.DEFAULT_LANGUAGE;
+    int nLangs = TranslateMessages.languageCodeList.size();
+
+    // Sparse per-language accumulators (allocated only if at least one dataset localizes that lang)
+    @SuppressWarnings("unchecked")
+    List<Integer>[] langDocIndices = new List[nLangs];
+    @SuppressWarnings("unchecked")
+    List<String>[] langTitlesList = new List[nLangs];
+    @SuppressWarnings("unchecked")
+    List<float[]>[] langVectorsList = new List[nLangs];
+    @SuppressWarnings("unchecked")
+    Map<String, List<Integer>>[] langTermDocLists = new Map[nLangs];
+    @SuppressWarnings("unchecked")
+    Map<String, List<Float>>[] langTermTfLists = new Map[nLangs];
 
     double totalDocLen = 0.0;
-    int lang = EDMessages.DEFAULT_LANGUAGE;
+    int localizedEntryCount = 0;
 
     for (int docIdx = 0; docIdx < nDocs; docIdx++) {
       EDD edd = allDatasets.get(docIdx);
       String id = String2.canonical(edd.datasetID());
       String lowerId = id.toLowerCase(Locale.ROOT);
-      String title = edd.title(lang);
-      if (title == null) title = id;
+      String rawDefTitle = edd.title(defaultLang);
+      String defTitle = rawDefTitle != null ? rawDefTitle : id;
+      String defSummary = edd.summary(defaultLang);
+      String defInstitution = edd.institution(defaultLang);
 
       datasetIDs[docIdx] = id;
       lowerDatasetIDs[docIdx] = lowerId;
-      defaultTitles[docIdx] = title;
+      defaultTitles[docIdx] = defTitle;
       idToDocIndex.put(id, docIdx);
-      activeIDs.add(id);
 
-      // Build weighted lexical term frequencies
+      // Build default-language lexical terms and semantic text
       Map<String, Float> tfMap = new HashMap<>();
       addWeightedTokens(tfMap, lowerId, 4.0f, true);
-      addWeightedTokens(tfMap, title, 3.0f, false);
+      addWeightedTokens(tfMap, defTitle, 3.0f, false);
 
       StringBuilder semanticText = new StringBuilder(512);
-      semanticText.append(lexicon.expandText(title, false, 6)).append(". ");
+      semanticText.append(lexicon.expandText(defTitle, false, 6)).append(". ");
       String idExpansion = lexicon.expandIdentifierTokens(id);
       if (!idExpansion.isEmpty()) {
         semanticText.append(idExpansion).append(". ");
       }
 
-      String summary = edd.summary(lang);
-      if (summary != null && !summary.isEmpty()) {
-        addWeightedTokens(tfMap, summary, 1.0f, false);
-        semanticText.append(lexicon.expandText(summary, false, 8)).append(". ");
+      if (defSummary != null && !defSummary.isEmpty()) {
+        addWeightedTokens(tfMap, defSummary, 1.0f, false);
+        semanticText.append(lexicon.expandText(defSummary, false, 8)).append(". ");
       }
 
-      String institution = edd.institution(lang);
-      if (institution != null && !institution.isEmpty()) {
-        addWeightedTokens(tfMap, institution, 1.5f, false);
-        semanticText.append(lexicon.expandText(institution, false, 4)).append(". ");
+      if (defInstitution != null && !defInstitution.isEmpty()) {
+        addWeightedTokens(tfMap, defInstitution, 1.5f, false);
+        semanticText.append(lexicon.expandText(defInstitution, false, 4)).append(". ");
       }
 
       EDV[] dataVars = edd.dataVariables();
+      String[] defVarLongNames = null;
+      String[] defVarStdNames = null;
       if (dataVars != null) {
+        defVarLongNames = new String[dataVars.length];
+        defVarStdNames = new String[dataVars.length];
         Set<String> gcmdSet = new LinkedHashSet<>();
-        for (EDV v : dataVars) {
+        for (int vi = 0; vi < dataVars.length; vi++) {
+          EDV v = dataVars[vi];
           if (v == null) continue;
           String dName = v.destinationName();
-          String lName = v.longName();
+          String lName =
+              v.combinedAttributes() != null
+                  ? v.combinedAttributes().getString(defaultLang, "long_name")
+                  : v.longName();
           String stdName =
               v.combinedAttributes() != null
-                  ? v.combinedAttributes().getString(EDMessages.DEFAULT_LANGUAGE, "standard_name")
+                  ? v.combinedAttributes().getString(defaultLang, "standard_name")
                   : null;
+          defVarLongNames[vi] = lName;
+          defVarStdNames[vi] = stdName;
+
           if (dName != null) {
             addWeightedTokens(tfMap, dName, 2.0f, false);
             semanticText.append(dName.replace('_', ' ')).append(' ');
@@ -333,7 +404,7 @@ public class HybridSearchEngine {
       }
 
       // Include full searchString at base weight so protocol=..., keywords, units still match
-      String fullSearchStr = edd.searchString(lang);
+      String fullSearchStr = edd.searchString(defaultLang);
       if (fullSearchStr != null) {
         addWeightedTokens(tfMap, fullSearchStr, 0.5f, false);
       }
@@ -349,28 +420,207 @@ public class HybridSearchEngine {
       docLengths[docIdx] = Math.max(1.0f, docLen);
       totalDocLen += docLengths[docIdx];
 
-      // 128-bit collision-resistant incremental embedding cache lookup
-      String semStr = semanticText.toString();
-      long hashHigh = fnv1a64High(semStr);
-      long hashLow = fnv1a64Low(semStr);
-      CachedVector cached = vectorCache.get(id);
-      float[] vec;
-      if (cached != null
-          && cached.hashHigh == hashHigh
-          && cached.hashLow == hashLow
-          && cached.unitVector.length == dim) {
-        vec = cached.unitVector;
-      } else {
-        vec = model.embed(semStr);
-        vectorCache.put(id, new CachedVector(hashHigh, hashLow, vec));
-      }
+      // 128-bit collision-resistant incremental embedding cache lookup for default language
+      activeCacheKeys.add(id);
+      float[] vec = getOrComputeEmbedding(id, semanticText.toString(), model, dim);
       System.arraycopy(vec, 0, flatVectors, docIdx * dim, dim);
+
+      // Check non-default languages and only index/embed languages with distinct localized metadata
+      for (int lang = 0; lang < nLangs; lang++) {
+        if (lang == defaultLang) continue;
+
+        String langTitle = edd.title(lang);
+        String langSummary = edd.summary(lang);
+        String langInstitution = edd.institution(lang);
+
+        boolean hasLocalizedMeta =
+            !Objects.equals(langTitle, rawDefTitle)
+                || !Objects.equals(langSummary, defSummary)
+                || !Objects.equals(langInstitution, defInstitution);
+
+        if (!hasLocalizedMeta && dataVars != null) {
+          for (int vi = 0; vi < dataVars.length; vi++) {
+            EDV v = dataVars[vi];
+            if (v == null || v.combinedAttributes() == null) continue;
+            String vLong = v.combinedAttributes().getString(lang, "long_name");
+            String vStd = v.combinedAttributes().getString(lang, "standard_name");
+            if (!Objects.equals(vLong, defVarLongNames[vi])
+                || !Objects.equals(vStd, defVarStdNames[vi])) {
+              hasLocalizedMeta = true;
+              break;
+            }
+          }
+        }
+
+        if (!hasLocalizedMeta) continue;
+
+        String effectiveLangTitle =
+            (langTitle != null && !langTitle.isEmpty()) ? langTitle : defTitle;
+        Map<String, Float> langTfMap = new HashMap<>();
+        StringBuilder langSemText = new StringBuilder(384);
+
+        if (effectiveLangTitle != null
+            && !effectiveLangTitle.isEmpty()
+            && !Objects.equals(effectiveLangTitle, defTitle)) {
+          addWeightedTokens(langTfMap, effectiveLangTitle, 3.0f, false);
+        }
+        if (effectiveLangTitle != null && !effectiveLangTitle.isEmpty()) {
+          langSemText.append(lexicon.expandText(effectiveLangTitle, false, 6)).append(". ");
+        }
+        if (langSummary != null
+            && !langSummary.isEmpty()
+            && !Objects.equals(langSummary, defSummary)) {
+          addWeightedTokens(langTfMap, langSummary, 1.0f, false);
+        }
+        if (langSummary != null && !langSummary.isEmpty()) {
+          langSemText.append(lexicon.expandText(langSummary, false, 8)).append(". ");
+        }
+        if (langInstitution != null
+            && !langInstitution.isEmpty()
+            && !Objects.equals(langInstitution, defInstitution)) {
+          addWeightedTokens(langTfMap, langInstitution, 1.5f, false);
+        }
+        if (langInstitution != null && !langInstitution.isEmpty()) {
+          langSemText.append(lexicon.expandText(langInstitution, false, 4)).append(". ");
+        }
+
+        if (dataVars != null) {
+          Set<String> gcmdSet = new LinkedHashSet<>();
+          for (int vi = 0; vi < dataVars.length; vi++) {
+            EDV v = dataVars[vi];
+            if (v == null) continue;
+            String dName = v.destinationName();
+            String vLong =
+                v.combinedAttributes() != null
+                    ? v.combinedAttributes().getString(lang, "long_name")
+                    : v.longName();
+            String vStd =
+                v.combinedAttributes() != null
+                    ? v.combinedAttributes().getString(lang, "standard_name")
+                    : null;
+
+            if (dName != null) {
+              langSemText.append(dName.replace('_', ' ')).append(' ');
+            }
+            if (vLong != null && !vLong.isEmpty()) {
+              if (!Objects.equals(vLong, defVarLongNames[vi])) {
+                addWeightedTokens(langTfMap, vLong, 2.0f, false);
+              }
+              langSemText.append(vLong).append(' ');
+            }
+            if (vStd != null && !vStd.isEmpty()) {
+              if (!Objects.equals(vStd, defVarStdNames[vi])) {
+                addWeightedTokens(langTfMap, vStd, 2.5f, false);
+              }
+              langSemText.append(vStd.replace('_', ' ')).append(' ');
+              lexicon.collectGcmdKeywords(vStd, gcmdSet);
+            }
+          }
+          for (String gcmdTerm : gcmdSet) {
+            langSemText.append(gcmdTerm).append(' ');
+          }
+        }
+
+        if (langDocIndices[lang] == null) {
+          langDocIndices[lang] = new ArrayList<>();
+          langTitlesList[lang] = new ArrayList<>();
+          langVectorsList[lang] = new ArrayList<>();
+          langTermDocLists[lang] = new HashMap<>();
+          langTermTfLists[lang] = new HashMap<>();
+        }
+
+        for (Map.Entry<String, Float> entry : langTfMap.entrySet()) {
+          String term = entry.getKey();
+          float tf = entry.getValue();
+          langTermDocLists[lang].computeIfAbsent(term, k -> new ArrayList<>()).add(docIdx);
+          langTermTfLists[lang].computeIfAbsent(term, k -> new ArrayList<>()).add(tf);
+        }
+
+        String cacheKey = id + "\0" + TranslateMessages.languageCodeList.get(lang);
+        activeCacheKeys.add(cacheKey);
+        float[] langVec = getOrComputeEmbedding(cacheKey, langSemText.toString(), model, dim);
+
+        langDocIndices[lang].add(docIdx);
+        langTitlesList[lang].add(effectiveLangTitle);
+        langVectorsList[lang].add(langVec);
+        localizedEntryCount++;
+      }
     }
 
-    // Evict removed datasets from vector cache
-    vectorCache.keySet().retainAll(activeIDs);
+    // Evict removed datasets and removed translations from vector cache
+    vectorCache.keySet().retainAll(activeCacheKeys);
 
-    // Finalize compact primitive postings and sorted length-bucketed vocabulary + bitmasks
+    VocabIndex defaultVocab = buildVocabIndex(termDocLists, termTfLists);
+
+    LanguageOverlay[] langOverlays = new LanguageOverlay[nLangs];
+    int activeLanguages = 0;
+    for (int lang = 0; lang < nLangs; lang++) {
+      if (langDocIndices[lang] == null || langDocIndices[lang].isEmpty()) continue;
+      List<Integer> dList = langDocIndices[lang];
+      List<String> tList = langTitlesList[lang];
+      List<float[]> vList = langVectorsList[lang];
+      int k = dList.size();
+      int[] docArr = new int[k];
+      String[] titleArr = new String[k];
+      float[] vecArr = new float[k * dim];
+      for (int i = 0; i < k; i++) {
+        docArr[i] = dList.get(i);
+        titleArr[i] = tList.get(i);
+        System.arraycopy(vList.get(i), 0, vecArr, i * dim, dim);
+      }
+      VocabIndex langVocab = buildVocabIndex(langTermDocLists[lang], langTermTfLists[lang]);
+      langOverlays[lang] = new LanguageOverlay(docArr, titleArr, vecArr, langVocab);
+      activeLanguages++;
+    }
+
+    float avgDocLen = nDocs > 0 ? (float) (totalDocLen / nDocs) : 1.0f;
+    currentSnapshot =
+        new IndexSnapshot(
+            datasetIDs,
+            lowerDatasetIDs,
+            defaultTitles,
+            idToDocIndex,
+            defaultVocab,
+            docLengths,
+            avgDocLen,
+            flatVectors,
+            dim,
+            langOverlays);
+
+    String2.log(
+        "HybridSearchEngine.rebuild() finished: nDatasets="
+            + nDocs
+            + " vocabSize="
+            + defaultVocab.postings.size()
+            + " localizedLangs="
+            + activeLanguages
+            + " localizedDocs="
+            + localizedEntryCount
+            + " dim="
+            + dim
+            + " time="
+            + (System.currentTimeMillis() - t0)
+            + "ms");
+  }
+
+  private static float[] getOrComputeEmbedding(
+      String cacheKey, String semanticText, StaticEmbeddingModel model, int dim) {
+    long hashHigh = fnv1a64High(semanticText);
+    long hashLow = fnv1a64Low(semanticText);
+    CachedVector cached = vectorCache.get(cacheKey);
+    if (cached != null
+        && cached.hashHigh == hashHigh
+        && cached.hashLow == hashLow
+        && cached.unitVector.length == dim) {
+      return cached.unitVector;
+    }
+    float[] vec = model.embed(semanticText);
+    vectorCache.put(cacheKey, new CachedVector(hashHigh, hashLow, vec));
+    return vec;
+  }
+
+  private static VocabIndex buildVocabIndex(
+      Map<String, List<Integer>> termDocLists, Map<String, List<Float>> termTfLists) {
     Map<String, PostingList> postings =
         new HashMap<>(Math.max(16, (int) (termDocLists.size() * 1.4f)));
     int maxLen = 0;
@@ -416,37 +666,13 @@ public class HybridSearchEngine {
         vocabMasksByLength[len] = masks;
       }
     }
-
-    float avgDocLen = nDocs > 0 ? (float) (totalDocLen / nDocs) : 1.0f;
-    currentSnapshot =
-        new IndexSnapshot(
-            datasetIDs,
-            lowerDatasetIDs,
-            defaultTitles,
-            idToDocIndex,
-            postings,
-            vocabByLength,
-            vocabMasksByLength,
-            docLengths,
-            avgDocLen,
-            flatVectors,
-            dim);
-
-    String2.log(
-        "HybridSearchEngine.rebuild() finished: nDatasets="
-            + nDocs
-            + " vocabSize="
-            + postings.size()
-            + " dim="
-            + dim
-            + " time="
-            + (System.currentTimeMillis() - t0)
-            + "ms");
+    return new VocabIndex(postings, vocabByLength, vocabMasksByLength);
   }
 
   /**
    * Executes hybrid (fuzzy BM25 + semantic vector) search restricted to {@code candidateIDs} and
-   * datasets accessible to {@code roles}.
+   * datasets accessible to {@code roles}, incorporating localized metadata when available for
+   * {@code language}.
    */
   public static StringArray search(
       int language,
@@ -460,6 +686,13 @@ public class HybridSearchEngine {
     if (snap == null || snap.datasetIDs.length == 0) {
       return new StringArray();
     }
+
+    LanguageOverlay overlay =
+        (language >= 0
+                && language < snap.langOverlays.length
+                && language != EDMessages.DEFAULT_LANGUAGE)
+            ? snap.langOverlays[language]
+            : null;
 
     DomainLexicon lexicon = getOrLoadLexicon();
 
@@ -521,106 +754,47 @@ public class HybridSearchEngine {
 
     // 1. Lexical + O(log V) Prefix + Bitmask-Pruned Substring/Fuzzy BM25 Scoring
     double[] bm25Scores = scratch.bm25;
-
-    for (String qTok : positiveTokens) {
-      int qLen = qTok.length();
-      int qMask = computeCharMask(qTok);
-
-      PostingList exactPl = snap.postings.get(qTok);
-      if (exactPl != null) {
-        accumulateBm25(
-            bm25Scores, eligible, exactPl, nDocs, snap.docLengths, snap.avgDocLength, 1.0);
-      }
-
-      // O(log V) binary-search prefix expansion (e.g., "precip" -> "precipitation")
-      if (qLen >= 3) {
-        for (int len = qLen + 1; len < snap.vocabByLength.length; len++) {
-          String[] bucket = snap.vocabByLength[len];
-          if (bucket.length == 0) continue;
-          int pos = Arrays.binarySearch(bucket, qTok);
-          if (pos < 0) pos = -pos - 1;
-          while (pos < bucket.length && bucket[pos].startsWith(qTok)) {
-            PostingList pl = snap.postings.get(bucket[pos]);
-            if (pl != null) {
-              accumulateBm25(
-                  bm25Scores, eligible, pl, nDocs, snap.docLengths, snap.avgDocLength, 0.85);
-            }
-            pos++;
-          }
-        }
-      }
-
-      // Bitmask-pruned interior substring expansion (e.g., "salin" -> "desalination")
-      if (qLen >= 4) {
-        for (int len = qLen + 1; len < snap.vocabByLength.length; len++) {
-          String[] bucket = snap.vocabByLength[len];
-          int[] masks = snap.vocabMasksByLength[len];
-          for (int i = 0; i < bucket.length; i++) {
-            if ((masks[i] & qMask) != qMask) continue;
-            String cand = bucket[i];
-            if (cand.startsWith(qTok)) continue;
-            if (cand.contains(qTok)) {
-              PostingList pl = snap.postings.get(cand);
-              if (pl != null) {
-                accumulateBm25(
-                    bm25Scores, eligible, pl, nDocs, snap.docLengths, snap.avgDocLength, 0.70);
-              }
-            }
-          }
-        }
-      }
-
-      // Bitmask-pruned Damerau-Levenshtein fuzzy expansion for typos (e.g., "chlorophyl")
-      if (qLen >= 4) {
-        int maxDist = qLen >= 7 ? 2 : 1;
-        int minLen = Math.max(3, qLen - maxDist);
-        int maxLen = Math.min(snap.vocabByLength.length - 1, qLen + maxDist);
-        for (int len = minLen; len <= maxLen; len++) {
-          String[] bucket = snap.vocabByLength[len];
-          int[] masks = snap.vocabMasksByLength[len];
-          for (int i = 0; i < bucket.length; i++) {
-            int cMask = masks[i];
-            if (Integer.bitCount(qMask & ~cMask) > maxDist
-                || Integer.bitCount(cMask & ~qMask) > maxDist) {
-              continue;
-            }
-            String cand = bucket[i];
-            if (cand.equals(qTok) || cand.startsWith(qTok)) continue;
-            if (len > qLen && cand.contains(qTok)) continue;
-            int dist = boundedDamerauLevenshtein(qTok, cand, maxDist);
-            if (dist > 0 && dist <= maxDist) {
-              PostingList pl = snap.postings.get(cand);
-              if (pl != null) {
-                double fuzzyWeight = 0.65 / (1.0 + dist);
-                accumulateBm25(
-                    bm25Scores,
-                    eligible,
-                    pl,
-                    nDocs,
-                    snap.docLengths,
-                    snap.avgDocLength,
-                    fuzzyWeight);
-              }
-            }
-          }
-        }
-      }
+    scoreVocabIndex(
+        snap.defaultVocab,
+        positiveTokens,
+        bm25Scores,
+        eligible,
+        nDocs,
+        snap.docLengths,
+        snap.avgDocLength);
+    if (overlay != null) {
+      scoreVocabIndex(
+          overlay.vocabIndex,
+          positiveTokens,
+          bm25Scores,
+          eligible,
+          nDocs,
+          snap.docLengths,
+          snap.avgDocLength);
     }
 
-    // 2. Dense Vector Cosine Similarity Scan (SIMD-friendly contiguous dot product)
+    // 2. Dense Vector Cosine Similarity Scan (uses localized vector when available, else default)
     StaticEmbeddingModel model = getOrLoadModel();
     float[] qVec = model.embed(semanticQuery.toString());
     int dim = snap.dim;
-    float[] flat = snap.flatVectors;
+    float[] defaultFlat = snap.flatVectors;
     double[] vecScores = scratch.vec;
 
     for (int docIdx = eligible.nextSetBit(0);
         docIdx >= 0;
         docIdx = eligible.nextSetBit(docIdx + 1)) {
+      float[] vecSource = defaultFlat;
       int base = docIdx * dim;
+      if (overlay != null) {
+        int localIdx = overlay.findLocalIndex(docIdx);
+        if (localIdx >= 0) {
+          vecSource = overlay.flatVectors;
+          base = localIdx * dim;
+        }
+      }
       float dot = 0.0f;
       for (int d = 0; d < dim; d++) {
-        dot += qVec[d] * flat[base + d];
+        dot += qVec[d] * vecSource[base + d];
       }
       vecScores[docIdx] = dot;
     }
@@ -713,22 +887,120 @@ public class HybridSearchEngine {
 
       if (!matchesStrictConstraints(edd, language, strictSubstrings, negativeSubstrings)) continue;
 
-      if (edd.title(language).contains("DEPRECATED")) {
+      String titleForLang = edd.title(language);
+      if (titleForLang != null && titleForLang.contains("DEPRECATED")) {
         rrfScores[docIdx] *= 0.25;
       }
       finalDocs.add(docIdx);
     }
 
+    final LanguageOverlay activeOverlay = overlay;
     finalDocs.sort(
         Comparator.comparingDouble((Integer idx) -> rrfScores[idx])
             .reversed()
-            .thenComparing(idx -> snap.defaultTitles[idx], String.CASE_INSENSITIVE_ORDER));
+            .thenComparing(
+                idx -> resolveDisplayTitle(snap, activeOverlay, idx),
+                String.CASE_INSENSITIVE_ORDER));
 
     StringArray out = new StringArray(finalDocs.size(), false);
     for (int docIdx : finalDocs) {
       out.add(snap.datasetIDs[docIdx]);
     }
     return out;
+  }
+
+  private static String resolveDisplayTitle(
+      IndexSnapshot snap, LanguageOverlay overlay, int docIdx) {
+    if (overlay != null) {
+      int localIdx = overlay.findLocalIndex(docIdx);
+      if (localIdx >= 0) return overlay.localizedTitles[localIdx];
+    }
+    return snap.defaultTitles[docIdx];
+  }
+
+  private static void scoreVocabIndex(
+      VocabIndex vocab,
+      List<String> positiveTokens,
+      double[] bm25Scores,
+      BitSet eligible,
+      int nDocs,
+      float[] docLengths,
+      float avgDocLength) {
+    for (String qTok : positiveTokens) {
+      int qLen = qTok.length();
+      int qMask = computeCharMask(qTok);
+
+      PostingList exactPl = vocab.postings.get(qTok);
+      if (exactPl != null) {
+        accumulateBm25(bm25Scores, eligible, exactPl, nDocs, docLengths, avgDocLength, 1.0);
+      }
+
+      // O(log V) binary-search prefix expansion (e.g., "precip" -> "precipitation")
+      if (qLen >= 3) {
+        for (int len = qLen + 1; len < vocab.vocabByLength.length; len++) {
+          String[] bucket = vocab.vocabByLength[len];
+          if (bucket.length == 0) continue;
+          int pos = Arrays.binarySearch(bucket, qTok);
+          if (pos < 0) pos = -pos - 1;
+          while (pos < bucket.length && bucket[pos].startsWith(qTok)) {
+            PostingList pl = vocab.postings.get(bucket[pos]);
+            if (pl != null) {
+              accumulateBm25(bm25Scores, eligible, pl, nDocs, docLengths, avgDocLength, 0.85);
+            }
+            pos++;
+          }
+        }
+      }
+
+      // Bitmask-pruned interior substring expansion
+      if (qLen >= 4) {
+        for (int len = qLen + 1; len < vocab.vocabByLength.length; len++) {
+          String[] bucket = vocab.vocabByLength[len];
+          int[] masks = vocab.vocabMasksByLength[len];
+          for (int i = 0; i < bucket.length; i++) {
+            if ((masks[i] & qMask) != qMask) continue;
+            String cand = bucket[i];
+            if (cand.startsWith(qTok)) continue;
+            if (cand.contains(qTok)) {
+              PostingList pl = vocab.postings.get(cand);
+              if (pl != null) {
+                accumulateBm25(bm25Scores, eligible, pl, nDocs, docLengths, avgDocLength, 0.70);
+              }
+            }
+          }
+        }
+      }
+
+      // Bitmask-pruned Damerau-Levenshtein fuzzy expansion for typos
+      if (qLen >= 4) {
+        int maxDist = qLen >= 7 ? 2 : 1;
+        int minLen = Math.max(3, qLen - maxDist);
+        int maxLen = Math.min(vocab.vocabByLength.length - 1, qLen + maxDist);
+        for (int len = minLen; len <= maxLen; len++) {
+          String[] bucket = vocab.vocabByLength[len];
+          int[] masks = vocab.vocabMasksByLength[len];
+          for (int i = 0; i < bucket.length; i++) {
+            int cMask = masks[i];
+            if (Integer.bitCount(qMask & ~cMask) > maxDist
+                || Integer.bitCount(cMask & ~qMask) > maxDist) {
+              continue;
+            }
+            String cand = bucket[i];
+            if (cand.equals(qTok) || cand.startsWith(qTok)) continue;
+            if (len > qLen && cand.contains(qTok)) continue;
+            int dist = boundedDamerauLevenshtein(qTok, cand, maxDist);
+            if (dist > 0 && dist <= maxDist) {
+              PostingList pl = vocab.postings.get(cand);
+              if (pl != null) {
+                double fuzzyWeight = 0.65 / (1.0 + dist);
+                accumulateBm25(
+                    bm25Scores, eligible, pl, nDocs, docLengths, avgDocLength, fuzzyWeight);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   private static int computeCharMask(String s) {
