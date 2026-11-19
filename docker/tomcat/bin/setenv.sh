@@ -16,6 +16,9 @@ fi
 NORMAL="-server -Djava.awt.headless=true -XX:+UseCompactObjectHeaders"
 HEAP_DUMP="-XX:+HeapDumpOnOutOfMemoryError"
 
+# Temporary mitigation for CVE-2026-114938 (remove after updating to Temurin 25.0.5.1+2+)
+SECURITY_WORKAROUND="-XX:-UseBASE64Intrinsics"
+
 # Memory
 if [ -n "$ERDDAP_MAX_RAM_PERCENTAGE" ]; then
   JVM_MEMORY_ARGS="-XX:MaxRAMPercentage=${ERDDAP_MAX_RAM_PERCENTAGE}"
@@ -26,7 +29,7 @@ fi
 
 CONTENT_ROOT="-DerddapContentDirectory=${CATALINA_HOME}/content/erddap/"
 
-JAVA_OPTS="$JAVA_OPTS $NORMAL $JVM_MEMORY_ARGS $HEAP_DUMP"
+JAVA_OPTS="$JAVA_OPTS $NORMAL $JVM_MEMORY_ARGS $HEAP_DUMP $SECURITY_WORKAROUND"
 echo "ERDDAP running with JAVA_OPTS: $JAVA_OPTS"
 
 # Show ERDDAP configuration environment variables
@@ -34,4 +37,3 @@ ERDDAP_CONFIG=$(env | grep --regexp "^ERDDAP_.*$" | sort)
 if [ -n "$ERDDAP_CONFIG" ]; then
     echo -e "ERDDAP configured with:\n$ERDDAP_CONFIG"
 fi
-
