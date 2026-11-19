@@ -53,7 +53,7 @@
         <jettyVersion>12.1.14</jettyVersion>
         <error-prone.version>2.51.0</error-prone.version>
         <prometheusVersion>1.10.0</prometheusVersion>
-        <parquetVersion>1.18.1</parquetVersion>
+        <parquetVersion>1.18.2</parquetVersion>
         <awssdkVersion>2.57.1</awssdkVersion>
         <luceneVersion>10.6.0</luceneVersion>
         <nettyVersion>4.2.20.Final</nettyVersion>
