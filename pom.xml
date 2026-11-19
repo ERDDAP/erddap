@@ -794,7 +794,7 @@
             <dependency>
                 <groupId>dnsjava</groupId>
                 <artifactId>dnsjava</artifactId>
-                <version>3.6.5</version>
+                <version>3.7.1</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
             <dependency>
