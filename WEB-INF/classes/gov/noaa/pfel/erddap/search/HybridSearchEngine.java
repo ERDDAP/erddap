@@ -2,9 +2,11 @@ package gov.noaa.pfel.erddap.search;
 
 import com.cohort.array.StringArray;
 import com.cohort.util.String2;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.util.CfToFromGcmd;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -14,9 +16,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,6 +45,8 @@ public class HybridSearchEngine {
       new ConcurrentHashMap<>();
   private static volatile StaticEmbeddingModel embeddingModel = null;
   private static final Object modelLock = new Object();
+  private static volatile DomainLexicon domainLexicon = null;
+  private static final Object lexiconLock = new Object();
 
   private static final class CachedVector {
     final int metadataHash;
@@ -102,6 +108,10 @@ public class HybridSearchEngine {
     return currentSnapshot != null;
   }
 
+  static boolean isUsingExternalEmbeddings() {
+    return getOrLoadModel().isExternalModel;
+  }
+
   /**
    * Rebuilds the immutable in-memory search snapshot from the currently active grid and table
    * datasets and atomically swaps it into place. Safe to call after LoadDatasets or tryToUnload.
@@ -110,6 +120,7 @@ public class HybridSearchEngine {
       Map<String, EDDGrid> gridDatasets, Map<String, EDDTable> tableDatasets) {
     long t0 = System.currentTimeMillis();
     StaticEmbeddingModel model = getOrLoadModel();
+    DomainLexicon lexicon = getOrLoadLexicon();
     int dim = model.dim;
 
     List<EDD> allDatasets = new ArrayList<>(gridDatasets.size() + tableDatasets.size());
@@ -150,22 +161,27 @@ public class HybridSearchEngine {
       addWeightedTokens(tfMap, title, 3.0f, false);
 
       StringBuilder semanticText = new StringBuilder(512);
-      semanticText.append(title).append(". ");
+      semanticText.append(lexicon.expandText(title, false, 6)).append(". ");
+      String idExpansion = lexicon.expandIdentifierTokens(id);
+      if (!idExpansion.isEmpty()) {
+        semanticText.append(idExpansion).append(". ");
+      }
 
       String summary = edd.summary(lang);
       if (summary != null && !summary.isEmpty()) {
         addWeightedTokens(tfMap, summary, 1.0f, false);
-        semanticText.append(summary).append(". ");
+        semanticText.append(lexicon.expandText(summary, false, 8)).append(". ");
       }
 
       String institution = edd.institution(lang);
       if (institution != null && !institution.isEmpty()) {
         addWeightedTokens(tfMap, institution, 1.5f, false);
-        semanticText.append(institution).append(". ");
+        semanticText.append(lexicon.expandText(institution, false, 4)).append(". ");
       }
 
       EDV[] dataVars = edd.dataVariables();
       if (dataVars != null) {
+        Set<String> gcmdSet = new LinkedHashSet<>();
         for (EDV v : dataVars) {
           if (v == null) continue;
           String dName = v.destinationName();
@@ -177,6 +193,10 @@ public class HybridSearchEngine {
           if (dName != null) {
             addWeightedTokens(tfMap, dName, 2.0f, false);
             semanticText.append(dName.replace('_', ' ')).append(' ');
+            String varFull = lexicon.lookupVariableName(dName);
+            if (varFull != null) {
+              semanticText.append(varFull).append(' ');
+            }
           }
           if (lName != null) {
             addWeightedTokens(tfMap, lName, 2.0f, false);
@@ -185,7 +205,11 @@ public class HybridSearchEngine {
           if (stdName != null) {
             addWeightedTokens(tfMap, stdName, 2.5f, false);
             semanticText.append(stdName.replace('_', ' ')).append(' ');
+            lexicon.collectGcmdKeywords(stdName, gcmdSet);
           }
+        }
+        for (String gcmdTerm : gcmdSet) {
+          semanticText.append(gcmdTerm).append(' ');
         }
       }
 
@@ -301,30 +325,29 @@ public class HybridSearchEngine {
       return new StringArray();
     }
 
-    // Parse ERDDAP search syntax: quoted phrases, -negated terms, and positive terms
-    StringArray rawParts = StringArray.wordsAndQuotedPhrases(searchFor.toLowerCase(Locale.ROOT));
+    DomainLexicon lexicon = getOrLoadLexicon();
+
+    // Parse ERDDAP search syntax preserving original case and quote flags
+    List<QueryTerm> queryTerms = parseQueryTerms(searchFor);
     List<String> positiveTokens = new ArrayList<>();
     List<String> strictSubstrings = new ArrayList<>(); // quoted phrases or key=value filters
     List<String> negativeSubstrings = new ArrayList<>();
     StringBuilder semanticQuery = new StringBuilder();
 
-    for (int i = 0; i < rawParts.size(); i++) {
-      String part = rawParts.get(i);
-      if (part == null || part.isEmpty()) continue;
-      boolean neg = part.charAt(0) == '-';
-      if (neg) part = part.substring(1);
-      boolean wasQuoted = part.length() >= 2 && part.startsWith("\"") && part.endsWith("\"");
-      part = String2.fromJson(part).trim();
-      if (part.isEmpty()) continue;
+    for (QueryTerm qt : queryTerms) {
+      String origPart = qt.text().trim();
+      String lowerPart = origPart.toLowerCase(Locale.ROOT);
+      if (lowerPart.isEmpty()) continue;
 
-      if (neg) {
-        negativeSubstrings.add(part);
+      if (qt.isNeg()) {
+        negativeSubstrings.add(lowerPart);
       } else {
-        if (wasQuoted || part.indexOf('=') >= 0) {
-          strictSubstrings.add(part);
+        if (qt.wasQuoted() || lowerPart.indexOf('=') >= 0) {
+          strictSubstrings.add(lowerPart);
         }
-        semanticQuery.append(part.replace('_', ' ')).append(' ');
-        for (String tok : tokenize(part, false)) {
+        String normalizedOrig = origPart.replace('_', ' ');
+        semanticQuery.append(lexicon.expandText(normalizedOrig, true, 6)).append(' ');
+        for (String tok : tokenize(lowerPart, false)) {
           positiveTokens.add(tok);
         }
       }
@@ -360,7 +383,6 @@ public class HybridSearchEngine {
 
     // 1. Lexical + Prefix/Substring + Fuzzy BM25 Scoring
     double[] bm25Scores = new double[nDocs];
-    String trimmedLowerQuery = searchFor.trim().toLowerCase(Locale.ROOT);
 
     for (String qTok : positiveTokens) {
       PostingList exactPl = snap.postings.get(qTok);
@@ -471,16 +493,14 @@ public class HybridSearchEngine {
     }
 
     // Guarantee 100% inclusion of any exact substring match (e.g. 1-2 char terms or punctuation)
-    int nRaw = rawParts.size();
+    int nRaw = queryTerms.size();
     boolean[] isNegArr = new boolean[nRaw];
     byte[][] wordsB = new byte[nRaw][];
     int[][] jumpB = new int[nRaw][];
     for (int w = 0; w < nRaw; w++) {
-      String sw = rawParts.get(w);
-      isNegArr[w] = sw.charAt(0) == '-';
-      if (isNegArr[w]) sw = sw.substring(1);
-      sw = String2.fromJson(sw);
-      wordsB[w] = String2.stringToUtf8Bytes(sw);
+      QueryTerm qt = queryTerms.get(w);
+      isNegArr[w] = qt.isNeg();
+      wordsB[w] = String2.stringToUtf8Bytes(qt.text().trim().toLowerCase(Locale.ROOT));
       jumpB[w] = String2.makeJumpTable(wordsB[w]);
     }
     for (int docIdx = eligible.nextSetBit(0);
@@ -492,6 +512,23 @@ public class HybridSearchEngine {
       if (edd == null) edd = tableDatasets.get(id);
       if (edd != null && edd.searchRank(language, isNegArr, wordsB, jumpB) < Integer.MAX_VALUE) {
         rrfScores[docIdx] += 1.0 / (RRF_K + lexRanked.size() + 1);
+        candidates.set(docIdx);
+      }
+    }
+
+    // Exact / substring datasetID boost
+    String trimmedLowerQuery = searchFor.trim().toLowerCase(Locale.ROOT);
+    for (int docIdx = eligible.nextSetBit(0);
+        docIdx >= 0;
+        docIdx = eligible.nextSetBit(docIdx + 1)) {
+      String lowerId = snap.lowerDatasetIDs[docIdx];
+      if (lowerId.equals(trimmedLowerQuery)) {
+        rrfScores[docIdx] += 10.0;
+        candidates.set(docIdx);
+      } else if (trimmedLowerQuery.length() >= 4
+          && trimmedLowerQuery.indexOf(' ') < 0
+          && lowerId.contains(trimmedLowerQuery)) {
+        rrfScores[docIdx] += 0.5;
         candidates.set(docIdx);
       }
     }
@@ -666,6 +703,258 @@ public class HybridSearchEngine {
     return dp[la][lb];
   }
 
+  private static DomainLexicon getOrLoadLexicon() {
+    DomainLexicon lex = domainLexicon;
+    if (lex != null) return lex;
+    synchronized (lexiconLock) {
+      if (domainLexicon == null) {
+        domainLexicon = DomainLexicon.load();
+      }
+      return domainLexicon;
+    }
+  }
+
+  /**
+   * Lazily caches ERDDAP's OceanicAtmosphericAcronyms, OceanicAtmosphericVariableNames, and
+   * CfToFromGcmd tables for domain-aware semantic enrichment at index and query time.
+   */
+  private static final class DomainLexicon {
+    final Map<String, String> acronyms; // uppercase acronym -> fullName
+    final Map<String, String> variableNames; // lowercase variableName -> fullName
+
+    private DomainLexicon(Map<String, String> acronyms, Map<String, String> variableNames) {
+      this.acronyms = acronyms;
+      this.variableNames = variableNames;
+    }
+
+    static DomainLexicon load() {
+      Map<String, String> acrMap = new HashMap<>();
+      try {
+        Table t = EDStatic.oceanicAtmosphericAcronymsTable();
+        StringArray col0 = (StringArray) t.getColumn(0);
+        StringArray col1 = (StringArray) t.getColumn(1);
+        int n = t.nRows();
+        for (int i = 0; i < n; i++) {
+          String k = col0.get(i);
+          String v = col1.get(i);
+          if (k != null && !k.isEmpty() && v != null && !v.isEmpty()) {
+            acrMap.putIfAbsent(k.trim().toUpperCase(Locale.ROOT), v.trim());
+          }
+        }
+      } catch (Throwable t) {
+        String2.log("WARNING: Could not load oceanicAtmosphericAcronymsTable: " + t);
+      }
+
+      Map<String, String> varMap = new HashMap<>();
+      try {
+        Table t = EDStatic.oceanicAtmosphericVariableNamesTable();
+        StringArray col0 = (StringArray) t.getColumn(0);
+        StringArray col1 = (StringArray) t.getColumn(1);
+        int n = t.nRows();
+        for (int i = 0; i < n; i++) {
+          String k = col0.get(i);
+          String v = col1.get(i);
+          if (k != null && !k.isEmpty() && v != null && !v.isEmpty()) {
+            varMap.putIfAbsent(k.trim().toLowerCase(Locale.ROOT), v.trim());
+          }
+        }
+      } catch (Throwable t) {
+        String2.log("WARNING: Could not load oceanicAtmosphericVariableNamesTable: " + t);
+      }
+
+      String2.log(
+          "HybridSearchEngine loaded DomainLexicon (acronyms="
+              + acrMap.size()
+              + ", variableNames="
+              + varMap.size()
+              + ")");
+      return new DomainLexicon(
+          Collections.unmodifiableMap(acrMap), Collections.unmodifiableMap(varMap));
+    }
+
+    String lookupVariableName(String varName) {
+      if (varName == null || varName.isEmpty()) return null;
+      String lower = varName.trim().toLowerCase(Locale.ROOT);
+      String full = variableNames.get(lower);
+      if (full != null) return full;
+      // Strip trailing digits (e.g., "sst1" -> "sst")
+      int end = lower.length();
+      while (end > 2 && Character.isDigit(lower.charAt(end - 1))) end--;
+      if (end < lower.length()) {
+        full = variableNames.get(lower.substring(0, end));
+        if (full != null) return full;
+      }
+      if (varName.length() >= 3) {
+        return acronyms.get(varName.trim().toUpperCase(Locale.ROOT));
+      }
+      return null;
+    }
+
+    String expandIdentifierTokens(String datasetId) {
+      if (datasetId == null || datasetId.isEmpty()) return "";
+      Set<String> expansions = new LinkedHashSet<>();
+      int n = datasetId.length();
+      StringBuilder cur = new StringBuilder();
+      for (int i = 0; i <= n; i++) {
+        char c = (i < n) ? datasetId.charAt(i) : '_';
+        if (Character.isLetterOrDigit(c)) {
+          if (cur.length() > 0) {
+            char prev = cur.charAt(cur.length() - 1);
+            boolean boundary =
+                (Character.isLowerCase(prev) && Character.isUpperCase(c))
+                    || (Character.isLetter(prev) && Character.isDigit(c))
+                    || (Character.isDigit(prev) && Character.isLetter(c));
+            if (boundary) {
+              maybeAddTokenExpansion(cur.toString(), true, expansions);
+              cur.setLength(0);
+            }
+          }
+          cur.append(c);
+        } else {
+          if (cur.length() > 0) {
+            maybeAddTokenExpansion(cur.toString(), true, expansions);
+            cur.setLength(0);
+          }
+        }
+      }
+      return String.join(" ", expansions);
+    }
+
+    String expandText(String text, boolean allowVariableLookup, int maxExpansions) {
+      if (text == null || text.isEmpty()) return "";
+      Set<String> expansions = new LinkedHashSet<>();
+      int n = text.length();
+      int start = -1;
+      for (int i = 0; i <= n; i++) {
+        char c = (i < n) ? text.charAt(i) : ' ';
+        if (Character.isLetterOrDigit(c)) {
+          if (start < 0) start = i;
+        } else if (start >= 0) {
+          String rawTok = text.substring(start, i);
+          start = -1;
+          maybeAddTokenExpansion(rawTok, allowVariableLookup, expansions);
+          if (expansions.size() >= maxExpansions) break;
+        }
+      }
+      if (expansions.isEmpty()) return text;
+      return text + " " + String.join(" ", expansions);
+    }
+
+    private void maybeAddTokenExpansion(
+        String rawTok, boolean allowVariableLookup, Set<String> expansions) {
+      int len = rawTok.length();
+      if (len < 2 || len > 16) return;
+      String upper = rawTok.toUpperCase(Locale.ROOT);
+      if (isAmbiguousCommonWord(upper)) return;
+
+      boolean isAllUpper = rawTok.equals(upper) && rawTok.chars().anyMatch(Character::isLetter);
+      if (len >= 3 || isAllUpper) {
+        String acrFull = acronyms.get(upper);
+        if (acrFull != null) {
+          expansions.add(acrFull);
+          return;
+        }
+      }
+      if (allowVariableLookup && len >= 3) {
+        String varFull = variableNames.get(rawTok.toLowerCase(Locale.ROOT));
+        if (varFull != null) {
+          expansions.add(varFull);
+        }
+      }
+    }
+
+    void collectGcmdKeywords(String standardName, Set<String> outTerms) {
+      if (standardName == null || standardName.isEmpty()) return;
+      try {
+        String[] gcmds = CfToFromGcmd.cfToGcmd(standardName);
+        for (String gcmd : gcmds) {
+          if (gcmd == null || gcmd.isEmpty()) continue;
+          String cleaned = gcmd;
+          if (cleaned.regionMatches(true, 0, "EARTH SCIENCE > ", 0, 16)) {
+            cleaned = cleaned.substring(16);
+          }
+          cleaned = cleaned.replace('>', ' ').replace('/', ' ').trim();
+          if (!cleaned.isEmpty()) {
+            outTerms.add(cleaned);
+          }
+        }
+      } catch (Throwable ignored) {
+        // Safe fallback if CfToGcmd.txt is unavailable in stripped test environments
+      }
+    }
+
+    private static boolean isAmbiguousCommonWord(String upper) {
+      switch (upper) {
+        case "US":
+        case "IN":
+        case "ON":
+        case "AT":
+        case "TO":
+        case "OR":
+        case "AS":
+        case "IS":
+        case "IT":
+        case "NO":
+        case "SO":
+        case "AN":
+        case "BE":
+        case "HE":
+        case "ME":
+        case "MY":
+        case "WE":
+        case "BY":
+        case "OF":
+        case "UP":
+        case "THE":
+        case "AND":
+        case "FOR":
+        case "ARE":
+        case "WAS":
+        case "PER":
+        case "ALL":
+        case "DAY":
+        case "END":
+        case "USE":
+        case "NEW":
+        case "OLD":
+        case "LOW":
+        case "SET":
+        case "RUN":
+        case "AIR":
+        case "SEA":
+        case "ICE":
+        case "DATA":
+        case "TIME":
+        case "DATE":
+        case "YEAR":
+        case "TYPE":
+        case "NAME":
+        case "FILE":
+        case "GRID":
+        case "LINE":
+        case "LIST":
+        case "MODE":
+        case "MEAN":
+        case "HIGH":
+        case "RATE":
+        case "REAL":
+        case "ROWS":
+        case "SIZE":
+        case "STEP":
+        case "TEST":
+        case "TEXT":
+        case "UNIT":
+        case "USER":
+        case "VIEW":
+        case "WORK":
+        case "ZONE":
+          return true;
+        default:
+          return false;
+      }
+    }
+  }
+
   private static StaticEmbeddingModel getOrLoadModel() {
     StaticEmbeddingModel m = embeddingModel;
     if (m != null) return m;
@@ -677,10 +966,54 @@ public class HybridSearchEngine {
     }
   }
 
+  private record QueryTerm(String text, boolean wasQuoted, boolean isNeg) {}
+
+  private static List<QueryTerm> parseQueryTerms(String searchFor) {
+    List<QueryTerm> terms = new ArrayList<>();
+    if (searchFor == null) return terms;
+    int n = searchFor.length();
+    int po = 0;
+    while (po < n) {
+      char ch = searchFor.charAt(po);
+      if (String2.isWhite(ch) || ch == ',') {
+        po++;
+        continue;
+      }
+      boolean neg = false;
+      if (ch == '-' && po + 1 < n && !String2.isWhite(searchFor.charAt(po + 1))) {
+        neg = true;
+        po++;
+      }
+      if (po < n && searchFor.charAt(po) == '"') {
+        int po2 = po + 1;
+        while (po2 < n) {
+          if (searchFor.charAt(po2) == '"') {
+            if (po2 + 1 < n && searchFor.charAt(po2 + 1) == '"') po2 += 2;
+            else break;
+          } else {
+            po2++;
+          }
+        }
+        String raw = String2.replaceAll(searchFor.substring(po + 1, po2), "\"\"", "\"");
+        if (!raw.isEmpty()) terms.add(new QueryTerm(raw, true, neg));
+        po = po2 + 1;
+      } else {
+        int po2 = po + 1;
+        while (po2 < n && !String2.isWhite(searchFor.charAt(po2)) && searchFor.charAt(po2) != ',') {
+          po2++;
+        }
+        String raw = searchFor.substring(po, po2);
+        if (!raw.isEmpty()) terms.add(new QueryTerm(raw, false, neg));
+        po = po2;
+      }
+    }
+    return terms;
+  }
+
   /**
    * Loads an int8-quantized static token embedding table (e.g., Model2Vec potion-base-8M) from
-   * {@link #EMBEDDING_RESOURCE} if present, otherwise uses a zero-resource CF/oceanographic
-   * semantic projection + character-trigram hash embedder.
+   * {@link #EMBEDDING_RESOURCE} if present, otherwise uses a zero-resource domain-lexicon + subword
+   * trigram hash embedder.
    */
   private static final class StaticEmbeddingModel {
     final int dim;
@@ -774,8 +1107,8 @@ public class HybridSearchEngine {
           }
         }
       } else {
-        // Built-in oceanographic/CF concept expansion + subword trigram projection
-        String expanded = expandOceanographicConcepts(text);
+        // Built-in fallback using ERDDAP's acronym/variable tables + subword trigram projection
+        String expanded = getOrLoadLexicon().expandText(text, true, 12);
         for (String tok : tokenize(expanded, true)) {
           projectToken(out, tok, 1.0f);
           String padded = "<" + tok + ">";
@@ -811,47 +1144,6 @@ public class HybridSearchEngine {
       float sign2 = (((h >>> 15) & 1) == 0) ? 1.0f : -1.0f;
       out[idx1] += sign1 * weight;
       out[idx2] += sign2 * weight;
-    }
-
-    private static String expandOceanographicConcepts(String text) {
-      String s = " " + text.toLowerCase(Locale.ROOT) + " ";
-      StringBuilder sb = new StringBuilder(s);
-      if (s.contains("sst") || s.contains("heat") || s.contains("thermal") || s.contains("warm"))
-        sb.append(" sea surface temperature water thermal ");
-      if (s.contains("sss") || s.contains("salt") || s.contains("haline") || s.contains("salin"))
-        sb.append(" sea surface salinity practical water ");
-      if (s.contains("chl")
-          || s.contains("algal")
-          || s.contains("bloom")
-          || s.contains("phytoplankton")
-          || s.contains("ocean color"))
-        sb.append(" chlorophyll concentration phytoplankton ocean color ");
-      if (s.contains("ssh")
-          || s.contains("altimet")
-          || s.contains("sea level")
-          || s.contains("geostrophic"))
-        sb.append(" sea surface height anomaly elevation altimetry ");
-      if (s.contains("bathymet")
-          || s.contains("topograph")
-          || s.contains("seafloor")
-          || s.contains("depth")) sb.append(" sea floor depth elevation bathymetry ");
-      if (s.contains("current")
-          || s.contains("velocity")
-          || s.contains("adcp")
-          || s.contains("drift")) sb.append(" eastward northward sea water velocity current ");
-      if (s.contains("wind")
-          || s.contains("breeze")
-          || s.contains("gale")
-          || s.contains("scatterometer")) sb.append(" wind speed direction stress vector ");
-      if (s.contains("wave") || s.contains("swell") || s.contains("buoy"))
-        sb.append(" significant wave height period direction ");
-      if (s.contains("acidification")
-          || s.contains("carbon")
-          || s.contains("co2")
-          || s.contains("ph")) sb.append(" partial pressure carbon dioxide alkalinity ph ");
-      if (s.contains("oxygen") || s.contains("hypoxi") || s.contains("do"))
-        sb.append(" dissolved oxygen concentration mole ");
-      return sb.toString();
     }
   }
 }

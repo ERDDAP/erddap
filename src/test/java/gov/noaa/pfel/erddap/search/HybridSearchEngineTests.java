@@ -303,6 +303,67 @@ class HybridSearchEngineTests {
     assertFalse(allResults.contains("privateBuoyData"));
   }
 
+  @Test
+  void externalEmbeddingBinaryIsLoaded() {
+    assertTrue(
+        HybridSearchEngine.isUsingExternalEmbeddings(),
+        "erddap_embeddings.bin did not load from classpath");
+  }
+
+  @Test
+  void expandsAcronymsVariableNamesAndCfToGcmdKeywords() throws Throwable {
+    tableDatasets.put(
+        "mooringAdcpCurrents",
+        new StubTableDataset(
+            "mooringAdcpCurrents",
+            "Coastal Mooring ADCP Velocity Profiles",
+            "Subsurface acoustic current meter observations.",
+            "NOAA PMEL",
+            new VarSpec[] {
+              new VarSpec("u_vel", "Eastward Current Speed", "eastward_sea_water_velocity")
+            },
+            null));
+    HybridSearchEngine.rebuild(gridDatasets, tableDatasets);
+
+    // 1. Acronym expansion ("acoustic doppler current profiler" -> "ADCP")
+    List<String> adcpResults = toList(searchHybrid("acoustic doppler current profiler", null));
+    assertTrue(
+        adcpResults.contains("mooringAdcpCurrents"),
+        "Expected ADCP acronym expansion match, got: " + adcpResults);
+
+    // 2. Variable name table expansion ("prate" -> "Precipitation Rate")
+    List<String> prateResults = toList(searchHybrid("prate", null));
+    assertTrue(
+        prateResults.contains("ncepPrecipDaily"),
+        "Expected variable abbreviation 'prate' match, got: " + prateResults);
+
+    // 3. CfToFromGcmd expansion ("mass_concentration_of_chlorophyll_a_in_sea_water" -> GCMD
+    //    "OCEAN CHEMISTRY" / "PHYTOPLANKTON")
+    List<String> gcmdResults = toList(searchHybrid("ocean chemistry phytoplankton", null));
+    assertTrue(
+        gcmdResults.contains("erdMBchla8day"),
+        "Expected CfToFromGcmd enrichment match, got: " + gcmdResults);
+
+    // 4. Variable name table expansion ("slp" -> "Sea Level Pressure" with zero lexical overlap)
+    tableDatasets.put(
+        "buoyPressure",
+        new StubTableDataset(
+            "buoyPressure",
+            "Coastal Barometric Observations",
+            "Hourly atmospheric pressure measurements.",
+            "NOAA NDBC",
+            new VarSpec[] {
+              new VarSpec("air_pressure", "Sea Level Pressure", "air_pressure_at_mean_sea_level")
+            },
+            null));
+    HybridSearchEngine.rebuild(gridDatasets, tableDatasets);
+
+    List<String> slpResults = toList(searchHybrid("slp", null));
+    assertTrue(
+        slpResults.contains("buoyPressure"),
+        "Expected variable abbreviation 'slp' -> 'Sea Level Pressure' match, got: " + slpResults);
+  }
+
   // --- Helpers & Lightweight Test Fixture ---
 
   private StringArray allCandidateIDs() {
