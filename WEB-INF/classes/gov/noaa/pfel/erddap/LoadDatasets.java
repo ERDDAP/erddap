@@ -21,6 +21,7 @@ import gov.noaa.pfel.erddap.dataset.EDDTable;
 import gov.noaa.pfel.erddap.dataset.EDDTableFromAllDatasets;
 import gov.noaa.pfel.erddap.dataset.metadata.LocalizedAttributes;
 import gov.noaa.pfel.erddap.handlers.SaxHandler;
+import gov.noaa.pfel.erddap.search.HybridSearchEngine;
 import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
@@ -261,6 +262,7 @@ public class LoadDatasets extends Thread {
 
       erddap.updateLucene(changedDatasetIDs);
       lastLuceneUpdate = System.currentTimeMillis();
+      HybridSearchEngine.rebuild(erddap.gridDatasetHashMap, erddap.tableDatasetHashMap);
 
       // atomic swap into place
       EDStatic.setUserHashMap(tUserHashMap);
@@ -1750,7 +1752,10 @@ public class LoadDatasets extends Thread {
     erddap.addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldEdd);
     File2.deleteAllFiles(EDD.cacheDirectory(tId));
     changedDatasetIDs.add(tId);
-    if (needToUpdateLucene) erddap.updateLucene(changedDatasetIDs);
+    if (needToUpdateLucene) {
+      erddap.updateLucene(changedDatasetIDs);
+      HybridSearchEngine.scheduleRebuild(erddap.gridDatasetHashMap, erddap.tableDatasetHashMap);
+    }
     // do dataset actions so subscribers know it is gone
     Erddap.tryToDoActions(
         tId,
