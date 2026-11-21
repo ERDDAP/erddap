@@ -14,5 +14,8 @@
                 &gt; ${youAreHere.getBreadcrumbs().get(i)}
             @endif
         @endfor
+        @if(youAreHere.getHtmlHelp() != null && !youAreHere.getHtmlHelp().isEmpty())
+            $unsafe{youAreHere.getHtmlHelp()}
+        @endif
 </h1>
 @endif

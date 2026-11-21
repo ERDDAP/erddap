@@ -18,5 +18,13 @@ $unsafe{longDapDescription}
 <br><kbd>${dapBase}<i><a rel="help" href="${dapBase}documentation.html#datasetID">datasetID</a></i>.<i><a rel="help" href="${dapBase}documentation.html#fileType">fileType</a></i>{?<i><a rel="help" href="${dapBase}documentation.html#query">query</a></i>}</kbd>
 <br>For example,
 <br><a href="${exampleHref}"><kbd>${exampleText}</kbd></a>
-<br>$unsafe{queryExplanationHtml}</p>
+@if(protocol.equals("tabledap"))
+    <br>Thus, the query is often a comma-separated list of desired variable names,
+       followed by a collection of
+      constraints (e.g., <kbd><i>variable</i>&lt;<i>value</i></kbd>),
+      each preceded by '&amp;' (which is interpreted as "AND").
+@elseif(queryExplanationHtml != null && !queryExplanationHtml.isEmpty())
+    <br>$unsafe{queryExplanationHtml}
+@endif
+</p>
 <p>For details, see the <a rel="help" href="${tErddapUrl}/${protocol}/documentation.html">${protocol} Documentation</a>.</p>
