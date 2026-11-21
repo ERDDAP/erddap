@@ -2,7 +2,6 @@
 @import gov.noaa.pfel.erddap.jte.TemplateHelper
 @import gov.noaa.pfel.erddap.jte.TabledapVariable
 @import gov.noaa.pfel.erddap.util.EDMessages.Message
-@import com.cohort.util.XML
 @import jakarta.servlet.http.HttpServletRequest
 @import java.util.List
 
@@ -30,7 +29,6 @@
 @param String dapBase = ""
 @param String exampleHref = ""
 @param String exampleText = ""
-@param String queryExplanationHtml = ""
 @param String longDapDescription = ""
 
 @template.layout.main(
@@ -268,7 +266,6 @@
         dapBase=dapBase,
         exampleHref=exampleHref,
         exampleText=exampleText,
-        queryExplanationHtml=queryExplanationHtml,
         longDapDescription=longDapDescription
     )
 </div>

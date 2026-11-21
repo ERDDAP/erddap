@@ -2470,7 +2470,6 @@ class ErddapTests {
     params.put("dapBase", tErddapUrl + "/tabledap/");
     params.put("exampleHref", tErddapUrl + "/tabledap/test_dataset.htmlTable?time,sst");
     params.put("exampleText", "test_dataset.htmlTable?time,sst");
-    params.put("queryExplanationHtml", "<br>Query explanation text");
     params.put("longDapDescription", "<p>Long description of tabledap</p>");
 
     java.io.StringWriter sw = new java.io.StringWriter();
@@ -2548,6 +2547,10 @@ class ErddapTests {
     Test.ensureTrue(
         result.contains("Tabledap request URLs must be in the form"),
         "Missing DAP instructions text");
+    Test.ensureTrue(
+        result.contains(
+            "Thus, the query is often a comma-separated list of desired variable names"),
+        "Missing query explanation text");
     Test.ensureTrue(result.contains("/* sliders */"), "Missing sliderScriptHtml");
   }
 
@@ -2615,7 +2618,6 @@ class ErddapTests {
     params.put("dapBase", tErddapUrl + "/tabledap/");
     params.put("exampleHref", tErddapUrl + "/tabledap/test_dataset.htmlTable");
     params.put("exampleText", "test_dataset.htmlTable");
-    params.put("queryExplanationHtml", "");
     params.put("longDapDescription", "");
 
     java.io.StringWriter sw = new java.io.StringWriter();
@@ -2688,7 +2690,6 @@ class ErddapTests {
     params.put("dapBase", tErddapUrl + "/tabledap/");
     params.put("exampleHref", tErddapUrl + "/tabledap/test.htmlTable");
     params.put("exampleText", "test.htmlTable");
-    params.put("queryExplanationHtml", "");
     params.put("longDapDescription", "");
 
     java.io.StringWriter sw = new java.io.StringWriter();

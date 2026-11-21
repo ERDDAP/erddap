@@ -5080,46 +5080,9 @@ public abstract class EDDTable extends EDD {
               sliderHtml));
     }
 
-    String addVariablesWhereHtml = "";
-    if (addVariablesWhereAttNames != null) {
-      StringWriter avwSw = new StringWriter();
-      avwSw.write(widgets.beginTable("class=\"compact nowrap\""));
-      for (int attNamei = 1; attNamei < addVariablesWhereAttNames.size(); attNamei++) {
-        String attName = addVariablesWhereAttNames.get(attNamei);
-        String startsWith = "addVariablesWhere(\"" + attName + "\",";
-        String sStartsWith = String2.stringStartsWith(queryParts, startsWith);
-        int attValuei = 0;
-        if (sStartsWith != null && sStartsWith.endsWith("\")")) {
-          String[] avwAr =
-              StringArray.arrayFromCSV(sStartsWith.substring(18, sStartsWith.length() - 1));
-          if (avwAr.length == 2) {
-            String attValue = avwAr[1];
-            attValuei = Math.max(0, addVariablesWhereAttValues.get(attNamei).indexOf(attValue));
-          }
-        }
-        avwSw.write(
-            "<tr>\n<td>Add variables where "
-                + XML.encodeAsHTML(attName)
-                + widgets.hidden("avwan" + attNamei, attName)
-                + "<td>&nbsp;=&nbsp;"
-                + widgets.select(
-                    "avwav" + attNamei,
-                    EDStatic.messages.get(Message.ADD_VAR_WHERE_ATT_VALUE, language),
-                    1,
-                    addVariablesWhereAttValues.get(attNamei).toArray(),
-                    attValuei,
-                    "")
-                + "\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.ADD_VAR_WHERE, language))
-                + "</tr>\n");
-      }
-      avwSw.write(widgets.endTable());
-      addVariablesWhereHtml = avwSw.toString();
-    }
+    StringWriter avwSw = new StringWriter();
+    writeAddVariablesWhereHtml(request, language, loggedInAs, queryParts, avwSw, widgets);
+    String addVariablesWhereHtml = avwSw.toString();
 
     int nOrderByComboBox = 5;
     StringWriter fnSw = new StringWriter();
@@ -5211,11 +5174,6 @@ public abstract class EDDTable extends EDD {
     String datasetBase = dapBase + EDStatic.messages.EDDTableIdExample;
     String exampleHref = datasetBase + ".htmlTable?" + EDStatic.messages.EDDTableDataTimeExampleHA;
     String exampleText = datasetBase + ".htmlTable?" + EDStatic.messages.EDDTableDataTimeExampleHE;
-    String queryExplanationHtml =
-        "<br>Thus, the query is often a comma-separated list of desired variable names,\n"
-            + "   followed by a collection of\n"
-            + "  constraints (e.g., <kbd><i>variable</i>&lt;<i>value</i></kbd>),\n"
-            + "  each preceded by '&amp;' (which is interpreted as \"AND\").\n";
     String longDapDesc = longDapDescription(language, tErddapUrl);
 
     String htmlHelp =
@@ -5261,7 +5219,6 @@ public abstract class EDDTable extends EDD {
     params.put("dapBase", dapBase);
     params.put("exampleHref", exampleHref);
     params.put("exampleText", exampleText);
-    params.put("queryExplanationHtml", queryExplanationHtml);
     params.put("longDapDescription", longDapDesc);
 
     engine.render("tabledap_form.jte", params, new WriterOutput(writer));
@@ -5762,59 +5719,7 @@ public abstract class EDDTable extends EDD {
     writer.write(widgets.endTable());
 
     // addVariablesWhere
-    if (addVariablesWhereAttNames != null) {
-      // for each addVariableWhereAttributeName...
-      writer.write(widgets.beginTable("class=\"compact nowrap\""));
-      for (int attNamei = 1;
-          attNamei < addVariablesWhereAttNames.size();
-          attNamei++) { // 1 since [0] is ""
-        // is there an addVariablesWhere(attName, attValue) in the query?
-        // If there are 2+, only the first is used.
-        String attName = addVariablesWhereAttNames.get(attNamei);
-        String startsWith = "addVariablesWhere(\"" + attName + "\",";
-        String sStartsWith = String2.stringStartsWith(queryParts, startsWith);
-        int attValuei = 0;
-        if (sStartsWith != null && sStartsWith.endsWith("\")")) {
-          String[] avwAr =
-              StringArray.arrayFromCSV(sStartsWith.substring(18, sStartsWith.length() - 1));
-          if (avwAr.length == 2) {
-            String attValue = avwAr[1];
-            attValuei =
-                Math.max(
-                    0,
-                    addVariablesWhereAttValues
-                        .get(attNamei)
-                        .indexOf(attValue)); // a valid number even if not a match
-          }
-        }
-
-        writer.write(
-            "<tr>\n"
-                + "<td>Add variables where "
-                + XML.encodeAsHTML(attName)
-                +
-                // make hidden widget with attName
-                widgets.hidden("avwan" + attNamei, attName)
-                + "<td>&nbsp;=&nbsp;"
-                +
-                // make the Select widget
-                widgets.select(
-                    "avwav" + attNamei,
-                    EDStatic.messages.get(Message.ADD_VAR_WHERE_ATT_VALUE, language),
-                    1,
-                    addVariablesWhereAttValues.get(attNamei).toArray(),
-                    attValuei,
-                    "")
-                + "\n"
-                + EDStatic.htmlTooltipImage(
-                    request,
-                    language,
-                    loggedInAs,
-                    EDStatic.messages.get(Message.ADD_VAR_WHERE, language))
-                + "</tr>\n");
-      }
-      writer.write(widgets.endTable());
-    }
+    writeAddVariablesWhereHtml(request, language, loggedInAs, queryParts, writer, widgets);
 
     // functions
     int nOrderByComboBox = 5;
@@ -5988,6 +5893,74 @@ public abstract class EDDTable extends EDD {
 
     // be nice
     writer.flush();
+  }
+
+  /**
+   * This writes the Add variables where options for the Data Access Form web page.
+   *
+   * @param language the index of the selected language
+   */
+  void writeAddVariablesWhereHtml(
+      HttpServletRequest request,
+      int language,
+      String loggedInAs,
+      String[] queryParts,
+      Writer writer,
+      HtmlWidgets widgets)
+      throws IOException {
+    if (addVariablesWhereAttNames != null) {
+      // for each addVariableWhereAttributeName...
+      writer.write(widgets.beginTable("class=\"compact nowrap\""));
+      for (int attNamei = 1;
+          attNamei < addVariablesWhereAttNames.size();
+          attNamei++) { // 1 since [0] is ""
+        // is there an addVariablesWhere(attName, attValue) in the query?
+        // If there are 2+, only the first is used.
+        String attName = addVariablesWhereAttNames.get(attNamei);
+        String startsWith = "addVariablesWhere(\"" + attName + "\",";
+        String sStartsWith = String2.stringStartsWith(queryParts, startsWith);
+        int attValuei = 0;
+        if (sStartsWith != null && sStartsWith.endsWith("\")")) {
+          String[] avwAr =
+              StringArray.arrayFromCSV(sStartsWith.substring(18, sStartsWith.length() - 1));
+          if (avwAr.length == 2) {
+            String attValue = avwAr[1];
+            attValuei =
+                Math.max(
+                    0,
+                    addVariablesWhereAttValues
+                        .get(attNamei)
+                        .indexOf(attValue)); // a valid number even if not a match
+          }
+        }
+
+        writer.write(
+            "<tr>\n"
+                + "<td>Add variables where "
+                + XML.encodeAsHTML(attName)
+                +
+                // make hidden widget with attName
+                widgets.hidden("avwan" + attNamei, attName)
+                + "<td>&nbsp;=&nbsp;"
+                +
+                // make the Select widget
+                widgets.select(
+                    "avwav" + attNamei,
+                    EDStatic.messages.get(Message.ADD_VAR_WHERE_ATT_VALUE, language),
+                    1,
+                    addVariablesWhereAttValues.get(attNamei).toArray(),
+                    attValuei,
+                    "")
+                + "\n"
+                + EDStatic.htmlTooltipImage(
+                    request,
+                    language,
+                    loggedInAs,
+                    EDStatic.messages.get(Message.ADD_VAR_WHERE, language))
+                + "</tr>\n");
+      }
+      writer.write(widgets.endTable());
+    }
   }
 
   /**
