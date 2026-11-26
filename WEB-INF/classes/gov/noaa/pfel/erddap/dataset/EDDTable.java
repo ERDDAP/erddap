@@ -5167,7 +5167,7 @@ public abstract class EDDTable extends EDD {
             EDV.SLIDER_PIXELS - 1);
 
     StringWriter dasSw = new StringWriter();
-    table.writeDAS(dasSw, SEQUENCE_NAME, true);
+    table.writeDAS(dasSw, SEQUENCE_NAME, false);
     String dasContent = dasSw.toString();
 
     String dapBase = EDStatic.messages.EDDTableErddapUrlExample + dapProtocol + "/";

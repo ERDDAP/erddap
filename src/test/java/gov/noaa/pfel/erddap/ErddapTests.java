@@ -2124,6 +2124,22 @@ class ErddapTests {
     Test.ensureTrue(
         resXss.contains("&lt;script&gt;alert(1)&lt;/script&gt;"),
         "dasContent missing escaped script tag");
+
+    // Test Table.writeDAS(..., false) + das_section.jte does not double-escape
+    Table dasTable = new Table();
+    dasTable.globalAttributes().add("title", "Test Title & <tag>");
+    java.io.StringWriter rawDasSw = new java.io.StringWriter();
+    dasTable.writeDAS(rawDasSw, "s", false);
+    java.io.StringWriter swNoDouble = new java.io.StringWriter();
+    params.put("dasContent", rawDasSw.toString());
+    engine.render("components/das_section.jte", params, new WriterOutput(swNoDouble));
+    String resNoDouble = swNoDouble.toString();
+    Test.ensureTrue(
+        resNoDouble.contains("String title \"Test Title &amp; &lt;tag&gt;\";"),
+        "Expected single-escaped DAS content, got: " + resNoDouble);
+    Test.ensureTrue(
+        !resNoDouble.contains("&amp;amp;") && !resNoDouble.contains("&amp;lt;"),
+        "DAS content must not be double-escaped: " + resNoDouble);
   }
 
   @org.junit.jupiter.api.Test
@@ -2255,6 +2271,25 @@ class ErddapTests {
     Test.ensureTrue(
         resCsv.contains("value=\".csv - Download a comma-separated values text file.\" selected"),
         "Option .csv should be selected");
+
+    // Verify escaping of quotes in fileTypeDescriptions
+    java.io.StringWriter swQuotes = new java.io.StringWriter();
+    params.put(
+        "fileTypeDescriptions",
+        java.util.List.of(
+            ".das - View the dataset's metadata.",
+            ".parquet - Metadata contains column names (\"column_names\")."));
+    params.put("defaultFileTypeOption", ".das");
+    engine.render("components/file_type_selector.jte", params, new WriterOutput(swQuotes));
+    String resQuotes = swQuotes.toString();
+    Test.ensureTrue(
+        resQuotes.contains(
+            "<option value=\".das - View the dataset&#39;s metadata.\" selected>.das - View the dataset's metadata.</option>"),
+        "Missing or mismatched .das option: " + resQuotes);
+    Test.ensureTrue(
+        resQuotes.contains(
+            "<option value=\".parquet - Metadata contains column names (&#34;column_names&#34;).\">.parquet - Metadata contains column names (\"column_names\").</option>"),
+        "Missing or mismatched .parquet option: " + resQuotes);
 
     // Test French localization
     int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
