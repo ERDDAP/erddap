@@ -2,6 +2,8 @@ package gov.noaa.pfel.erddap.jte;
 
 import com.cohort.util.Calendar2;
 import com.cohort.util.String2;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.util.EDConfig;
 import gov.noaa.pfel.erddap.util.EDMessages.Message;
@@ -10,6 +12,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 
 public class TemplateHelper {
+  private static TemplateEngine engine;
+
+  public static synchronized TemplateEngine getTemplateEngine() {
+    if (engine == null) {
+      engine = TemplateEngine.createPrecompiled(ContentType.Html);
+    }
+    return engine;
+  }
+
   public static String getFormated(String value, String val) {
     return MessageFormat.format(value, val);
   }

@@ -16,6 +16,8 @@ import gg.jte.output.WriterOutput;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.dataset.EDDGrid;
 import gov.noaa.pfel.erddap.dataset.EDDTable;
+import gov.noaa.pfel.erddap.jte.TabledapVariable;
+import gov.noaa.pfel.erddap.jte.YouAreHere;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -2122,6 +2124,22 @@ class ErddapTests {
     Test.ensureTrue(
         resXss.contains("&lt;script&gt;alert(1)&lt;/script&gt;"),
         "dasContent missing escaped script tag");
+
+    // Test Table.writeDAS(..., false) + das_section.jte does not double-escape
+    Table dasTable = new Table();
+    dasTable.globalAttributes().add("title", "Test Title & <tag>");
+    java.io.StringWriter rawDasSw = new java.io.StringWriter();
+    dasTable.writeDAS(rawDasSw, "s", false);
+    java.io.StringWriter swNoDouble = new java.io.StringWriter();
+    params.put("dasContent", rawDasSw.toString());
+    engine.render("components/das_section.jte", params, new WriterOutput(swNoDouble));
+    String resNoDouble = swNoDouble.toString();
+    Test.ensureTrue(
+        resNoDouble.contains("String title \"Test Title &amp; &lt;tag&gt;\";"),
+        "Expected single-escaped DAS content, got: " + resNoDouble);
+    Test.ensureTrue(
+        !resNoDouble.contains("&amp;amp;") && !resNoDouble.contains("&amp;lt;"),
+        "DAS content must not be double-escaped: " + resNoDouble);
   }
 
   @org.junit.jupiter.api.Test
@@ -2254,6 +2272,25 @@ class ErddapTests {
         resCsv.contains("value=\".csv - Download a comma-separated values text file.\" selected"),
         "Option .csv should be selected");
 
+    // Verify escaping of quotes in fileTypeDescriptions
+    java.io.StringWriter swQuotes = new java.io.StringWriter();
+    params.put(
+        "fileTypeDescriptions",
+        java.util.List.of(
+            ".das - View the dataset's metadata.",
+            ".parquet - Metadata contains column names (\"column_names\")."));
+    params.put("defaultFileTypeOption", ".das");
+    engine.render("components/file_type_selector.jte", params, new WriterOutput(swQuotes));
+    String resQuotes = swQuotes.toString();
+    Test.ensureTrue(
+        resQuotes.contains(
+            "<option value=\".das - View the dataset&#39;s metadata.\" selected>.das - View the dataset's metadata.</option>"),
+        "Missing or mismatched .das option: " + resQuotes);
+    Test.ensureTrue(
+        resQuotes.contains(
+            "<option value=\".parquet - Metadata contains column names (&#34;column_names&#34;).\">.parquet - Metadata contains column names (\"column_names\").</option>"),
+        "Missing or mismatched .parquet option: " + resQuotes);
+
     // Test French localization
     int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
     if (frenchLang >= 0) {
@@ -2339,5 +2376,369 @@ class ErddapTests {
       Test.ensureTrue(resFr.contains("Soumettre"), "Missing French Soumettre button text");
       Test.ensureTrue(resFr.contains("Génér"), "Missing French Génér text");
     }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteTabledapForm() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteTabledapForm()");
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    java.util.List<TabledapVariable> variables = new java.util.ArrayList<>();
+    variables.add(
+        new TabledapVariable(
+            0,
+            "longitude",
+            "longitude (degrees_east)",
+            true,
+            ">=",
+            "-125.0",
+            "<=",
+            "-120.0",
+            "numeric constraint",
+            false,
+            null,
+            0,
+            "-180.0",
+            "180.0",
+            true,
+            "<div class=\"slider\">[slider0]</div>"));
+    variables.add(
+        new TabledapVariable(
+            1,
+            "latitude",
+            "latitude (degrees_north)",
+            true,
+            ">=",
+            "30.0",
+            "<=",
+            "35.0",
+            "numeric constraint",
+            false,
+            null,
+            0,
+            "-90.0",
+            "90.0",
+            true,
+            "<div class=\"slider\">[slider1]</div>"));
+    variables.add(
+        new TabledapVariable(
+            2,
+            "station",
+            "station (Station Identifier)",
+            true,
+            "=",
+            "\"station_1\"",
+            "<=",
+            "",
+            "string constraint",
+            true,
+            new String[] {"station_1", "station_2", "station_3"},
+            0,
+            "",
+            "",
+            false,
+            ""));
+    variables.add(
+        new TabledapVariable(
+            3,
+            "sst",
+            "sst (sea surface temperature, degree_C)",
+            false,
+            ">=",
+            "10.0",
+            "<=",
+            "25.0",
+            "numeric constraint",
+            false,
+            null,
+            0,
+            "0.0",
+            "35.0",
+            false,
+            ""));
+
+    String tErddapUrl = "https://erddap.example.org/erddap";
+    YouAreHere youAreHere =
+        new YouAreHere(
+            tErddapUrl,
+            "ERDDAP Home Page",
+            java.util.List.of("tabledap", "Data Access Form"),
+            java.util.List.of(tErddapUrl + "/tabledap/index.html"),
+            "<img src=\"" + tErddapUrl + "/images/QuestionMark.png\" alt=\"?\">");
+
+    java.util.List<String> fileTypeDescriptions =
+        java.util.List.of(
+            ".htmlTable - View a standard HTML table in your browser.",
+            ".csv - Download a comma-separated values text file.",
+            ".json - Download JSON format data.");
+
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("youAreHere", youAreHere);
+    params.put("language", 0);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("loggedInAs", "");
+    params.put("endOfRequest", "tabledap/test_dataset.html");
+    params.put("request", null);
+    params.put(
+        "datasetInfoHtml",
+        "<table class=\"compact nowrap\"><tr><td>Dataset Title: Test Dataset</td></tr></table>");
+    params.put("formName", "form1");
+    params.put("variables", variables);
+    params.put("operators", java.util.List.of("=", "!=", "<", "<=", ">", ">=", "=~"));
+    params.put("hasDistinctOptions", true);
+    params.put(
+        "checkAllJs",
+        "form1.varch0.checked=true;form1.varch1.checked=true;form1.varch2.checked=true;form1.varch3.checked=true;");
+    params.put(
+        "uncheckAllJs",
+        "form1.varch0.checked=false;form1.varch1.checked=false;form1.varch2.checked=false;form1.varch3.checked=false;");
+    params.put("addVariablesWhereHtml", "");
+    params.put(
+        "functionHtml",
+        "<table class=\"compact W\"><tr><td><strong>Functions</strong></td></tr><tr><td><input"
+            + " type=\"checkbox\" name=\"distinct\" value=\"true\"> distinct()</td></tr></table>");
+    params.put("fileTypeDescriptions", fileTypeDescriptions);
+    params.put("defaultFileTypeOption", ".htmlTable");
+    params.put("javaScript", "updateUrl();");
+    params.put("sliderScriptHtml", "<script>/* sliders */</script>");
+    params.put("dasContent", "Attributes {\n NC_GLOBAL {\n  String title \"Test Title\";\n }\n}");
+    params.put("dapBase", tErddapUrl + "/tabledap/");
+    params.put("exampleHref", tErddapUrl + "/tabledap/test_dataset.htmlTable?time,sst");
+    params.put("exampleText", "test_dataset.htmlTable?time,sst");
+    params.put("longDapDescription", "<p>Long description of tabledap</p>");
+
+    java.io.StringWriter sw = new java.io.StringWriter();
+    engine.render("tabledap_form.jte", params, new WriterOutput(sw));
+    String result = sw.toString();
+
+    // Verify main page structure and layout
+    Test.ensureTrue(result.contains("<!DOCTYPE html>"), "Missing DOCTYPE");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+    Test.ensureTrue(result.contains("wz_dragdrop.js"), "Missing wz_dragdrop.js script");
+    Test.ensureTrue(result.contains("wz_tooltip.js"), "Missing wz_tooltip.js script");
+    Test.ensureTrue(
+        result.contains("class=\"standard_width\""), "Missing standard_width container");
+
+    // Verify breadcrumbs and tooltip help
+    Test.ensureTrue(result.contains("ERDDAP"), "Missing ERDDAP link");
+    Test.ensureTrue(result.contains("tabledap"), "Missing tabledap link");
+    Test.ensureTrue(result.contains("Data Access Form"), "Missing Data Access Form title");
+    Test.ensureTrue(result.contains("alt=\"?\""), "Missing help tooltip image");
+
+    // Verify dataset info and noscript
+    Test.ensureTrue(
+        result.contains("Dataset Title: Test Dataset"), "Missing datasetInfoHtml content");
+    Test.ensureTrue(result.contains("<noscript>"), "Missing noscript tag");
+
+    // Verify form and percentEncode
+    Test.ensureTrue(
+        result.contains("<form action=\"\" method=\"get\" name=\"form1\">"), "Missing form tag");
+    Test.ensureTrue(result.contains("function percentEncode(s)"), "Missing percentEncode function");
+
+    // Verify table headers
+    Test.ensureTrue(result.contains("Variable"), "Missing Variable header");
+    Test.ensureTrue(result.contains("name=\"CheckAll\""), "Missing CheckAll button");
+    Test.ensureTrue(result.contains("name=\"UncheckAll\""), "Missing UncheckAll button");
+    Test.ensureTrue(result.contains("Optional<br>Constraint #1"), "Missing Constraint 1 header");
+    Test.ensureTrue(result.contains("Optional<br>Constraint #2"), "Missing Constraint 2 header");
+    Test.ensureTrue(result.contains("Minimum"), "Missing Minimum header");
+    Test.ensureTrue(result.contains("or a List of Values"), "Missing or a list of values header");
+    Test.ensureTrue(result.contains("Maximum"), "Missing Maximum header");
+
+    // Verify variables table content
+    Test.ensureTrue(result.contains("name=\"varch0\""), "Missing varch0 input");
+    Test.ensureTrue(result.contains("value=\"longitude\""), "Missing longitude variable value");
+    Test.ensureTrue(result.contains("name=\"op0_0\""), "Missing op0_0 select");
+    Test.ensureTrue(result.contains("name=\"val0_0\""), "Missing val0_0 input");
+    Test.ensureTrue(result.contains("value=\"-125.0\""), "Missing val0_0 value");
+    Test.ensureTrue(result.contains("[slider0]"), "Missing slider0 html");
+
+    // Verify distinct options
+    Test.ensureTrue(result.contains("name=\"dis2\""), "Missing dis2 select for station");
+    Test.ensureTrue(
+        result.contains("value=\"station_1\" selected>station_1</option>"),
+        "Missing station_1 option");
+    Test.ensureTrue(result.contains("minus.gif"), "Missing minus.gif button");
+    Test.ensureTrue(result.contains("plus.gif"), "Missing plus.gif button");
+
+    // Verify functions section
+    Test.ensureTrue(result.contains("name=\"distinct\""), "Missing distinct checkbox");
+
+    // Verify embedded Batch 1 shared components
+    Test.ensureTrue(result.contains("name=\"fileType\""), "Missing fileType selector component");
+    Test.ensureTrue(
+        result.contains("name=\"getUrl\""), "Missing getUrl button in form_actions component");
+    Test.ensureTrue(
+        result.contains("name=\"tUrl\""), "Missing tUrl field in form_actions component");
+    Test.ensureTrue(
+        result.contains("name=\"submit1\""), "Missing submit1 button in form_actions component");
+    Test.ensureTrue(
+        result.contains("onclick=\"updateUrl();\""), "Missing updateUrl onclick on getUrl");
+    Test.ensureTrue(result.contains("id=\"DAS\""), "Missing DAS anchor in das_section component");
+    Test.ensureTrue(result.contains("String title \"Test Title\";"), "Missing DAS content");
+    Test.ensureTrue(
+        result.contains("id=\"instructions\""),
+        "Missing instructions anchor in dap_instructions component");
+    Test.ensureTrue(
+        result.contains("Tabledap request URLs must be in the form"),
+        "Missing DAP instructions text");
+    Test.ensureTrue(
+        result.contains(
+            "Thus, the query is often a comma-separated list of desired variable names"),
+        "Missing query explanation text");
+    Test.ensureTrue(result.contains("/* sliders */"), "Missing sliderScriptHtml");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteTabledapFormFrench() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteTabledapFormFrench()");
+    int frenchLang = gov.noaa.pfel.erddap.util.TranslateMessages.languageCodeList.indexOf("fr");
+    if (frenchLang < 0) return;
+
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    java.util.List<TabledapVariable> variables = new java.util.ArrayList<>();
+    variables.add(
+        new TabledapVariable(
+            0,
+            "longitude",
+            "longitude (degrees_east)",
+            true,
+            ">=",
+            "-125.0",
+            "<=",
+            "-120.0",
+            "numeric constraint",
+            false,
+            null,
+            0,
+            "-180.0",
+            "180.0",
+            false,
+            ""));
+
+    String tErddapUrl = "https://erddap.example.org/erddap";
+    YouAreHere youAreHere =
+        new YouAreHere(
+            tErddapUrl,
+            "ERDDAP",
+            java.util.List.of("tabledap", "Formulaire d'accès aux données"),
+            java.util.List.of(tErddapUrl + "/fr/tabledap/index.html"),
+            "");
+
+    java.util.List<String> fileTypeDescriptions =
+        java.util.List.of(".htmlTable - Afficher un tableau HTML standard");
+
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("youAreHere", youAreHere);
+    params.put("language", frenchLang);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("loggedInAs", "");
+    params.put("endOfRequest", "tabledap/test_dataset.html");
+    params.put("request", null);
+    params.put("datasetInfoHtml", "");
+    params.put("formName", "form1");
+    params.put("variables", variables);
+    params.put("operators", java.util.List.of("=", "!=", "<", "<=", ">", ">=", "=~"));
+    params.put("hasDistinctOptions", false);
+    params.put("checkAllJs", "form1.varch0.checked=true;");
+    params.put("uncheckAllJs", "form1.varch0.checked=false;");
+    params.put("addVariablesWhereHtml", "");
+    params.put("functionHtml", "");
+    params.put("fileTypeDescriptions", fileTypeDescriptions);
+    params.put("defaultFileTypeOption", ".htmlTable");
+    params.put("javaScript", "updateUrl();");
+    params.put("sliderScriptHtml", "");
+    params.put("dasContent", "Attributes {\n}");
+    params.put("dapBase", tErddapUrl + "/tabledap/");
+    params.put("exampleHref", tErddapUrl + "/tabledap/test_dataset.htmlTable");
+    params.put("exampleText", "test_dataset.htmlTable");
+    params.put("longDapDescription", "");
+
+    java.io.StringWriter sw = new java.io.StringWriter();
+    engine.render("tabledap_form.jte", params, new WriterOutput(sw));
+    String result = sw.toString();
+
+    // Verify French localization
+    Test.ensureTrue(result.contains("Variable"), "Missing French Variable header");
+    Test.ensureTrue(result.contains("Soumettre"), "Missing French Soumettre button text");
+    Test.ensureTrue(result.contains("Vérifie"), "Missing French Vérifie tout button");
+    Test.ensureTrue(result.contains("Décocher"), "Missing French Décocher tout button");
+    Test.ensureTrue(result.contains("</html>"), "Missing closing html tag");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testJteTabledapFormXssProtection() throws Throwable {
+    String2.log("\n*** ErddapTests.testJteTabledapFormXssProtection()");
+    TemplateEngine engine = TemplateEngine.createPrecompiled(ContentType.Html);
+
+    java.util.List<TabledapVariable> variables = new java.util.ArrayList<>();
+    variables.add(
+        new TabledapVariable(
+            0,
+            "xssVar\"><script>alert(1)</script>",
+            "xssLabel &lt;script&gt;",
+            true,
+            ">=",
+            "\"<script>alert('val0')</script>\"",
+            "<=",
+            "\"<script>alert('val1')</script>\"",
+            "tooltip <script>alert('tip')</script>",
+            true,
+            new String[] {"opt1\"><script>alert(2)</script>", "opt2"},
+            0,
+            "<script>min</script>",
+            "<script>max</script>",
+            false,
+            ""));
+
+    String tErddapUrl = "https://erddap.example.org/erddap";
+    YouAreHere youAreHere =
+        new YouAreHere(
+            tErddapUrl,
+            "ERDDAP",
+            java.util.List.of("tabledap", "DAF"),
+            java.util.List.of(tErddapUrl + "/tabledap/index.html"),
+            "");
+
+    java.util.Map<String, Object> params = new java.util.HashMap<>();
+    params.put("youAreHere", youAreHere);
+    params.put("language", 0);
+    params.put("tErddapUrl", tErddapUrl);
+    params.put("loggedInAs", "");
+    params.put("endOfRequest", "tabledap/test.html");
+    params.put("request", null);
+    params.put("datasetInfoHtml", "");
+    params.put("formName", "form1");
+    params.put("variables", variables);
+    params.put("operators", java.util.List.of("=", "!=", "<", "<=", ">", ">=", "=~"));
+    params.put("hasDistinctOptions", true);
+    params.put("checkAllJs", "");
+    params.put("uncheckAllJs", "");
+    params.put("addVariablesWhereHtml", "");
+    params.put("functionHtml", "");
+    params.put("fileTypeDescriptions", java.util.List.of(".htmlTable - HTML"));
+    params.put("defaultFileTypeOption", ".htmlTable");
+    params.put("javaScript", "updateUrl();");
+    params.put("sliderScriptHtml", "");
+    params.put("dasContent", "Attributes {\n String title \"<script>alert('das')</script>\";\n}");
+    params.put("dapBase", tErddapUrl + "/tabledap/");
+    params.put("exampleHref", tErddapUrl + "/tabledap/test.htmlTable");
+    params.put("exampleText", "test.htmlTable");
+    params.put("longDapDescription", "");
+
+    java.io.StringWriter sw = new java.io.StringWriter();
+    engine.render("tabledap_form.jte", params, new WriterOutput(sw));
+    String result = sw.toString();
+
+    // Verify all injected script tags are escaped or neutralized
+    Test.ensureTrue(!result.contains("<script>alert(1)</script>"), "Variable name unescaped");
+    Test.ensureTrue(!result.contains("<script>alert('val0')</script>"), "val0 unescaped");
+    Test.ensureTrue(!result.contains("<script>alert('val1')</script>"), "val1 unescaped");
+    Test.ensureTrue(!result.contains("<script>alert(2)</script>"), "Distinct option unescaped");
+    Test.ensureTrue(!result.contains("<script>alert('das')</script>"), "DAS content unescaped");
+    Test.ensureTrue(
+        result.contains("&lt;script&gt;alert('das')&lt;/script&gt;"),
+        "DAS content escaped properly");
   }
 }

@@ -442,8 +442,9 @@ class EDDTableCopyTests {
         edd.makeNewFileForDapQuery(
             language, null, null, "", tDir, edd.className() + "_Entire", ".html");
     results = File2.directReadFromUtf8File(tDir + tName);
-    expected = "<option>.png - View a standard, medium-sized .png image file with a graph or map.";
-    expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
+    expected =
+        "<option value=\".png - View a standard, medium-sized .png image file with a graph or map.\">.png - View a standard, medium-sized .png image file with a graph or map.</option>";
+    expected2 = "    String _CoordinateAxisType \"Lon\";";
     Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
     // TestUtil.displayInBrowser("file://" + tDir + tName);
